@@ -11,18 +11,13 @@
 To enhance Rozier backend theme you must install Grunt and Bower:
 
 ```shell
-cd themes/Rozier/static
-
-npm install
-
-bower install
-
+cd src
+yarn install
 # Launch Grunt to generate prod files
-grunt
-
+yarn build
 # Or… launch watch grunt when you’re
 # working on LESS and JS files.
-grunt watch
+yarn dev
 ```
 
 Then you will be able to switch theme to development mode
