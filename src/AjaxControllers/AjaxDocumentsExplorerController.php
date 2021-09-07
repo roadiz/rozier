@@ -17,7 +17,11 @@ use Themes\Rozier\Models\DocumentModel;
  */
 class AjaxDocumentsExplorerController extends AbstractAjaxController
 {
-    public static $thumbnailArray = null;
+    public static array $thumbnailArray = [
+        "fit" => "40x40",
+        "quality" => 50,
+        "inline" => false,
+    ];
     /**
      * @param Request $request
      *
@@ -153,9 +157,3 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         ];
     }
 }
-
-AjaxDocumentsExplorerController::$thumbnailArray = [
-    "fit" => "40x40",
-    "quality" => 50,
-    "inline" => false,
-];

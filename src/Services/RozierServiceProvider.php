@@ -14,6 +14,7 @@ use RZ\Roadiz\Utils\Security\FirewallEntry;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Security\Http\AccessMap;
@@ -123,7 +124,7 @@ final class RozierServiceProvider implements ServiceProviderInterface
             return $subscribers;
         });
 
-        $container->extend('dispatcher', function (EventDispatcher $dispatcher, Container $c) {
+        $container->extend('dispatcher', function (EventDispatcherInterface $dispatcher, Container $c) {
             /** @var Kernel $kernel */
             $kernel = $c['kernel'];
 
