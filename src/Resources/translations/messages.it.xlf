@@ -91,11 +91,6 @@
 
 
       </trans-unit>
-      <trans-unit xml:space="preserve" id="14">
-        <source>copyright</source>
-        <target state="translated">copyright</target>
-
-      </trans-unit>
       <trans-unit xml:space="preserve" id="15">
         <source>private</source>
         <target state="translated">privato</target>
@@ -252,21 +247,10 @@
         <target state="translated">l'utente Facebook %name% non esiste</target>
 
       </trans-unit>
-      <trans-unit xml:space="preserve" id="48">
-        <source>email</source>
-        <target state="translated">email</target>
-
-
-      </trans-unit>
       <trans-unit xml:space="preserve" id="49">
         <source>username</source>
         <target state="translated">nome utente</target>
 
-
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="50">
-        <source>password</source>
-        <target state="translated">password</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="51">
@@ -638,10 +622,6 @@
 
 
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.hidingNonReachableNodes">
-        <source>nodeType.hidingNonReachableNodes</source>
-        <target state="translated">nodeType.hidingNonReachableNodes</target>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="125">
         <source>role.imported</source>
         <target state="translated">il ruolo è stato importato</target>
@@ -809,11 +789,6 @@
         <target state="translated">traduzione %name% non può essere cancellata, essa è la traduzione predefinita</target>
 
       </trans-unit>
-      <trans-unit xml:space="preserve" id="158">
-        <source>locale</source>
-        <target state="translated">locale</target>
-
-      </trans-unit>
       <trans-unit xml:space="preserve" id="159">
         <source>add.tag</source>
         <target state="translated">aggiungi tag</target>
@@ -834,12 +809,6 @@
         <target state="translated">tag</target>
 
 
-
-
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="162">
-        <source>id</source>
-        <target state="translated">id</target>
 
 
       </trans-unit>
@@ -1341,11 +1310,6 @@
       <trans-unit xml:space="preserve" id="243">
         <source>add.node</source>
         <target state="translated">aggiungi nodo</target>
-
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="244">
-        <source>In</source>
-        <target state="translated">In</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="245">
@@ -2539,11 +2503,6 @@
         <target state="translated">Url Instagram</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="instagram_user_id">
-        <source>instagram_user_id</source>
-            <target state="translated">instagram_user_id</target>
-            <note>Setting name for social page account name.</note>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="twitter_url">
         <source>twitter_url</source>
         <target state="translated">Url Twitter</target>
@@ -2557,11 +2516,6 @@
       <trans-unit xml:space="preserve" id="youtube_url">
         <source>youtube_url</source>
         <target state="translated">URL di YouTube</target>
-        <note>Setting name for social page url.</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="googleplus_url">
-        <source>googleplus_url</source>
-        <target state="translated">googleplus_url</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="twitter_account">
@@ -2865,46 +2819,6 @@
         <source>nodeTypeField.maxLength</source>
         <target state="translated">Lunghezza massima</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="no_limit">
-        <source>no_limit</source>
-        <target state="translated">no_limit</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serialization">
-        <source>nodeTypeField.serialization</source>
-        <target state="translated">nodeTypeField.serialization</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.excludedFromSerialization">
-        <source>nodeTypeField.excludedFromSerialization</source>
-        <target state="translated">nodeTypeField.excludedFromSerialization</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationMaxDepth">
-        <source>nodeTypeField.serializationMaxDepth</source>
-        <target state="translated">nodeTypeField.serializationMaxDepth</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationExclusionExpression">
-        <source>nodeTypeField.serializationExclusionExpression</source>
-        <target state="translated">nodeTypeField.serializationExclusionExpression</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups">
-        <source>nodeTypeField.serializationGroups</source>
-        <target state="translated">nodeTypeField.serializationGroups</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization">
-        <source>exclude_this_field_from_api_serialization</source>
-        <target state="translated">exclude_this_field_from_api_serialization</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="default_value">
-        <source>default_value</source>
-        <target state="translated">default_value</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization_if_expression_result_is_true">
-        <source>exclude_this_field_from_api_serialization_if_expression_result_is_true</source>
-        <target state="translated">exclude_this_field_from_api_serialization_if_expression_result_is_true</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="enter_symfony_expression_language_with_object_as_var_name">
-        <source>enter_symfony_expression_language_with_object_as_var_name</source>
-        <target state="translated">enter_symfony_expression_language_with_object_as_var_name</target>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="export.all.nodes">
         <source>export.all.nodes</source>
         <target state="translated">Esporta tuttI i nodi</target>
@@ -2993,10 +2907,6 @@
           <source>blockquote</source>
           <target state="translated">Blockquote</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="link">
-          <source>link</source>
-          <target state="translated">link</target>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="image">
           <source>image</source>
           <target state="translated">Immagine</target>
@@ -3020,10 +2930,6 @@
       <trans-unit xml:space="preserve" id="non_breaking.space">
           <source>non_breaking.space</source>
           <target state="translated">Spazio senza interruzioni</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="non_breaking.hyphen">
-          <source>non_breaking.hyphen</source>
-          <target state="translated">non_breaking.hyphen</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="forbidden.page">
           <source>forbidden.page</source>
@@ -3052,14 +2958,6 @@
       <trans-unit xml:space="preserve" id="nodeType.color">
           <source>nodeType.color</source>
           <target state="translated">Colore</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.defaultTtl">
-          <source>nodeType.defaultTtl</source>
-            <target state="translated">nodeType.defaultTtl</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType_default_ttl_when_creating_nodes">
-          <source>nodeType_default_ttl_when_creating_nodes</source>
-            <target state="translated">nodeType_default_ttl_when_creating_nodes</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="nodeType.numberFields">
           <source>nodeType.numberFields</source>
@@ -3589,10 +3487,6 @@
           <source>Bad credentials.</source>
           <target state="translated">Identificazione non riuscita</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="Too many login attemps">
-          <source>Too many login attemps, wait before trying again.</source>
-          <target state="translated">Troppi tentativi d'accesso, attendi prima di riprovare.</target>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="User account has expired.">
           <source>User account has expired.</source>
           <target state="translated">Il tuo account è scaduto.</target>
@@ -3676,14 +3570,6 @@
       <trans-unit xml:space="preserve" id="nodeType.hiding_nodes">
           <source>nodeType.hiding_nodes</source>
           <target state="translated">Digita il suo albero nascosto</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.searchable">
-          <source>nodeType.searchable</source>
-          <target state="translated">nodeType.searchable</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="allow_this_types_nodes_title_to_be_indexed_into_search_engine">
-          <source>allow_this_types_nodes_title_to_be_indexed_into_search_engine</source>
-          <target state="translated">allow_this_types_nodes_title_to_be_indexed_into_search_engine</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="newsletter.%name%.created">
           <source>newsletter.%name%.created</source>
@@ -4061,10 +3947,6 @@
           <source>document.filepath</source>
           <target state="translated">Percorso del file assoluto </target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.imageAverageColor">
-          <source>document.imageAverageColor</source>
-          <target state="translated">document.imageAverageColor</target>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="download.document">
           <source>download.document</source>
           <target state="translated">Scarica il documento</target>
@@ -4295,14 +4177,6 @@
       <trans-unit xml:space="preserve" id="node.childrenOrderDirection">
           <source>node.childrenOrderDirection</source>
           <target state="translated">Direzione dell'ordine dei sotto nodi </target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="node.ttl">
-          <source>node.ttl</source>
-            <target state="translated">node.ttl</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="node_time_to_live_cache_on_front_controller">
-          <source>node_time_to_live_cache_on_front_controller</source>
-            <target state="translated">node_time_to_live_cache_on_front_controller</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="createdAt">
           <source>createdAt</source>
@@ -4672,21 +4546,6 @@
       <trans-unit xml:space="preserve" id="document.filesize">
         <source>document.filesize</source>
         <target state="translated">Dimensione file</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="document.duration">
-        <source>document.duration</source>
-        <target state="translated">document.duration</target>
-        <note>Label for timed documents duration (in seconds)</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="document.media_not_found_or_private">
-        <source>document.media_not_found_or_private</source>
-        <target state="translated">document.media_not_found_or_private</target>
-        <note>Error message when external media request fails with NotFound response.</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="document.is_only_external">
-        <source>document.is_only_external</source>
-        <target state="translated">document.is_only_external</target>
-        <note>Warning message displayed when document does not have any file locally.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="reachable">
         <source>reachable</source>
@@ -5077,186 +4936,16 @@
             <target state="translated">-- Usa lingua default del sito --</target>
             <note>User detail form field choice for using website default language.</note>
         </trans-unit>
-      <trans-unit xml:space="preserve" id="sort_asc">
-            <source>sort_asc</source>
-            <target state="translated">sort_asc</target>
-            <note>Table column link to sort data ascendently</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="sort_desc">
-            <source>sort_desc</source>
-            <target state="translated">sort_desc</target>
-            <note>Table column link to sort data descendently</note>
-        </trans-unit>
       <trans-unit xml:space="preserve" id="preview">
             <source>preview</source>
             <target state="translated">anteprima</target>
             <note>Preview mode label on warning sign.</note>
         </trans-unit>
-      <trans-unit xml:space="preserve" id="current.document.file.does.not.exist">
-            <source>current.document.file.does.not.exist</source>
-            <target state="translated">current.document.file.does.not.exist</target>
-            <note>When a document does not have any file attached.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="google_tag_manager_id">
-            <source>google_tag_manager_id</source>
-            <target state="translated">google_tag_manager_id</target>
-            <note>Google Tag Manager setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="leaflet_map_tile_url">
-            <source>leaflet_map_tile_url</source>
-            <target state="translated">leaflet_map_tile_url</target>
-            <note>Leaflet Map tile URL setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_access_token">
-            <source>twitter_access_token</source>
-            <target state="translated">twitter_access_token</target>
-            <note>Setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_access_token_secret">
-            <source>twitter_access_token_secret</source>
-            <target state="translated">twitter_access_token_secret</target>
-            <note>Setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="instagram_access_token">
-            <source>instagram_access_token</source>
-            <target state="translated">instagram_access_token</target>
-            <note>Setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_consumer_key">
-            <source>twitter_consumer_key</source>
+      <trans-unit xml:space="preserve" id="twitter_consumer_secret">
+            <source>twitter_consumer_secret</source>
             <target state="translated">twitter_consumer_key</target>
             <note>Setting name.</note>
         </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_consumer_secret">
-            <source>twitter_consumer_secret</source>
-            <target state="translated">twitter_consumer_secret</target>
-            <note>Setting name.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="document.mimeType">
-            <source>document.mimeType</source>
-            <target state="translated">document.mimeType</target>
-            <note>Document form</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="document.embed">
-            <source>document.embed</source>
-            <target state="translated">document.embed</target>
-            <note>Document form</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="document.no_embed_platform">
-            <source>document.no_embed_platform</source>
-            <target state="translated">document.no_embed_platform</target>
-            <note>Document form</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="versions">
-            <source>versions</source>
-            <target state="translated">versioni</target>
-            <note>Version management</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.working_copy">
-            <source>versions.working_copy</source>
-            <target state="translated">versions.working_copy</target>
-            <note>Version management : latest version aka working copy</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.viewing_a_previous_version">
-            <source>versions.viewing_a_previous_version</source>
-            <target state="translated">versions.viewing_a_previous_version</target>
-            <note>Version management : Disclaimer that user is viewing a previous version</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.revert_to_this_version">
-            <source>versions.revert_to_this_version</source>
-            <target state="translated">versions.revert_to_this_version</target>
-            <note>Version management : Button label to revert to current viewing version</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="max_versions_showed">
-            <source>max_versions_showed</source>
-            <target state="translated">max_versions_showed</target>
-            <note>Version management : setting label to choose how many version to display in action-menu</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.back_to_working_copy">
-            <source>versions.back_to_working_copy</source>
-            <target state="translated">versions.back_to_working_copy</target>
-            <note>Version management : Button label to go back to working copy</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="encrypted">
-            <source>encrypted</source>
-            <target state="translated">crittografato</target>
-            <note>Settings : defines if setting value will be encrypted in database.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="original.document">
-            <source>original.document</source>
-            <target state="translated">original.document</target>
-            <note>Document : Label to display original document when dealing with thumbnails.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="see.original.document">
-            <source>see.original.document</source>
-            <target state="translated">see.original.document</target>
-            <note>Document : Button Label to display original document when dealing with thumbnails.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="document.thumbnails">
-            <source>document.thumbnails</source>
-            <target state="translated">document.thumbnails</target>
-            <note>Document : Input Label to display thumbnail documents when dealing with original.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="excludeFromSearch">
-            <source>excludeFromSearch</source>
-            <target state="translated">excludeFromSearch</target>
-            <note>Node type field : Input Label.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="export.documentation">
-            <source>export.documentation</source>
-            <target state="translated">export.documentation</target>
-            <note>Button label, for exporting node-type Markdown documentation</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="export.typescript_declaration">
-            <source>export.typescript_declaration</source>
-            <target state="translated">export.typescript_declaration</target>
-            <note>Button label, for exporting node-types into a TypeScript declaration file.</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="hide_roadiz_version">
-            <source>hide_roadiz_version</source>
-            <target state="translated">hide_roadiz_version</target>
-            <note>Setting</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="exact_search">
-            <source>exact_search</source>
-            <target state="translated">exact_search</target>
-            <note>Node search page, search exact query</note>
-        </trans-unit>
-      <trans-unit xml:space="preserve" id="login_with_openid">
-            <source>login_with_openid</source>
-            <target state="translated">login_with_openid</target>
-            <note>Default login button label for OpenID</note>
-        </trans-unit>
-      <trans-unit id="filter">
-        <source>filter</source>
-        <target state="translated">filter</target>
-        <note>Button label for a generic filtering action.</note>
-      </trans-unit>
-      <trans-unit id="%namespace%.%item%.was_created">
-        <source>%namespace%.%item%.was_created</source>
-        <target state="translated">%namespace%.%item.creato</target>
-        <note>Default controller addAction result message.</note>
-      </trans-unit>
-      <trans-unit id="%namespace%.%item%.was_updated">
-        <source>%namespace%.%item%.was_updated</source>
-        <target state="translated">%namespace%.%item%.aggiornato</target>
-        <note>Default controller editAction result message.</note>
-      </trans-unit>
-      <trans-unit id="%namespace%.%item%.was_deleted">
-        <source>%namespace%.%item%.was_deleted</source>
-        <target state="translated">%namespace%.%item%.eliminato</target>
-        <note>Default controller deleteAction result message.</note>
-      </trans-unit>
-      <trans-unit id="document.document_display_gallery">
-        <source>document.document_display_gallery</source>
-        <target state="translated">document.document_display_gallery</target>
-        <note/>
-      </trans-unit>
-      <trans-unit id="documents.document_display_list">
-        <source>documents.document_display_list</source>
-        <target state="translated">documents.document_display_list</target>
-        <note/>
-      </trans-unit>
     </body>
   </file>
 </xliff>
