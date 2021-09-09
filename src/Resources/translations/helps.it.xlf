@@ -2,54 +2,18 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="" source-language="en" datatype="plaintext" target-language="it">
     <body>
-      <trans-unit xml:space="preserve" id="document.private.help">
-                <source>document.private.help</source>
-                <target state="translated">document.private.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="document.imageAverageColor.help">
-                <source>document.imageAverageColor.help</source>
-                <target state="translated">document.imageAverageColor.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="node.nodeName.help">
-                <source>node.nodeName.help</source>
-                <target state="translated">node.nodeName.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="tag.tagName.help">
-                <source>tag.tagName.help</source>
-                <target state="translated">tag.tagName.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="tag.locked.help">
-                <source>tag.locked.help</source>
-                <target state="translated">tag.locked.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.metaTitle.help">
-                <source>nodeSource.metaTitle.help</source>
-                <target state="translated">nodeSource.metaTitle.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.metaKeywords.help">
-                <source>nodeSource.metaKeywords.help</source>
-                <target state="translated">nodeSource.metaKeywords.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.metaDescription.help">
-                <source>nodeSource.metaDescription.help</source>
-                <target state="translated">nodeSource.metaDescription.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.urlAlias.help">
-                <source>nodeSource.urlAlias.help</source>
-                <target state="translated">nodeSource.urlAlias.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.redirections.help">
-                <source>nodeSource.redirections.help</source>
-                <target state="translated">nodeSource.redirections.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.hidingNonReachableNodes.help">
-                <source>nodeType.hidingNonReachableNodes.help</source>
-                <target state="translated">nodeType.hidingNonReachableNodes.help</target>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="exclude_this_field_from_fulltext_search_engine">
-                <source>exclude_this_field_from_fulltext_search_engine</source>
-                <target state="translated">exclude_this_field_from_fulltext_search_engine</target>
-            </trans-unit>
-    </body>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        </body>
   </file>
 </xliff>
