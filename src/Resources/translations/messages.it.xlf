@@ -4941,11 +4941,6 @@
             <target state="translated">anteprima</target>
             <note>Preview mode label on warning sign.</note>
         </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_consumer_secret">
-            <source>twitter_consumer_secret</source>
-            <target state="translated">twitter_consumer_key</target>
-            <note>Setting name.</note>
-        </trans-unit>
     </body>
   </file>
 </xliff>
