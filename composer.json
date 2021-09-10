@@ -63,7 +63,8 @@
         "squizlabs/php_codesniffer": "^3.5",
         "roadiz/entity-generator": "~1.7.0 || dev-main",
         "roadiz/random": "~1.7.0 || dev-main",
-        "roadiz/markdown": "~1.7.0 || dev-develop"
+        "roadiz/markdown": "~1.7.0 || dev-develop",
+        "roadiz/jwt": "~1.7.0 || dev-main"
     },
     "autoload": {
         "psr-4": {
