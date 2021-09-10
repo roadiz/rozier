@@ -2,16 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="" source-language="en" datatype="plaintext" target-language="it">
     <body>
-      <trans-unit xml:space="preserve" id="use_native_json.help">
-                <source>Use MySQL 5.7+ JSON field type.</source>
-                <target state="translated">Use MySQL 5.7+ JSON field type.</target>
-                <note>Setting description</note>
-            </trans-unit>
-      <trans-unit xml:space="preserve" id="openid_username_claim.help">
-                <source>openid_username_claim.help</source>
-                <target state="translated">openid_username_claim</target>
-                <note>Setting description</note>
-            </trans-unit>
       <!-- Setting groups names -->
     </body>
   </file>
