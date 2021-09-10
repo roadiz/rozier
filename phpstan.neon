@@ -19,6 +19,7 @@ parameters:
         - '#on an unknown class (Memcached|Redis)#'
         - '#Doctrine\\Persistence\\ObjectRepository#'
         - '#Call to an undefined method Doctrine\\Persistence\\ObjectRepository::#'
+        - '#Call to an undefined method RZ\\Roadiz\\Core\\Repositories\\EntityRepository#'
         - '#Call to an undefined method Doctrine\\Persistence\\ObjectManager::#'
         - '#Call to an undefined method Doctrine\\ORM\\EntityRepository::#'
         - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::#'
@@ -28,6 +29,7 @@ parameters:
         - '#does not have a field named \$node\.home#'
         - '#Raven_Client#'
         - '#Raven_ErrorHandler#'
+        - '#should return RZ\\Roadiz\\Core\\Repositories\\([a-zA-Z\\\&\>\<]+)Repository but returns RZ\\Roadiz\\Core\\Repositories\\EntityRepository#'
         # PHPStan Doctrine does not support ResolveTargetEntityListener
         - '#Property ([a-zA-Z\\\:\$]+) type mapping mismatch: property can contain ([a-zA-Z\\\&\>\<]+)Interface\>?\|null but database expects ([a-zA-Z\\\&\>\<]+)\|null#'
         - '#Property ([a-zA-Z\\\:\$]+) type mapping mismatch: property can contain ([a-zA-Z\\\&\>\<]+)Interface\>? but database expects ([a-zA-Z\\\&\>\<]+)#'
