@@ -35,7 +35,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
              */
             case 'requestFolderTree':
                 if ($request->get('parentFolderId') > 0) {
-                    $folder = $this->get('em')
+                    $folder = $this->em()
                                 ->find(
                                     Folder::class,
                                     (int) $request->get('parentFolderId')

@@ -49,7 +49,7 @@ class SettingsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         /** @var SettingGroup|null $settingGroup */
-        $settingGroup = $this->get('em')->find(SettingGroup::class, $settingGroupId);
+        $settingGroup = $this->em()->find(SettingGroup::class, $settingGroupId);
 
         if ($settingGroup !== null) {
             $this->assignation['settingGroup'] = $settingGroup;
@@ -102,7 +102,7 @@ class SettingsController extends RozierApp
                 if ($form->isSubmitted() && $form->isValid()) {
                     try {
                         $this->resetSettingsCache();
-                        $this->get('em')->flush();
+                        $this->em()->flush();
                         $msg = $this->getTranslator()->trans(
                             'setting.%name%.updated',
                             ['%name%' => $setting->getName()]
@@ -170,7 +170,7 @@ class SettingsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
         /** @var Setting|null $setting */
-        $setting = $this->get('em')->find(Setting::class, $settingId);
+        $setting = $this->em()->find(Setting::class, $settingId);
 
         if ($setting !== null) {
             $this->assignation['setting'] = $setting;
@@ -183,7 +183,7 @@ class SettingsController extends RozierApp
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
                     $this->resetSettingsCache();
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans('setting.%name%.updated', ['%name%' => $setting->getName()]);
                     $this->publishConfirmMessage($request, $msg);
                     /*
@@ -210,7 +210,7 @@ class SettingsController extends RozierApp
     {
         $this->get('settingsBag')->reset();
         /** @var CacheProvider $cacheDriver */
-        $cacheDriver = $this->get('em')->getConfiguration()->getResultCacheImpl();
+        $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
         if ($cacheDriver !== null) {
             $cacheDriver->deleteAll();
         }
@@ -239,8 +239,8 @@ class SettingsController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->resetSettingsCache();
-                $this->get('em')->persist($setting);
-                $this->get('em')->flush();
+                $this->em()->persist($setting);
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans('setting.%name%.created', ['%name%' => $setting->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
@@ -268,7 +268,7 @@ class SettingsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         /** @var Setting|null $setting */
-        $setting = $this->get('em')->find(Setting::class, $settingId);
+        $setting = $this->em()->find(Setting::class, $settingId);
 
         if (null !== $setting) {
             $this->assignation['setting'] = $setting;
@@ -278,8 +278,8 @@ class SettingsController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->resetSettingsCache();
-                $this->get('em')->remove($setting);
-                $this->get('em')->flush();
+                $this->em()->remove($setting);
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('setting.%name%.deleted', ['%name%' => $setting->getName()]);
                 $this->publishConfirmMessage($request, $msg);

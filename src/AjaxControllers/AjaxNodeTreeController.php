@@ -34,7 +34,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
         if (null === $translationId) {
             $translation = $this->get('defaultTranslation');
         } else {
-            $translation = $this->get('em')
+            $translation = $this->em()
                                 ->find(
                                     Translation::class,
                                     $translationId
@@ -51,7 +51,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
              */
             case 'requestNodeTree':
                 if ($request->get('parentNodeId') > 0) {
-                    $node = $this->get('em')
+                    $node = $this->em()
                                 ->find(
                                     Node::class,
                                     (int) $request->get('parentNodeId')
@@ -66,7 +66,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
 
                 if ($request->get('tagId') &&
                     $request->get('tagId') > 0) {
-                    $filterTag = $this->get('em')
+                    $filterTag = $this->em()
                                         ->find(
                                             Tag::class,
                                             (int) $request->get('tagId')

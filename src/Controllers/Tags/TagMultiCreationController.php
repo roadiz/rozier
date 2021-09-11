@@ -30,7 +30,7 @@ class TagMultiCreationController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $translation = $this->get('defaultTranslation');
-        $parentTag = $this->get('em')->find(Tag::class, $parentTagId);
+        $parentTag = $this->em()->find(Tag::class, $parentTagId);
 
         if (null !== $parentTag) {
             $form = $this->createForm(MultiTagType::class);
@@ -47,7 +47,7 @@ class TagMultiCreationController extends RozierApp
                     /*
                      * Get latest position to add tags after.
                      */
-                    $latestPosition = $this->get('em')
+                    $latestPosition = $this->em()
                         ->getRepository(Tag::class)
                         ->findLatestPositionInParent($parentTag);
 
@@ -56,7 +56,7 @@ class TagMultiCreationController extends RozierApp
                     $tagFactory = $this->get(TagFactory::class);
                     foreach ($names as $name) {
                         $tagsArray[] = $tagFactory->create($name, $translation, $parentTag, $latestPosition);
-                        $this->get('em')->flush();
+                        $this->em()->flush();
                     }
 
                     /*

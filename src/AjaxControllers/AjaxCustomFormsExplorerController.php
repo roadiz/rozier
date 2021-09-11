@@ -72,7 +72,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
         $cleanCustomFormsIds = array_filter($request->query->get('ids'));
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $customForms = $em->getRepository(CustomForm::class)->findBy([
             'id' => $cleanCustomFormsIds,
         ]);

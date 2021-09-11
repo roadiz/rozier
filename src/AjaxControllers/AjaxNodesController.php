@@ -39,7 +39,7 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $tags = [];
         /** @var Node $node */
-        $node = $this->get('em')->find(Node::class, (int) $nodeId);
+        $node = $this->em()->find(Node::class, (int) $nodeId);
 
         /** @var Tag $tag */
         foreach ($node->getTags() as $tag) {
@@ -69,7 +69,7 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, (int) $nodeId);
+        $node = $this->em()->find(Node::class, (int) $nodeId);
 
         if ($node !== null) {
             $responseArray = null;
@@ -84,7 +84,7 @@ class AjaxNodesController extends AbstractAjaxController
                 case 'duplicate':
                     $duplicator = new NodeDuplicator(
                         $node,
-                        $this->get('em'),
+                        $this->em(),
                         $this->get(NodeNamePolicyInterface::class)
                     );
                     $newNode = $duplicator->duplicate();
@@ -157,7 +157,7 @@ class AjaxNodesController extends AbstractAjaxController
         }
 
         $nodeMover->move($node, $parent, $position);
-        $this->get('em')->flush();
+        $this->em()->flush();
         /*
          * Dispatch event
          */
@@ -173,7 +173,7 @@ class AjaxNodesController extends AbstractAjaxController
             $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 
     /**
@@ -184,7 +184,7 @@ class AjaxNodesController extends AbstractAjaxController
     protected function parseParentNode(array $parameters): ?Node
     {
         if (!empty($parameters['newParent']) && $parameters['newParent'] > 0) {
-            return $this->get('em')->find(Node::class, (int) $parameters['newParent']);
+            return $this->em()->find(Node::class, (int) $parameters['newParent']);
         } elseif (null !== $this->getUser()) {
             // If user is jailed in a node, prevent moving nodes out.
             return $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
@@ -202,13 +202,13 @@ class AjaxNodesController extends AbstractAjaxController
     {
         if (key_exists('nextNodeId', $parameters) && (int) $parameters['nextNodeId'] > 0) {
             /** @var Node $nextNode */
-            $nextNode = $this->get('em')->find(Node::class, (int) $parameters['nextNodeId']);
+            $nextNode = $this->em()->find(Node::class, (int) $parameters['nextNodeId']);
             if ($nextNode !== null) {
                 return $nextNode->getPosition() - 0.5;
             }
         } elseif (key_exists('prevNodeId', $parameters) && $parameters['prevNodeId'] > 0) {
             /** @var Node $prevNode */
-            $prevNode = $this->get('em')->find(Node::class, (int) $parameters['prevNodeId']);
+            $prevNode = $this->em()->find(Node::class, (int) $parameters['prevNodeId']);
             if ($prevNode !== null) {
                 return $prevNode->getPosition() + 0.5;
             }
@@ -239,7 +239,7 @@ class AjaxNodesController extends AbstractAjaxController
         }
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, (int) $request->get('nodeId'));
+        $node = $this->em()->find(Node::class, (int) $request->get('nodeId'));
         if (null === $node) {
             throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', [
                 '%nodeId%' => $request->get('nodeId'),

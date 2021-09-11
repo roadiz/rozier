@@ -80,7 +80,7 @@ class TranslationsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if ($translation !== null) {
             $this->assignation['translation'] = $translation;
@@ -89,7 +89,7 @@ class TranslationsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans('translation.%name%.updated', ['%name%' => $translation->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
@@ -127,8 +127,8 @@ class TranslationsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->get('em')->persist($translation);
-            $this->get('em')->flush();
+            $this->em()->persist($translation);
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('translation.%name%.created', ['%name%' => $translation->getName()]);
             $this->publishConfirmMessage($request, $msg);
@@ -156,7 +156,7 @@ class TranslationsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if (null !== $translation) {
             $this->assignation['translation'] = $translation;
@@ -164,8 +164,8 @@ class TranslationsController extends RozierApp
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 if (false === $translation->isDefaultTranslation()) {
-                    $this->get('em')->remove($translation);
-                    $this->get('em')->flush();
+                    $this->em()->remove($translation);
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans('translation.%name%.deleted', ['%name%' => $translation->getName()]);
                     $this->publishConfirmMessage($request, $msg);
                     $this->get('dispatcher')->dispatch(new TranslationDeletedEvent($translation));

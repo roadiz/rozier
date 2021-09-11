@@ -24,7 +24,7 @@ class DashboardController extends RozierApp
 
         $this->assignation['latestLogs'] = [];
 
-        $this->assignation['latestLogs'] = $this->get('em')
+        $this->assignation['latestLogs'] = $this->em()
              ->getRepository(Log::class)
              ->findLatestByNodesSources(8);
 

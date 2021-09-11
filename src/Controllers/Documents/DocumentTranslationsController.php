@@ -43,17 +43,17 @@ class DocumentTranslationsController extends RozierApp
             $translation = $this->get('defaultTranslation');
             $translationId = $translation->getId();
         } else {
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
 
-        $this->assignation['available_translations'] = $this->get('em')
+        $this->assignation['available_translations'] = $this->em()
              ->getRepository(Translation::class)
              ->findAll();
 
         /** @var Document $document */
-        $document = $this->get('em')
+        $document = $this->em()
                          ->find(Document::class, $documentId);
-        $documentTr = $this->get('em')
+        $documentTr = $this->em()
                            ->getRepository(DocumentTranslation::class)
                            ->findOneBy(['document' => $documentId, 'translation' => $translationId]);
 
@@ -128,7 +128,7 @@ class DocumentTranslationsController extends RozierApp
         $dt->setDocument($document);
         $dt->setTranslation($translation);
 
-        $this->get('em')->persist($dt);
+        $this->em()->persist($dt);
 
         return $dt;
     }
@@ -147,10 +147,10 @@ class DocumentTranslationsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS_DELETE');
 
-        $documentTr = $this->get('em')
+        $documentTr = $this->em()
                            ->getRepository(DocumentTranslation::class)
                            ->findOneBy(['document' => $documentId, 'translation' => $translationId]);
-        $document = $this->get('em')
+        $document = $this->em()
                          ->find(Document::class, $documentId);
 
         if ($documentTr !== null &&
@@ -164,8 +164,8 @@ class DocumentTranslationsController extends RozierApp
                 $form->isValid() &&
                 $form->getData()['documentId'] == $documentTr->getId()) {
                 try {
-                    $this->get('em')->remove($documentTr);
-                    $this->get('em')->flush();
+                    $this->em()->remove($documentTr);
+                    $this->em()->flush();
 
                     $msg = $this->getTranslator()->trans(
                         'document.translation.%name%.deleted',
@@ -231,7 +231,7 @@ class DocumentTranslationsController extends RozierApp
             $this->get("dispatcher")->dispatch(
                 new DocumentTranslationUpdatedEvent($entity->getDocument(), $entity)
             );
-            $this->get('em')->flush();
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans('document.translation.%name%.updated', [
                 '%name%' => (string) $entity->getDocument(),
             ]);

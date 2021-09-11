@@ -29,7 +29,7 @@ class AjaxNodeTypeFieldsController extends AjaxAbstractFieldsController
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODEFIELDS_DELETE');
 
-        $field = $this->get('em')->find(NodeTypeField::class, (int) $nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, (int) $nodeTypeFieldId);
 
         if (null !== $response = $this->handleFieldActions($request, $field)) {
             return $response;

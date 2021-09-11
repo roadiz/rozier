@@ -18,7 +18,7 @@ final class WebhookController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Webhook|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         if (null === $item || !($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
@@ -34,7 +34,7 @@ final class WebhookController extends AbstractAdminController
                 /** @var WebhookDispatcher $webhookDispatcher */
                 $webhookDispatcher = $this->get(WebhookDispatcher::class);
                 $webhookDispatcher->dispatch($item);
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
                     'webhook.%item%.will_be_triggered_in.%seconds%',

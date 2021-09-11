@@ -25,7 +25,7 @@ class AjaxTagsController extends AbstractAjaxController
      */
     protected function getRepository()
     {
-        return $this->get('em')->getRepository(Tag::class);
+        return $this->em()->getRepository(Tag::class);
     }
 
     /**
@@ -110,7 +110,7 @@ class AjaxTagsController extends AbstractAjaxController
         ];
 
         if ($request->get('tagId') > 0) {
-            $parentTag = $this->get('em')
+            $parentTag = $this->em()
                 ->find(
                     Tag::class,
                     $request->get('tagId')
@@ -208,7 +208,7 @@ class AjaxTagsController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->get('em')->find(Tag::class, (int) $tagId);
+        $tag = $this->em()->find(Tag::class, (int) $tagId);
 
         if ($tag !== null) {
             $responseArray = null;
@@ -295,7 +295,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         if (!empty($parameters['newParent']) &&
             $parameters['newParent'] > 0) {
-            $parent = $this->get('em')
+            $parent = $this->em()
                            ->find(Tag::class, (int) $parameters['newParent']);
 
             if ($parent !== null) {
@@ -310,28 +310,28 @@ class AjaxTagsController extends AbstractAjaxController
          */
         if (!empty($parameters['nextTagId']) &&
             $parameters['nextTagId'] > 0) {
-            $nextTag = $this->get('em')
+            $nextTag = $this->em()
                             ->find(Tag::class, (int) $parameters['nextTagId']);
             if ($nextTag !== null) {
                 $tag->setPosition($nextTag->getPosition() - 0.5);
             }
         } elseif (!empty($parameters['prevTagId']) &&
             $parameters['prevTagId'] > 0) {
-            $prevTag = $this->get('em')
+            $prevTag = $this->em()
                             ->find(Tag::class, (int) $parameters['prevTagId']);
             if ($prevTag !== null) {
                 $tag->setPosition($prevTag->getPosition() + 0.5);
             }
         }
         // Apply position update before cleaning
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /** @var TagHandler $tagHandler */
         $tagHandler = $this->get('tag.handler');
         $tagHandler->setTag($tag);
         $tagHandler->cleanPositions();
 
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /*
          * Dispatch event

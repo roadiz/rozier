@@ -138,7 +138,7 @@ class AttributeController extends AbstractAdminController
                 $serializedData = file_get_contents($file->getPathname());
 
                 $this->get(AttributeImporter::class)->import($serializedData);
-                $this->get('em')->flush();
+                $this->em()->flush();
                 return $this->redirect($this->generateUrl('attributesHomePage'));
             }
             $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));

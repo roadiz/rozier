@@ -35,7 +35,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             throw new BadRequestHttpException('searchTerms parameter is missing.');
         }
 
-        $searchHandler = new GlobalNodeSourceSearchHandler($this->get('em'));
+        $searchHandler = new GlobalNodeSourceSearchHandler($this->em());
         $searchHandler->setDisplayNonPublishedNodes(true);
 
         /** @var array $nodesSources */

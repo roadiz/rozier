@@ -39,7 +39,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         ];
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
-            $folder = $this->get('em')
+            $folder = $this->em()
                         ->find(
                             Folder::class,
                             $request->get('folderId')
@@ -101,7 +101,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         $cleanDocumentIds = array_filter($request->query->get('ids'));
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $documents = $em->getRepository(Document::class)->findBy([
             'id' => $cleanDocumentIds,
             'raw' => false,

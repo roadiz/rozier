@@ -28,7 +28,7 @@ class TagsUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTag = $this->get('em')->find(Tag::class, $tagId);
+        $existingTag = $this->em()->find(Tag::class, $tagId);
 
         /** @var Serializer $serializer */
         $serializer = $this->get('serializer');
@@ -62,7 +62,7 @@ class TagsUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTags = $this->get('em')
+        $existingTags = $this->em()
                               ->getRepository(Tag::class)
                               ->findBy(["parent" => null]);
 

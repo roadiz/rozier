@@ -31,7 +31,7 @@ class AjaxFoldersController extends AbstractAjaxController
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $folder = $this->get('em')
+        $folder = $this->em()
             ->find(Folder::class, (int) $folderId);
 
         if ($folder !== null) {
@@ -87,7 +87,7 @@ class AjaxFoldersController extends AbstractAjaxController
             $responseArray = [];
 
             $pattern = strip_tags($request->get('search'));
-            $folders = $this->get('em')
+            $folders = $this->em()
                         ->getRepository(Folder::class)
                         ->searchBy(
                             $pattern,
@@ -123,7 +123,7 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['newParent']) &&
             $parameters['newParent'] > 0) {
             /** @var Folder $parent */
-            $parent = $this->get('em')
+            $parent = $this->em()
                 ->find(Folder::class, (int) $parameters['newParent']);
 
             if ($parent !== null) {
@@ -139,7 +139,7 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['nextFolderId']) &&
             $parameters['nextFolderId'] > 0) {
             /** @var Folder $nextFolder */
-            $nextFolder = $this->get('em')
+            $nextFolder = $this->em()
                 ->find(Folder::class, (int) $parameters['nextFolderId']);
             if ($nextFolder !== null) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
@@ -147,20 +147,20 @@ class AjaxFoldersController extends AbstractAjaxController
         } elseif (!empty($parameters['prevFolderId']) &&
             $parameters['prevFolderId'] > 0) {
             /** @var Folder $prevFolder */
-            $prevFolder = $this->get('em')
+            $prevFolder = $this->em()
                 ->find(Folder::class, (int) $parameters['prevFolderId']);
             if ($prevFolder !== null) {
                 $folder->setPosition($prevFolder->getPosition() + 0.5);
             }
         }
         // Apply position update before cleaning
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /** @var FolderHandler $handler */
         $handler = $this->get('folder.handler');
         $handler->setFolder($folder);
         $handler->cleanPositions();
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 }

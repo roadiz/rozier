@@ -29,7 +29,7 @@ class UsersRolesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if ($user !== null) {
             $this->assignation['user'] = $user;
@@ -77,10 +77,10 @@ class UsersRolesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         /** @var Role|null $role */
-        $role = $this->get('em')->find(Role::class, $roleId);
+        $role = $this->em()->find(Role::class, $roleId);
 
         if ($user !== null && $role !== null) {
             if (!$this->isGranted($role->getRole())) {
@@ -95,7 +95,7 @@ class UsersRolesController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $user->removeRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans(
                     'user.%name%.role_removed',
                     ['%name%' => $role->getRole()]
@@ -129,11 +129,11 @@ class UsersRolesController extends RozierApp
     {
         if ($data['userId'] == $user->getId()) {
             /** @var Role|null $role */
-            $role = $this->get('em')->find(Role::class, $data['roleId']);
+            $role = $this->em()->find(Role::class, $data['roleId']);
 
             if (null !== $role) {
                 $user->addRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
                 return $role;
             }
         }

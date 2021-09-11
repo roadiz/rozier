@@ -98,7 +98,7 @@ class RozierApp extends BackendController
         };
 
         $this->themeContainer['settingGroups'] = function () {
-            return $this->get('em')->getRepository(SettingGroup::class)
+            return $this->em()->getRepository(SettingGroup::class)
                 ->findBy(
                     ['inMenu' => true],
                     ['name' => 'ASC']
@@ -137,7 +137,7 @@ class RozierApp extends BackendController
     {
         $this->assignation['mainColor'] = $this->get('settingsBag')->get('main_color');
         $this->assignation['nodeTypes'] = $this->get('nodeTypesBag')->all();
-        $this->assignation['tags'] = $this->get('em')->getRepository(Tag::class)->findBy([
+        $this->assignation['tags'] = $this->em()->getRepository(Tag::class)->findBy([
             'color' => ['!=', '#000000'],
         ]);
 

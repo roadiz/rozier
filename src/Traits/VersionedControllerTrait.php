@@ -54,7 +54,7 @@ trait VersionedControllerTrait
          *
          * @var LogEntryRepository $repo
          */
-        $repo = $this->get('em')->getRepository(UserLogEntry::class);
+        $repo = $this->em()->getRepository(UserLogEntry::class);
         $logs = $repo->getLogEntries($entity);
 
         if ($request->get('version', null) !== null &&
@@ -79,7 +79,7 @@ trait VersionedControllerTrait
                 $this->assignation['revertForm'] = $revertForm->createView();
 
                 if ($revertForm->isSubmitted() && $revertForm->isValid()) {
-                    $this->get('em')->persist($entity);
+                    $this->em()->persist($entity);
                     $this->onPostUpdate($entity, $request);
 
                     return $this->getPostUpdateRedirection($entity);

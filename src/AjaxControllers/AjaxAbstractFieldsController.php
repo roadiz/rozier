@@ -74,11 +74,11 @@ class AjaxAbstractFieldsController extends AbstractAjaxController
         if (!empty($parameters['newPosition']) && null !== $field) {
             $field->setPosition((float) $parameters['newPosition']);
             // Apply position update before cleaning
-            $this->get('em')->flush();
+            $this->em()->flush();
             /** @var AbstractHandler $handler */
             $handler = $this->get('factory.handler')->getHandler($field);
             $handler->cleanPositions();
-            $this->get('em')->flush();
+            $this->em()->flush();
             return [
                 'statusCode' => '200',
                 'status' => 'success',

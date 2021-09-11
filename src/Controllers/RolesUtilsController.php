@@ -33,7 +33,7 @@ class RolesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ROLES');
 
         /** @var Role|null $existingRole */
-        $existingRole = $this->get('em')->find(Role::class, $id);
+        $existingRole = $this->em()->find(Role::class, $id);
 
         if (null === $existingRole) {
             throw $this->createNotFoundException();
@@ -84,10 +84,10 @@ class RolesUtilsController extends RozierApp
                         $msg = $this->getTranslator()->trans('role.imported');
                         $this->publishConfirmMessage($request, $msg);
 
-                        $this->get('em')->flush();
+                        $this->em()->flush();
 
                         // Clear result cache
-                        $cacheDriver = $this->get('em')->getConfiguration()->getResultCacheImpl();
+                        $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
                         if ($cacheDriver !== null) {
                             $cacheDriver->deleteAll();
                         }

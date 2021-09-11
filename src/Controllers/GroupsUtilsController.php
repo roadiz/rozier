@@ -32,7 +32,7 @@ class GroupsUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
-        $existingGroup = $this->get('em')
+        $existingGroup = $this->em()
                               ->getRepository(Group::class)
                               ->findAll();
 
@@ -65,7 +65,7 @@ class GroupsUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
-        $existingGroup = $this->get('em')->find(Group::class, $id);
+        $existingGroup = $this->em()->find(Group::class, $id);
 
         if (null === $existingGroup) {
             throw $this->createNotFoundException();
@@ -114,7 +114,7 @@ class GroupsUtilsController extends RozierApp
 
                 if (null !== json_decode($serializedData)) {
                     $this->get(GroupsImporter::class)->import($serializedData);
-                    $this->get('em')->flush();
+                    $this->em()->flush();
 
                     $msg = $this->getTranslator()->trans('group.imported.updated');
                     $this->publishConfirmMessage($request, $msg);

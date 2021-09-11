@@ -35,7 +35,7 @@ class AjaxTagTreeController extends AbstractAjaxController
              */
             case 'requestTagTree':
                 if ($request->get('parentTagId') > 0) {
-                    $tag = $this->get('em')
+                    $tag = $this->em()
                                 ->find(
                                     Tag::class,
                                     (int) $request->get('parentTagId')

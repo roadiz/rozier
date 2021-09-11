@@ -105,11 +105,11 @@ class NodesController extends RozierApp
 
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['translation'] = $translation;
-        $this->assignation['availableTranslations'] = $this->get('em')
+        $this->assignation['availableTranslations'] = $this->em()
             ->getRepository(Translation::class)
             ->findAllAvailable();
         $this->assignation['nodes'] = $listManager->getEntities();
-        $this->assignation['nodeTypes'] = $this->get('em')
+        $this->assignation['nodeTypes'] = $this->em()
             ->getRepository(NodeType::class)
             ->findBy([
                 'visible' => true,
@@ -132,10 +132,10 @@ class NodesController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_SETTING', $nodeId);
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null !== $node) {
-            $this->get('em')->refresh($node);
+            $this->em()->refresh($node);
             /*
              * Handle StackTypes form
              */
@@ -181,7 +181,7 @@ class NodesController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     /*
                      * Dispatch event
                      */
@@ -189,7 +189,7 @@ class NodesController extends RozierApp
                         $this->get('dispatcher')->dispatch(new NodePathChangedEvent($node, $oldPaths));
                     }
                     $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans('node.%name%.updated', [
                         '%name%' => $node->getNodeName(),
                     ]);
@@ -207,7 +207,7 @@ class NodesController extends RozierApp
             $source = $node->getNodeSourcesByTranslation($translation)->first() ?: null;
 
             if (null === $source) {
-                $availableTranslations = $this->get('em')
+                $availableTranslations = $this->em()
                     ->getRepository(Translation::class)
                     ->findAvailableTranslationsForNode($node);
                 $this->assignation['available_translations'] = $availableTranslations;
@@ -235,13 +235,13 @@ class NodesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
         /** @var NodeType|null $type */
-        $type = $this->get('em')->find(NodeType::class, $typeId);
+        $type = $this->em()->find(NodeType::class, $typeId);
 
         if (null !== $node && null !== $type) {
             $node->removeStackType($type);
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 'stack_type.%type%.has_been_removed.%name%',
@@ -274,13 +274,13 @@ class NodesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var NodeType $type */
-        $type = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $type = $this->em()->find(NodeType::class, $nodeTypeId);
 
         /** @var Translation $translation */
         $translation = $this->get('defaultTranslation');
 
         if ($translationId !== null) {
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
 
         if ($type !== null && $translation !== null) {
@@ -300,7 +300,7 @@ class NodesController extends RozierApp
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
                     $node = $this->createNode($form->get('title')->getData(), $translation, $node);
-                    $this->get('em')->refresh($node);
+                    $this->em()->refresh($node);
                     /*
                      * Dispatch event
                      */
@@ -355,18 +355,18 @@ class NodesController extends RozierApp
 
         $translation = $this->get('defaultTranslation');
 
-        $nodeTypesCount = $this->get('em')
+        $nodeTypesCount = $this->em()
             ->getRepository(NodeType::class)
             ->countBy([]);
 
         if (null !== $translationId) {
             /** @var Translation $translation */
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
 
         if (null !== $nodeId && $nodeId > 0) {
             /** @var Node $parentNode */
-            $parentNode = $this->get('em')
+            $parentNode = $this->em()
                 ->find(Node::class, $nodeId);
         } else {
             $parentNode = null;
@@ -386,7 +386,7 @@ class NodesController extends RozierApp
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
                     $node = $this->createNode($form->get('title')->getData(), $translation, $node);
-                    $this->get('em')->refresh($node);
+                    $this->em()->refresh($node);
 
                     /*
                      * Dispatch event
@@ -438,7 +438,7 @@ class NodesController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $nodeId);
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
@@ -474,7 +474,7 @@ class NodesController extends RozierApp
             /** @var NodeHandler $nodeHandler */
             $nodeHandler = $this->get('node.handler')->setNode($node);
             $nodeHandler->softRemoveWithChildren();
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 'node.%name%.deleted',
@@ -527,7 +527,7 @@ class NodesController extends RozierApp
                 $criteria["parent"] = $ids;
             }
 
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                 ->getRepository(Node::class)
                 ->setDisplayingAllNodesStatuses(true)
                 ->setDisplayingNotPublishedNodes(true)
@@ -542,7 +542,7 @@ class NodesController extends RozierApp
             /*
              * Final flush
              */
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('node.trash.emptied');
             $this->publishConfirmMessage($request, $msg);
@@ -569,7 +569,7 @@ class NodesController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $nodeId);
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
@@ -598,7 +598,7 @@ class NodesController extends RozierApp
             /** @var NodeHandler $nodeHandler */
             $nodeHandler = $this->get('node.handler')->setNode($node);
             $nodeHandler->softUnremoveWithChildren();
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 'node.%name%.undeleted',
@@ -654,7 +654,7 @@ class NodesController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES_STATUS');
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
@@ -679,7 +679,7 @@ class NodesController extends RozierApp
             /** @var NodeHandler $nodeHandler */
             $nodeHandler = $this->get('node.handler')->setNode($node);
             $nodeHandler->publishWithChildren();
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('node.offspring.published');
             $this->publishConfirmMessage($request, $msg);

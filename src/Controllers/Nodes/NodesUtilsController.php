@@ -33,10 +33,10 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node $existingNode */
-        $existingNode = $this->get('em')->find(Node::class, $nodeId);
-        $this->get('em')->refresh($existingNode);
+        $existingNode = $this->em()->find(Node::class, $nodeId);
+        $this->em()->refresh($existingNode);
 
-        $serializer = new NodeJsonSerializer($this->get('em'));
+        $serializer = new NodeJsonSerializer($this->em());
         $node = $serializer->serialize([$existingNode]);
 
         $response = new Response(
@@ -70,16 +70,16 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node[] $existingNodes */
-        $existingNodes = $this->get('em')
+        $existingNodes = $this->em()
             ->getRepository(Node::class)
             ->setDisplayingNotPublishedNodes(true)
             ->findBy(["parent" => null]);
 
         foreach ($existingNodes as $existingNode) {
-            $this->get('em')->refresh($existingNode);
+            $this->em()->refresh($existingNode);
         }
 
-        $serializer = new NodeJsonSerializer($this->get('em'));
+        $serializer = new NodeJsonSerializer($this->em());
         $node = $serializer->serialize($existingNodes);
 
         $response = new Response(
@@ -114,12 +114,12 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node $existingNode */
-        $existingNode = $this->get('em')->find(Node::class, $nodeId);
+        $existingNode = $this->em()->find(Node::class, $nodeId);
 
         try {
             $duplicator = new NodeDuplicator(
                 $existingNode,
-                $this->get('em'),
+                $this->em(),
                 $this->get(NodeNamePolicyInterface::class)
             );
             $newNode = $duplicator->duplicate();

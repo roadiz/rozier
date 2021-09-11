@@ -31,10 +31,10 @@ class TranslateController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null !== $node) {
-            $availableTranslations = $this->get('em')
+            $availableTranslations = $this->em()
                                  ->getRepository(Translation::class)
                                  ->findUnavailableTranslationsForNode($node);
 
@@ -88,7 +88,7 @@ class TranslateController extends RozierApp
      */
     protected function translateNode(Translation $translation, Node $node)
     {
-        $existing = $this->get('em')
+        $existing = $this->em()
                          ->getRepository(NodesSources::class)
                          ->setDisplayingAllNodesStatuses(true)
                          ->setDisplayingNotPublishedNodes(true)
@@ -99,12 +99,12 @@ class TranslateController extends RozierApp
                 $source = clone $baseSource;
 
                 foreach ($source->getDocumentsByFields() as $document) {
-                    $this->get('em')->persist($document);
+                    $this->em()->persist($document);
                 }
                 $source->setTranslation($translation);
                 $source->setNode($node);
 
-                $this->get('em')->persist($source);
+                $this->em()->persist($source);
 
                 /*
                  * Dispatch event
@@ -130,6 +130,6 @@ class TranslateController extends RozierApp
             }
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 }

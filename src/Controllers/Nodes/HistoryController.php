@@ -25,7 +25,7 @@ class HistoryController extends RozierApp
     {
         $this->denyAccessUnlessGranted(['ROLE_ACCESS_NODES', 'ROLE_ACCESS_LOGS']);
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException();

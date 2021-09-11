@@ -65,7 +65,7 @@ class NodeTypesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if (!($nodeType instanceof NodeType)) {
             throw $this->createNotFoundException();
@@ -76,7 +76,7 @@ class NodeTypesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 /** @var NodeTypeHandler $handler */
                 $handler = $this->get('factory.handler')->getHandler($nodeType);
                 $handler->updateSchema();
@@ -116,8 +116,8 @@ class NodeTypesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->persist($nodeType);
-                $this->get('em')->flush();
+                $this->em()->persist($nodeType);
+                $this->em()->flush();
                 /** @var NodeTypeHandler $handler */
                 $handler = $this->get('factory.handler')->getHandler($nodeType);
                 $handler->updateSchema();
@@ -151,7 +151,7 @@ class NodeTypesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES_DELETE');
 
         /** @var NodeType $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if (!($nodeType instanceof NodeType)) {
             throw $this->createNotFoundException();

@@ -42,13 +42,13 @@ class NodesTreesController extends RozierApp
         if (null !== $nodeId) {
             $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId, true);
             /** @var Node|null $node */
-            $node = $this->get('em')->find(Node::class, $nodeId);
+            $node = $this->em()->find(Node::class, $nodeId);
 
             if (null === $node) {
                 throw new ResourceNotFoundException();
             }
 
-            $this->get('em')->refresh($node);
+            $this->em()->refresh($node);
         } elseif (null !== $this->getUser()) {
             $node = $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
         } else {
@@ -57,7 +57,7 @@ class NodesTreesController extends RozierApp
 
         if (null !== $translationId) {
             /** @var Translation $translation */
-            $translation = $this->get('em')
+            $translation = $this->em()
                                 ->getRepository(Translation::class)
                                 ->findOneBy(['id' => $translationId]);
         } else {
@@ -69,7 +69,7 @@ class NodesTreesController extends RozierApp
 
         if ($request->get('tagId') &&
             $request->get('tagId') > 0) {
-            $filterTag = $this->get('em')->find(Tag::class, (int) $request->get('tagId'));
+            $filterTag = $this->em()->find(Tag::class, (int) $request->get('tagId'));
             $this->assignation['filterTag'] = $filterTag;
             $widget->setTag($filterTag);
         }
@@ -81,13 +81,13 @@ class NodesTreesController extends RozierApp
             $this->assignation['node'] = $node;
 
             if ($node->isHidingChildren()) {
-                $this->assignation['availableTags'] = $this->get('em')->getRepository(Tag::class)->findAllLinkedToNodeChildren(
+                $this->assignation['availableTags'] = $this->em()->getRepository(Tag::class)->findAllLinkedToNodeChildren(
                     $node,
                     $translation
                 );
             }
             $this->assignation['source'] = $node->getNodeSourcesByTranslation($translation)->first();
-            $availableTranslations = $this->get('em')
+            $availableTranslations = $this->em()
                 ->getRepository(Translation::class)
                 ->findAvailableTranslationsForNode($node);
             $this->assignation['available_translations'] = $availableTranslations;
@@ -155,7 +155,7 @@ class NodesTreesController extends RozierApp
             array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                           ->getRepository(Node::class)
                           ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
@@ -208,7 +208,7 @@ class NodesTreesController extends RozierApp
             array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                           ->getRepository(Node::class)
                           ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
@@ -291,7 +291,7 @@ class NodesTreesController extends RozierApp
             $nodesIds = explode(',', $nodesIds);
             array_filter($nodesIds);
 
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                           ->getRepository(Node::class)
                           ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
@@ -305,7 +305,7 @@ class NodesTreesController extends RozierApp
                 $handler->softRemoveWithChildren();
             }
 
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             return $this->getTranslator()->trans('nodes.bulk.deleted');
         }
@@ -326,7 +326,7 @@ class NodesTreesController extends RozierApp
             array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                 ->getRepository(Node::class)
                 ->setDisplayingNotPublishedNodes(true)
                 ->findBy([
@@ -341,7 +341,7 @@ class NodesTreesController extends RozierApp
                     $workflow->apply($node, $data['status']);
                 }
             }
-            $this->get('em')->flush();
+            $this->em()->flush();
             return $this->getTranslator()->trans('nodes.bulk.status.changed');
         }
 
@@ -409,7 +409,7 @@ class NodesTreesController extends RozierApp
             $nodesIds = array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                           ->getRepository(Node::class)
                           ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
@@ -420,7 +420,7 @@ class NodesTreesController extends RozierApp
             $paths = array_filter($paths);
 
             foreach ($paths as $path) {
-                $tag = $this->get('em')
+                $tag = $this->em()
                             ->getRepository(Tag::class)
                             ->findOrCreateByPath($path);
 
@@ -431,7 +431,7 @@ class NodesTreesController extends RozierApp
             $msg = $this->getTranslator()->trans('nodes.bulk.tagged');
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         return $msg;
     }
@@ -450,7 +450,7 @@ class NodesTreesController extends RozierApp
             $nodesIds = array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->get('em')
+            $nodes = $this->em()
                           ->getRepository(Node::class)
                           ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
@@ -461,7 +461,7 @@ class NodesTreesController extends RozierApp
             $paths = array_filter($paths);
 
             foreach ($paths as $path) {
-                $tag = $this->get('em')
+                $tag = $this->em()
                             ->getRepository(Tag::class)
                             ->findByPath($path);
 
@@ -474,7 +474,7 @@ class NodesTreesController extends RozierApp
             $msg = $this->getTranslator()->trans('nodes.bulk.untagged');
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         return $msg;
     }

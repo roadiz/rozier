@@ -31,7 +31,7 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if ($nodeType !== null) {
             $fields = $nodeType->getFields();
@@ -56,7 +56,7 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeTypeField|null $field */
-        $field = $this->get('em')->find(NodeTypeField::class, $nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
         if ($field !== null) {
             $this->assignation['nodeType'] = $field->getNodeType();
@@ -68,7 +68,7 @@ class NodeTypeFieldsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 /** @var NodeTypeHandler $handler */
                 $handler = $this->get('node_type.handler');
@@ -109,10 +109,10 @@ class NodeTypeFieldsController extends RozierApp
 
         $field = new NodeTypeField();
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if ($nodeType !== null) {
-            $latestPosition = $this->get('em')
+            $latestPosition = $this->em()
                                    ->getRepository(NodeTypeField::class)
                                    ->findLatestPositionInNodeType($nodeType);
             $field->setNodeType($nodeType);
@@ -129,9 +129,9 @@ class NodeTypeFieldsController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->persist($field);
-                    $this->get('em')->flush();
-                    $this->get('em')->refresh($nodeType);
+                    $this->em()->persist($field);
+                    $this->em()->flush();
+                    $this->em()->refresh($nodeType);
 
                     /** @var NodeTypeHandler $handler */
                     $handler = $this->get('node_type.handler');
@@ -185,7 +185,7 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODEFIELDS_DELETE');
 
         /** @var NodeTypeField|null $field */
-        $field = $this->get('em')->find(NodeTypeField::class, $nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
         if ($field !== null) {
             $form = $this->createForm();
@@ -193,14 +193,14 @@ class NodeTypeFieldsController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $nodeTypeId = $field->getNodeType()->getId();
-                $this->get('em')->remove($field);
-                $this->get('em')->flush();
+                $this->em()->remove($field);
+                $this->em()->flush();
 
                 /*
                  * Update Database
                  */
                 /** @var NodeType|null $nodeType */
-                $nodeType = $this->get('em')->find(NodeType::class, (int) $nodeTypeId);
+                $nodeType = $this->em()->find(NodeType::class, (int) $nodeTypeId);
 
                 /** @var NodeTypeHandler $handler */
                 $handler = $this->get('node_type.handler');

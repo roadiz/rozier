@@ -29,7 +29,7 @@ class LoginRequestController extends RozierApp
             if ($form->isValid()) {
                 $this->sendConfirmationEmail(
                     $form,
-                    $this->get('em'),
+                    $this->em(),
                     $this->get('logger'),
                     $this->get('urlGenerator')
                 );

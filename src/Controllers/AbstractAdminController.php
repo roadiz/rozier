@@ -90,8 +90,8 @@ abstract class AbstractAdminController extends RozierApp
             if (null !== $event) {
                 $this->get('dispatcher')->dispatch($event);
             }
-            $this->get('em')->persist($item);
-            $this->get('em')->flush();
+            $this->em()->persist($item);
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_created',
@@ -127,7 +127,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var mixed|object|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         if (null === $item || !($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
@@ -147,7 +147,7 @@ abstract class AbstractAdminController extends RozierApp
             if (null !== $event) {
                 $this->get('dispatcher')->dispatch($event);
             }
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_updated',
@@ -179,7 +179,7 @@ abstract class AbstractAdminController extends RozierApp
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
-        $items = $this->get('em')->getRepository($this->getEntityClass())->findAll();
+        $items = $this->em()->getRepository($this->getEntityClass())->findAll();
         /** @var Serializer $serializer */
         $serializer = $this->get('serializer');
 
@@ -212,7 +212,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->denyAccessUnlessGranted($this->getRequiredDeletionRole());
 
         /** @var mixed|object|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         if (null === $item) {
             throw $this->createNotFoundException();
@@ -232,8 +232,8 @@ abstract class AbstractAdminController extends RozierApp
             if (null !== $event) {
                 $this->get('dispatcher')->dispatch($event);
             }
-            $this->get('em')->remove($item);
-            $this->get('em')->flush();
+            $this->em()->remove($item);
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_deleted',

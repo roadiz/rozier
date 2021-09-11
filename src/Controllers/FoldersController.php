@@ -62,7 +62,7 @@ class FoldersController extends RozierApp
         $folder = new Folder();
 
         if (null !== $parentFolderId) {
-            $parentFolder = $this->get('em')->find(Folder::class, $parentFolderId);
+            $parentFolder = $this->em()->find(Folder::class, $parentFolderId);
             if (null !== $parentFolder) {
                 $folder->setParent($parentFolder);
             }
@@ -75,10 +75,10 @@ class FoldersController extends RozierApp
                 /** @var Translation $translation */
                 $translation = $this->get('defaultTranslation');
                 $folderTranslation = new FolderTranslation($folder, $translation);
-                $this->get('em')->persist($folder);
-                $this->get('em')->persist($folderTranslation);
+                $this->em()->persist($folder);
+                $this->em()->persist($folderTranslation);
 
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
                     'folder.%name%.created',
@@ -117,7 +117,7 @@ class FoldersController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->get('em')->find(Folder::class, $folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         if (null !== $folder) {
             $form = $this->createForm(FormType::class, $folder);
@@ -125,8 +125,8 @@ class FoldersController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->remove($folder);
-                    $this->get('em')->flush();
+                    $this->em()->remove($folder);
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'folder.%name%.deleted',
                         ['%name%' => $folder->getFolderName()]
@@ -168,10 +168,10 @@ class FoldersController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->get('em')->find(Folder::class, $folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         /** @var Translation $translation */
-        $translation = $this->get('em')
+        $translation = $this->em()
             ->getRepository(Translation::class)
             ->findDefault();
 
@@ -181,7 +181,7 @@ class FoldersController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'folder.%name%.updated',
                         ['%name%' => $folder->getFolderName()]
@@ -222,16 +222,16 @@ class FoldersController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->get('em')->getRepository(Translation::class);
+        $translationRepository = $this->em()->getRepository(Translation::class);
 
         /** @var Folder|null $folder */
-        $folder = $this->get('em')->find(Folder::class, $folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         /** @var FolderTranslation|null $folderTranslation */
-        $folderTranslation = $this->get('em')
+        $folderTranslation = $this->em()
             ->getRepository(FolderTranslation::class)
             ->findOneBy([
                 'folder' => $folder,
@@ -240,7 +240,7 @@ class FoldersController extends RozierApp
 
         if (null === $folderTranslation) {
             $folderTranslation = new FolderTranslation($folder, $translation);
-            $this->get('em')->persist($folderTranslation);
+            $this->em()->persist($folderTranslation);
         }
 
         if (null !== $folder && null !== $translation) {
@@ -249,7 +249,7 @@ class FoldersController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'folder.%name%.updated',
                         ['%name%' => $folder->getFolderName()]
@@ -296,7 +296,7 @@ class FoldersController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->get('em')->find(Folder::class, $folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         if ($folder !== null) {
             // Prepare File
@@ -304,7 +304,7 @@ class FoldersController extends RozierApp
             $zip = new \ZipArchive();
             $zip->open($file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
-            $documents = $this->get('em')
+            $documents = $this->em()
                               ->getRepository(Document::class)
                               ->findBy([
                                   'folders' => [$folder],

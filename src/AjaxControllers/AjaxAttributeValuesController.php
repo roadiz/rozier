@@ -33,7 +33,7 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
 
         /** @var AttributeValue|null $attributeValue */
-        $attributeValue = $this->get('em')->find(AttributeValue::class, (int) $attributeValueId);
+        $attributeValue = $this->em()->find(AttributeValue::class, (int) $attributeValueId);
 
         if ($attributeValue !== null) {
             $responseArray = [];
@@ -79,7 +79,7 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
         if (!empty($parameters['newPosition'])) {
             $attributeValue->setPosition((float) $parameters['newPosition']);
             // Apply position update before cleaning
-            $this->get('em')->flush();
+            $this->em()->flush();
             return [
                 'statusCode' => '200',
                 'status' => 'success',

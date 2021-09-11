@@ -68,10 +68,10 @@ class CacheController extends RozierApp
         $this->assignation['form'] = $form->createView();
 
         $this->assignation['cachesInfo'] = [
-            'resultCache' => $this->get('em')->getConfiguration()->getResultCacheImpl(),
-            'hydratationCache' => $this->get('em')->getConfiguration()->getHydrationCacheImpl(),
-            'queryCache' => $this->get('em')->getConfiguration()->getQueryCacheImpl(),
-            'metadataCache' => $this->get('em')->getConfiguration()->getMetadataCacheImpl(),
+            'resultCache' => $this->em()->getConfiguration()->getResultCacheImpl(),
+            'hydratationCache' => $this->em()->getConfiguration()->getHydrationCacheImpl(),
+            'queryCache' => $this->em()->getConfiguration()->getQueryCacheImpl(),
+            'metadataCache' => $this->em()->getConfiguration()->getMetadataCacheImpl(),
             'nodeSourcesUrlsCache' => $this->get('nodesSourcesUrlCacheProvider'),
         ];
 

@@ -135,7 +135,7 @@ class FontsController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Font|null $font */
-        $font = $this->get('em')->find(Font::class, $id);
+        $font = $this->em()->find(Font::class, $id);
 
         if ($font !== null) {
             // Prepare File

@@ -48,25 +48,25 @@ class NodesSourcesController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
         /** @var Translation $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
         /*
          * Here we need to directly select nodeSource
          * if not doctrine will grab a cache tag because of NodeTreeWidget
          * that is initialized before calling route method.
          */
         /** @var Node|null $gnode */
-        $gnode = $this->get('em')->find(Node::class, $nodeId);
+        $gnode = $this->em()->find(Node::class, $nodeId);
 
         if ($translation !== null && $gnode !== null) {
             /** @var NodesSources $source */
-            $source = $this->get('em')
+            $source = $this->em()
                            ->getRepository(NodesSources::class)
                            ->setDisplayingAllNodesStatuses(true)
                            ->setDisplayingNotPublishedNodes(true)
                            ->findOneBy(['translation' => $translation, 'node' => $gnode]);
 
             if (null !== $source) {
-                $this->get('em')->refresh($source);
+                $this->em()->refresh($source);
                 $node = $source->getNode();
 
                 /**
@@ -153,7 +153,7 @@ class NodesSourcesController extends RozierApp
                     }
                 }
 
-                $availableTranslations = $this->get('em')
+                $availableTranslations = $this->em()
                     ->getRepository(Translation::class)
                     ->findAvailableTranslationsForNode($gnode);
 
@@ -256,7 +256,7 @@ class NodesSourcesController extends RozierApp
          */
         if ($entity instanceof NodesSources) {
             $this->get('dispatcher')->dispatch(new NodesSourcesPreUpdatedEvent($entity));
-            $this->get('em')->flush();
+            $this->em()->flush();
             $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($entity));
 
             $msg = $this->getTranslator()->trans('node_source.%node_source%.updated.%translation%', [

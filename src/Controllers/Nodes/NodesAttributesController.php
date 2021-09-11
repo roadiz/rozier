@@ -32,16 +32,16 @@ class NodesAttributesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->get('em')
+        $nodeSource = $this->em()
             ->getRepository(NodesSources::class)
             ->setDisplayingAllNodesStatuses(true)
             ->setDisplayingNotPublishedNodes(true)
@@ -67,7 +67,7 @@ class NodesAttributesController extends RozierApp
                 $attributeValueTranslation = new AttributeValueTranslation();
                 $attributeValueTranslation->setAttributeValue($attributeValue);
                 $attributeValueTranslation->setTranslation($translation);
-                $this->get('em')->persist($attributeValueTranslation);
+                $this->em()->persist($attributeValueTranslation);
             }
             $attributeValueTranslationForm = $formFactory->createNamedBuilder(
                 $name,
@@ -78,7 +78,7 @@ class NodesAttributesController extends RozierApp
 
             if ($attributeValueTranslationForm->isSubmitted()) {
                 if ($attributeValueTranslationForm->isValid()) {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
 
                     /*
                      * Dispatch event
@@ -127,7 +127,7 @@ class NodesAttributesController extends RozierApp
 
         $this->assignation['source'] = $nodeSource;
         $this->assignation['translation'] = $translation;
-        $availableTranslations = $this->get('em')
+        $availableTranslations = $this->em()
             ->getRepository(Translation::class)
             ->findAvailableTranslationsForNode($node);
         $this->assignation['available_translations'] = $availableTranslations;
@@ -148,14 +148,14 @@ class NodesAttributesController extends RozierApp
         $attributeValue = new AttributeValue();
         $attributeValue->setAttributable($node);
         $addAttributeForm = $this->createForm(AttributeValueType::class, $attributeValue, [
-            'entityManager' => $this->get('em'),
+            'entityManager' => $this->em(),
             'translation' => $this->get('defaultTranslation'),
         ]);
         $addAttributeForm->handleRequest($request);
 
         if ($addAttributeForm->isSubmitted() && $addAttributeForm->isValid()) {
-            $this->get('em')->persist($attributeValue);
-            $this->get('em')->flush();
+            $this->em()->persist($attributeValue);
+            $this->em()->flush();
 
             return $this->redirect($this->generateUrl('nodesEditAttributesPage', [
                 'nodeId' => $node->getId(),
@@ -180,21 +180,21 @@ class NodesAttributesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
 
         /** @var AttributeValue|null $item */
-        $item = $this->get('em')->find(AttributeValue::class, $attributeValueId);
+        $item = $this->em()->find(AttributeValue::class, $attributeValueId);
         if ($item === null) {
             throw $this->createNotFoundException('AttributeValue does not exist.');
         }
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->get('em')
+        $nodeSource = $this->em()
             ->getRepository(NodesSources::class)
             ->setDisplayingAllNodesStatuses(true)
             ->setDisplayingNotPublishedNodes(true)
@@ -209,8 +209,8 @@ class NodesAttributesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->remove($item);
-                $this->get('em')->flush();
+                $this->em()->remove($item);
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
                     'attribute.%name%.deleted_from_node.%nodeName%',
@@ -250,7 +250,7 @@ class NodesAttributesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
 
         /** @var AttributeValueTranslation|null $item */
-        $item = $this->get('em')
+        $item = $this->em()
             ->getRepository(AttributeValueTranslation::class)
             ->findOneBy([
                 'attributeValue' => $attributeValueId,
@@ -260,16 +260,16 @@ class NodesAttributesController extends RozierApp
             throw $this->createNotFoundException('AttributeValueTranslation does not exist.');
         }
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->get('em')
+        $nodeSource = $this->em()
             ->getRepository(NodesSources::class)
             ->setDisplayingAllNodesStatuses(true)
             ->setDisplayingNotPublishedNodes(true)
@@ -284,8 +284,8 @@ class NodesAttributesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->remove($item);
-                $this->get('em')->flush();
+                $this->em()->remove($item);
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
                     'attribute.%name%.reset_for_node.%nodeName%',

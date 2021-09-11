@@ -37,7 +37,7 @@ class NodesTagsController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
         /** @var NodesSources|null $source */
-        $source = $this->get('em')
+        $source = $this->em()
                        ->getRepository(NodesSources::class)
                        ->setDisplayingAllNodesStatuses(true)
                        ->setDisplayingNotPublishedNodes(true)
@@ -47,7 +47,7 @@ class NodesTagsController extends RozierApp
                        ]);
         if (null === $source) {
             /** @var NodesSources|null $source */
-            $source = $this->get('em')
+            $source = $this->em()
                 ->getRepository(NodesSources::class)
                 ->setDisplayingAllNodesStatuses(true)
                 ->setDisplayingNotPublishedNodes(true)
@@ -66,7 +66,7 @@ class NodesTagsController extends RozierApp
                  * Dispatch event
                  */
                 $this->get('dispatcher')->dispatch(new NodeTaggedEvent($node));
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('node.%node%.linked.tags', [
                     '%node%' => $node->getNodeName(),

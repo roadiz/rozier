@@ -31,8 +31,8 @@ class TranstypeController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
-        $this->get('em')->refresh($node);
+        $node = $this->em()->find(Node::class, $nodeId);
+        $this->em()->refresh($node);
 
         if (null === $node) {
             throw new ResourceNotFoundException();
@@ -47,13 +47,13 @@ class TranstypeController extends RozierApp
             $data = $form->getData();
 
             /** @var NodeType $newNodeType */
-            $newNodeType = $this->get('em')->find(NodeType::class, (int) $data['nodeTypeId']);
+            $newNodeType = $this->em()->find(NodeType::class, (int) $data['nodeTypeId']);
 
             /** @var NodeTranstyper $transtyper */
             $transtyper = $this->get(NodeTranstyper::class);
             $transtyper->transtype($node, $newNodeType);
-            $this->get('em')->flush();
-            $this->get('em')->refresh($node);
+            $this->em()->flush();
+            $this->em()->refresh($node);
             /*
              * Dispatch event
              */

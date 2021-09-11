@@ -36,7 +36,7 @@ class SettingsUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->get('em');
+        $entityManager = $this->em();
         if (null !== $settingGroupId) {
             /** @var SettingGroup|null $group */
             $group = $entityManager->find(SettingGroup::class, $settingGroupId);
@@ -98,7 +98,7 @@ class SettingsUtilsController extends RozierApp
                     if ($this->get(SettingsImporter::class)->import($serializedData)) {
                         $msg = $this->getTranslator()->trans('setting.imported');
                         $this->publishConfirmMessage($request, $msg);
-                        $this->get('em')->flush();
+                        $this->em()->flush();
 
                         // redirect even if its null
                         return $this->redirect($this->generateUrl(

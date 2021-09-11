@@ -39,7 +39,7 @@ class NodeTypesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if (null === $nodeType) {
             throw $this->createNotFoundException();
@@ -138,7 +138,7 @@ class NodeTypesUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
-        $nodeTypes = $this->get('em')
+        $nodeTypes = $this->em()
             ->getRepository(NodeType::class)
             ->findAll();
 
@@ -197,7 +197,7 @@ class NodeTypesUtilsController extends RozierApp
 
                 if (null !== json_decode($serializedData)) {
                     $this->get(NodeTypesImporter::class)->import($serializedData);
-                    $this->get('em')->flush();
+                    $this->em()->flush();
 
                     /*
                      * Redirect to update schema page

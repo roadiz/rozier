@@ -33,11 +33,11 @@ class ExportController extends RozierApp
         /*
          * Get translation
          */
-        $translation = $this->get('em')
+        $translation = $this->em()
             ->find(Translation::class, $translationId);
 
         if (null === $translation) {
-            $translation = $this->get('em')
+            $translation = $this->em()
                 ->getRepository(Translation::class)
                 ->findDefault();
         }
@@ -47,7 +47,7 @@ class ExportController extends RozierApp
 
         if (null !== $parentNodeId) {
             /** @var Node|null $parentNode */
-            $parentNode = $this->get('em')->find(Node::class, $parentNodeId);
+            $parentNode = $this->em()->find(Node::class, $parentNodeId);
             if (null === $parentNode) {
                 throw $this->createNotFoundException();
             }
@@ -55,13 +55,13 @@ class ExportController extends RozierApp
             $filename = $parentNode->getNodeName() . '-' . date("YmdHis") . '.' . $translation->getLocale() . '.xlsx';
         }
 
-        $sources = $this->get('em')
+        $sources = $this->em()
             ->getRepository(NodesSources::class)
             ->setDisplayingAllNodesStatuses(true)
             ->setDisplayingNotPublishedNodes(true)
             ->findBy($criteria, $order);
 
-        $serializer = new NodeSourceXlsxSerializer($this->get('em'), $this->get('translator'), $this->get('urlGenerator'));
+        $serializer = new NodeSourceXlsxSerializer($this->em(), $this->get('translator'), $this->get('urlGenerator'));
         $serializer->setOnlyTexts(true);
         $serializer->addUrls($request, $this->get('settingsBag')->get('force_locale'));
         $xlsx = $serializer->serialize($sources);

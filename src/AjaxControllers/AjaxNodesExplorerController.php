@@ -66,7 +66,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         ];
 
         if ($request->query->has('tagId') && $request->get('tagId') > 0) {
-            $tag = $this->get('em')
+            $tag = $this->em()
                 ->find(
                     Tag::class,
                     $request->get('tagId')
@@ -176,7 +176,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         $cleanNodeIds = array_filter($request->query->get('ids'));
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $nodes = $em->getRepository(Node::class)
             ->setDisplayingNotPublishedNodes(true)
             ->findBy([

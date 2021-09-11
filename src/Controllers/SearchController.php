@@ -253,7 +253,7 @@ class SearchController extends RozierApp
     public function searchNodeSourceAction(Request $request, int $nodetypeId)
     {
         /** @var NodeType|null $nodetype */
-        $nodetype = $this->get('em')->find(NodeType::class, $nodetypeId);
+        $nodetype = $this->em()->find(NodeType::class, $nodetypeId);
 
         $builder = $this->buildSimpleForm("__node__");
         $this->extendForm($builder, $nodetype);

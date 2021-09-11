@@ -43,25 +43,25 @@ class UrlAliasesController extends RozierApp
         if (null === $translationId || $translationId < 1) {
             $translation = $this->get('defaultTranslation');
         } else {
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
         /** @var NodesSources|null $source */
-        $source = $this->get('em')
+        $source = $this->em()
                        ->getRepository(NodesSources::class)
                        ->setDisplayingAllNodesStatuses(true)
                        ->setDisplayingNotPublishedNodes(true)
                        ->findOneBy(['translation' => $translation, 'node.id' => $nodeId]);
 
         if ($source !== null && null !== $node = $source->getNode()) {
-            $redirections = $this->get('em')
+            $redirections = $this->em()
                 ->getRepository(Redirection::class)
                 ->findBy([
                     'redirectNodeSource' => $node->getNodeSources()->toArray()
                 ]);
-            $uas = $this->get('em')
+            $uas = $this->em()
                         ->getRepository(UrlAlias::class)
                         ->findAllFromNode($node->getId());
-            $availableTranslations = $this->get('em')
+            $availableTranslations = $this->em()
                 ->getRepository(Translation::class)
                 ->findAvailableTranslationsForNode($node);
 
@@ -78,7 +78,7 @@ class UrlAliasesController extends RozierApp
             $seoForm = $this->createForm(NodeSourceSeoType::class, $source);
             $seoForm->handleRequest($request);
             if ($seoForm->isSubmitted() && $seoForm->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans('node.seo.updated');
                 $this->publishConfirmMessage($request, $msg, $source);
                 /*
@@ -168,7 +168,7 @@ class UrlAliasesController extends RozierApp
     private function addNodeUrlAlias(UrlAlias $alias, Node $node, Translation $translation): UrlAlias
     {
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->get('em')
+        $nodeSource = $this->em()
                            ->getRepository(NodesSources::class)
                            ->setDisplayingAllNodesStatuses(true)
                            ->setDisplayingNotPublishedNodes(true)
@@ -176,8 +176,8 @@ class UrlAliasesController extends RozierApp
 
         if ($nodeSource !== null) {
             $alias->setNodeSource($nodeSource);
-            $this->get('em')->persist($alias);
-            $this->get('em')->flush();
+            $this->em()->persist($alias);
+            $this->em()->flush();
 
             return $alias;
         } else {
@@ -209,7 +209,7 @@ class UrlAliasesController extends RozierApp
         if ($editForm->isSubmitted() && $editForm->isValid()) {
             try {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'url_alias.%alias%.updated',
                         ['%alias%' => $alias->getAlias()]
@@ -238,8 +238,8 @@ class UrlAliasesController extends RozierApp
         // Match delete
         $deleteForm->handleRequest($request);
         if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
-            $this->get('em')->remove($alias);
-            $this->get('em')->flush();
+            $this->em()->remove($alias);
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans('url_alias.%alias%.deleted', ['%alias%' => $alias->getAlias()]);
             $this->publishConfirmMessage($request, $msg, $alias->getNodeSource());
 
@@ -291,8 +291,8 @@ class UrlAliasesController extends RozierApp
 
         $addForm->handleRequest($request);
         if ($addForm->isSubmitted() && $addForm->isValid()) {
-            $this->get('em')->persist($redirection);
-            $this->get('em')->flush();
+            $this->em()->persist($redirection);
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [
@@ -328,7 +328,7 @@ class UrlAliasesController extends RozierApp
 
         $editForm->handleRequest($request);
         if ($editForm->isSubmitted() && $editForm->isValid()) {
-            $this->get('em')->flush();
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [
@@ -341,8 +341,8 @@ class UrlAliasesController extends RozierApp
         // Match delete
         $deleteForm->handleRequest($request);
         if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
-            $this->get('em')->remove($redirection);
-            $this->get('em')->flush();
+            $this->em()->remove($redirection);
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [
