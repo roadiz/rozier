@@ -37,6 +37,7 @@ use Themes\Rozier\Forms\NodeSource\NodeSourceType;
 use Themes\Rozier\Forms\NodeTagsType;
 use Themes\Rozier\Forms\NodeTreeType;
 use Themes\Rozier\Forms\NodeType;
+use Themes\Rozier\Forms\NodeTypeFieldType;
 use Themes\Rozier\Forms\TranstypeType;
 use Themes\Rozier\Serialization\DocumentThumbnailSerializeSubscriber;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
@@ -73,6 +74,10 @@ final class RozierServiceProvider implements ServiceProviderInterface
                 $c['router'],
                 $c['request_stack'],
             );
+        };
+
+        $container[NodeTypeFieldType::class] = function (Container $c) {
+            return new NodeTypeFieldType($c['config']['inheritance']['type']);
         };
 
         $container[AddNodeType::class] = function (Container $c) {

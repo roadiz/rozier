@@ -62,9 +62,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['nodeType'] = $field->getNodeType();
             $this->assignation['field'] = $field;
 
-            $form = $this->createForm(NodeTypeFieldType::class, $field, [
-                'inheritance_type' => $this->get('config')['inheritance']['type']
-            ]);
+            $form = $this->createForm(NodeTypeFieldType::class, $field);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
@@ -122,9 +120,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['nodeType'] = $nodeType;
             $this->assignation['field'] = $field;
 
-            $form = $this->createForm(NodeTypeFieldType::class, $field, [
-                'inheritance_type' => $this->get('config')['inheritance']['type']
-            ]);
+            $form = $this->createForm(NodeTypeFieldType::class, $field);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
