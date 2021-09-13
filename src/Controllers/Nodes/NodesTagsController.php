@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers\Nodes;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Node\NodeTaggedEvent;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
@@ -43,7 +44,7 @@ class NodesTagsController extends RozierApp
                        ->setDisplayingNotPublishedNodes(true)
                        ->findOneBy([
                            'node.id' => $nodeId,
-                           'translation' => $this->get('defaultTranslation')
+                           'translation' => $this->em()->getRepository(Translation::class)->findDefault()
                        ]);
         if (null === $source) {
             /** @var NodesSources|null $source */

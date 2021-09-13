@@ -73,7 +73,7 @@ class FoldersController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 /** @var Translation $translation */
-                $translation = $this->get('defaultTranslation');
+                $translation = $this->em()->getRepository(Translation::class)->findDefault();
                 $folderTranslation = new FolderTranslation($folder, $translation);
                 $this->em()->persist($folder);
                 $this->em()->persist($folderTranslation);

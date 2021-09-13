@@ -32,7 +32,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if (null === $translationId) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
             $translation = $this->em()
                                 ->find(

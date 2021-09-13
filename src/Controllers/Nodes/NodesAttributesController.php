@@ -149,7 +149,7 @@ class NodesAttributesController extends RozierApp
         $attributeValue->setAttributable($node);
         $addAttributeForm = $this->createForm(AttributeValueType::class, $attributeValue, [
             'entityManager' => $this->em(),
-            'translation' => $this->get('defaultTranslation'),
+            'translation' => $this->em()->getRepository(Translation::class)->findDefault(),
         ]);
         $addAttributeForm->handleRequest($request);
 

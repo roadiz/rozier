@@ -62,7 +62,7 @@ class NodesTreesController extends RozierApp
                                 ->findOneBy(['id' => $translationId]);
         } else {
             /** @var Translation $translation */
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
         $widget = $this->get(TreeWidgetFactory::class)->createNodeTree($node, $translation);

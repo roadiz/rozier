@@ -40,7 +40,7 @@ class DocumentTranslationsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         if (null === $translationId) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
             $translationId = $translation->getId();
         } else {
             $translation = $this->em()->find(Translation::class, $translationId);

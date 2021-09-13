@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Tags;
 
 use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
 use RZ\Roadiz\Utils\Tag\TagFactory;
 use Symfony\Component\Form\FormError;
@@ -29,7 +30,7 @@ class TagMultiCreationController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
         $parentTag = $this->em()->find(Tag::class, $parentTagId);
 
         if (null !== $parentTag) {

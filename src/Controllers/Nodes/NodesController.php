@@ -46,7 +46,7 @@ class NodesController extends RozierApp
     public function indexAction(Request $request, ?string $filter = null)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         /** @var User|null $user */
         $user = $this->getUser();
@@ -203,7 +203,7 @@ class NodesController extends RozierApp
                 }
             }
 
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
             $source = $node->getNodeSourcesByTranslation($translation)->first() ?: null;
 
             if (null === $source) {
@@ -277,7 +277,7 @@ class NodesController extends RozierApp
         $type = $this->em()->find(NodeType::class, $nodeTypeId);
 
         /** @var Translation $translation */
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if ($translationId !== null) {
             $translation = $this->em()->find(Translation::class, $translationId);
@@ -353,7 +353,7 @@ class NodesController extends RozierApp
         // include CHRoot to enable creating node in it
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId, true);
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         $nodeTypesCount = $this->em()
             ->getRepository(NodeType::class)
@@ -452,7 +452,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->get('defaultTranslation')->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
                 ]
             ));
         }
@@ -491,7 +491,7 @@ class NodesController extends RozierApp
                     'nodesEditSourcePage',
                     [
                         'nodeId' => $parent->getId(),
-                        'translationId' => $this->get('defaultTranslation')->getId()
+                        'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
                     ]
                 ));
             }
@@ -583,7 +583,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->get('defaultTranslation')->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
                 ]
             ));
         }
@@ -668,7 +668,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->get('defaultTranslation')->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
                 ]
             ));
         }

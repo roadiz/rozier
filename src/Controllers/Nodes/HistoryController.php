@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers\Nodes;
 
 use RZ\Roadiz\Core\Entities\Log;
 use RZ\Roadiz\Core\Entities\Node;
+use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -48,7 +49,7 @@ class HistoryController extends RozierApp
         $listManager->handle();
 
         $this->assignation['node'] = $node;
-        $this->assignation['translation'] = $this->get('defaultTranslation');
+        $this->assignation['translation'] = $this->em()->getRepository(Translation::class)->findDefault();
         $this->assignation['entries'] = $listManager->getEntities();
         $this->assignation['filters'] = $listManager->getAssignation();
 

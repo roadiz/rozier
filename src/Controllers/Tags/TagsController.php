@@ -88,7 +88,7 @@ class TagsController extends RozierApp
 
         if (null === $translationId) {
             /** @var Translation|null $translation */
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
             /** @var Translation|null $translation */
             $translation = $this->em()->find(Translation::class, $translationId);
@@ -278,7 +278,7 @@ class TagsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $tag = new Tag();
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if ($translation !== null) {
             $this->assignation['tag'] = $tag;
@@ -332,7 +332,7 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         /** @var Tag|null $tag */
         $tag = $this->em()->find(Tag::class, $tagId);
@@ -406,7 +406,7 @@ class TagsController extends RozierApp
                 ->getRepository(Translation::class)
                 ->findOneBy(['id' => $translationId]);
         } else {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
         if (null !== $tag) {
@@ -482,7 +482,7 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if ($translationId !== null) {
             $translation = $this->em()->find(Translation::class, $translationId);
@@ -554,7 +554,7 @@ class TagsController extends RozierApp
         $tag = $this->em()->find(Tag::class, $tagId);
 
         if (null !== $tag) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
             $this->assignation['tag'] = $tag;
 

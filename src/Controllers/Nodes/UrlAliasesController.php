@@ -41,7 +41,7 @@ class UrlAliasesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if (null === $translationId || $translationId < 1) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
             $translation = $this->em()->find(Translation::class, $translationId);
         }

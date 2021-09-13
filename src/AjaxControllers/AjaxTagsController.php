@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\TagHandler;
 use RZ\Roadiz\Core\Repositories\TagRepository;
@@ -103,7 +104,7 @@ class AjaxTagsController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $arrayFilter = [
-            'translation' => $this->get('defaultTranslation')
+            'translation' => $this->em()->getRepository(Translation::class)->findDefault()
         ];
         $defaultOrder = [
             'createdAt' => 'DESC'
