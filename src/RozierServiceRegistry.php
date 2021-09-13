@@ -19,6 +19,7 @@ final class RozierServiceRegistry
     private ManagerRegistry $managerRegistry;
     private TreeWidgetFactory $treeWidgetFactory;
     private NodeChrootResolver $chrootResolver;
+    private array $backofficeMenuEntries;
 
     private ?array $settingGroups = null;
     private ?TagTreeWidget $tagTree = null;
@@ -30,17 +31,20 @@ final class RozierServiceRegistry
      * @param ManagerRegistry $managerRegistry
      * @param TreeWidgetFactory $treeWidgetFactory
      * @param NodeChrootResolver $chrootResolver
+     * @param array $backofficeMenuEntries
      */
     public function __construct(
         Settings $settingsBag,
         ManagerRegistry $managerRegistry,
         TreeWidgetFactory $treeWidgetFactory,
-        NodeChrootResolver $chrootResolver
+        NodeChrootResolver $chrootResolver,
+        array $backofficeMenuEntries
     ) {
         $this->settingsBag = $settingsBag;
         $this->managerRegistry = $managerRegistry;
         $this->treeWidgetFactory = $treeWidgetFactory;
         $this->chrootResolver = $chrootResolver;
+        $this->backofficeMenuEntries = $backofficeMenuEntries;
     }
 
     /**
@@ -126,5 +130,13 @@ final class RozierServiceRegistry
             );
         }
         return $this->nodeTree;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBackofficeMenuEntries(): array
+    {
+        return $this->backofficeMenuEntries;
     }
 }

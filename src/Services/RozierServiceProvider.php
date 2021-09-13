@@ -63,7 +63,8 @@ final class RozierServiceProvider implements ServiceProviderInterface
                 $c['settingsBag'],
                 $c[ManagerRegistry::class],
                 $c[TreeWidgetFactory::class],
-                $c[NodeChrootResolver::class]
+                $c[NodeChrootResolver::class],
+                $c['backoffice.entries']
             );
         };
 
