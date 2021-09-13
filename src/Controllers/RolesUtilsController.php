@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Doctrine\Common\Cache\CacheProvider;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use RZ\Roadiz\CMS\Importers\RolesImporter;
@@ -88,7 +89,7 @@ class RolesUtilsController extends RozierApp
 
                         // Clear result cache
                         $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
-                        if ($cacheDriver !== null) {
+                        if ($cacheDriver instanceof CacheProvider) {
                             $cacheDriver->deleteAll();
                         }
 

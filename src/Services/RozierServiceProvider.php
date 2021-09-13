@@ -6,6 +6,7 @@ namespace Themes\Rozier\Services;
 use Doctrine\Persistence\ManagerRegistry;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Entities\Role;
 use RZ\Roadiz\Core\Kernel;
 use RZ\Roadiz\Utils\Asset\Packages;
@@ -13,7 +14,6 @@ use RZ\Roadiz\Utils\Node\NodeMover;
 use RZ\Roadiz\Utils\Security\FirewallEntry;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\Asset\PathPackage;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -39,6 +39,7 @@ use Themes\Rozier\Forms\NodeTreeType;
 use Themes\Rozier\Forms\NodeType;
 use Themes\Rozier\Forms\NodeTypeFieldType;
 use Themes\Rozier\Forms\TranstypeType;
+use Themes\Rozier\RozierServiceRegistry;
 use Themes\Rozier\Serialization\DocumentThumbnailSerializeSubscriber;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 use Twig\Loader\FilesystemLoader;
@@ -55,6 +56,16 @@ final class RozierServiceProvider implements ServiceProviderInterface
          */
         $container['rozier.form_type.add_node'] = AddNodeType::class;
         $container['rozier.form_type.node'] = NodeType::class;
+
+
+        $container[RozierServiceRegistry::class] = function (Container $c) {
+            return new RozierServiceRegistry(
+                $c['settingsBag'],
+                $c[ManagerRegistry::class],
+                $c[TreeWidgetFactory::class],
+                $c[NodeChrootResolver::class]
+            );
+        };
 
         $container[TreeWidgetFactory::class] = function (Container $c) {
             return new TreeWidgetFactory($c['request_stack'], $c[ManagerRegistry::class]);

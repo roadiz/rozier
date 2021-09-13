@@ -3,17 +3,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier;
 
-use Pimple\Container;
 use RZ\Roadiz\CMS\Controllers\BackendController;
-use RZ\Roadiz\Console\Tools\Requirements;
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\SettingGroup;
 use RZ\Roadiz\Core\Entities\Tag;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Themes\Rozier\Widgets\TreeWidgetFactory;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -29,7 +24,6 @@ class RozierApp extends BackendController
     protected static string $themeDir = 'Rozier';
 
     protected ?FormFactoryInterface $formFactory = null;
-    protected ?Container $themeContainer = null;
 
     const DEFAULT_ITEM_PER_PAGE = 50;
 
@@ -55,8 +49,7 @@ class RozierApp extends BackendController
         /*
          * Use kernel DI container to delay API requests
          */
-        $this->themeContainer = $this->getContainer();
-        $this->assignation['themeServices'] = $this->themeContainer;
+        $this->assignation['themeServices'] = $this->get(RozierServiceRegistry::class);
 
         /*
          * Switch this to true to use uncompressed JS and CSS files
@@ -78,39 +71,6 @@ class RozierApp extends BackendController
             Node::getStatusLabel(Node::ARCHIVED) => Node::ARCHIVED,
             Node::getStatusLabel(Node::DELETED) => Node::DELETED,
         ];
-
-        $this->themeContainer['nodeTree'] = function () {
-            return $this->get(TreeWidgetFactory::class)->createNodeTree(
-                $this->get(NodeChrootResolver::class)->getChroot($this->getUser())
-            );
-        };
-        $this->themeContainer['tagTree'] = function () {
-            return $this->get(TreeWidgetFactory::class)->createTagTree();
-        };
-        $this->themeContainer['folderTree'] = function () {
-            return $this->get(TreeWidgetFactory::class)->createFolderTree();
-        };
-        $this->themeContainer['maxFilesize'] = function () {
-            $requirements = new Requirements($this->get('kernel'));
-            $post_max_size = $requirements->parseSuffixedAmount(ini_get('post_max_size') ?: '');
-            $upload_max_filesize = $requirements->parseSuffixedAmount(ini_get('upload_max_filesize') ?: '');
-            return min($post_max_size, $upload_max_filesize);
-        };
-
-        $this->themeContainer['settingGroups'] = function () {
-            return $this->em()->getRepository(SettingGroup::class)
-                ->findBy(
-                    ['inMenu' => true],
-                    ['name' => 'ASC']
-                );
-        };
-
-        $this->themeContainer['adminImage'] = function () {
-            /*
-             * Get admin image
-             */
-            return $this->get('settingsBag')->getDocument('admin_image');
-        };
 
         return $this;
     }
