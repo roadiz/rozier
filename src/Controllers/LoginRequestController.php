@@ -3,15 +3,30 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Psr\Log\LoggerInterface;
 use RZ\Roadiz\CMS\Forms\LoginRequestForm;
 use RZ\Roadiz\CMS\Traits\LoginRequestTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\RozierApp;
 
 class LoginRequestController extends RozierApp
 {
     use LoginRequestTrait;
+
+    private LoggerInterface $logger;
+    private UrlGeneratorInterface $urlGenerator;
+
+    /**
+     * @param LoggerInterface $logger
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(LoggerInterface $logger, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->logger = $logger;
+        $this->urlGenerator = $urlGenerator;
+    }
 
     /**
      * @param Request $request
@@ -30,17 +45,17 @@ class LoginRequestController extends RozierApp
                 $this->sendConfirmationEmail(
                     $form,
                     $this->em(),
-                    $this->get('logger'),
-                    $this->get('urlGenerator')
+                    $this->logger,
+                    $this->urlGenerator
                 );
             }
             /*
              * Always go to confirm even if email is not valid
              * for avoiding database sniffing.
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'loginRequestConfirmPage'
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();

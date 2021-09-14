@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Attributes;
 
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Attribute\Form\AttributeImportType;
 use RZ\Roadiz\Attribute\Form\AttributeType;
 use RZ\Roadiz\Attribute\Importer\AttributeImporter;
@@ -12,10 +13,23 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Controllers\AbstractAdminController;
 
 class AttributeController extends AbstractAdminController
 {
+    private AttributeImporter $attributeImporter;
+
+    public function __construct(
+        AttributeImporter $attributeImporter,
+        SerializerInterface $serializer,
+        UrlGeneratorInterface $urlGenerator
+    ) {
+        parent::__construct($serializer, $urlGenerator);
+        $this->attributeImporter = $attributeImporter;
+    }
+
+
     /**
      * @inheritDoc
      */
@@ -137,9 +151,9 @@ class AttributeController extends AbstractAdminController
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
-                $this->get(AttributeImporter::class)->import($serializedData);
+                $this->attributeImporter->import($serializedData);
                 $this->em()->flush();
-                return $this->redirect($this->generateUrl('attributesHomePage'));
+                return $this->redirectToRoute('attributesHomePage');
             }
             $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));
         }

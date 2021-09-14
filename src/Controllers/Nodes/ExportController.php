@@ -17,6 +17,16 @@ use Themes\Rozier\RozierApp;
  */
 class ExportController extends RozierApp
 {
+    private NodeSourceXlsxSerializer $xlsxSerializer;
+
+    /**
+     * @param NodeSourceXlsxSerializer $xlsxSerializer
+     */
+    public function __construct(NodeSourceXlsxSerializer $xlsxSerializer)
+    {
+        $this->xlsxSerializer = $xlsxSerializer;
+    }
+
     /**
      * Export all Node in a XLSX file (Excel).
      *
@@ -61,10 +71,9 @@ class ExportController extends RozierApp
             ->setDisplayingNotPublishedNodes(true)
             ->findBy($criteria, $order);
 
-        $serializer = new NodeSourceXlsxSerializer($this->em(), $this->get('translator'), $this->get('urlGenerator'));
-        $serializer->setOnlyTexts(true);
-        $serializer->addUrls($request, $this->get('settingsBag')->get('force_locale'));
-        $xlsx = $serializer->serialize($sources);
+        $this->xlsxSerializer->setOnlyTexts(true);
+        $this->xlsxSerializer->addUrls($request, $this->getSettingsBag()->get('force_locale'));
+        $xlsx = $this->xlsxSerializer->serialize($sources);
 
         $response = new Response(
             $xlsx,

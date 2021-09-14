@@ -6,12 +6,8 @@ namespace Themes\Rozier\Controllers\Attributes;
 use RZ\Roadiz\Attribute\Form\AttributeGroupType;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\AttributeGroup;
-use RZ\Roadiz\Core\Entities\SettingGroup;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\String\UnicodeString;
 use Themes\Rozier\Controllers\AbstractAdminController;
-use Themes\Rozier\RozierApp;
 
 /**
  * @package Themes\Rozier\Controllers\Attributes

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Tags;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\Entities\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +16,16 @@ use Themes\Rozier\RozierApp;
  */
 class TagsUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+
+    /**
+     * @param SerializerInterface $serializer
+     */
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * Export a Tag in a Json file
      *
@@ -30,11 +40,8 @@ class TagsUtilsController extends RozierApp
 
         $existingTag = $this->em()->find(Tag::class, $tagId);
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $existingTag,
                 'json',
                 SerializationContext::create()->setGroups(['tag', 'position'])
@@ -66,11 +73,8 @@ class TagsUtilsController extends RozierApp
                               ->getRepository(Tag::class)
                               ->findBy(["parent" => null]);
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $existingTags,
                 'json',
                 SerializationContext::create()->setGroups(['tag', 'position'])

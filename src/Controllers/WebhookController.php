@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Webhook\Entity\Webhook;
 use RZ\Roadiz\Webhook\Exception\TooManyWebhookTriggeredException;
@@ -10,9 +11,22 @@ use RZ\Roadiz\Webhook\Form\WebhookType;
 use RZ\Roadiz\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class WebhookController extends AbstractAdminController
 {
+    private WebhookDispatcher $webhookDispatcher;
+
+    public function __construct(
+        WebhookDispatcher $webhookDispatcher,
+        SerializerInterface $serializer,
+        UrlGeneratorInterface $urlGenerator
+    ) {
+        parent::__construct($serializer, $urlGenerator);
+        $this->webhookDispatcher = $webhookDispatcher;
+    }
+
+
     public function triggerAction(Request $request, string $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
@@ -31,9 +45,7 @@ final class WebhookController extends AbstractAdminController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                /** @var WebhookDispatcher $webhookDispatcher */
-                $webhookDispatcher = $this->get(WebhookDispatcher::class);
-                $webhookDispatcher->dispatch($item);
+                $this->webhookDispatcher->dispatch($item);
                 $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
@@ -45,7 +57,7 @@ final class WebhookController extends AbstractAdminController
                 );
                 $this->publishConfirmMessage($request, $msg);
 
-                return $this->redirect($this->get('urlGenerator')->generate($this->getDefaultRouteName()));
+                return $this->redirect($this->urlGenerator->generate($this->getDefaultRouteName()));
             } catch (TooManyWebhookTriggeredException $e) {
                 $form->addError(new FormError('webhook.too_many_triggered_in_period', null, [
                     '%time%' => $e->getDoNotTriggerBefore()->format('H:i:s')

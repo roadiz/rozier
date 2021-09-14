@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use Pimple\Container;
 use RZ\Roadiz\Core\Entities\Tag;
-use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @package Themes\Rozier\Models
@@ -13,16 +12,15 @@ use Symfony\Component\Routing\Generator\UrlGenerator;
 final class TagModel implements ModelInterface
 {
     private Tag $tag;
-    private Container $container;
+    private UrlGeneratorInterface $urlGenerator;
 
     /**
      * @param Tag $tag
-     * @param Container $container
      */
-    public function __construct(Tag $tag, Container $container)
+    public function __construct(Tag $tag, UrlGeneratorInterface $urlGenerator)
     {
         $this->tag = $tag;
-        $this->container = $container;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function toArray()
@@ -34,16 +32,13 @@ final class TagModel implements ModelInterface
             $name = $firstTrans->getName();
         }
 
-        /** @var UrlGenerator $urlGenerator */
-        $urlGenerator = $this->container->offsetGet('urlGenerator');
-
         $result = [
             'id' => $this->tag->getId(),
             'name' => $name,
             'tagName' => $this->tag->getTagName(),
             'color' => $this->tag->getColor(),
             'parent' => $this->getTagParents($this->tag),
-            'editUrl' => $urlGenerator->generate('tagsEditPage', [
+            'editUrl' => $this->urlGenerator->generate('tagsEditPage', [
                 'tagId' => $this->tag->getId()
             ]),
         ];
@@ -61,7 +56,7 @@ final class TagModel implements ModelInterface
         $result = '';
         $parent = $tag->getParent();
 
-        if (null !== $parent && $parent instanceof Tag) {
+        if ($parent instanceof Tag) {
             $superParent = $this->getTagParents($parent, true);
             $firstTrans = $parent->getTranslatedTags()->first();
             $name = $parent->getTagName();

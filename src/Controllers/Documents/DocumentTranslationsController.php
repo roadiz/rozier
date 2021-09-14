@@ -79,7 +79,7 @@ class DocumentTranslationsController extends RozierApp
              * Handle main form
              */
             $form = $this->createForm(DocumentTranslationType::class, $documentTr, [
-                'referer' => $this->get('requestStack')->getCurrentRequest()->get('referer'),
+                'referer' => $this->getRequest()->get('referer'),
                 'disabled' => $this->isReadOnly,
             ]);
             $form->handleRequest($request);
@@ -101,10 +101,10 @@ class DocumentTranslationsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'documentsMetaPage',
                     $routeParams
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -182,10 +182,10 @@ class DocumentTranslationsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'documentsEditPage',
                     ['documentId' => $document->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -228,7 +228,7 @@ class DocumentTranslationsController extends RozierApp
          * Dispatch pre-flush event
          */
         if ($entity instanceof DocumentTranslation) {
-            $this->get("dispatcher")->dispatch(
+            $this->dispatchEvent(
                 new DocumentTranslationUpdatedEvent($entity->getDocument(), $entity)
             );
             $this->em()->flush();
@@ -254,10 +254,10 @@ class DocumentTranslationsController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'documentsMetaPage',
                 $routeParams
-            ));
+            );
         }
         return null;
     }

@@ -30,7 +30,7 @@ class CustomFormFieldAttributesController extends RozierApp
          */
 
         /** @var CustomFormAnswer $customFormAnswer */
-        $customFormAnswer = $this->get("em")->find(CustomFormAnswer::class, $customFormAnswerId);
+        $customFormAnswer = $this->em()->find(CustomFormAnswer::class, $customFormAnswerId);
         $answers = $this->getAnswersByGroups($customFormAnswer->getAnswers());
 
         $this->assignation['fields'] = $answers;

@@ -19,6 +19,15 @@ use Themes\Rozier\RozierApp;
  */
 class NodesUtilsController extends RozierApp
 {
+    private NodeNamePolicyInterface $nodeNamePolicy;
+
+    /**
+     * @param NodeNamePolicyInterface $nodeNamePolicy
+     */
+    public function __construct(NodeNamePolicyInterface $nodeNamePolicy)
+    {
+        $this->nodeNamePolicy = $nodeNamePolicy;
+    }
 
     /**
      * Export a Node in a Json file (.json).
@@ -120,15 +129,15 @@ class NodesUtilsController extends RozierApp
             $duplicator = new NodeDuplicator(
                 $existingNode,
                 $this->em(),
-                $this->get(NodeNamePolicyInterface::class)
+                $this->nodeNamePolicy
             );
             $newNode = $duplicator->duplicate();
 
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeCreatedEvent($newNode));
-            $this->get('dispatcher')->dispatch(new NodeDuplicatedEvent($newNode));
+            $this->dispatchEvent(new NodeCreatedEvent($newNode));
+            $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
             $msg = $this->getTranslator()->trans("duplicated.node.%name%", [
                 '%name%' => $existingNode->getNodeName(),
@@ -136,11 +145,10 @@ class NodesUtilsController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg, $newNode->getNodeSources()->first());
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'nodesEditPage',
-                        ["nodeId" => $newNode->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'nodesEditPage',
+                ["nodeId" => $newNode->getId()]
+            );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
@@ -149,11 +157,10 @@ class NodesUtilsController extends RozierApp
                 ])
             );
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'nodesEditPage',
-                        ["nodeId" => $existingNode->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'nodesEditPage',
+                ["nodeId" => $existingNode->getId()]
+            );
         }
     }
 }

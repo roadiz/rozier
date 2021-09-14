@@ -77,12 +77,12 @@ class CustomFormFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormFieldsListPage',
                     [
                         'customFormId' => $field->getCustomForm()->getId(),
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -130,22 +130,22 @@ class CustomFormFieldsController extends RozierApp
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'customFormFieldsListPage',
                         [
                             'customFormId' => $customFormId,
                         ]
-                    ));
+                    );
                 } catch (Exception $e) {
                     $msg = $e->getMessage();
                     $this->publishErrorMessage($request, $msg);
                     /*
                      * Redirect to add page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'customFormFieldsAddPage',
                         ['customFormId' => $customFormId]
-                    ));
+                    );
                 }
             }
 
@@ -196,12 +196,12 @@ class CustomFormFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormFieldsListPage',
                     [
                         'customFormId' => $customFormId,
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

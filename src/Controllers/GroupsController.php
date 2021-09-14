@@ -145,10 +145,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditRolesPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -197,10 +197,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditRolesPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -240,10 +240,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditUsersPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -291,12 +291,12 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditUsersPage',
                 [
                     'id' => $item->getId()
                 ]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();

@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\GroupsImporter;
 use RZ\Roadiz\Core\Entities\Group;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -21,6 +22,19 @@ use Themes\Rozier\RozierApp;
  */
 class GroupsUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+    private GroupsImporter $groupsImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param GroupsImporter $groupsImporter
+     */
+    public function __construct(SerializerInterface $serializer, GroupsImporter $groupsImporter)
+    {
+        $this->serializer = $serializer;
+        $this->groupsImporter = $groupsImporter;
+    }
+
     /**
      * Export all Group data and roles in a Json file (.json).
      *
@@ -36,11 +50,8 @@ class GroupsUtilsController extends RozierApp
                               ->getRepository(Group::class)
                               ->findAll();
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $existingGroup,
                 'json',
                 SerializationContext::create()->setGroups(['group'])
@@ -71,11 +82,8 @@ class GroupsUtilsController extends RozierApp
             throw $this->createNotFoundException();
         }
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 [$existingGroup], // need to wrap in array
                 'json',
                 SerializationContext::create()->setGroups(['group'])
@@ -112,17 +120,17 @@ class GroupsUtilsController extends RozierApp
             if ($form->isSubmitted() && $file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
-                if (null !== json_decode($serializedData)) {
-                    $this->get(GroupsImporter::class)->import($serializedData);
+                if (null !== \json_decode($serializedData)) {
+                    $this->groupsImporter->import($serializedData);
                     $this->em()->flush();
 
                     $msg = $this->getTranslator()->trans('group.imported.updated');
                     $this->publishConfirmMessage($request, $msg);
 
                     // redirect even if its null
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'groupsHomePage'
-                    ));
+                    );
                 }
                 $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {

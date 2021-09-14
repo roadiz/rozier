@@ -6,6 +6,7 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TagHandler;
 use RZ\Roadiz\Core\Repositories\TagRepository;
 use RZ\Roadiz\Utils\StringHandler;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Models\TagModel;
 
 /**
@@ -21,6 +23,14 @@ use Themes\Rozier\Models\TagModel;
  */
 class AjaxTagsController extends AbstractAjaxController
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * @return TagRepository
      */
@@ -158,9 +168,8 @@ class AjaxTagsController extends AbstractAjaxController
     {
         $tagsArray = [];
         if ($tags !== null) {
-            /** @var Tag $tag */
             foreach ($tags as $tag) {
-                $tagModel = new TagModel($tag, $this->container);
+                $tagModel = new TagModel($tag, $this->get('router'));
                 $tagsArray[] = $tagModel->toArray();
             }
         }
@@ -328,8 +337,7 @@ class AjaxTagsController extends AbstractAjaxController
         $this->em()->flush();
 
         /** @var TagHandler $tagHandler */
-        $tagHandler = $this->get('tag.handler');
-        $tagHandler->setTag($tag);
+        $tagHandler = $this->handlerFactory->getHandler($tag);
         $tagHandler->cleanPositions();
 
         $this->em()->flush();
@@ -337,7 +345,7 @@ class AjaxTagsController extends AbstractAjaxController
         /*
          * Dispatch event
          */
-        $this->get('dispatcher')->dispatch(new TagUpdatedEvent($tag));
+        $this->dispatchEvent(new TagUpdatedEvent($tag));
     }
 
     /**
@@ -360,7 +368,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         /** @var Tag $tag */
         $tag = $this->getRepository()->findOrCreateByPath($request->get('tagName'));
-        $tagModel = new TagModel($tag, $this->getContainer());
+        $tagModel = new TagModel($tag, $this->get('router'));
 
         return new JsonResponse(
             [

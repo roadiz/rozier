@@ -17,6 +17,16 @@ use Themes\Rozier\RozierApp;
  */
 class CustomFormsUtilsController extends RozierApp
 {
+    private CustomFormAnswerSerializer $customFormAnswerSerializer;
+
+    /**
+     * @param CustomFormAnswerSerializer $customFormAnswerSerializer
+     */
+    public function __construct(CustomFormAnswerSerializer $customFormAnswerSerializer)
+    {
+        $this->customFormAnswerSerializer = $customFormAnswerSerializer;
+    }
+
     /**
      * Export all custom form's answer in a Xlsx file (.rzt).
      *
@@ -27,10 +37,12 @@ class CustomFormsUtilsController extends RozierApp
      */
     public function exportAction(Request $request, int $id)
     {
-        /** @var CustomForm $customForm */
-        $customForm = $this->get("em")->find(CustomForm::class, $id);
-        /** @var CustomFormAnswerSerializer $serializer */
-        $serializer = $this->get(CustomFormAnswerSerializer::class);
+        /** @var CustomForm|null $customForm */
+        $customForm = $this->em()->find(CustomForm::class, $id);
+        if (null === $customForm) {
+            throw $this->createNotFoundException();
+        }
+
         $answers = $customForm->getCustomFormAnswers();
 
         /**
@@ -40,7 +52,7 @@ class CustomFormsUtilsController extends RozierApp
         foreach ($answers as $key => $answer) {
             $array = array_merge(
                 [$answer->getIp(), $answer->getSubmittedAt()],
-                $serializer->toSimpleArray($answer)
+                $this->customFormAnswerSerializer->toSimpleArray($answer)
             );
             $answers[$key] = $array;
         }
@@ -50,7 +62,7 @@ class CustomFormsUtilsController extends RozierApp
         $fields = $customForm->getFieldsLabels();
         $keys = array_merge($keys, $fields);
 
-        $exporter = new XlsxExporter($this->get('translator'));
+        $exporter = new XlsxExporter($this->getTranslator());
         $xlsx = $exporter->exportXlsx($answers, $keys);
 
         $response = new Response(
@@ -94,7 +106,7 @@ class CustomFormsUtilsController extends RozierApp
             $newCustomForm = clone $existingCustomForm;
             $newCustomForm->setCreatedAt(new \DateTime());
             $newCustomForm->setUpdatedAt(new \DateTime());
-            $em = $this->get("em");
+            $em = $this->em();
 
             foreach ($newCustomForm->getFields() as $field) {
                 $em->persist($field);
@@ -109,11 +121,10 @@ class CustomFormsUtilsController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'customFormsEditPage',
-                        ["id" => $newCustomForm->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'customFormsEditPage',
+                ["id" => $newCustomForm->getId()]
+            );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
@@ -123,11 +134,10 @@ class CustomFormsUtilsController extends RozierApp
             );
             $this->publishErrorMessage($request, $e->getMessage());
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'customFormsEditPage',
-                        ["id" => $existingCustomForm->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'customFormsEditPage',
+                ["id" => $existingCustomForm->getId()]
+            );
         }
     }
 }

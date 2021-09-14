@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Themes\Rozier\Forms\MultiTagType;
 use Themes\Rozier\RozierApp;
 
@@ -20,6 +21,16 @@ use Themes\Rozier\RozierApp;
  */
 class TagMultiCreationController extends RozierApp
 {
+    private TagFactory $tagFactory;
+
+    /**
+     * @param TagFactory $tagFactory
+     */
+    public function __construct(TagFactory $tagFactory)
+    {
+        $this->tagFactory = $tagFactory;
+    }
+
     /**
      * @param Request $request
      * @param int $parentTagId
@@ -53,10 +64,8 @@ class TagMultiCreationController extends RozierApp
                         ->findLatestPositionInParent($parentTag);
 
                     $tagsArray = [];
-                    /** @var TagFactory $tagFactory */
-                    $tagFactory = $this->get(TagFactory::class);
                     foreach ($names as $name) {
-                        $tagsArray[] = $tagFactory->create($name, $translation, $parentTag, $latestPosition);
+                        $tagsArray[] = $this->tagFactory->create($name, $translation, $parentTag, $latestPosition);
                         $this->em()->flush();
                     }
 
@@ -67,13 +76,12 @@ class TagMultiCreationController extends RozierApp
                         /*
                          * Dispatch event
                          */
-                        $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
-
+                        $this->dispatchEvent(new TagCreatedEvent($tag));
                         $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
                         $this->publishConfirmMessage($request, $msg);
                     }
 
-                    return $this->redirect($this->generateUrl('tagsTreePage', ['tagId' => $parentTagId]));
+                    return $this->redirectToRoute('tagsTreePage', ['tagId' => $parentTagId]);
                 } catch (\InvalidArgumentException $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }

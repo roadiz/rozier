@@ -6,6 +6,7 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\Core\Entities\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Widgets\TagTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
@@ -14,6 +15,14 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class AjaxTagTreeController extends AbstractAjaxController
 {
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    public function __construct(TreeWidgetFactory $treeWidgetFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
+
     /**
      * @param Request $request
      *
@@ -44,7 +53,7 @@ class AjaxTagTreeController extends AbstractAjaxController
                     $tag = null;
                 }
 
-                $tagTree = $this->get(TreeWidgetFactory::class)->createTagTree($tag);
+                $tagTree = $this->treeWidgetFactory->createTagTree($tag);
 
                 $this->assignation['mainTagTree'] = false;
 
@@ -54,7 +63,7 @@ class AjaxTagTreeController extends AbstractAjaxController
              */
             case 'requestMainTagTree':
                 $parent = null;
-                $tagTree = $this->get(TreeWidgetFactory::class)->createTagTree($parent);
+                $tagTree = $this->treeWidgetFactory->createTagTree($parent);
                 $this->assignation['mainTagTree'] = true;
                 break;
         }

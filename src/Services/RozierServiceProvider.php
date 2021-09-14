@@ -129,7 +129,7 @@ final class RozierServiceProvider implements ServiceProviderInterface
         };
 
         $container[NodeSourceProviderType::class] = function (Container $c) {
-            return new NodeSourceProviderType($c[ManagerRegistry::class], $c);
+            return new NodeSourceProviderType($c[ManagerRegistry::class], new \Pimple\Psr11\Container($c));
         };
 
         $container[NodeSourceType::class] = function (Container $c) {

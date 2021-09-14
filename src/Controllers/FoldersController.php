@@ -17,6 +17,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Themes\Rozier\Forms\FolderTranslationType;
 use Themes\Rozier\Forms\FolderType;
 use Themes\Rozier\RozierApp;
@@ -26,6 +27,16 @@ use Themes\Rozier\RozierApp;
  */
 class FoldersController extends RozierApp
 {
+    private Packages $packages;
+
+    /**
+     * @param Packages $packages
+     */
+    public function __construct(Packages $packages)
+    {
+        $this->packages = $packages;
+    }
+
     /**
      * @param Request $request
      *
@@ -89,14 +100,14 @@ class FoldersController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(
+                $this->dispatchEvent(
                     new FolderCreatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
                 $this->publishErrorMessage($request, $e->getMessage());
             }
 
-            return $this->redirect($this->generateUrl('foldersHomePage'));
+            return $this->redirectToRoute('foldersHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
@@ -136,14 +147,14 @@ class FoldersController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(
+                    $this->dispatchEvent(
                         new FolderDeletedEvent($folder)
                     );
                 } catch (\RuntimeException $e) {
                     $this->publishErrorMessage($request, $e->getMessage());
                 }
 
-                return $this->redirect($this->generateUrl('foldersHomePage'));
+                return $this->redirectToRoute('foldersHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -190,14 +201,14 @@ class FoldersController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(
+                    $this->dispatchEvent(
                         new FolderUpdatedEvent($folder)
                     );
                 } catch (\RuntimeException $e) {
                     $this->publishErrorMessage($request, $e->getMessage());
                 }
 
-                return $this->redirect($this->generateUrl('foldersEditPage', ['folderId' => $folderId]));
+                return $this->redirectToRoute('foldersEditPage', ['folderId' => $folderId]);
             }
 
             $this->assignation['folder'] = $folder;
@@ -258,17 +269,17 @@ class FoldersController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(
+                    $this->dispatchEvent(
                         new FolderUpdatedEvent($folder)
                     );
                 } catch (\RuntimeException $e) {
                     $this->publishErrorMessage($request, $e->getMessage());
                 }
 
-                return $this->redirect($this->generateUrl('foldersEditTranslationPage', [
+                return $this->redirectToRoute('foldersEditTranslationPage', [
                     'folderId' => $folderId,
                     'translationId' => $translationId,
-                ]));
+                ]);
             }
 
             $this->assignation['folder'] = $folder;
@@ -309,13 +320,11 @@ class FoldersController extends RozierApp
                               ->findBy([
                                   'folders' => [$folder],
                               ]);
-            /** @var Packages $packages */
-            $packages = $this->get('assetPackages');
 
             /** @var Document $document */
             foreach ($documents as $document) {
                 if ($document->isLocal()) {
-                    $zip->addFile($packages->getDocumentFilePath($document), $document->getFilename());
+                    $zip->addFile($this->packages->getDocumentFilePath($document), $document->getFilename());
                 }
             }
 

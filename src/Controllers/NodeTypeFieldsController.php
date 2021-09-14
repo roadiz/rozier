@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
@@ -20,6 +21,16 @@ use Themes\Rozier\RozierApp;
  */
 class NodeTypeFieldsController extends RozierApp
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    /**
+     * @param HandlerFactoryInterface $handlerFactory
+     */
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * @param Request $request
      * @param int $nodeTypeId
@@ -69,8 +80,7 @@ class NodeTypeFieldsController extends RozierApp
                 $this->em()->flush();
 
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('node_type.handler');
-                $handler->setNodeType($field->getNodeType());
+                $handler = $this->handlerFactory->getHandler($field->getNodeType());
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
@@ -79,12 +89,12 @@ class NodeTypeFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodeTypesFieldSchemaUpdate',
                     [
                         'nodeTypeId' => $field->getNodeType()->getId(),
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -130,8 +140,7 @@ class NodeTypeFieldsController extends RozierApp
                     $this->em()->refresh($nodeType);
 
                     /** @var NodeTypeHandler $handler */
-                    $handler = $this->get('node_type.handler');
-                    $handler->setNodeType($nodeType);
+                    $handler = $this->handlerFactory->getHandler($nodeType);
                     $handler->updateSchema();
 
                     $msg = $this->getTranslator()->trans(
@@ -143,22 +152,22 @@ class NodeTypeFieldsController extends RozierApp
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'nodeTypesFieldSchemaUpdate',
                         [
                             'nodeTypeId' => $nodeTypeId,
                         ]
-                    ));
+                    );
                 } catch (\Exception $e) {
                     $msg = $e->getMessage();
                     $this->publishErrorMessage($request, $msg);
                     /*
                      * Redirect to add page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'nodeTypeFieldsAddPage',
                         ['nodeTypeId' => $nodeTypeId]
-                    ));
+                    );
                 }
             }
 
@@ -199,8 +208,7 @@ class NodeTypeFieldsController extends RozierApp
                 $nodeType = $this->em()->find(NodeType::class, (int) $nodeTypeId);
 
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('node_type.handler');
-                $handler->setNodeType($nodeType);
+                $handler = $this->handlerFactory->getHandler($nodeType);
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans(
@@ -212,12 +220,12 @@ class NodeTypeFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodeTypesFieldSchemaUpdate',
                     [
                         'nodeTypeId' => $nodeTypeId,
                     ]
-                ));
+                );
             }
 
             $this->assignation['field'] = $field;

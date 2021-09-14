@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Nodes;
 
 use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\Bags\Settings;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -96,14 +97,14 @@ class NodesSourcesController extends RozierApp
                         $this->onPostUpdate($source, $request);
 
                         if ($request->isXmlHttpRequest()) {
-                            if ($this->get('settingsBag')->get('custom_preview_scheme')) {
+                            if ($this->getSettingsBag()->get('custom_preview_scheme')) {
                                 $previewUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->get('settingsBag')->get('custom_preview_scheme'),
+                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
                                     NodeRouter::NO_CACHE_PARAMETER => true
                                 ], Router::ABSOLUTE_URL);
-                            } elseif ($this->get('settingsBag')->get('custom_public_scheme')) {
+                            } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
                                 $previewUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->get('settingsBag')->get('custom_public_scheme'),
+                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
                                     '_preview' => 1,
                                     NodeRouter::NO_CACHE_PARAMETER => true
                                 ], Router::ABSOLUTE_URL);
@@ -114,9 +115,9 @@ class NodesSourcesController extends RozierApp
                                 ]);
                             }
 
-                            if ($this->get('settingsBag')->get('custom_public_scheme')) {
+                            if ($this->getSettingsBag()->get('custom_public_scheme')) {
                                 $publicUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->get('settingsBag')->get('custom_public_scheme'),
+                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
                                     NodeRouter::NO_CACHE_PARAMETER => true
                                 ], Router::ABSOLUTE_URL);
                             } else {
@@ -183,13 +184,13 @@ class NodesSourcesController extends RozierApp
     public function removeAction(Request $request, int $nodeSourceId)
     {
         /** @var NodesSources|null $ns */
-        $ns = $this->get("em")->find(NodesSources::class, $nodeSourceId);
+        $ns = $this->em()->find(NodesSources::class, $nodeSourceId);
         if (null === $ns) {
             throw new ResourceNotFoundException();
         }
         /** @var Node $node */
         $node = $ns->getNode();
-        $this->get("em")->refresh($ns->getNode());
+        $this->em()->refresh($ns->getNode());
 
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $node->getId());
 
@@ -223,10 +224,10 @@ class NodesSourcesController extends RozierApp
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodesSourcesDeletedEvent($ns));
+            $this->dispatchEvent(new NodesSourcesDeletedEvent($ns));
 
-            $this->get("em")->remove($ns);
-            $this->get("em")->flush();
+            $this->em()->remove($ns);
+            $this->em()->flush();
 
             $ns = $node->getNodeSources()->first();
 
@@ -237,10 +238,10 @@ class NodesSourcesController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 ['nodeId' => $node->getId(), "translationId" => $ns->getTranslation()->getId()]
-            ));
+            );
         }
 
         $this->assignation["nodeSource"] = $ns;
@@ -255,9 +256,9 @@ class NodesSourcesController extends RozierApp
          * Dispatch pre-flush event
          */
         if ($entity instanceof NodesSources) {
-            $this->get('dispatcher')->dispatch(new NodesSourcesPreUpdatedEvent($entity));
+            $this->dispatchEvent(new NodesSourcesPreUpdatedEvent($entity));
             $this->em()->flush();
-            $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($entity));
+            $this->dispatchEvent(new NodesSourcesUpdatedEvent($entity));
 
             $msg = $this->getTranslator()->trans('node_source.%node_source%.updated.%translation%', [
                 '%node_source%' => $entity->getNode()->getNodeName(),
@@ -271,13 +272,13 @@ class NodesSourcesController extends RozierApp
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
         if ($entity instanceof NodesSources) {
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $entity->getNode()->getId(),
                     'translationId' => $entity->getTranslation()->getId()
                 ]
-            ));
+            );
         }
         return null;
     }

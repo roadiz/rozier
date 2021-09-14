@@ -11,7 +11,7 @@ use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
-use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +20,16 @@ use Themes\Rozier\RozierApp;
 
 class NodesAttributesController extends RozierApp
 {
+    private FormFactoryInterface $formFactory;
+
+    /**
+     * @param FormFactoryInterface $formFactory
+     */
+    public function __construct(FormFactoryInterface $formFactory)
+    {
+        $this->formFactory = $formFactory;
+    }
+
     /**
      * @param Request $request
      * @param int     $nodeId
@@ -59,8 +69,6 @@ class NodesAttributesController extends RozierApp
         $attributeValues = $node->getAttributeValues();
         /** @var AttributeValue $attributeValue */
         foreach ($attributeValues as $attributeValue) {
-            /** @var FormFactory $formFactory */
-            $formFactory = $this->get('formFactory');
             $name = $node->getNodeName() . '_attribute_' . $attributeValue->getId();
             $attributeValueTranslation = $attributeValue->getAttributeValueTranslation($translation);
             if (null === $attributeValueTranslation) {
@@ -69,7 +77,7 @@ class NodesAttributesController extends RozierApp
                 $attributeValueTranslation->setTranslation($translation);
                 $this->em()->persist($attributeValueTranslation);
             }
-            $attributeValueTranslationForm = $formFactory->createNamedBuilder(
+            $attributeValueTranslationForm = $this->formFactory->createNamedBuilder(
                 $name,
                 AttributeValueTranslationType::class,
                 $attributeValueTranslation
@@ -83,7 +91,7 @@ class NodesAttributesController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+                    $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
 
                     $msg = $this->getTranslator()->trans(
                         'attribute_value_translation.%name%.updated_from_node.%nodeName%',
@@ -100,10 +108,10 @@ class NodesAttributesController extends RozierApp
                             'message' => $msg,
                         ], JsonResponse::HTTP_ACCEPTED);
                     }
-                    return $this->redirect($this->generateUrl('nodesEditAttributesPage', [
+                    return $this->redirectToRoute('nodesEditAttributesPage', [
                         'nodeId' => $node->getId(),
                         'translationId' => $translation->getId(),
-                    ]));
+                    ]);
                 } else {
                     $errors = $this->getErrorsAsArray($attributeValueTranslationForm);
                     /*
@@ -157,10 +165,10 @@ class NodesAttributesController extends RozierApp
             $this->em()->persist($attributeValue);
             $this->em()->flush();
 
-            return $this->redirect($this->generateUrl('nodesEditAttributesPage', [
+            return $this->redirectToRoute('nodesEditAttributesPage', [
                 'nodeId' => $node->getId(),
                 'translationId' => $translation->getId(),
-            ]));
+            ]);
         }
         $this->assignation['addAttributeForm'] = $addAttributeForm->createView();
 
@@ -224,10 +232,10 @@ class NodesAttributesController extends RozierApp
                 $this->publishErrorMessage($request, $e->getMessage());
             }
 
-            return $this->redirect($this->generateUrl('nodesEditAttributesPage', [
+            return $this->redirectToRoute('nodesEditAttributesPage', [
                 'nodeId' => $node->getId(),
                 'translationId' => $translation->getId(),
-            ]));
+            ]);
         }
 
         $this->assignation['form'] = $form->createView();
@@ -299,10 +307,10 @@ class NodesAttributesController extends RozierApp
                 $this->publishErrorMessage($request, $e->getMessage());
             }
 
-            return $this->redirect($this->generateUrl('nodesEditAttributesPage', [
+            return $this->redirectToRoute('nodesEditAttributesPage', [
                 'nodeId' => $node->getId(),
                 'translationId' => $translation->getId(),
-            ]));
+            ]);
         }
 
         $this->assignation['form'] = $form->createView();
