@@ -49,6 +49,6 @@ class NodeDuplicationSubscriber implements EventSubscriberInterface
         $nodeHandler->cleanChildrenPositions();
         $nodeHandler->cleanPositions();
 
-        $this->managerRegistry->getManagerForClass(Node::class)->flush();
+        $this->managerRegistry->getManager()->flush();
     }
 }

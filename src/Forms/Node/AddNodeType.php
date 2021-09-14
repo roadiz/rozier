@@ -60,7 +60,7 @@ class AddNodeType extends AbstractType
                 ],
             ]);
             $builder->get('nodeType')->addModelTransformer(new NodeTypeTransformer(
-                $this->managerRegistry->getManagerForClass(NodeType::class)
+                $this->managerRegistry->getManager()
             ));
         }
 

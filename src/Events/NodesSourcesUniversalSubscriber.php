@@ -51,7 +51,7 @@ class NodesSourcesUniversalSubscriber implements EventSubscriberInterface
          * Flush only if duplication happened.
          */
         if (true === $this->universalDataDuplicator->duplicateUniversalContents($source)) {
-            $this->managerRegistry->getManagerForClass(NodesSources::class)->flush();
+            $this->managerRegistry->getManager()->flush();
         }
     }
 }
