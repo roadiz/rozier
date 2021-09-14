@@ -5,7 +5,6 @@ namespace Themes\Rozier\Controllers\Documents;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Bags\Settings;
 use RZ\Roadiz\Core\Entities\AttributeDocuments;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\Folder;
@@ -71,7 +70,7 @@ class DocumentsController extends RozierApp
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
-    private bool $wepbSupported;
+    private bool $webpSupported;
 
     protected array $thumbnailFormat = [
         'quality' => 50,
@@ -92,14 +91,14 @@ class DocumentsController extends RozierApp
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
         UrlGeneratorInterface $urlGenerator,
-        bool $wepbSupported
+        bool $webpSupported
     ) {
         $this->documentPlatforms = $documentPlatforms;
         $this->packages = $packages;
         $this->handlerFactory = $handlerFactory;
         $this->logger = $logger;
         $this->randomImageFinder = $randomImageFinder;
-        $this->wepbSupported = $wepbSupported;
+        $this->webpSupported = $webpSupported;
         $this->documentFactory = $documentFactory;
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
@@ -404,7 +403,7 @@ class DocumentsController extends RozierApp
                 ],
             ];
 
-            if ($this->wepbSupported) {
+            if ($this->webpSupported) {
                 $this->assignation['thumbnailFormat']['picture'] = true;
             }
 

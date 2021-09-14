@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Themes\Rozier\Forms\MultiTagType;
 use Themes\Rozier\RozierApp;
 

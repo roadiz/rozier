@@ -17,7 +17,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Themes\Rozier\Forms\FolderTranslationType;
 use Themes\Rozier\Forms\FolderType;
 use Themes\Rozier\RozierApp;

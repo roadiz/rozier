@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\GroupsImporter;
 use RZ\Roadiz\Core\Entities\Group;

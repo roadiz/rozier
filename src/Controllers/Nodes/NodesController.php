@@ -28,7 +28,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\Workflow;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\NodesTrait;
 use Themes\Rozier\Utils\SessionListFilters;
