@@ -62,6 +62,7 @@ use Themes\Rozier\AjaxControllers\AjaxSearchNodesSourcesController;
 use Themes\Rozier\AjaxControllers\AjaxSessionMessages;
 use Themes\Rozier\AjaxControllers\AjaxTagsController;
 use Themes\Rozier\AjaxControllers\AjaxTagTreeController;
+use Themes\Rozier\Controllers\Attributes\AttributeController;
 use Themes\Rozier\Controllers\Attributes\AttributeGroupController;
 use Themes\Rozier\Controllers\CacheController;
 use Themes\Rozier\Controllers\CustomForms\CustomFormsController;
@@ -553,6 +554,9 @@ final class RozierServiceProvider implements ServiceProviderInterface
         /*
          *
          */
+        $container[AttributeController::class] = function (Container $c) {
+            return new AttributeController($c['serializer'], $c['router']);
+        };
         $container[AttributeGroupController::class] = function (Container $c) {
             return new AttributeGroupController($c['serializer'], $c['router']);
         };
