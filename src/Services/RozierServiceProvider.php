@@ -8,6 +8,7 @@ use JMS\Serializer\SerializerInterface;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Psr\Log\LoggerInterface;
+use RZ\Roadiz\Attribute\Importer\AttributeImporter;
 use RZ\Roadiz\CMS\Importers\GroupsImporter;
 use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
 use RZ\Roadiz\CMS\Importers\RolesImporter;
@@ -555,7 +556,7 @@ final class RozierServiceProvider implements ServiceProviderInterface
          *
          */
         $container[AttributeController::class] = function (Container $c) {
-            return new AttributeController($c['serializer'], $c['router']);
+            return new AttributeController($c[AttributeImporter::class], $c['serializer'], $c['router']);
         };
         $container[AttributeGroupController::class] = function (Container $c) {
             return new AttributeGroupController($c['serializer'], $c['router']);
