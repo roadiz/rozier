@@ -55,10 +55,10 @@ class TranslateController extends RozierApp
                             '%name%' => $node->getNodeName(),
                         ]);
                         $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
-                        return $this->redirect($this->generateUrl(
+                        return $this->redirectToRoute(
                             'nodesEditSourcePage',
                             ['nodeId' => $node->getId(), 'translationId' => $translation->getId()]
-                        ));
+                        );
                     } catch (EntityAlreadyExistsException $e) {
                         $form->addError(new FormError($e->getMessage()));
                     }
@@ -109,7 +109,7 @@ class TranslateController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new NodesSourcesCreatedEvent($source));
+                $this->dispatchEvent(new NodesSourcesCreatedEvent($source));
             }
         }
     }

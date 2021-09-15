@@ -16,7 +16,6 @@ use Themes\Rozier\Models\NodeTypeModel;
  */
 class AjaxNodeTypesController extends AjaxAbstractFieldsController
 {
-
     /**
      * @param Request $request
      *

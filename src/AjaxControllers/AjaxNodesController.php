@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
@@ -21,6 +22,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\Workflow;
 
 /**
@@ -28,8 +31,32 @@ use Symfony\Component\Workflow\Workflow;
  */
 class AjaxNodesController extends AbstractAjaxController
 {
+    private NodeNamePolicyInterface $nodeNamePolicy;
+    private LoggerInterface $logger;
+    private NodeMover $nodeMover;
+    private NodeChrootResolver $nodeChrootResolver;
+    private Registry $workflowRegistry;
+    private UniqueNodeGenerator $uniqueNodeGenerator;
+
+    public function __construct(
+        NodeNamePolicyInterface $nodeNamePolicy,
+        LoggerInterface $logger,
+        NodeMover $nodeMover,
+        NodeChrootResolver $nodeChrootResolver,
+        Registry $workflowRegistry,
+        UniqueNodeGenerator $uniqueNodeGenerator,
+        CsrfTokenManagerInterface $csrfTokenManager
+    ) {
+        parent::__construct($csrfTokenManager);
+        $this->nodeNamePolicy = $nodeNamePolicy;
+        $this->logger = $logger;
+        $this->nodeMover = $nodeMover;
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->workflowRegistry = $workflowRegistry;
+        $this->uniqueNodeGenerator = $uniqueNodeGenerator;
+    }
+
     /**
-     *
      * @param  Request $request
      * @param  int $nodeId
      * @return JsonResponse
@@ -85,19 +112,19 @@ class AjaxNodesController extends AbstractAjaxController
                     $duplicator = new NodeDuplicator(
                         $node,
                         $this->em(),
-                        $this->get(NodeNamePolicyInterface::class)
+                        $this->nodeNamePolicy
                     );
                     $newNode = $duplicator->duplicate();
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new NodeCreatedEvent($newNode));
-                    $this->get('dispatcher')->dispatch(new NodeDuplicatedEvent($newNode));
+                    $this->dispatchEvent(new NodeCreatedEvent($newNode));
+                    $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
                     $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
                         '%name%' => $node->getNodeName(),
                     ]);
-                    $this->get('logger')->info($msg, ['source' => $newNode->getNodeSources()->first()]);
+                    $this->logger->info($msg, ['source' => $newNode->getNodeSources()->first()]);
 
                     $responseArray = [
                         'statusCode' => '200',
@@ -146,31 +173,29 @@ class AjaxNodesController extends AbstractAjaxController
          */
         $position = $this->parsePosition($parameters, $node->getPosition());
 
-        /** @var NodeMover $nodeMover */
-        $nodeMover = $this->get(NodeMover::class);
         try {
             if ($node->getNodeType()->isReachable()) {
-                $oldPaths = $nodeMover->getNodeSourcesUrls($node);
+                $oldPaths = $this->nodeMover->getNodeSourcesUrls($node);
             }
         } catch (SameNodeUrlException $e) {
             $oldPaths = [];
         }
 
-        $nodeMover->move($node, $parent, $position);
+        $this->nodeMover->move($node, $parent, $position);
         $this->em()->flush();
         /*
          * Dispatch event
          */
         if (isset($oldPaths) && count($oldPaths) > 0 && !$node->isHome()) {
-            $this->get('logger')->debug('NodesSources paths changed', ['paths' => $oldPaths]);
-            $this->get('dispatcher')->dispatch(new NodePathChangedEvent($node, $oldPaths));
+            $this->logger->debug('NodesSources paths changed', ['paths' => $oldPaths]);
+            $this->dispatchEvent(new NodePathChangedEvent($node, $oldPaths));
         } else {
-            $this->get('logger')->debug('NodesSources paths did not change');
+            $this->logger->debug('NodesSources paths did not change');
         }
-        $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+        $this->dispatchEvent(new NodeUpdatedEvent($node));
 
         foreach ($node->getNodeSources() as $nodeSource) {
-            $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+            $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
         }
 
         $this->em()->flush();
@@ -187,7 +212,7 @@ class AjaxNodesController extends AbstractAjaxController
             return $this->em()->find(Node::class, (int) $parameters['newParent']);
         } elseif (null !== $this->getUser()) {
             // If user is jailed in a node, prevent moving nodes out.
-            return $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
+            return $this->nodeChrootResolver->getChroot($this->getUser());
         }
         return null;
     }
@@ -285,7 +310,7 @@ class AjaxNodesController extends AbstractAjaxController
                         '%visible%' => $node->isVisible() ? $this->getTranslator()->trans('visible') : $this->getTranslator()->trans('invisible'),
                     ]);
                     $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
-                    $this->get('dispatcher')->dispatch(new NodeVisibilityChangedEvent($node));
+                    $this->dispatchEvent(new NodeVisibilityChangedEvent($node));
                 } else {
                     $msg = $this->getTranslator()->trans('node.%name%.%field%.updated', [
                         '%name%' => $node->getNodeName(),
@@ -293,7 +318,7 @@ class AjaxNodesController extends AbstractAjaxController
                     ]);
                     $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
                 }
-                $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+                $this->dispatchEvent(new NodeUpdatedEvent($node));
                 $this->em()->flush();
 
                 $responseArray = [
@@ -326,10 +351,8 @@ class AjaxNodesController extends AbstractAjaxController
      */
     protected function changeNodeStatus(Node $node, string $transition)
     {
-        /** @var Request $request */
-        $request = $this->get('requestStack')->getMasterRequest();
-        /** @var Workflow $workflow */
-        $workflow = $this->get('workflow.registry')->get($node);
+        $request = $this->getRequest();
+        $workflow = $this->workflowRegistry->get($node);
 
         $workflow->apply($node, $transition);
         $this->em()->flush();
@@ -364,14 +387,12 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         try {
-            /** @var UniqueNodeGenerator $generator */
-            $generator = $this->get('utils.uniqueNodeGenerator');
-            $source = $generator->generateFromRequest($request);
+            $source = $this->uniqueNodeGenerator->generateFromRequest($request);
 
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeCreatedEvent($source->getNode()));
+            $this->dispatchEvent(new NodeCreatedEvent($source->getNode()));
 
             $msg = $this->getTranslator()->trans(
                 'added.node.%name%',
@@ -388,7 +409,7 @@ class AjaxNodesController extends AbstractAjaxController
             ];
         } catch (\Exception $e) {
             $msg = $this->getTranslator()->trans($e->getMessage());
-            $this->get('logger')->error($msg);
+            $this->logger->error($msg);
             throw new BadRequestHttpException($msg);
         }
 

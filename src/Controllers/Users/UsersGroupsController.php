@@ -51,10 +51,10 @@ class UsersGroupsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditGroupsPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -106,10 +106,10 @@ class UsersGroupsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditGroupsPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

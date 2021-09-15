@@ -12,12 +12,13 @@ use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
 use RZ\Roadiz\Core\Events\Tag\TagDeletedEvent;
 use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TagHandler;
 use RZ\Roadiz\Core\Repositories\TranslationRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,25 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
 class TagsController extends RozierApp
 {
     use VersionedControllerTrait;
+
+    private HandlerFactoryInterface $handlerFactory;
+    private FormFactoryInterface $formFactory;
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    /**
+     * @param FormFactoryInterface $formFactory
+     * @param HandlerFactoryInterface $handlerFactory
+     * @param TreeWidgetFactory $treeWidgetFactory
+     */
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        HandlerFactoryInterface $handlerFactory,
+        TreeWidgetFactory $treeWidgetFactory
+    ) {
+        $this->handlerFactory = $handlerFactory;
+        $this->formFactory = $formFactory;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
 
     /**
      * List every tags.
@@ -162,7 +182,7 @@ class TagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(
+                $this->dispatchEvent(
                     new TagUpdatedEvent($tag)
                 );
 
@@ -250,7 +270,7 @@ class TagsController extends RozierApp
                     if (!empty($form->getData()['referer'])) {
                         return $this->redirect($form->getData()['referer']);
                     } else {
-                        return $this->redirect($this->generateUrl('tagsHomePage'));
+                        return $this->redirectToRoute('tagsHomePage');
                     }
                 }
 
@@ -304,14 +324,14 @@ class TagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
+                $this->dispatchEvent(new TagCreatedEvent($tag));
 
                 $msg = $this->getTranslator()->trans('tag.%name%.created', ['%name%' => $tag->getTagName()]);
                 $this->publishConfirmMessage($request, $msg);
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('tagsHomePage'));
+                return $this->redirectToRoute('tagsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -353,7 +373,7 @@ class TagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagUpdatedEvent($tag));
+                $this->dispatchEvent(new TagUpdatedEvent($tag));
 
                 $msg = $this->getTranslator()->trans('tag.%name%.updated', ['%name%' => $tag->getTagName()]);
                 $this->publishConfirmMessage($request, $msg);
@@ -361,10 +381,10 @@ class TagsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'tagsSettingsPage',
                     ['tagId' => $tag->getId()]
-                ));
+                );
             }
             /*
              * Handle errors when Ajax POST requests
@@ -410,7 +430,7 @@ class TagsController extends RozierApp
         }
 
         if (null !== $tag) {
-            $widget = $this->get(TreeWidgetFactory::class)->createTagTree($tag);
+            $widget = $this->treeWidgetFactory->createTagTree($tag);
             $this->assignation['tag'] = $tag;
             $this->assignation['translation'] = $translation;
             $this->assignation['specificTagTree'] = $widget;
@@ -447,7 +467,7 @@ class TagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagDeletedEvent($tag));
+                $this->dispatchEvent(new TagDeletedEvent($tag));
 
                 $this->em()->remove($tag);
                 $this->em()->flush();
@@ -458,7 +478,7 @@ class TagsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('tagsHomePage'));
+                return $this->redirectToRoute('tagsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -515,15 +535,15 @@ class TagsController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
+                    $this->dispatchEvent(new TagCreatedEvent($tag));
 
                     $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
                     $this->publishConfirmMessage($request, $msg);
 
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'tagsEditPage',
                         ['tagId' => $tag->getId()]
-                    ));
+                    );
                 } catch (EntityAlreadyExistsException $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }
@@ -609,8 +629,7 @@ class TagsController extends RozierApp
         $referer = false,
         array $tagsIds = []
     ) {
-        /** @var FormBuilder $builder */
-        $builder = $this->get('formFactory')
+        $builder = $this->formFactory
             ->createNamedBuilder('deleteForm')
             ->add('tagsIds', HiddenType::class, [
                 'data' => implode(',', $tagsIds),
@@ -651,7 +670,7 @@ class TagsController extends RozierApp
             /** @var Tag $tag */
             foreach ($tags as $tag) {
                 /** @var TagHandler $handler */
-                $handler = $this->get('factory.handler')->getHandler($tag);
+                $handler = $this->handlerFactory->getHandler($tag);
                 $handler->removeWithChildrenAndAssociations();
             }
 
@@ -670,7 +689,7 @@ class TagsController extends RozierApp
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(
+            $this->dispatchEvent(
                 new TagUpdatedEvent($entity->getTag())
             );
 
@@ -684,10 +703,10 @@ class TagsController extends RozierApp
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
         if ($entity instanceof TagTranslation) {
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'tagsEditTranslatedPage',
                 ['tagId' => $entity->getTag()->getId(), 'translationId' => $entity->getTranslation()->getId()]
-            ));
+            );
         }
         return null;
     }

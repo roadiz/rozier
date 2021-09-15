@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use Doctrine\Persistence\ObjectManager;
 use RZ\Roadiz\CMS\Forms\ColorType;
 use RZ\Roadiz\CMS\Forms\Constraints\UniqueTagName;
 use RZ\Roadiz\Core\Entities\Tag;

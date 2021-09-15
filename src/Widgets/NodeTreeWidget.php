@@ -173,7 +173,7 @@ final class NodeTreeWidget extends AbstractWidget
          */
         $listManager = new EntityListManager(
             $this->getRequest(),
-            $this->getManagerRegistry()->getManagerForClass(Node::class),
+            $this->getManagerRegistry()->getManager(),
             Node::class,
             $criteria,
             $ordering

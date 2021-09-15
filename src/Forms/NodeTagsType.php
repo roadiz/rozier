@@ -37,7 +37,7 @@ class NodeTagsType extends AbstractType
     {
         $builder->add('tags', TagsType::class);
         $builder->get('tags')
-            ->addModelTransformer(new TagTransformer($this->managerRegistry->getManagerForClass(Tag::class)));
+            ->addModelTransformer(new TagTransformer($this->managerRegistry->getManager()));
     }
 
     /**

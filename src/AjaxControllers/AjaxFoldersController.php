@@ -5,15 +5,25 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Entities\Folder;
 use RZ\Roadiz\Core\Handlers\FolderHandler;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
  */
 class AjaxFoldersController extends AbstractAjaxController
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * Handle AJAX edition requests for Folder
      * such as coming from tag-tree widgets.
@@ -157,8 +167,7 @@ class AjaxFoldersController extends AbstractAjaxController
         $this->em()->flush();
 
         /** @var FolderHandler $handler */
-        $handler = $this->get('folder.handler');
-        $handler->setFolder($folder);
+        $handler = $this->handlerFactory->getHandler($folder);
         $handler->cleanPositions();
 
         $this->em()->flush();

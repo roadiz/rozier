@@ -7,6 +7,7 @@ use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeHandler;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -14,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +23,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Component\Workflow\Workflow;
+use Symfony\Component\Workflow\Registry;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
@@ -30,6 +32,33 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class NodesTreesController extends RozierApp
 {
+    private NodeChrootResolver $nodeChrootResolver;
+    private TreeWidgetFactory $treeWidgetFactory;
+    private FormFactoryInterface $formFactory;
+    private HandlerFactoryInterface $handlerFactory;
+    private Registry $workflowRegistry;
+
+    /**
+     * @param NodeChrootResolver $nodeChrootResolver
+     * @param TreeWidgetFactory $treeWidgetFactory
+     * @param FormFactoryInterface $formFactory
+     * @param HandlerFactoryInterface $handlerFactory
+     * @param Registry $workflowRegistry
+     */
+    public function __construct(
+        NodeChrootResolver $nodeChrootResolver,
+        TreeWidgetFactory $treeWidgetFactory,
+        FormFactoryInterface $formFactory,
+        HandlerFactoryInterface $handlerFactory,
+        Registry $workflowRegistry
+    ) {
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+        $this->formFactory = $formFactory;
+        $this->handlerFactory = $handlerFactory;
+        $this->workflowRegistry = $workflowRegistry;
+    }
+
     /**
      * @param Request $request
      * @param int|null $nodeId
@@ -50,7 +79,7 @@ class NodesTreesController extends RozierApp
 
             $this->em()->refresh($node);
         } elseif (null !== $this->getUser()) {
-            $node = $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
+            $node = $this->nodeChrootResolver->getChroot($this->getUser());
         } else {
             $node = null;
         }
@@ -65,7 +94,7 @@ class NodesTreesController extends RozierApp
             $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
-        $widget = $this->get(TreeWidgetFactory::class)->createNodeTree($node, $translation);
+        $widget = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
         if ($request->get('tagId') &&
             $request->get('tagId') > 0) {
@@ -115,10 +144,10 @@ class NodesTreesController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'nodesTreePage',
                 ['nodeId' => $nodeId, 'translationId' => $translationId]
-            ));
+            );
         }
         $this->assignation['tagNodesForm'] = $tagNodesForm->createView();
 
@@ -175,7 +204,7 @@ class NodesTreesController extends RozierApp
                     if (!empty($form->getData()['referer'])) {
                         return $this->redirect($form->getData()['referer']);
                     } else {
-                        return $this->redirect($this->generateUrl('nodesHomePage'));
+                        return $this->redirectToRoute('nodesHomePage');
                     }
                 }
 
@@ -230,7 +259,7 @@ class NodesTreesController extends RozierApp
                     if (!empty($form->getData()['referer'])) {
                         return $this->redirect($form->getData()['referer']);
                     } else {
-                        return $this->redirect($this->generateUrl('nodesHomePage'));
+                        return $this->redirectToRoute('nodesHomePage');
                     }
                 }
 
@@ -259,7 +288,7 @@ class NodesTreesController extends RozierApp
         $nodesIds = []
     ) {
         /** @var FormBuilder $builder */
-        $builder = $this->get('formFactory')
+        $builder = $this->formFactory
                         ->createNamedBuilder('deleteForm')
                         ->add('nodesIds', HiddenType::class, [
                             'data' => implode(',', $nodesIds),
@@ -301,7 +330,7 @@ class NodesTreesController extends RozierApp
             /** @var Node $node */
             foreach ($nodes as $node) {
                 /** @var NodeHandler $handler */
-                $handler = $this->get('factory.handler')->getHandler($node);
+                $handler = $this->handlerFactory->getHandler($node);
                 $handler->softRemoveWithChildren();
             }
 
@@ -335,8 +364,7 @@ class NodesTreesController extends RozierApp
             ;
 
             foreach ($nodes as $node) {
-                /** @var Workflow $workflow */
-                $workflow = $this->get('workflow.registry')->get($node);
+                $workflow = $this->workflowRegistry->get($node);
                 if ($workflow->can($node, $data['status'])) {
                     $workflow->apply($node, $data['status']);
                 }
@@ -354,7 +382,7 @@ class NodesTreesController extends RozierApp
     private function buildBulkTagForm()
     {
         /** @var FormBuilder $builder */
-        $builder = $this->get('formFactory')
+        $builder = $this->formFactory
             ->createNamedBuilder('tagForm')
             ->add('nodesIds', HiddenType::class, [
                 'attr' => ['class' => 'nodes-id-bulk-tags'],
@@ -492,7 +520,7 @@ class NodesTreesController extends RozierApp
         $status = 'reject'
     ) {
         /** @var FormBuilder $builder */
-        $builder = $this->get('formFactory')
+        $builder = $this->formFactory
             ->createNamedBuilder('statusForm')
             ->add('nodesIds', HiddenType::class, [
                 'attr' => ['class' => 'nodes-id-bulk-status'],

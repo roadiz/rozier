@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
 
-use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\CMS\Forms\Constraints\UniqueNodeName;
 use RZ\Roadiz\CMS\Forms\NodeTypesType;
 use RZ\Roadiz\Core\Entities\Node;
@@ -34,7 +33,6 @@ trait NodesTrait
         $factory = $this->get(NodeFactory::class);
         $node = $factory->create($title, $type, $translation, $node);
 
-        /** @var EntityManager $entityManager */
         $entityManager = $this->em();
         $entityManager->flush();
 

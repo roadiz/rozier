@@ -6,6 +6,8 @@ namespace Themes\Rozier\AjaxControllers;
 use Doctrine\ORM\EntityManager;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
+use RZ\Roadiz\CMS\Utils\NodeTypeApi;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Tag;
@@ -14,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Models\NodeModel;
 use Themes\Rozier\Models\NodeSourceModel;
 
@@ -22,6 +25,22 @@ use Themes\Rozier\Models\NodeSourceModel;
  */
 class AjaxNodesExplorerController extends AbstractAjaxController
 {
+    private SerializerInterface $serializer;
+    private ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler;
+    private NodeTypeApi $nodeTypeApi;
+
+    public function __construct(
+        SerializerInterface $serializer,
+        ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
+        NodeTypeApi $nodeTypeApi,
+        CsrfTokenManagerInterface $csrfTokenManager
+    ) {
+        parent::__construct($csrfTokenManager);
+        $this->nodeSourceSearchHandler = $nodeSourceSearchHandler;
+        $this->nodeTypeApi = $nodeTypeApi;
+        $this->serializer = $serializer;
+    }
+
     protected function getItemPerPage()
     {
         return 30;
@@ -37,10 +56,8 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         $arrayFilter = $this->parseFilterFromRequest($request);
-        /** @var NodeSourceSearchHandlerInterface|null $searchHandler */
-        $searchHandler = $this->get(NodeSourceSearchHandlerInterface::class);
-        if ($request->get('search') !== '' && null !== $searchHandler) {
-            $responseArray = $this->getSolrSearchResults($request, $searchHandler, $arrayFilter);
+        if ($request->get('search') !== '' && null !== $this->nodeSourceSearchHandler) {
+            $responseArray = $this->getSolrSearchResults($request, $arrayFilter);
         } else {
             $responseArray = $this->getNodeSearchResults($request, $arrayFilter);
         }
@@ -78,7 +95,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         if ($request->query->has('nodeTypes') && count($request->get('nodeTypes')) > 0) {
             $nodeTypeNames = array_map('trim', $request->get('nodeTypes'));
 
-            $nodeTypes = $this->get('nodeTypeApi')->getBy([
+            $nodeTypes = $this->nodeTypeApi->getBy([
                 'name' => $nodeTypeNames,
             ]);
 
@@ -120,20 +137,18 @@ class AjaxNodesExplorerController extends AbstractAjaxController
 
     /**
      * @param Request                 $request
-     * @param NodeSourceSearchHandlerInterface $searchHandler
      * @param array                   $arrayFilter
      *
      * @return array
      */
     protected function getSolrSearchResults(
         Request $request,
-        NodeSourceSearchHandlerInterface $searchHandler,
         array $arrayFilter
     ): array {
-        $searchHandler->boostByUpdateDate();
+        $this->nodeSourceSearchHandler->boostByUpdateDate();
         $currentPage = $request->get('page', 1);
 
-        $results = $searchHandler->search(
+        $results = $this->nodeSourceSearchHandler->search(
             $request->get('search'),
             $arrayFilter,
             $this->getItemPerPage(),
@@ -208,12 +223,12 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             if (null !== $node) {
                 if ($node instanceof NodesSources) {
                     if (!key_exists($node->getNode()->getId(), $nodesArray)) {
-                        $nodeModel = new NodeSourceModel($node, $this->getContainer());
+                        $nodeModel = new NodeSourceModel($node, $this->get('router'));
                         $nodesArray[$node->getNode()->getId()] = $nodeModel->toArray();
                     }
                 } else {
                     if (!key_exists($node->getId(), $nodesArray)) {
-                        $nodeModel = new NodeModel($node, $this->getContainer());
+                        $nodeModel = new NodeModel($node, $this->get('router'));
                         $nodesArray[$node->getId()] = $nodeModel->toArray();
                     }
                 }
@@ -229,11 +244,8 @@ class AjaxNodesExplorerController extends AbstractAjaxController
      */
     protected function createSerializedResponse(array $data): JsonResponse
     {
-        /** @var Serializer $serializer */
-        $serializer = $this->container['serializer'];
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $data,
                 'json',
                 SerializationContext::create()->setGroups([

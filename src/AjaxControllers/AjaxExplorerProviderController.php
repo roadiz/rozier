@@ -3,27 +3,38 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Psr\Container\ContainerInterface;
+use RZ\Roadiz\Explorer\AbstractExplorerProvider;
 use RZ\Roadiz\Explorer\ExplorerItemInterface;
 use RZ\Roadiz\Explorer\ExplorerProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
  */
 class AjaxExplorerProviderController extends AbstractAjaxController
 {
+    private ContainerInterface $psrContainer;
+
+    public function __construct(ContainerInterface $psrContainer, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->psrContainer = $psrContainer;
+    }
+
     /**
-     * @param string $providerClass
+     * @param class-string $providerClass
      *
      * @return ExplorerProviderInterface
      */
     protected function getProvider(string $providerClass): ExplorerProviderInterface
     {
-        if ($this->container->offsetExists($providerClass)) {
-            return $this->get($providerClass);
+        if ($this->psrContainer->has($providerClass)) {
+            return $this->psrContainer->get($providerClass);
         }
         return new $providerClass();
     }
@@ -45,7 +56,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
         }
 
         $provider = $this->getProvider($providerClass);
-        $provider->setContainer($this->getContainer());
+        if ($provider instanceof AbstractExplorerProvider) {
+            $provider->setContainer($this->psrContainer);
+        }
         $options = [
             'page' => $request->query->get('page') ?: 1,
             'itemPerPage' => $request->query->get('itemPerPage') ?: 30,
@@ -101,7 +114,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
         $provider = $this->getProvider($providerClass);
-        $provider->setContainer($this->getContainer());
+        if ($provider instanceof AbstractExplorerProvider) {
+            $provider->setContainer($this->psrContainer);
+        }
         $entitiesArray = [];
         $cleanNodeIds = array_filter($request->query->get('ids'));
         $cleanNodeIds = array_filter($cleanNodeIds, function ($value) {

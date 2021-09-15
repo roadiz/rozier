@@ -112,7 +112,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 
         if (is_array($event->getData())) {
             $position = 0;
-            $manager = $this->managerRegistry->getManagerForClass(Document::class);
+            $manager = $this->managerRegistry->getManager();
             foreach ($event->getData() as $documentId) {
                 /** @var Document|null $tempDoc */
                 $tempDoc = $manager->find(Document::class, (int) $documentId);

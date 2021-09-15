@@ -77,17 +77,17 @@ class CustomFormAnswersController extends RozierApp
             if ($form->isSubmitted() &&
                 $form->isValid() &&
                 $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()) {
-                $this->get("em")->remove($customFormAnswer);
+                $this->em()->remove($customFormAnswer);
 
                 $msg = $this->getTranslator()->trans('customFormAnswer.%id%.deleted', ['%id%' => $customFormAnswer->getId()]);
                 $this->publishConfirmMessage($request, $msg);
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormAnswersHomePage',
                     ["customFormId" => $customFormAnswer->getCustomForm()->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

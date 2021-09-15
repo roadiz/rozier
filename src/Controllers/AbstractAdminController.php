@@ -4,12 +4,13 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\RozierApp;
@@ -18,6 +19,20 @@ use Themes\Rozier\Utils\SessionListFilters;
 abstract class AbstractAdminController extends RozierApp
 {
     const ITEM_PER_PAGE = 20;
+
+    protected SerializerInterface $serializer;
+    protected UrlGeneratorInterface $urlGenerator;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(SerializerInterface $serializer, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->serializer = $serializer;
+        $this->urlGenerator = $urlGenerator;
+    }
+
 
     /**
      * @return string
@@ -88,7 +103,7 @@ abstract class AbstractAdminController extends RozierApp
              */
             $event = $this->createCreateEvent($item);
             if (null !== $event) {
-                $this->get('dispatcher')->dispatch($event);
+                $this->dispatchEvent($event);
             }
             $this->em()->persist($item);
             $this->em()->flush();
@@ -145,7 +160,7 @@ abstract class AbstractAdminController extends RozierApp
              */
             $event = $this->createUpdateEvent($item);
             if (null !== $event) {
-                $this->get('dispatcher')->dispatch($event);
+                $this->dispatchEvent($event);
             }
             $this->em()->flush();
 
@@ -180,11 +195,9 @@ abstract class AbstractAdminController extends RozierApp
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         $items = $this->em()->getRepository($this->getEntityClass())->findAll();
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
 
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $items,
                 'json',
                 SerializationContext::create()->setGroups([$this->getNamespace()])
@@ -230,7 +243,7 @@ abstract class AbstractAdminController extends RozierApp
              */
             $event = $this->createDeleteEvent($item);
             if (null !== $event) {
-                $this->get('dispatcher')->dispatch($event);
+                $this->dispatchEvent($event);
             }
             $this->em()->remove($item);
             $this->em()->flush();
@@ -344,7 +357,7 @@ abstract class AbstractAdminController extends RozierApp
             return $this->redirect($request->query->get('referer'));
         }
 
-        return $this->redirect($this->get('urlGenerator')->generate(
+        return $this->redirect($this->urlGenerator->generate(
             $this->getEditRouteName(),
             [
                 'id' => $item->getId()
@@ -358,7 +371,7 @@ abstract class AbstractAdminController extends RozierApp
      */
     protected function getPostDeleteResponse(PersistableInterface $item): Response
     {
-        return $this->redirect($this->get('urlGenerator')->generate($this->getDefaultRouteName()));
+        return $this->redirect($this->urlGenerator->generate($this->getDefaultRouteName()));
     }
 
     /**

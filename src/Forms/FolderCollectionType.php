@@ -60,7 +60,7 @@ final class FolderCollectionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(new FolderCollectionTransformer(
-            $this->managerRegistry->getManagerForClass(Folder::class),
+            $this->managerRegistry->getManager(),
             true
         ));
     }

@@ -87,10 +87,10 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'usersEditPage',
                 ['userId' => $user->getId()]
-            ));
+            );
         }
 
         $this->assignation['user'] = $user;
@@ -146,10 +146,10 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'usersEditDetailsPage',
                 ['userId' => $user->getId()]
-            ));
+            );
         }
 
         $this->assignation['user'] = $user;
@@ -181,7 +181,7 @@ class UsersController extends RozierApp
             $msg = $this->getTranslator()->trans('user.%name%.created', ['%name%' => $user->getUsername()]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl('usersHomePage'));
+            return $this->redirectToRoute('usersHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
@@ -222,7 +222,7 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl('usersHomePage'));
+            return $this->redirectToRoute('usersHomePage');
         }
 
         $this->assignation['user'] = $user;

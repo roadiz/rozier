@@ -6,7 +6,6 @@ namespace Themes\Rozier;
 use RZ\Roadiz\CMS\Controllers\BackendController;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Error\LoaderError;
@@ -22,8 +21,6 @@ class RozierApp extends BackendController
     protected static string $themeAuthor = 'Ambroise Maupate, Julien Blanchet';
     protected static string $themeCopyright = 'REZO ZERO';
     protected static string $themeDir = 'Rozier';
-
-    protected ?FormFactoryInterface $formFactory = null;
 
     const DEFAULT_ITEM_PER_PAGE = 50;
 
@@ -56,11 +53,11 @@ class RozierApp extends BackendController
          */
         $this->assignation['head']['backDevMode'] = false;
         //Settings
-        $this->assignation['head']['siteTitle'] = $this->get('settingsBag')->get('site_name') . ' backstage';
-        $this->assignation['head']['mapsStyle'] = $this->get('settingsBag')->get('maps_style');
-        $this->assignation['head']['mapsLocation'] = $this->get('settingsBag')->get('maps_default_location') ? $this->get('settingsBag')->get('maps_default_location') : null;
-        $this->assignation['head']['mainColor'] = $this->get('settingsBag')->get('main_color');
-        $this->assignation['head']['googleClientId'] = $this->get('settingsBag')->get('google_client_id', "");
+        $this->assignation['head']['siteTitle'] = $this->getSettingsBag()->get('site_name') . ' backstage';
+        $this->assignation['head']['mapsStyle'] = $this->getSettingsBag()->get('maps_style');
+        $this->assignation['head']['mapsLocation'] = $this->getSettingsBag()->get('maps_default_location') ? $this->getSettingsBag()->get('maps_default_location') : null;
+        $this->assignation['head']['mainColor'] = $this->getSettingsBag()->get('main_color');
+        $this->assignation['head']['googleClientId'] = $this->getSettingsBag()->get('google_client_id', "");
         $this->assignation['head']['themeName'] = static::$themeName;
         $this->assignation['head']['ajaxToken'] = $this->get('csrfTokenManager')->getToken(static::AJAX_TOKEN_INTENTION);
 
@@ -95,7 +92,7 @@ class RozierApp extends BackendController
      */
     public function cssAction(Request $request)
     {
-        $this->assignation['mainColor'] = $this->get('settingsBag')->get('main_color');
+        $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
         $this->assignation['nodeTypes'] = $this->get('nodeTypesBag')->all();
         $this->assignation['tags'] = $this->em()->getRepository(Tag::class)->findBy([
             'color' => ['!=', '#000000'],

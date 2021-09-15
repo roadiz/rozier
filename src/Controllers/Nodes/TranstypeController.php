@@ -20,6 +20,16 @@ use Themes\Rozier\RozierApp;
  */
 class TranstypeController extends RozierApp
 {
+    private NodeTranstyper $nodeTranstyper;
+
+    /**
+     * @param NodeTranstyper $nodeTranstyper
+     */
+    public function __construct(NodeTranstyper $nodeTranstyper)
+    {
+        $this->nodeTranstyper = $nodeTranstyper;
+    }
+
     /**
      * @param Request $request
      * @param int $nodeId
@@ -48,19 +58,16 @@ class TranstypeController extends RozierApp
 
             /** @var NodeType $newNodeType */
             $newNodeType = $this->em()->find(NodeType::class, (int) $data['nodeTypeId']);
-
-            /** @var NodeTranstyper $transtyper */
-            $transtyper = $this->get(NodeTranstyper::class);
-            $transtyper->transtype($node, $newNodeType);
+            $this->nodeTranstyper->transtype($node, $newNodeType);
             $this->em()->flush();
             $this->em()->refresh($node);
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+            $this->dispatchEvent(new NodeUpdatedEvent($node));
 
             foreach ($node->getNodeSources() as $nodeSource) {
-                $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+                $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
             }
 
             $msg = $this->getTranslator()->trans('%node%.transtyped_to.%type%', [
@@ -69,13 +76,13 @@ class TranstypeController extends RozierApp
             ]);
             $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
                     'translationId' => $node->getNodeSources()->first()->getTranslation()->getId(),
                 ]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();

@@ -4,8 +4,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\NodeTypes;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
+use RZ\Roadiz\Core\Bags\NodeTypes;
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Documentation\Generators\DocumentationGenerator;
 use RZ\Roadiz\Typescript\Declaration\DeclarationGeneratorFactory;
@@ -26,6 +27,25 @@ use ZipArchive;
  */
 class NodeTypesUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+    private NodeTypes $nodeTypesBag;
+    private NodeTypesImporter $nodeTypesImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param NodeTypes $nodeTypesBag
+     * @param NodeTypesImporter $nodeTypesImporter
+     */
+    public function __construct(
+        SerializerInterface $serializer,
+        NodeTypes $nodeTypesBag,
+        NodeTypesImporter $nodeTypesImporter
+    ) {
+        $this->serializer = $serializer;
+        $this->nodeTypesBag = $nodeTypesBag;
+        $this->nodeTypesImporter = $nodeTypesImporter;
+    }
+
     /**
      * Export a Json file containing NodeType data and fields.
      *
@@ -45,11 +65,8 @@ class NodeTypesUtilsController extends RozierApp
             throw $this->createNotFoundException();
         }
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $nodeType,
                 'json',
                 SerializationContext::create()->setGroups(['node_type', 'position'])
@@ -71,7 +88,7 @@ class NodeTypesUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
-        $documentationGenerator = new DocumentationGenerator($this->get('nodeTypesBag'), $this->get('translator'));
+        $documentationGenerator = new DocumentationGenerator($this->nodeTypesBag, $this->getTranslator());
 
         $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
@@ -118,7 +135,7 @@ class NodeTypesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         $documentationGenerator = new DeclarationGenerator(
-            new DeclarationGeneratorFactory($this->get('nodeTypesBag'))
+            new DeclarationGeneratorFactory($this->nodeTypesBag)
         );
 
         $fileName = 'roadiz-app-' . date('Ymd-His') . '.d.ts';
@@ -142,8 +159,6 @@ class NodeTypesUtilsController extends RozierApp
             ->getRepository(NodeType::class)
             ->findAll();
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
         $zipArchive = new ZipArchive();
         $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
@@ -153,7 +168,7 @@ class NodeTypesUtilsController extends RozierApp
         foreach ($nodeTypes as $nodeType) {
             $zipArchive->addFromString(
                 $nodeType->getName() . '.json',
-                $serializer->serialize(
+                $this->serializer->serialize(
                     $nodeType,
                     'json',
                     SerializationContext::create()->setGroups(['node_type', 'position'])
@@ -196,13 +211,13 @@ class NodeTypesUtilsController extends RozierApp
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== json_decode($serializedData)) {
-                    $this->get(NodeTypesImporter::class)->import($serializedData);
+                    $this->nodeTypesImporter->import($serializedData);
                     $this->em()->flush();
 
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirect($this->generateUrl('nodeTypesSchemaUpdate'));
+                    return $this->redirectToRoute('nodeTypesSchemaUpdate');
                 }
                 $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {

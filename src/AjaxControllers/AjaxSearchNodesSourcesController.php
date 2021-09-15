@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -18,6 +19,13 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class AjaxSearchNodesSourcesController extends AbstractAjaxController
 {
     const RESULT_COUNT = 8;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+
+    public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->documentUrlGenerator = $documentUrlGenerator;
+    }
 
     /**
      * Handle AJAX edition requests for Node
@@ -79,16 +87,14 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
 
     protected function getNodeSourceData(NodesSources $source): array
     {
-        /** @var DocumentUrlGeneratorInterface $documentUrlGenerator */
-        $documentUrlGenerator = $this->get('document.url_generator');
         $thumbnail = null;
         $displayableNSDoc = $source->getDocumentsByFields()->filter(function (NodesSourcesDocuments $nsDoc) {
             return $nsDoc->getDocument()->isImage() || $nsDoc->getDocument()->isSvg();
         })->first();
         if ($displayableNSDoc instanceof NodesSourcesDocuments) {
             $thumbnail = $displayableNSDoc->getDocument();
-            $documentUrlGenerator->setDocument($thumbnail);
-            $documentUrlGenerator->setOptions([
+            $this->documentUrlGenerator->setDocument($thumbnail);
+            $this->documentUrlGenerator->setOptions([
                 "fit" => "60x60",
                 "quality" => 80
             ]);
@@ -98,7 +104,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             'parent' => $source->getParent() ?
                 $source->getParent()->getTitle() ?? $source->getParent()->getNode()->getNodeName() :
                 null,
-            'thumbnail' => $thumbnail ? $documentUrlGenerator->getUrl() : null,
+            'thumbnail' => $thumbnail ? $this->documentUrlGenerator->getUrl() : null,
             'nodeId' => $source->getNode()->getId(),
             'translationId' => $source->getTranslation()->getId(),
             'typeName' => $source->getNode()->getNodeType()->getDisplayName(),

@@ -10,8 +10,8 @@ use RZ\Roadiz\Core\Entities\Setting;
 use RZ\Roadiz\Core\Entities\SettingGroup;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +20,16 @@ use Themes\Rozier\RozierApp;
 
 class SettingsController extends RozierApp
 {
+    private FormFactoryInterface $formFactory;
+
+    /**
+     * @param FormFactoryInterface $formFactory
+     */
+    public function __construct(FormFactoryInterface $formFactory)
+    {
+        $this->formFactory = $formFactory;
+    }
+
     /**
      * List every settings.
      *
@@ -93,8 +103,7 @@ class SettingsController extends RozierApp
 
         /** @var Setting $setting */
         foreach ($settings as $setting) {
-            /** @var Form $form */
-            $form = $this->get('formFactory')->createNamed($setting->getName(), SettingType::class, $setting, [
+            $form = $this->formFactory->createNamed($setting->getName(), SettingType::class, $setting, [
                 'shortEdit' => true,
             ]);
             $form->handleRequest($request);
@@ -117,14 +126,14 @@ class SettingsController extends RozierApp
                         }
 
                         if (null !== $settingGroup) {
-                            return $this->redirect($this->generateUrl(
+                            return $this->redirectToRoute(
                                 'settingGroupsSettingsPage',
                                 ['settingGroupId' => $settingGroup->getId()]
-                            ));
+                            );
                         } else {
-                            return $this->redirect($this->generateUrl(
+                            return $this->redirectToRoute(
                                 'settingsHomePage'
-                            ));
+                            );
                         }
                     } catch (EntityAlreadyExistsException $e) {
                         $form->addError(new FormError($e->getMessage()));
@@ -145,7 +154,7 @@ class SettingsController extends RozierApp
 
             $document = null;
             if ($setting->getType() == NodeTypeField::DOCUMENTS_T) {
-                $document = $this->get('settingsBag')->getDocument($setting->getName());
+                $document = $this->getSettingsBag()->getDocument($setting->getName());
             }
 
             $this->assignation['settings'][] = [
@@ -189,10 +198,10 @@ class SettingsController extends RozierApp
                     /*
                      * Force redirect to avoid resending form when refreshing page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'settingsEditPage',
                         ['settingId' => $setting->getId()]
-                    ));
+                    );
                 } catch (EntityAlreadyExistsException $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }
@@ -208,7 +217,7 @@ class SettingsController extends RozierApp
 
     protected function resetSettingsCache(): void
     {
-        $this->get('settingsBag')->reset();
+        $this->getSettingsBag()->reset();
         /** @var CacheProvider $cacheDriver */
         $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
         if ($cacheDriver !== null) {
@@ -244,7 +253,7 @@ class SettingsController extends RozierApp
                 $msg = $this->getTranslator()->trans('setting.%name%.created', ['%name%' => $setting->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
-                return $this->redirect($this->generateUrl('settingsHomePage'));
+                return $this->redirectToRoute('settingsHomePage');
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
@@ -287,7 +296,7 @@ class SettingsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('settingsHomePage'));
+                return $this->redirectToRoute('settingsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();

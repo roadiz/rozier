@@ -104,7 +104,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         /** @var CustomForm $customForm */
         foreach ($customForms as $customForm) {
-            $customFormModel = new CustomFormModel($customForm, $this->getContainer());
+            $customFormModel = new CustomFormModel($customForm, $this->get('router'), $this->getTranslator());
             $customFormsArray[] = $customFormModel->toArray();
         }
 

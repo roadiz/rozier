@@ -131,7 +131,7 @@
                         'portrait': '{{ 'blanchetteEditor.portrait'|trans|trim|escape }}',
                     },
                     'dropzone' : {
-                        'maxFilesize':                  {{ themeServices.maxFilesize }},
+                        'maxFilesize':                  {{ themeServices.maxFilesize ?? '0' }},
                         'dictDefaultMessage':           "{{ 'drop.files.here.to.upload.or.click.to.open.your.explorer'|trans|trim|escape }}",
                         'dictFallbackMessage':          "{{ 'your.browser.does.not.support.dragndrop.file.uploads'|trans|trim|escape }}",
                         'dictFallbackText':             "{{ 'please.use.the.fallback.form.below.to.upload.your.files.like.in.the.olden.days'|trans|trim|escape }}",

@@ -47,10 +47,10 @@ class UsersSecurityController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersSecurityPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

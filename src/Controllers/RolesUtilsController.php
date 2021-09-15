@@ -5,7 +5,7 @@ namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\RolesImporter;
 use RZ\Roadiz\Core\Entities\Role;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -21,6 +21,19 @@ use Themes\Rozier\RozierApp;
  */
 class RolesUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+    private RolesImporter $rolesImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param RolesImporter $rolesImporter
+     */
+    public function __construct(SerializerInterface $serializer, RolesImporter $rolesImporter)
+    {
+        $this->serializer = $serializer;
+        $this->rolesImporter = $rolesImporter;
+    }
+
     /**
      * Export a Role in a Json file
      *
@@ -40,11 +53,8 @@ class RolesUtilsController extends RozierApp
             throw $this->createNotFoundException();
         }
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 [$existingRole],
                 'json',
                 SerializationContext::create()->setGroups(['role'])
@@ -80,8 +90,8 @@ class RolesUtilsController extends RozierApp
             if ($form->isSubmitted() && $file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
-                if (null !== json_decode($serializedData)) {
-                    if ($this->get(RolesImporter::class)->import($serializedData)) {
+                if (null !== \json_decode($serializedData)) {
+                    if ($this->rolesImporter->import($serializedData)) {
                         $msg = $this->getTranslator()->trans('role.imported');
                         $this->publishConfirmMessage($request, $msg);
 
@@ -94,9 +104,9 @@ class RolesUtilsController extends RozierApp
                         }
 
                         // redirect even if its null
-                        return $this->redirect($this->generateUrl(
+                        return $this->redirectToRoute(
                             'rolesHomePage'
-                        ));
+                        );
                     }
                 }
                 $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));

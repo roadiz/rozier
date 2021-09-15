@@ -8,6 +8,7 @@ use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Bags\Settings;
 use RZ\Roadiz\Core\Entities\SettingGroup;
 use RZ\Roadiz\Core\Models\DocumentInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\NodeTreeWidget;
 use Themes\Rozier\Widgets\TagTreeWidget;
@@ -72,11 +73,9 @@ final class RozierServiceRegistry
     /**
      * @return int
      */
-    public function getMaxFileSize(): int
+    public function getMaxFilesize(): int
     {
-        $post_max_size = $this->parseSuffixedAmount(ini_get('post_max_size') ?: '');
-        $upload_max_filesize = $this->parseSuffixedAmount(ini_get('upload_max_filesize') ?: '');
-        return min($post_max_size, $upload_max_filesize);
+        return UploadedFile::getMaxFilesize();
     }
 
     /**

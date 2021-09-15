@@ -3,17 +3,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Node\NodeTaggedEvent;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\NodeTagsType;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\NodesTrait;
@@ -66,7 +60,7 @@ class NodesTagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new NodeTaggedEvent($node));
+                $this->dispatchEvent(new NodeTaggedEvent($node));
                 $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('node.%node%.linked.tags', [
@@ -74,10 +68,10 @@ class NodesTagsController extends RozierApp
                 ]);
                 $this->publishConfirmMessage($request, $msg, $source);
 
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodesEditTagsPage',
                     ['nodeId' => $node->getId()]
-                ));
+                );
             }
 
             $this->assignation['translation'] = $source->getTranslation();

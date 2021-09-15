@@ -49,10 +49,10 @@ class UsersRolesController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditRolesPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -105,10 +105,10 @@ class UsersRolesController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditRolesPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

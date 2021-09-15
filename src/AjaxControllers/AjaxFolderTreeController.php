@@ -6,6 +6,7 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\Core\Entities\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
@@ -14,6 +15,14 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class AjaxFolderTreeController extends AbstractAjaxController
 {
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    public function __construct(TreeWidgetFactory $treeWidgetFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    {
+        parent::__construct($csrfTokenManager);
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
+
     /**
      * @param Request $request
      *
@@ -44,7 +53,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
                     $folder = null;
                 }
 
-                $folderTree = $this->get(TreeWidgetFactory::class)->createFolderTree($folder);
+                $folderTree = $this->treeWidgetFactory->createFolderTree($folder);
 
                 $this->assignation['mainFolderTree'] = false;
 
@@ -54,7 +63,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
              */
             case 'requestMainFolderTree':
                 $parent = null;
-                $folderTree = $this->get(TreeWidgetFactory::class)->createFolderTree($parent);
+                $folderTree = $this->treeWidgetFactory->createFolderTree($parent);
                 $this->assignation['mainFolderTree'] = true;
                 break;
         }

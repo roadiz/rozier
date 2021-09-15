@@ -4,11 +4,10 @@ declare(strict_types=1);
 namespace Themes\Rozier\Models;
 
 use JMS\Serializer\Annotation as Serializer;
-use Pimple\Container;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
-use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @package Themes\Rozier\Models
@@ -17,22 +16,20 @@ use Symfony\Component\Routing\Generator\UrlGenerator;
 final class NodeModel implements ModelInterface
 {
     private Node $node;
-    private Container $container;
+    private UrlGeneratorInterface $urlGenerator;
 
     /**
      * @param Node $node
-     * @param Container $container
+     * @param UrlGeneratorInterface $urlGenerator
      */
-    public function __construct(Node $node, Container $container)
+    public function __construct(Node $node, UrlGeneratorInterface $urlGenerator)
     {
         $this->node = $node;
-        $this->container = $container;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function toArray()
     {
-        /** @var UrlGenerator $urlGenerator */
-        $urlGenerator = $this->container->offsetGet('urlGenerator');
         /** @var NodesSources|false $nodeSource */
         $nodeSource = $this->node->getNodeSources()->first();
         $thumbnail = null;
@@ -47,7 +44,7 @@ final class NodeModel implements ModelInterface
             'thumbnail' => $thumbnail ? $thumbnail->getDocument() : null,
             'nodeName' => $this->node->getNodeName(),
             'isPublished' => $this->node->isPublished(),
-            'nodesEditPage' => $urlGenerator->generate('nodesEditSourcePage', [
+            'nodesEditPage' => $this->urlGenerator->generate('nodesEditSourcePage', [
                 'nodeId' => $this->node->getId(),
                 'translationId' => $nodeSource->getTranslation()->getId(),
             ]),
@@ -58,18 +55,16 @@ final class NodeModel implements ModelInterface
 
         $parent = $this->node->getParent();
 
-        if ($parent) {
+        if ($parent instanceof Node) {
             $result['parent'] = [
                 'title' => $parent->getNodeSources()->first()->getTitle()
             ];
 
-            if ($parent->getParent()) {
-                $subparent = $parent->getParent();
-                if (null !== $subparent) {
-                    $result['subparent'] = [
-                        'title' => $subparent->getNodeSources()->first()->getTitle()
-                    ];
-                }
+            $subparent = $parent->getParent();
+            if ($subparent instanceof Node) {
+                $result['subparent'] = [
+                    'title' => $subparent->getNodeSources()->first()->getTitle()
+                ];
             }
         }
 

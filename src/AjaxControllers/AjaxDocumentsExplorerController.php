@@ -3,13 +3,16 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\Document\Renderer\RendererInterface;
+use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Models\DocumentModel;
 
 /**
@@ -17,6 +20,22 @@ use Themes\Rozier\Models\DocumentModel;
  */
 class AjaxDocumentsExplorerController extends AbstractAjaxController
 {
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator,
+        CsrfTokenManagerInterface $csrfTokenManager
+    ) {
+        parent::__construct($csrfTokenManager);
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
+    }
+
     public static array $thumbnailArray = [
         "fit" => "40x40",
         "quality" => 50,
@@ -100,7 +119,6 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
         $cleanDocumentIds = array_filter($request->query->get('ids'));
 
-        /** @var EntityManager $em */
         $em = $this->em();
         $documents = $em->getRepository(Document::class)->findBy([
             'id' => $cleanDocumentIds,
@@ -135,7 +153,12 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
         /** @var Document $doc */
         foreach ($documents as $doc) {
-            $documentModel = new DocumentModel($doc, $this->getContainer());
+            $documentModel = new DocumentModel(
+                $doc,
+                $this->renderer,
+                $this->documentUrlGenerator,
+                $this->urlGenerator
+            );
             $documentsArray[] = $documentModel->toArray();
         }
 
