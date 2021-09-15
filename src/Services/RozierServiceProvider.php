@@ -4,21 +4,97 @@ declare(strict_types=1);
 namespace Themes\Rozier\Services;
 
 use Doctrine\Persistence\ManagerRegistry;
+use JMS\Serializer\SerializerInterface;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Psr\Log\LoggerInterface;
+use RZ\Roadiz\CMS\Importers\GroupsImporter;
+use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
+use RZ\Roadiz\CMS\Importers\RolesImporter;
+use RZ\Roadiz\CMS\Importers\SettingsImporter;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\Core\Bags\NodeTypes;
 use RZ\Roadiz\Core\Entities\Role;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Kernel;
+use RZ\Roadiz\Core\Serializers\NodeSourceXlsxSerializer;
+use RZ\Roadiz\Document\Renderer\RendererInterface;
+use RZ\Roadiz\OpenId\OAuth2LinkGenerator;
+use RZ\Roadiz\Preview\PreviewResolverInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
+use RZ\Roadiz\Utils\CustomForm\CustomFormAnswerSerializer;
+use RZ\Roadiz\Utils\Doctrine\SchemaUpdater;
+use RZ\Roadiz\Utils\Document\DocumentFactory;
+use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\Node\NodeMover;
+use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
+use RZ\Roadiz\Utils\Node\NodeTranstyper;
+use RZ\Roadiz\Utils\Node\UniqueNodeGenerator;
 use RZ\Roadiz\Utils\Security\FirewallEntry;
+use RZ\Roadiz\Utils\Tag\TagFactory;
+use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\Webhook\WebhookDispatcher;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\AccessMap;
 use Symfony\Component\Security\Http\FirewallMap;
+use Symfony\Component\Workflow\Registry;
+use Themes\Rozier\AjaxControllers\AjaxAbstractFieldsController;
+use Themes\Rozier\AjaxControllers\AjaxAttributeValuesController;
+use Themes\Rozier\AjaxControllers\AjaxCustomFormFieldsController;
+use Themes\Rozier\AjaxControllers\AjaxCustomFormsExplorerController;
+use Themes\Rozier\AjaxControllers\AjaxDocumentsExplorerController;
+use Themes\Rozier\AjaxControllers\AjaxEntitiesExplorerController;
+use Themes\Rozier\AjaxControllers\AjaxExplorerProviderController;
+use Themes\Rozier\AjaxControllers\AjaxFoldersController;
+use Themes\Rozier\AjaxControllers\AjaxFoldersExplorerController;
+use Themes\Rozier\AjaxControllers\AjaxFolderTreeController;
+use Themes\Rozier\AjaxControllers\AjaxNodesController;
+use Themes\Rozier\AjaxControllers\AjaxNodeTreeController;
+use Themes\Rozier\AjaxControllers\AjaxNodeTypeFieldsController;
+use Themes\Rozier\AjaxControllers\AjaxNodeTypesController;
+use Themes\Rozier\AjaxControllers\AjaxSearchNodesSourcesController;
+use Themes\Rozier\AjaxControllers\AjaxSessionMessages;
+use Themes\Rozier\AjaxControllers\AjaxTagsController;
+use Themes\Rozier\AjaxControllers\AjaxTagTreeController;
+use Themes\Rozier\Controllers\Attributes\AttributeGroupController;
+use Themes\Rozier\Controllers\CacheController;
+use Themes\Rozier\Controllers\CustomForms\CustomFormsController;
+use Themes\Rozier\Controllers\CustomForms\CustomFormsUtilsController;
+use Themes\Rozier\Controllers\Documents\DocumentsController;
+use Themes\Rozier\Controllers\FoldersController;
+use Themes\Rozier\Controllers\FontsController;
+use Themes\Rozier\Controllers\GroupsController;
+use Themes\Rozier\Controllers\GroupsUtilsController;
+use Themes\Rozier\Controllers\LoginController;
+use Themes\Rozier\Controllers\LoginRequestController;
+use Themes\Rozier\Controllers\Nodes\ExportController;
+use Themes\Rozier\Controllers\Nodes\NodesAttributesController;
+use Themes\Rozier\Controllers\Nodes\NodesController;
+use Themes\Rozier\Controllers\Nodes\NodesTreesController;
+use Themes\Rozier\Controllers\Nodes\NodesUtilsController;
+use Themes\Rozier\Controllers\Nodes\TranstypeController;
+use Themes\Rozier\Controllers\Nodes\UrlAliasesController;
+use Themes\Rozier\Controllers\NodeTypeFieldsController;
+use Themes\Rozier\Controllers\NodeTypes\NodeTypesController;
+use Themes\Rozier\Controllers\NodeTypes\NodeTypesUtilsController;
+use Themes\Rozier\Controllers\RedirectionsController;
+use Themes\Rozier\Controllers\RolesController;
+use Themes\Rozier\Controllers\RolesUtilsController;
+use Themes\Rozier\Controllers\SchemaController;
+use Themes\Rozier\Controllers\SettingGroupsController;
+use Themes\Rozier\Controllers\SettingsController;
+use Themes\Rozier\Controllers\SettingsUtilsController;
+use Themes\Rozier\Controllers\Tags\TagMultiCreationController;
+use Themes\Rozier\Controllers\Tags\TagsController;
+use Themes\Rozier\Controllers\Tags\TagsUtilsController;
+use Themes\Rozier\Controllers\TranslationsController;
+use Themes\Rozier\Controllers\WebhookController;
 use Themes\Rozier\Events\NodeDuplicationSubscriber;
 use Themes\Rozier\Events\NodeRedirectionSubscriber;
 use Themes\Rozier\Events\NodesSourcesUniversalSubscriber;
@@ -139,50 +215,6 @@ final class RozierServiceProvider implements ServiceProviderInterface
         $container->extend('serializer.subscribers', function (array $subscribers, $c) {
             $subscribers[] = new DocumentThumbnailSerializeSubscriber($c['document.url_generator']);
             return $subscribers;
-        });
-
-        $container->extend('dispatcher', function (EventDispatcherInterface $dispatcher, Container $c) {
-            /** @var Kernel $kernel */
-            $kernel = $c['kernel'];
-
-            if (!$kernel->isInstallMode()) {
-                /*
-             * Add custom event subscriber to empty NS Url cache
-             */
-                $dispatcher->addSubscriber(
-                    new NodesSourcesUrlSubscriber($c['nodesSourcesUrlCacheProvider'])
-                );
-                /*
-                 * Add custom event subscriber to Translation result cache
-                 */
-                $dispatcher->addSubscriber(
-                    new TranslationSubscriber($c['em']->getConfiguration()->getResultCacheImpl())
-                );
-                /*
-                 * Add custom event subscriber to manage universal node-type fields
-                 */
-                $dispatcher->addSubscriber(
-                    new NodesSourcesUniversalSubscriber($c[ManagerRegistry::class], $c['utils.universalDataDuplicator'])
-                );
-            }
-            /*
-             * Add custom event subscriber to manage node duplication
-             */
-            $dispatcher->addSubscriber(
-                new NodeDuplicationSubscriber(
-                    $c[ManagerRegistry::class],
-                    $c['factory.handler']
-                )
-            );
-
-            /*
-             * Add event to create redirection after renaming a node.
-             */
-            $dispatcher->addSubscriber(
-                new NodeRedirectionSubscriber($c[NodeMover::class], $kernel)
-            );
-
-            return $dispatcher;
         });
 
         $container->extend('backoffice.entries', function (array $entries, $c) {
@@ -449,5 +481,229 @@ final class RozierServiceProvider implements ServiceProviderInterface
 
             return $firewallMap;
         });
+
+        /*
+         * Controllers as services
+         */
+        $container[AjaxAttributeValuesController::class] = function (Container $c) {
+            return new AjaxAttributeValuesController($c['csrfTokenManager']);
+        };
+        $container[AjaxCustomFormFieldsController::class] = function (Container $c) {
+            return new AjaxCustomFormFieldsController($c['factory.handler'], $c['csrfTokenManager']);
+        };
+        $container[AjaxCustomFormsExplorerController::class] = function (Container $c) {
+            return new AjaxCustomFormsExplorerController($c['csrfTokenManager']);
+        };
+        $container[AjaxDocumentsExplorerController::class] = function (Container $c) {
+            return new AjaxDocumentsExplorerController($c['csrfTokenManager']);
+        };
+        $container[AjaxEntitiesExplorerController::class] = function (Container $c) {
+            return new AjaxEntitiesExplorerController($c['csrfTokenManager']);
+        };
+        $container[AjaxExplorerProviderController::class] = function (Container $c) {
+            return new AjaxExplorerProviderController(new \Pimple\Psr11\Container($c), $c['csrfTokenManager']);
+        };
+        $container[AjaxFoldersController::class] = function (Container $c) {
+            return new AjaxFoldersController($c['factory.handler'], $c['csrfTokenManager']);
+        };
+        $container[AjaxFoldersExplorerController::class] = function (Container $c) {
+            return new AjaxFoldersExplorerController($c['csrfTokenManager']);
+        };
+        $container[AjaxFolderTreeController::class] = function (Container $c) {
+            return new AjaxFolderTreeController($c[TreeWidgetFactory::class], $c['csrfTokenManager']);
+        };
+        $container[AjaxNodesController::class] = function (Container $c) {
+            return new AjaxNodesController(
+                $c[NodeNamePolicyInterface::class],
+                $c['logger'],
+                $c[NodeMover::class],
+                $c[NodeChrootResolver::class],
+                $c['workflow.registry'],
+                $c['utils.uniqueNodeGenerator'],
+                $c['csrfTokenManager']
+            );
+        };
+        $container[AjaxNodeTreeController::class] = function (Container $c) {
+            return new AjaxNodeTreeController(
+                $c[NodeChrootResolver::class],
+                $c[TreeWidgetFactory::class],
+                $c['nodeTypesBag'],
+                $c['csrfTokenManager']
+            );
+        };
+        $container[AjaxNodeTypeFieldsController::class] = function (Container $c) {
+            return new AjaxNodeTypeFieldsController($c['factory.handler'], $c['csrfTokenManager']);
+        };
+        $container[AjaxNodeTypesController::class] = function (Container $c) {
+            return new AjaxNodeTypesController($c['factory.handler'], $c['csrfTokenManager']);
+        };
+        $container[AjaxSearchNodesSourcesController::class] = function (Container $c) {
+            return new AjaxSearchNodesSourcesController($c['document.url_generator'], $c['csrfTokenManager']);
+        };
+        $container[AjaxSessionMessages::class] = function (Container $c) {
+            return new AjaxSessionMessages($c['csrfTokenManager']);
+        };
+        $container[AjaxTagsController::class] = function (Container $c) {
+            return new AjaxTagsController($c['factory.handler'], $c['csrfTokenManager']);
+        };
+        $container[AjaxTagTreeController::class] = function (Container $c) {
+            return new AjaxTagTreeController($c[TreeWidgetFactory::class], $c['csrfTokenManager']);
+        };
+
+        /*
+         *
+         */
+        $container[AttributeGroupController::class] = function (Container $c) {
+            return new AttributeGroupController($c['serializer'], $c['router']);
+        };
+        $container[CustomFormsController::class] = function (Container $c) {
+            return new CustomFormsController($c['serializer'], $c['router']);
+        };
+        $container[CustomFormsUtilsController::class] = function (Container $c) {
+            return new CustomFormsUtilsController($c[CustomFormAnswerSerializer::class]);
+        };
+        $container[DocumentsController::class] = function (Container $c) {
+            return new DocumentsController(
+                $c['document.platforms'],
+                $c['assetPackages'],
+                $c['factory.handler'],
+                $c['logger'],
+                $c[RandomImageFinder::class],
+                $c['document.factory'],
+                $c[RendererInterface::class],
+                $c['document.url_generator'],
+                $c['router'],
+                $c['interventionRequestSupportsWebP']
+            );
+        };
+        $container[ExportController::class] = function (Container $c) {
+            return new ExportController($c[NodeSourceXlsxSerializer::class]);
+        };
+        $container[NodesAttributesController::class] = function (Container $c) {
+            return new NodesAttributesController($c['formFactory']);
+        };
+        $container[NodesController::class] = function (Container $c) {
+            return new NodesController(
+                $c[NodeChrootResolver::class],
+                $c[NodeMover::class],
+                $c['securityAuthorizationChecker'],
+                $c['workflow.registry'],
+                $c['factory.handler'],
+                $c['utils.uniqueNodeGenerator'],
+                $c['rozier.form_type.node'],
+                $c['rozier.form_type.add_node']
+            );
+        };
+        $container[NodesTreesController::class] = function (Container $c) {
+            return new NodesTreesController(
+                $c[NodeChrootResolver::class],
+                $c[TreeWidgetFactory::class],
+                $c['formFactory'],
+                $c['factory.handler'],
+                $c['workflow.registry']
+            );
+        };
+        $container[NodesUtilsController::class] = function (Container $c) {
+            return new NodesUtilsController($c[NodeNamePolicyInterface::class]);
+        };
+        $container[TranstypeController::class] = function (Container $c) {
+            return new TranstypeController($c[NodeTranstyper::class]);
+        };
+        $container[UrlAliasesController::class] = function (Container $c) {
+            return new UrlAliasesController($c['formFactory']);
+        };
+        $container[NodeTypesController::class] = function (Container $c) {
+            return new NodeTypesController($c['factory.handler']);
+        };
+        $container[NodeTypesUtilsController::class] = function (Container $c) {
+            return new NodeTypesUtilsController(
+                $c['serializer'],
+                $c['nodeTypesBag'],
+                $c[NodeTypesImporter::class]
+            );
+        };
+        $container[TagMultiCreationController::class] = function (Container $c) {
+            return new TagMultiCreationController($c[TagFactory::class]);
+        };
+        $container[TagsController::class] = function (Container $c) {
+            return new TagsController(
+                $c['formFactory'],
+                $c['factory.handler'],
+                $c[TreeWidgetFactory::class]
+            );
+        };
+        $container[TagsUtilsController::class] = function (Container $c) {
+            return new TagsUtilsController($c['serializer']);
+        };
+        $container[CacheController::class] = function (Container $c) {
+            return new CacheController(
+                $c['kernel'],
+                $c['logger'],
+                $c['nodesSourcesUrlCacheProvider']
+            );
+        };
+        $container[FoldersController::class] = function (Container $c) {
+            return new FoldersController($c['assetPackages']);
+        };
+        $container[FontsController::class] = function (Container $c) {
+            return new FontsController(
+                $c['assetPackages'],
+                $c['serializer'],
+                $c['router']
+            );
+        };
+        $container[GroupsController::class] = function (Container $c) {
+            return new GroupsController($c['serializer'], $c['router']);
+        };
+        $container[GroupsUtilsController::class] = function (Container $c) {
+            return new GroupsUtilsController($c['serializer'], $c[GroupsImporter::class]);
+        };
+        $container[LoginController::class] = function (Container $c) {
+            return new LoginController(
+                $c['securityAuthenticationUtils'],
+                $c[OAuth2LinkGenerator::class],
+                $c['logger'],
+                $c['document.url_generator'],
+                $c['assetPackages'],
+                $c[RandomImageFinder::class]
+            );
+        };
+        $container[LoginRequestController::class] = function (Container $c) {
+            return new LoginRequestController($c['logger'], $c['router']);
+        };
+        $container[NodeTypeFieldsController::class] = function (Container $c) {
+            return new NodeTypeFieldsController($c['factory.handler']);
+        };
+        $container[RedirectionsController::class] = function (Container $c) {
+            return new RedirectionsController($c['serializer'], $c['router']);
+        };
+        $container[RolesController::class] = function (Container $c) {
+            return new RolesController($c['serializer'], $c['router']);
+        };
+        $container[RolesUtilsController::class] = function (Container $c) {
+            return new RolesUtilsController($c['serializer'], $c[RolesImporter::class]);
+        };
+        $container[SchemaController::class] = function (Container $c) {
+            return new SchemaController($c[SchemaUpdater::class], $c['kernel']);
+        };
+        $container[SettingGroupsController::class] = function (Container $c) {
+            return new SettingGroupsController($c['serializer'], $c['router']);
+        };
+        $container[SettingsController::class] = function (Container $c) {
+            return new SettingsController($c['formFactory']);
+        };
+        $container[SettingsUtilsController::class] = function (Container $c) {
+            return new SettingsUtilsController($c['serializer'], $c[SettingsImporter::class]);
+        };
+        $container[TranslationsController::class] = function (Container $c) {
+            return new TranslationsController($c['factory.handler']);
+        };
+        $container[WebhookController::class] = function (Container $c) {
+            return new WebhookController(
+                $c[WebhookDispatcher::class],
+                $c['serializer'],
+                $c['router']
+            );
+        };
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
-use RZ\Roadiz\Core\Handlers\AbstractHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +13,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 /**
  * @package Themes\Rozier\AjaxControllers
  */
-class AjaxAbstractFieldsController extends AbstractAjaxController
+abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
 

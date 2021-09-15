@@ -8,17 +8,13 @@ use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
 use RZ\Roadiz\Core\Entities\UserLogEntry;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 trait VersionedControllerTrait
 {
-    /**
-     * @var bool
-     */
-    protected $isReadOnly = false;
+    protected bool $isReadOnly = false;
 
     /**
      * @return bool
@@ -70,7 +66,6 @@ trait VersionedControllerTrait
                         $this->assignation['currentVersion'] = $log;
                     }
                 }
-                /** @var FormInterface $revertForm */
                 $revertForm = $this->createNamedFormBuilder('revertVersion')
                     ->add('version', HiddenType::class, ['data' => $versionNumber])
                     ->getForm();
