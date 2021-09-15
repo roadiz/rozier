@@ -5,7 +5,6 @@ namespace Themes\Rozier\AjaxControllers;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\RozierApp;
 

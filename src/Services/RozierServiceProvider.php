@@ -4,48 +4,34 @@ declare(strict_types=1);
 namespace Themes\Rozier\Services;
 
 use Doctrine\Persistence\ManagerRegistry;
-use JMS\Serializer\SerializerInterface;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
-use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Attribute\Importer\AttributeImporter;
 use RZ\Roadiz\CMS\Importers\GroupsImporter;
 use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
 use RZ\Roadiz\CMS\Importers\RolesImporter;
 use RZ\Roadiz\CMS\Importers\SettingsImporter;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Bags\NodeTypes;
 use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Kernel;
 use RZ\Roadiz\Core\Serializers\NodeSourceXlsxSerializer;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\OpenId\OAuth2LinkGenerator;
-use RZ\Roadiz\Preview\PreviewResolverInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\CustomForm\CustomFormAnswerSerializer;
 use RZ\Roadiz\Utils\Doctrine\SchemaUpdater;
-use RZ\Roadiz\Utils\Document\DocumentFactory;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\Node\NodeMover;
 use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
 use RZ\Roadiz\Utils\Node\NodeTranstyper;
-use RZ\Roadiz\Utils\Node\UniqueNodeGenerator;
 use RZ\Roadiz\Utils\Security\FirewallEntry;
 use RZ\Roadiz\Utils\Tag\TagFactory;
-use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use RZ\Roadiz\Webhook\WebhookDispatcher;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\Asset\PathPackage;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\Routing\Generator\UrlGenerator;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\AccessMap;
 use Symfony\Component\Security\Http\FirewallMap;
-use Symfony\Component\Workflow\Registry;
-use Themes\Rozier\AjaxControllers\AjaxAbstractFieldsController;
 use Themes\Rozier\AjaxControllers\AjaxAttributeValuesController;
 use Themes\Rozier\AjaxControllers\AjaxCustomFormFieldsController;
 use Themes\Rozier\AjaxControllers\AjaxCustomFormsExplorerController;
@@ -56,6 +42,7 @@ use Themes\Rozier\AjaxControllers\AjaxFoldersController;
 use Themes\Rozier\AjaxControllers\AjaxFoldersExplorerController;
 use Themes\Rozier\AjaxControllers\AjaxFolderTreeController;
 use Themes\Rozier\AjaxControllers\AjaxNodesController;
+use Themes\Rozier\AjaxControllers\AjaxNodesExplorerController;
 use Themes\Rozier\AjaxControllers\AjaxNodeTreeController;
 use Themes\Rozier\AjaxControllers\AjaxNodeTypeFieldsController;
 use Themes\Rozier\AjaxControllers\AjaxNodeTypesController;
@@ -97,11 +84,6 @@ use Themes\Rozier\Controllers\Tags\TagsController;
 use Themes\Rozier\Controllers\Tags\TagsUtilsController;
 use Themes\Rozier\Controllers\TranslationsController;
 use Themes\Rozier\Controllers\WebhookController;
-use Themes\Rozier\Events\NodeDuplicationSubscriber;
-use Themes\Rozier\Events\NodeRedirectionSubscriber;
-use Themes\Rozier\Events\NodesSourcesUniversalSubscriber;
-use Themes\Rozier\Events\NodesSourcesUrlSubscriber;
-use Themes\Rozier\Events\TranslationSubscriber;
 use Themes\Rozier\Forms\FolderCollectionType;
 use Themes\Rozier\Forms\LoginType;
 use Themes\Rozier\Forms\Node\AddNodeType;
@@ -497,7 +479,12 @@ final class RozierServiceProvider implements ServiceProviderInterface
             return new AjaxCustomFormsExplorerController($c['csrfTokenManager']);
         };
         $container[AjaxDocumentsExplorerController::class] = function (Container $c) {
-            return new AjaxDocumentsExplorerController($c['csrfTokenManager']);
+            return new AjaxDocumentsExplorerController(
+                $c[RendererInterface::class],
+                $c['document.url_generator'],
+                $c['router'],
+                $c['csrfTokenManager']
+            );
         };
         $container[AjaxEntitiesExplorerController::class] = function (Container $c) {
             return new AjaxEntitiesExplorerController($c['csrfTokenManager']);
@@ -522,6 +509,14 @@ final class RozierServiceProvider implements ServiceProviderInterface
                 $c[NodeChrootResolver::class],
                 $c['workflow.registry'],
                 $c['utils.uniqueNodeGenerator'],
+                $c['csrfTokenManager']
+            );
+        };
+        $container[AjaxNodesExplorerController::class] = function (Container $c) {
+            return new AjaxNodesExplorerController(
+                $c['serializer'],
+                $c['solr.search.nodeSource'],
+                $c['nodeTypeApi'],
                 $c['csrfTokenManager']
             );
         };
