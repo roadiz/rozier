@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Models\TagModel;
 
 /**
@@ -25,9 +24,8 @@ class AjaxTagsController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
 
-    public function __construct(HandlerFactoryInterface $handlerFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(HandlerFactoryInterface $handlerFactory)
     {
-        parent::__construct($csrfTokenManager);
         $this->handlerFactory = $handlerFactory;
     }
 
@@ -221,27 +219,21 @@ class AjaxTagsController extends AbstractAjaxController
         $tag = $this->em()->find(Tag::class, (int) $tagId);
 
         if ($tag !== null) {
-            $responseArray = null;
-
             /*
              * Get the right update method against "_action" parameter
              */
             switch ($request->get('_action')) {
                 case 'updatePosition':
-                    $responseArray = $this->updatePosition($request->request->all(), $tag);
+                    $this->updatePosition($request->request->all(), $tag);
                     break;
             }
 
-            if ($responseArray === null) {
-                $responseArray = [
+            return new JsonResponse(
+                [
                     'statusCode' => '200',
                     'status' => 'success',
                     'responseText' => ('Tag ' . $tagId . ' edited '),
-                ];
-            }
-
-            return new JsonResponse(
-                $responseArray,
+                ],
                 Response::HTTP_PARTIAL_CONTENT
             );
         }
@@ -320,15 +312,13 @@ class AjaxTagsController extends AbstractAjaxController
          */
         if (!empty($parameters['nextTagId']) &&
             $parameters['nextTagId'] > 0) {
-            $nextTag = $this->em()
-                            ->find(Tag::class, (int) $parameters['nextTagId']);
+            $nextTag = $this->em()->find(Tag::class, (int) $parameters['nextTagId']);
             if ($nextTag !== null) {
                 $tag->setPosition($nextTag->getPosition() - 0.5);
             }
         } elseif (!empty($parameters['prevTagId']) &&
             $parameters['prevTagId'] > 0) {
-            $prevTag = $this->em()
-                            ->find(Tag::class, (int) $parameters['prevTagId']);
+            $prevTag = $this->em()->find(Tag::class, (int) $parameters['prevTagId']);
             if ($prevTag !== null) {
                 $tag->setPosition($prevTag->getPosition() + 0.5);
             }

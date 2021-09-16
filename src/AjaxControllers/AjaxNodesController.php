@@ -22,9 +22,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Workflow\Registry;
-use Symfony\Component\Workflow\Workflow;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -44,10 +42,8 @@ class AjaxNodesController extends AbstractAjaxController
         NodeMover $nodeMover,
         NodeChrootResolver $nodeChrootResolver,
         Registry $workflowRegistry,
-        UniqueNodeGenerator $uniqueNodeGenerator,
-        CsrfTokenManagerInterface $csrfTokenManager
+        UniqueNodeGenerator $uniqueNodeGenerator
     ) {
-        parent::__construct($csrfTokenManager);
         $this->nodeNamePolicy = $nodeNamePolicy;
         $this->logger = $logger;
         $this->nodeMover = $nodeMover;
@@ -106,7 +102,7 @@ class AjaxNodesController extends AbstractAjaxController
              */
             switch ($request->get('_action')) {
                 case 'updatePosition':
-                    $responseArray = $this->updatePosition($request->request->all(), $node);
+                    $this->updatePosition($request->request->all(), $node);
                     break;
                 case 'duplicate':
                     $duplicator = new NodeDuplicator(

@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -20,9 +19,8 @@ class AjaxExplorerProviderController extends AbstractAjaxController
 {
     private ContainerInterface $psrContainer;
 
-    public function __construct(ContainerInterface $psrContainer, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(ContainerInterface $psrContainer)
     {
-        parent::__construct($csrfTokenManager);
         $this->psrContainer = $psrContainer;
     }
 

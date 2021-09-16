@@ -11,7 +11,6 @@ use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Widgets\NodeTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
@@ -27,10 +26,8 @@ class AjaxNodeTreeController extends AbstractAjaxController
     public function __construct(
         NodeChrootResolver $nodeChrootResolver,
         TreeWidgetFactory $treeWidgetFactory,
-        NodeTypes $nodeTypesBag,
-        CsrfTokenManagerInterface $csrfTokenManager
+        NodeTypes $nodeTypesBag
     ) {
-        parent::__construct($csrfTokenManager);
         $this->nodeChrootResolver = $nodeChrootResolver;
         $this->treeWidgetFactory = $treeWidgetFactory;
         $this->nodeTypesBag = $nodeTypesBag;
@@ -52,11 +49,10 @@ class AjaxNodeTreeController extends AbstractAjaxController
         if (null === $translationId) {
             $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
-            $translation = $this->em()
-                                ->find(
-                                    Translation::class,
-                                    $translationId
-                                );
+            $translation = $this->em()->find(
+                Translation::class,
+                $translationId
+            );
         }
 
         /** @var NodeTreeWidget|null $nodeTree */

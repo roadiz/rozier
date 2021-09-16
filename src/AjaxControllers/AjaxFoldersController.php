@@ -9,7 +9,6 @@ use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -18,9 +17,8 @@ class AjaxFoldersController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
 
-    public function __construct(HandlerFactoryInterface $handlerFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(HandlerFactoryInterface $handlerFactory)
     {
-        parent::__construct($csrfTokenManager);
         $this->handlerFactory = $handlerFactory;
     }
 
@@ -35,14 +33,10 @@ class AjaxFoldersController extends AbstractAjaxController
      */
     public function editAction(Request $request, int $folderId)
     {
-        /*
-         * Validate
-         */
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $folder = $this->em()
-            ->find(Folder::class, (int) $folderId);
+        $folder = $this->em()->find(Folder::class, (int) $folderId);
 
         if ($folder !== null) {
             $responseArray = null;
@@ -133,8 +127,7 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['newParent']) &&
             $parameters['newParent'] > 0) {
             /** @var Folder $parent */
-            $parent = $this->em()
-                ->find(Folder::class, (int) $parameters['newParent']);
+            $parent = $this->em()->find(Folder::class, (int) $parameters['newParent']);
 
             if ($parent !== null) {
                 $folder->setParent($parent);
@@ -149,8 +142,7 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['nextFolderId']) &&
             $parameters['nextFolderId'] > 0) {
             /** @var Folder $nextFolder */
-            $nextFolder = $this->em()
-                ->find(Folder::class, (int) $parameters['nextFolderId']);
+            $nextFolder = $this->em()->find(Folder::class, (int) $parameters['nextFolderId']);
             if ($nextFolder !== null) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
             }

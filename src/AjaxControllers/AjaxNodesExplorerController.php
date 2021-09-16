@@ -5,7 +5,6 @@ namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Utils\NodeTypeApi;
 use RZ\Roadiz\Core\Entities\Node;
@@ -16,7 +15,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Models\NodeModel;
 use Themes\Rozier\Models\NodeSourceModel;
 
@@ -32,10 +30,8 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     public function __construct(
         SerializerInterface $serializer,
         ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
-        NodeTypeApi $nodeTypeApi,
-        CsrfTokenManagerInterface $csrfTokenManager
+        NodeTypeApi $nodeTypeApi
     ) {
-        parent::__construct($csrfTokenManager);
         $this->nodeSourceSearchHandler = $nodeSourceSearchHandler;
         $this->nodeTypeApi = $nodeTypeApi;
         $this->serializer = $serializer;

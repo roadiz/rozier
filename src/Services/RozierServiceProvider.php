@@ -469,37 +469,24 @@ final class RozierServiceProvider implements ServiceProviderInterface
         /*
          * Controllers as services
          */
-        $container[AjaxAttributeValuesController::class] = function (Container $c) {
-            return new AjaxAttributeValuesController($c['csrfTokenManager']);
-        };
         $container[AjaxCustomFormFieldsController::class] = function (Container $c) {
-            return new AjaxCustomFormFieldsController($c['factory.handler'], $c['csrfTokenManager']);
-        };
-        $container[AjaxCustomFormsExplorerController::class] = function (Container $c) {
-            return new AjaxCustomFormsExplorerController($c['csrfTokenManager']);
+            return new AjaxCustomFormFieldsController($c['factory.handler']);
         };
         $container[AjaxDocumentsExplorerController::class] = function (Container $c) {
             return new AjaxDocumentsExplorerController(
                 $c[RendererInterface::class],
                 $c['document.url_generator'],
-                $c['router'],
-                $c['csrfTokenManager']
+                $c['router']
             );
         };
-        $container[AjaxEntitiesExplorerController::class] = function (Container $c) {
-            return new AjaxEntitiesExplorerController($c['csrfTokenManager']);
-        };
         $container[AjaxExplorerProviderController::class] = function (Container $c) {
-            return new AjaxExplorerProviderController(new \Pimple\Psr11\Container($c), $c['csrfTokenManager']);
+            return new AjaxExplorerProviderController(new \Pimple\Psr11\Container($c));
         };
         $container[AjaxFoldersController::class] = function (Container $c) {
-            return new AjaxFoldersController($c['factory.handler'], $c['csrfTokenManager']);
-        };
-        $container[AjaxFoldersExplorerController::class] = function (Container $c) {
-            return new AjaxFoldersExplorerController($c['csrfTokenManager']);
+            return new AjaxFoldersController($c['factory.handler']);
         };
         $container[AjaxFolderTreeController::class] = function (Container $c) {
-            return new AjaxFolderTreeController($c[TreeWidgetFactory::class], $c['csrfTokenManager']);
+            return new AjaxFolderTreeController($c[TreeWidgetFactory::class]);
         };
         $container[AjaxNodesController::class] = function (Container $c) {
             return new AjaxNodesController(
@@ -508,43 +495,37 @@ final class RozierServiceProvider implements ServiceProviderInterface
                 $c[NodeMover::class],
                 $c[NodeChrootResolver::class],
                 $c['workflow.registry'],
-                $c['utils.uniqueNodeGenerator'],
-                $c['csrfTokenManager']
+                $c['utils.uniqueNodeGenerator']
             );
         };
         $container[AjaxNodesExplorerController::class] = function (Container $c) {
             return new AjaxNodesExplorerController(
                 $c['serializer'],
                 $c['solr.search.nodeSource'],
-                $c['nodeTypeApi'],
-                $c['csrfTokenManager']
+                $c['nodeTypeApi']
             );
         };
         $container[AjaxNodeTreeController::class] = function (Container $c) {
             return new AjaxNodeTreeController(
                 $c[NodeChrootResolver::class],
                 $c[TreeWidgetFactory::class],
-                $c['nodeTypesBag'],
-                $c['csrfTokenManager']
+                $c['nodeTypesBag']
             );
         };
         $container[AjaxNodeTypeFieldsController::class] = function (Container $c) {
-            return new AjaxNodeTypeFieldsController($c['factory.handler'], $c['csrfTokenManager']);
+            return new AjaxNodeTypeFieldsController($c['factory.handler']);
         };
         $container[AjaxNodeTypesController::class] = function (Container $c) {
-            return new AjaxNodeTypesController($c['factory.handler'], $c['csrfTokenManager']);
+            return new AjaxNodeTypesController($c['factory.handler']);
         };
         $container[AjaxSearchNodesSourcesController::class] = function (Container $c) {
-            return new AjaxSearchNodesSourcesController($c['document.url_generator'], $c['csrfTokenManager']);
-        };
-        $container[AjaxSessionMessages::class] = function (Container $c) {
-            return new AjaxSessionMessages($c['csrfTokenManager']);
+            return new AjaxSearchNodesSourcesController($c['document.url_generator']);
         };
         $container[AjaxTagsController::class] = function (Container $c) {
-            return new AjaxTagsController($c['factory.handler'], $c['csrfTokenManager']);
+            return new AjaxTagsController($c['factory.handler']);
         };
         $container[AjaxTagTreeController::class] = function (Container $c) {
-            return new AjaxTagTreeController($c[TreeWidgetFactory::class], $c['csrfTokenManager']);
+            return new AjaxTagTreeController($c[TreeWidgetFactory::class]);
         };
 
         /*

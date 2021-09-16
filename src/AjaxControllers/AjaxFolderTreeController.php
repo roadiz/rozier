@@ -6,7 +6,6 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\Core\Entities\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
@@ -17,9 +16,8 @@ class AjaxFolderTreeController extends AbstractAjaxController
 {
     private TreeWidgetFactory $treeWidgetFactory;
 
-    public function __construct(TreeWidgetFactory $treeWidgetFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(TreeWidgetFactory $treeWidgetFactory)
     {
-        parent::__construct($csrfTokenManager);
         $this->treeWidgetFactory = $treeWidgetFactory;
     }
 

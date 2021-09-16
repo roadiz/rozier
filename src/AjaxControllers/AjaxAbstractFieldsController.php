@@ -8,7 +8,6 @@ use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -19,11 +18,9 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 
     /**
      * @param HandlerFactoryInterface $handlerFactory
-     * @param CsrfTokenManagerInterface $csrfTokenManager
      */
-    public function __construct(HandlerFactoryInterface $handlerFactory, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(HandlerFactoryInterface $handlerFactory)
     {
-        parent::__construct($csrfTokenManager);
         $this->handlerFactory = $handlerFactory;
     }
 

@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * @package Themes\Rozier\AjaxControllers
@@ -21,9 +20,8 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
     const RESULT_COUNT = 8;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
 
-    public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator, CsrfTokenManagerInterface $csrfTokenManager)
+    public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator)
     {
-        parent::__construct($csrfTokenManager);
         $this->documentUrlGenerator = $documentUrlGenerator;
     }
 
