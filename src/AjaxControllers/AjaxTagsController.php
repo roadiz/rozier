@@ -161,10 +161,10 @@ class AjaxTagsController extends AbstractAjaxController
     }
 
     /**
-     * @param Tag[]|null $tags
+     * @param array<Tag>|\Traversable<Tag>|null $tags
      * @return array
      */
-    protected function normalizeTags(array $tags = null)
+    protected function normalizeTags($tags)
     {
         $tagsArray = [];
         if ($tags !== null) {
