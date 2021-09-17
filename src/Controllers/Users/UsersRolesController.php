@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers\Users;
 use RZ\Roadiz\CMS\Forms\RolesType;
 use RZ\Roadiz\Core\Entities\Role;
 use RZ\Roadiz\Core\Entities\User;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -90,7 +91,7 @@ class UsersRolesController extends RozierApp
             $this->assignation['user'] = $user;
             $this->assignation['role'] = $role;
 
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {

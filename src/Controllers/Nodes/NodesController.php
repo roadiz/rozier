@@ -20,6 +20,7 @@ use RZ\Roadiz\Utils\Node\Exception\SameNodeUrlException;
 use RZ\Roadiz\Utils\Node\NodeMover;
 use RZ\Roadiz\Utils\Node\UniqueNodeGenerator;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -636,7 +637,7 @@ class NodesController extends RozierApp
         }
 
         $this->assignation['node'] = $node;
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -717,7 +718,7 @@ class NodesController extends RozierApp
             );
         }
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var NodeHandler $nodeHandler */

@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers\Users;
 
 use RZ\Roadiz\Core\Entities\Role;
 use RZ\Roadiz\Core\Entities\User;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -208,7 +209,7 @@ class UsersController extends RozierApp
             throw $this->createAccessDeniedException("You cannot edit a super admin.");
         }
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

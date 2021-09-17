@@ -7,6 +7,7 @@ use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -193,7 +194,7 @@ class NodeTypeFieldsController extends RozierApp
         $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
         if ($field !== null) {
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {

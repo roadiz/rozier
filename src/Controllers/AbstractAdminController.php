@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -233,7 +234,7 @@ abstract class AbstractAdminController extends RozierApp
 
         $this->denyAccessUnlessItemGranted($item);
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

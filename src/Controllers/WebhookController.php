@@ -9,6 +9,7 @@ use RZ\Roadiz\Webhook\Entity\Webhook;
 use RZ\Roadiz\Webhook\Exception\TooManyWebhookTriggeredException;
 use RZ\Roadiz\Webhook\Form\WebhookType;
 use RZ\Roadiz\Webhook\WebhookDispatcher;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -40,7 +41,7 @@ final class WebhookController extends AbstractAdminController
 
         $this->denyAccessUnlessItemGranted($item);
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

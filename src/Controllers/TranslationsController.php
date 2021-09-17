@@ -9,6 +9,7 @@ use RZ\Roadiz\Core\Events\Translation\TranslationDeletedEvent;
 use RZ\Roadiz\Core\Events\Translation\TranslationUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TranslationHandler;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -170,7 +171,7 @@ class TranslationsController extends RozierApp
 
         if (null !== $translation) {
             $this->assignation['translation'] = $translation;
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 if (false === $translation->isDefaultTranslation()) {
