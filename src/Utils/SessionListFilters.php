@@ -45,17 +45,17 @@ class SessionListFilters
             /*
              * Item count is in session
              */
-            $request->query->set('item_per_page', $request->getSession()->get($this->sessionIdentifier));
-            $listManager->setItemPerPage($request->getSession()->get($this->sessionIdentifier));
+            $request->query->set('item_per_page', (int) $request->getSession()->get($this->sessionIdentifier));
+            $listManager->setItemPerPage((int) $request->getSession()->get($this->sessionIdentifier));
         } elseif ($request->query->has('item_per_page') &&
             $request->query->get('item_per_page') > 0) {
             /*
              * Item count is in query, save it in session
              */
-            $request->getSession()->set($this->sessionIdentifier, $request->query->get('item_per_page'));
-            $listManager->setItemPerPage($request->query->get('item_per_page'));
+            $request->getSession()->set($this->sessionIdentifier, (int) $request->query->get('item_per_page'));
+            $listManager->setItemPerPage((int) $request->query->get('item_per_page'));
         } else {
-            $listManager->setItemPerPage($this->defaultItemsParPage);
+            $listManager->setItemPerPage((int) $this->defaultItemsParPage);
         }
     }
 }
