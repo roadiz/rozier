@@ -5,7 +5,9 @@ namespace Themes\Rozier\Controllers\NodeTypes;
 
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +20,16 @@ use Themes\Rozier\Utils\SessionListFilters;
  */
 class NodeTypesController extends RozierApp
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    /**
+     * @param HandlerFactoryInterface $handlerFactory
+     */
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * List every node-types.
      *
@@ -65,7 +77,7 @@ class NodeTypesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if (!($nodeType instanceof NodeType)) {
             throw $this->createNotFoundException();
@@ -76,9 +88,9 @@ class NodeTypesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('factory.handler')->getHandler($nodeType);
+                $handler = $this->handlerFactory->getHandler($nodeType);
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans('nodeType.%name%.updated', ['%name%' => $nodeType->getName()]);
@@ -86,7 +98,7 @@ class NodeTypesController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl('nodeTypesSchemaUpdate'));
+                return $this->redirectToRoute('nodeTypesSchemaUpdate');
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
@@ -116,10 +128,10 @@ class NodeTypesController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->get('em')->persist($nodeType);
-                $this->get('em')->flush();
+                $this->em()->persist($nodeType);
+                $this->em()->flush();
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('factory.handler')->getHandler($nodeType);
+                $handler = $this->handlerFactory->getHandler($nodeType);
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans('nodeType.%name%.created', ['%name%' => $nodeType->getName()]);
@@ -128,7 +140,7 @@ class NodeTypesController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl('nodeTypesSchemaUpdate'));
+                return $this->redirectToRoute('nodeTypesSchemaUpdate');
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
@@ -151,13 +163,13 @@ class NodeTypesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES_DELETE');
 
         /** @var NodeType $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if (!($nodeType instanceof NodeType)) {
             throw $this->createNotFoundException();
         }
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -165,7 +177,7 @@ class NodeTypesController extends RozierApp
              * Delete All node-type association and schema
              */
             /** @var NodeTypeHandler $handler */
-            $handler = $this->get('factory.handler')->getHandler($nodeType);
+            $handler = $this->handlerFactory->getHandler($nodeType);
             $handler->deleteWithAssociations();
 
             $msg = $this->getTranslator()->trans('nodeType.%name%.deleted', ['%name%' => $nodeType->getName()]);
@@ -173,7 +185,7 @@ class NodeTypesController extends RozierApp
             /*
              * Redirect to update schema page
              */
-            return $this->redirect($this->generateUrl('nodeTypesSchemaUpdate'));
+            return $this->redirectToRoute('nodeTypesSchemaUpdate');
         }
 
         $this->assignation['form'] = $form->createView();

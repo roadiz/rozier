@@ -31,10 +31,10 @@ class TranslateController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null !== $node) {
-            $availableTranslations = $this->get('em')
+            $availableTranslations = $this->em()
                                  ->getRepository(Translation::class)
                                  ->findUnavailableTranslationsForNode($node);
 
@@ -55,10 +55,10 @@ class TranslateController extends RozierApp
                             '%name%' => $node->getNodeName(),
                         ]);
                         $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
-                        return $this->redirect($this->generateUrl(
+                        return $this->redirectToRoute(
                             'nodesEditSourcePage',
                             ['nodeId' => $node->getId(), 'translationId' => $translation->getId()]
-                        ));
+                        );
                     } catch (EntityAlreadyExistsException $e) {
                         $form->addError(new FormError($e->getMessage()));
                     }
@@ -67,7 +67,7 @@ class TranslateController extends RozierApp
             }
 
             $this->assignation['node'] = $node;
-            $this->assignation['translation'] = $this->get('defaultTranslation');
+            $this->assignation['translation'] = $this->em()->getRepository(Translation::class)->findDefault();
             $this->assignation['available_translations'] = [];
 
             foreach ($node->getNodeSources() as $ns) {
@@ -88,7 +88,7 @@ class TranslateController extends RozierApp
      */
     protected function translateNode(Translation $translation, Node $node)
     {
-        $existing = $this->get('em')
+        $existing = $this->em()
                          ->getRepository(NodesSources::class)
                          ->setDisplayingAllNodesStatuses(true)
                          ->setDisplayingNotPublishedNodes(true)
@@ -99,17 +99,17 @@ class TranslateController extends RozierApp
                 $source = clone $baseSource;
 
                 foreach ($source->getDocumentsByFields() as $document) {
-                    $this->get('em')->persist($document);
+                    $this->em()->persist($document);
                 }
                 $source->setTranslation($translation);
                 $source->setNode($node);
 
-                $this->get('em')->persist($source);
+                $this->em()->persist($source);
 
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new NodesSourcesCreatedEvent($source));
+                $this->dispatchEvent(new NodesSourcesCreatedEvent($source));
             }
         }
     }
@@ -130,6 +130,6 @@ class TranslateController extends RozierApp
             }
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 }

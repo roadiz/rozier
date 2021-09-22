@@ -16,7 +16,7 @@ use RZ\Roadiz\Core\Events\UrlAlias\UrlAliasUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use RZ\Roadiz\Core\Exceptions\NoTranslationAvailableException;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +27,16 @@ use Themes\Rozier\RozierApp;
 
 class UrlAliasesController extends RozierApp
 {
+    private FormFactoryInterface $formFactory;
+
+    /**
+     * @param FormFactoryInterface $formFactory
+     */
+    public function __construct(FormFactoryInterface $formFactory)
+    {
+        $this->formFactory = $formFactory;
+    }
+
     /**
      * Return aliases form for requested node.
      *
@@ -41,27 +51,27 @@ class UrlAliasesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if (null === $translationId || $translationId < 1) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
         /** @var NodesSources|null $source */
-        $source = $this->get('em')
+        $source = $this->em()
                        ->getRepository(NodesSources::class)
                        ->setDisplayingAllNodesStatuses(true)
                        ->setDisplayingNotPublishedNodes(true)
                        ->findOneBy(['translation' => $translation, 'node.id' => $nodeId]);
 
         if ($source !== null && null !== $node = $source->getNode()) {
-            $redirections = $this->get('em')
+            $redirections = $this->em()
                 ->getRepository(Redirection::class)
                 ->findBy([
                     'redirectNodeSource' => $node->getNodeSources()->toArray()
                 ]);
-            $uas = $this->get('em')
+            $uas = $this->em()
                         ->getRepository(UrlAlias::class)
                         ->findAllFromNode($node->getId());
-            $availableTranslations = $this->get('em')
+            $availableTranslations = $this->em()
                 ->getRepository(Translation::class)
                 ->findAvailableTranslationsForNode($node);
 
@@ -78,17 +88,17 @@ class UrlAliasesController extends RozierApp
             $seoForm = $this->createForm(NodeSourceSeoType::class, $source);
             $seoForm->handleRequest($request);
             if ($seoForm->isSubmitted() && $seoForm->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans('node.seo.updated');
                 $this->publishConfirmMessage($request, $msg, $source);
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($source));
-                return $this->redirect($this->generateUrl(
+                $this->dispatchEvent(new NodesSourcesUpdatedEvent($source));
+                return $this->redirectToRoute(
                     'nodesEditSEOPage',
                     ['nodeId' => $node->getId(), 'translationId' => $translationId]
-                ));
+                );
             }
 
             if (null !== $response = $this->handleAddRedirection($source, $request)) {
@@ -114,10 +124,8 @@ class UrlAliasesController extends RozierApp
             /*
              * Main ADD url alias form
              */
-            /** @var FormFactory $formFactory */
-            $formFactory = $this->get('formFactory');
             $alias = new UrlAlias();
-            $addAliasForm = $formFactory->createNamed(
+            $addAliasForm = $this->formFactory->createNamed(
                 'add_urlalias_'.$node->getId(),
                 UrlAliasType::class,
                 $alias,
@@ -137,7 +145,7 @@ class UrlAliasesController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new UrlAliasCreatedEvent($alias));
+                    $this->dispatchEvent(new UrlAliasCreatedEvent($alias));
 
                     return $this->redirect($this->generateUrl(
                         'nodesEditSEOPage',
@@ -168,7 +176,7 @@ class UrlAliasesController extends RozierApp
     private function addNodeUrlAlias(UrlAlias $alias, Node $node, Translation $translation): UrlAlias
     {
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->get('em')
+        $nodeSource = $this->em()
                            ->getRepository(NodesSources::class)
                            ->setDisplayingAllNodesStatuses(true)
                            ->setDisplayingNotPublishedNodes(true)
@@ -176,8 +184,8 @@ class UrlAliasesController extends RozierApp
 
         if ($nodeSource !== null) {
             $alias->setNodeSource($nodeSource);
-            $this->get('em')->persist($alias);
-            $this->get('em')->flush();
+            $this->em()->persist($alias);
+            $this->em()->flush();
 
             return $alias;
         } else {
@@ -196,20 +204,18 @@ class UrlAliasesController extends RozierApp
      */
     private function handleSingleUrlAlias(UrlAlias $alias, Request $request): ?RedirectResponse
     {
-        /** @var FormFactory $formFactory */
-        $formFactory = $this->get('formFactory');
-        $editForm = $formFactory->createNamed(
+        $editForm = $this->formFactory->createNamed(
             'edit_urlalias_'.$alias->getId(),
             UrlAliasType::class,
             $alias
         );
-        $deleteForm = $formFactory->createNamed('delete_urlalias_'.$alias->getId());
+        $deleteForm = $this->formFactory->createNamed('delete_urlalias_'.$alias->getId());
         // Match edit
         $editForm->handleRequest($request);
         if ($editForm->isSubmitted() && $editForm->isValid()) {
             try {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'url_alias.%alias%.updated',
                         ['%alias%' => $alias->getAlias()]
@@ -218,7 +224,7 @@ class UrlAliasesController extends RozierApp
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new UrlAliasUpdatedEvent($alias));
+                    $this->dispatchEvent(new UrlAliasUpdatedEvent($alias));
 
                     return $this->redirect($this->generateUrl(
                         'nodesEditSEOPage',
@@ -238,15 +244,15 @@ class UrlAliasesController extends RozierApp
         // Match delete
         $deleteForm->handleRequest($request);
         if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
-            $this->get('em')->remove($alias);
-            $this->get('em')->flush();
+            $this->em()->remove($alias);
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans('url_alias.%alias%.deleted', ['%alias%' => $alias->getAlias()]);
             $this->publishConfirmMessage($request, $msg, $alias->getNodeSource());
 
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new UrlAliasDeletedEvent($alias));
+            $this->dispatchEvent(new UrlAliasDeletedEvent($alias));
 
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
@@ -277,9 +283,7 @@ class UrlAliasesController extends RozierApp
         $redirection->setRedirectNodeSource($source);
         $redirection->setType(Response::HTTP_MOVED_PERMANENTLY);
 
-        /** @var FormFactory $formFactory */
-        $formFactory = $this->get('formFactory');
-        $addForm = $formFactory->createNamed(
+        $addForm = $this->formFactory->createNamed(
             'add_redirection',
             RedirectionType::class,
             $redirection,
@@ -291,8 +295,8 @@ class UrlAliasesController extends RozierApp
 
         $addForm->handleRequest($request);
         if ($addForm->isSubmitted() && $addForm->isValid()) {
-            $this->get('em')->persist($redirection);
-            $this->get('em')->flush();
+            $this->em()->persist($redirection);
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [
@@ -314,9 +318,7 @@ class UrlAliasesController extends RozierApp
      */
     private function handleSingleRedirection(Redirection $redirection, Request $request): ?RedirectResponse
     {
-        /** @var FormFactory $formFactory */
-        $formFactory = $this->get('formFactory');
-        $editForm = $formFactory->createNamed(
+        $editForm = $this->formFactory->createNamed(
             'edit_redirection_'.$redirection->getId(),
             RedirectionType::class,
             $redirection,
@@ -324,11 +326,11 @@ class UrlAliasesController extends RozierApp
                 'only_query' => true
             ]
         );
-        $deleteForm = $formFactory->createNamed('delete_redirection_'.$redirection->getId());
+        $deleteForm = $this->formFactory->createNamed('delete_redirection_'.$redirection->getId());
 
         $editForm->handleRequest($request);
         if ($editForm->isSubmitted() && $editForm->isValid()) {
-            $this->get('em')->flush();
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [
@@ -341,8 +343,8 @@ class UrlAliasesController extends RozierApp
         // Match delete
         $deleteForm->handleRequest($request);
         if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
-            $this->get('em')->remove($redirection);
-            $this->get('em')->flush();
+            $this->em()->remove($redirection);
+            $this->em()->flush();
             return $this->redirect($this->generateUrl(
                 'nodesEditSEOPage',
                 [

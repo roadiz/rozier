@@ -5,7 +5,6 @@ namespace Themes\Rozier\AjaxControllers;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Themes\Rozier\RozierApp;
 
 /**
@@ -33,10 +32,7 @@ abstract class AbstractAjaxController extends RozierApp
         }
 
         if ($requestCsrfToken === true) {
-            /** @var CsrfTokenManager $tokenManager */
-            $tokenManager = $this->get('csrfTokenManager');
-            $token = $tokenManager->getToken(static::AJAX_TOKEN_INTENTION);
-            if ($token->getValue() !== $request->get('_token')) {
+            if (!$this->isCsrfTokenValid(static::AJAX_TOKEN_INTENTION, $request->get('_token'))) {
                 throw new BadRequestHttpException('Bad CSRF token');
             }
         }

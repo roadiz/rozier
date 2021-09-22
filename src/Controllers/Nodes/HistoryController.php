@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers\Nodes;
 
 use RZ\Roadiz\Core\Entities\Log;
 use RZ\Roadiz\Core\Entities\Node;
+use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -25,7 +26,7 @@ class HistoryController extends RozierApp
     {
         $this->denyAccessUnlessGranted(['ROLE_ACCESS_NODES', 'ROLE_ACCESS_LOGS']);
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException();
@@ -48,7 +49,7 @@ class HistoryController extends RozierApp
         $listManager->handle();
 
         $this->assignation['node'] = $node;
-        $this->assignation['translation'] = $this->get('defaultTranslation');
+        $this->assignation['translation'] = $this->em()->getRepository(Translation::class)->findDefault();
         $this->assignation['entries'] = $listManager->getEntities();
         $this->assignation['filters'] = $listManager->getAssignation();
 

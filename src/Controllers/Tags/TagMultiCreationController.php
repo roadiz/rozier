@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Tags;
 
 use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
 use RZ\Roadiz\Utils\Tag\TagFactory;
 use Symfony\Component\Form\FormError;
@@ -19,6 +20,16 @@ use Themes\Rozier\RozierApp;
  */
 class TagMultiCreationController extends RozierApp
 {
+    private TagFactory $tagFactory;
+
+    /**
+     * @param TagFactory $tagFactory
+     */
+    public function __construct(TagFactory $tagFactory)
+    {
+        $this->tagFactory = $tagFactory;
+    }
+
     /**
      * @param Request $request
      * @param int $parentTagId
@@ -29,8 +40,8 @@ class TagMultiCreationController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
-        $parentTag = $this->get('em')->find(Tag::class, $parentTagId);
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
+        $parentTag = $this->em()->find(Tag::class, $parentTagId);
 
         if (null !== $parentTag) {
             $form = $this->createForm(MultiTagType::class);
@@ -47,16 +58,14 @@ class TagMultiCreationController extends RozierApp
                     /*
                      * Get latest position to add tags after.
                      */
-                    $latestPosition = $this->get('em')
+                    $latestPosition = $this->em()
                         ->getRepository(Tag::class)
                         ->findLatestPositionInParent($parentTag);
 
                     $tagsArray = [];
-                    /** @var TagFactory $tagFactory */
-                    $tagFactory = $this->get(TagFactory::class);
                     foreach ($names as $name) {
-                        $tagsArray[] = $tagFactory->create($name, $translation, $parentTag, $latestPosition);
-                        $this->get('em')->flush();
+                        $tagsArray[] = $this->tagFactory->create($name, $translation, $parentTag, $latestPosition);
+                        $this->em()->flush();
                     }
 
                     /*
@@ -66,13 +75,12 @@ class TagMultiCreationController extends RozierApp
                         /*
                          * Dispatch event
                          */
-                        $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
-
+                        $this->dispatchEvent(new TagCreatedEvent($tag));
                         $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
                         $this->publishConfirmMessage($request, $msg);
                     }
 
-                    return $this->redirect($this->generateUrl('tagsTreePage', ['tagId' => $parentTagId]));
+                    return $this->redirectToRoute('tagsTreePage', ['tagId' => $parentTagId]);
                 } catch (\InvalidArgumentException $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }

@@ -50,7 +50,7 @@ abstract class AbstractWidget
         if (null === $this->defaultTranslation) {
             $this->defaultTranslation = $this->getManagerRegistry()
                 ->getRepository(Translation::class)
-                ->findOneBy(['defaultTranslation' => true]);
+                ->findDefault();
 
             if (null === $this->defaultTranslation) {
                 throw new NoTranslationAvailableException();

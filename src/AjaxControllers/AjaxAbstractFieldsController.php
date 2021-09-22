@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
-use RZ\Roadiz\Core\Handlers\AbstractHandler;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,8 +12,18 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @package Themes\Rozier\AjaxControllers
  */
-class AjaxAbstractFieldsController extends AbstractAjaxController
+abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    /**
+     * @param HandlerFactoryInterface $handlerFactory
+     */
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * Handle actions for any abstract fields.
      *
@@ -74,11 +84,10 @@ class AjaxAbstractFieldsController extends AbstractAjaxController
         if (!empty($parameters['newPosition']) && null !== $field) {
             $field->setPosition((float) $parameters['newPosition']);
             // Apply position update before cleaning
-            $this->get('em')->flush();
-            /** @var AbstractHandler $handler */
-            $handler = $this->get('factory.handler')->getHandler($field);
+            $this->em()->flush();
+            $handler = $this->handlerFactory->getHandler($field);
             $handler->cleanPositions();
-            $this->get('em')->flush();
+            $this->em()->flush();
             return [
                 'statusCode' => '200',
                 'status' => 'success',

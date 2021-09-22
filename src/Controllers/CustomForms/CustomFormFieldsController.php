@@ -33,7 +33,7 @@ class CustomFormFieldsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
 
-        $customForm = $this->get('em')->find(CustomForm::class, $customFormId);
+        $customForm = $this->em()->find(CustomForm::class, $customFormId);
 
         if ($customForm !== null) {
             $fields = $customForm->getFields();
@@ -60,7 +60,7 @@ class CustomFormFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
 
         /** @var CustomFormField|null $field */
-        $field = $this->get('em')->find(CustomFormField::class, $customFormFieldId);
+        $field = $this->em()->find(CustomFormField::class, $customFormFieldId);
 
         if ($field !== null) {
             $this->assignation['customForm'] = $field->getCustomForm();
@@ -69,7 +69,7 @@ class CustomFormFieldsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('customFormField.%name%.updated', ['%name%' => $field->getName()]);
                 $this->publishConfirmMessage($request, $msg);
@@ -77,12 +77,12 @@ class CustomFormFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormFieldsListPage',
                     [
                         'customFormId' => $field->getCustomForm()->getId(),
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -106,7 +106,7 @@ class CustomFormFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
 
         $field = new CustomFormField();
-        $customForm = $this->get('em')->find(CustomForm::class, $customFormId);
+        $customForm = $this->em()->find(CustomForm::class, $customFormId);
         $field->setCustomForm($customForm);
 
         if ($customForm !== null &&
@@ -118,8 +118,8 @@ class CustomFormFieldsController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->persist($field);
-                    $this->get('em')->flush();
+                    $this->em()->persist($field);
+                    $this->em()->flush();
 
                     $msg = $this->getTranslator()->trans(
                         'customFormField.%name%.created',
@@ -130,22 +130,22 @@ class CustomFormFieldsController extends RozierApp
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'customFormFieldsListPage',
                         [
                             'customFormId' => $customFormId,
                         ]
-                    ));
+                    );
                 } catch (Exception $e) {
                     $msg = $e->getMessage();
                     $this->publishErrorMessage($request, $msg);
                     /*
                      * Redirect to add page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'customFormFieldsAddPage',
                         ['customFormId' => $customFormId]
-                    ));
+                    );
                 }
             }
 
@@ -169,7 +169,7 @@ class CustomFormFieldsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS_DELETE');
 
-        $field = $this->get('em')->find(CustomFormField::class, $customFormFieldId);
+        $field = $this->em()->find(CustomFormField::class, $customFormFieldId);
 
         if ($field !== null) {
             $this->assignation['field'] = $field;
@@ -181,8 +181,8 @@ class CustomFormFieldsController extends RozierApp
                 $form->getData()['customFormFieldId'] == $field->getId()) {
                 $customFormId = $field->getCustomForm()->getId();
 
-                $this->get('em')->remove($field);
-                $this->get('em')->flush();
+                $this->em()->remove($field);
+                $this->em()->flush();
 
                 /*
                  * Update Database
@@ -196,12 +196,12 @@ class CustomFormFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormFieldsListPage',
                     [
                         'customFormId' => $customFormId,
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

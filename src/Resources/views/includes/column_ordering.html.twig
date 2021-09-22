@@ -5,7 +5,7 @@
             'page': 1,
         } %}
     {% else %}
-        {% set orderingParams = request.query.all|merge({
+        {% set orderingParams = app.request.query.all|merge({
             'item_per_page': filters.itemPerPage,
             'page': filters.currentPage,
         }) %}
@@ -17,13 +17,13 @@
     {% endif %}
 {% endif %}
 
-{% if request.query.get("field") == field and request.query.get("ordering") == "DESC" %}
+{% if app.request.query.get("field") == field and app.request.query.get("ordering") == "DESC" %}
     {% set localOrderingParams = orderingParams|merge({
         'field': field,
         'ordering': 'ASC'
     }) %}
     <a title="{{ 'sort_asc'|trans }}" class="active" href="?{{ localOrderingParams|url_encode }}"><i class="uk-icon-caret-down"></i></a>
-{% elseif request.query.get("field") == field and request.query.get("ordering") == "ASC" %}
+{% elseif app.request.query.get("field") == field and app.request.query.get("ordering") == "ASC" %}
     {% set localOrderingParams = orderingParams|merge({
         'field': field,
         'ordering': 'DESC'

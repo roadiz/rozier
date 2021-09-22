@@ -19,6 +19,15 @@ use Themes\Rozier\RozierApp;
  */
 class NodesUtilsController extends RozierApp
 {
+    private NodeNamePolicyInterface $nodeNamePolicy;
+
+    /**
+     * @param NodeNamePolicyInterface $nodeNamePolicy
+     */
+    public function __construct(NodeNamePolicyInterface $nodeNamePolicy)
+    {
+        $this->nodeNamePolicy = $nodeNamePolicy;
+    }
 
     /**
      * Export a Node in a Json file (.json).
@@ -33,10 +42,10 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node $existingNode */
-        $existingNode = $this->get('em')->find(Node::class, $nodeId);
-        $this->get('em')->refresh($existingNode);
+        $existingNode = $this->em()->find(Node::class, $nodeId);
+        $this->em()->refresh($existingNode);
 
-        $serializer = new NodeJsonSerializer($this->get('em'));
+        $serializer = new NodeJsonSerializer($this->em());
         $node = $serializer->serialize([$existingNode]);
 
         $response = new Response(
@@ -70,16 +79,16 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node[] $existingNodes */
-        $existingNodes = $this->get('em')
+        $existingNodes = $this->em()
             ->getRepository(Node::class)
             ->setDisplayingNotPublishedNodes(true)
             ->findBy(["parent" => null]);
 
         foreach ($existingNodes as $existingNode) {
-            $this->get('em')->refresh($existingNode);
+            $this->em()->refresh($existingNode);
         }
 
-        $serializer = new NodeJsonSerializer($this->get('em'));
+        $serializer = new NodeJsonSerializer($this->em());
         $node = $serializer->serialize($existingNodes);
 
         $response = new Response(
@@ -114,21 +123,21 @@ class NodesUtilsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node $existingNode */
-        $existingNode = $this->get('em')->find(Node::class, $nodeId);
+        $existingNode = $this->em()->find(Node::class, $nodeId);
 
         try {
             $duplicator = new NodeDuplicator(
                 $existingNode,
-                $this->get('em'),
-                $this->get(NodeNamePolicyInterface::class)
+                $this->em(),
+                $this->nodeNamePolicy
             );
             $newNode = $duplicator->duplicate();
 
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeCreatedEvent($newNode));
-            $this->get('dispatcher')->dispatch(new NodeDuplicatedEvent($newNode));
+            $this->dispatchEvent(new NodeCreatedEvent($newNode));
+            $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
             $msg = $this->getTranslator()->trans("duplicated.node.%name%", [
                 '%name%' => $existingNode->getNodeName(),
@@ -136,11 +145,10 @@ class NodesUtilsController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg, $newNode->getNodeSources()->first());
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'nodesEditPage',
-                        ["nodeId" => $newNode->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'nodesEditPage',
+                ["nodeId" => $newNode->getId()]
+            );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
@@ -149,11 +157,10 @@ class NodesUtilsController extends RozierApp
                 ])
             );
 
-            return $this->redirect($this->get('urlGenerator')
-                    ->generate(
-                        'nodesEditPage',
-                        ["nodeId" => $existingNode->getId()]
-                    ));
+            return $this->redirectToRoute(
+                'nodesEditPage',
+                ["nodeId" => $existingNode->getId()]
+            );
         }
     }
 }

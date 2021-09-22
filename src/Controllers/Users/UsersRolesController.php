@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers\Users;
 use RZ\Roadiz\CMS\Forms\RolesType;
 use RZ\Roadiz\Core\Entities\Role;
 use RZ\Roadiz\Core\Entities\User;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -29,7 +30,7 @@ class UsersRolesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if ($user !== null) {
             $this->assignation['user'] = $user;
@@ -49,10 +50,10 @@ class UsersRolesController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditRolesPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -77,10 +78,10 @@ class UsersRolesController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         /** @var Role|null $role */
-        $role = $this->get('em')->find(Role::class, $roleId);
+        $role = $this->em()->find(Role::class, $roleId);
 
         if ($user !== null && $role !== null) {
             if (!$this->isGranted($role->getRole())) {
@@ -90,12 +91,12 @@ class UsersRolesController extends RozierApp
             $this->assignation['user'] = $user;
             $this->assignation['role'] = $role;
 
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $user->removeRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans(
                     'user.%name%.role_removed',
                     ['%name%' => $role->getRole()]
@@ -105,10 +106,10 @@ class UsersRolesController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditRolesPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -129,11 +130,11 @@ class UsersRolesController extends RozierApp
     {
         if ($data['userId'] == $user->getId()) {
             /** @var Role|null $role */
-            $role = $this->get('em')->find(Role::class, $data['roleId']);
+            $role = $this->em()->find(Role::class, $data['roleId']);
 
             if (null !== $role) {
                 $user->addRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
                 return $role;
             }
         }

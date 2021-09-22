@@ -24,7 +24,7 @@ class LoginResetController extends RozierApp
     public function resetAction(Request $request, string $token)
     {
         /** @var User|null $user */
-        $user = $this->getUserByToken($this->get('em'), $token);
+        $user = $this->getUserByToken($this->em(), $token);
 
         if (null !== $user) {
             $form = $this->createForm(LoginResetForm::class, null, [
@@ -34,10 +34,10 @@ class LoginResetController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                if ($this->updateUserPassword($form, $user, $this->get('em'))) {
-                    return $this->redirect($this->generateUrl(
+                if ($this->updateUserPassword($form, $user, $this->em())) {
+                    return $this->redirectToRoute(
                         'loginResetConfirmPage'
-                    ));
+                    );
                 }
             }
             $this->assignation['form'] = $form->createView();

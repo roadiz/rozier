@@ -130,7 +130,7 @@ class SearchController extends RozierApp
         if (isset($data["tags"])) {
             $data["tags"] = array_map('trim', explode(',', $data["tags"]));
             foreach ($data["tags"] as $key => $value) {
-                $data["tags"][$key] = $this->get("em")->getRepository(Tag::class)->findByPath($value);
+                $data["tags"][$key] = $this->em()->getRepository(Tag::class)->findByPath($value);
             }
             array_filter($data["tags"]);
         }
@@ -253,7 +253,7 @@ class SearchController extends RozierApp
     public function searchNodeSourceAction(Request $request, int $nodetypeId)
     {
         /** @var NodeType|null $nodetype */
-        $nodetype = $this->get('em')->find(NodeType::class, $nodetypeId);
+        $nodetype = $this->em()->find(NodeType::class, $nodetypeId);
 
         $builder = $this->buildSimpleForm("__node__");
         $this->extendForm($builder, $nodetype);
@@ -286,18 +286,11 @@ class SearchController extends RozierApp
      * Build node-type selection form.
      *
      * @param int|null $nodetypeId
-     * @return FormBuilder
+     * @return FormBuilderInterface
      */
-    protected function buildNodeTypeForm(?int $nodetypeId = null)
+    protected function buildNodeTypeForm(?int $nodetypeId = null): FormBuilderInterface
     {
-        /** @var FormBuilder $builderNodeType */
-        $builderNodeType = $this->get('formFactory')
-                                ->createNamedBuilder(
-                                    'nodeTypeForm',
-                                    FormType::class,
-                                    [],
-                                    ["method" => "get"]
-                                );
+        $builderNodeType = $this->createNamedFormBuilder('nodeTypeForm', [], ["method" => "get"]);
         $builderNodeType->add(
             "nodetype",
             NodeTypesType::class,
@@ -349,14 +342,14 @@ class SearchController extends RozierApp
     {
         if ($nodeTypeForm->isSubmitted() && $nodeTypeForm->isValid()) {
             if (empty($nodeTypeForm->getData()['nodetype'])) {
-                return $this->redirect($this->generateUrl('searchNodePage'));
+                return $this->redirectToRoute('searchNodePage');
             } else {
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'searchNodeSourcePage',
                     [
                         "nodetypeId" => $nodeTypeForm->getData()['nodetype'],
                     ]
-                ));
+                );
             }
         }
 
@@ -467,7 +460,7 @@ class SearchController extends RozierApp
             $answers[$idx] = $array;
         }
 
-        $exporter = new XlsxExporter($this->get('translator'));
+        $exporter = new XlsxExporter($this->getTranslator());
         return $exporter->exportXlsx($answers, $keys);
     }
 

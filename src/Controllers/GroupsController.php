@@ -124,7 +124,7 @@ class GroupsController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         if (null === $item || !($item instanceof Group)) {
             throw $this->createNotFoundException();
@@ -145,10 +145,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditRolesPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -168,10 +168,10 @@ class GroupsController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         /** @var Role|null $role */
-        $role = $this->get('em')->find(Role::class, $roleId);
+        $role = $this->em()->find(Role::class, $roleId);
 
         if (null === $item || !($item instanceof Group)) {
             throw $this->createNotFoundException();
@@ -197,10 +197,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditRolesPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -219,7 +219,7 @@ class GroupsController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
 
         if (null === $item || !($item instanceof Group)) {
             throw $this->createNotFoundException();
@@ -240,10 +240,10 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditUsersPage',
                 ['id' => $item->getId()]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -263,9 +263,9 @@ class GroupsController extends AbstractAdminController
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
-        $item = $this->get('em')->find($this->getEntityClass(), $id);
+        $item = $this->em()->find($this->getEntityClass(), $id);
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if (null === $item || !($item instanceof Group)) {
             throw $this->createNotFoundException();
@@ -291,12 +291,12 @@ class GroupsController extends AbstractAdminController
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'groupsEditUsersPage',
                 [
                     'id' => $item->getId()
                 ]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -431,10 +431,10 @@ class GroupsController extends AbstractAdminController
     private function addRole($data, Group $group)
     {
         if ($data['groupId'] == $group->getId()) {
-            $role = $this->get('em')->find(Role::class, (int) $data['roleId']);
+            $role = $this->em()->find(Role::class, (int) $data['roleId']);
             if ($role !== null) {
                 $group->addRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 return $role;
             }
@@ -455,7 +455,7 @@ class GroupsController extends AbstractAdminController
             $data['roleId'] == $role->getId()) {
             if ($role !== null) {
                 $group->removeRole($role);
-                $this->get('em')->flush();
+                $this->em()->flush();
             }
 
             return $role;
@@ -473,12 +473,12 @@ class GroupsController extends AbstractAdminController
     {
         if ($data['groupId'] == $group->getId()) {
             /** @var User|null $user */
-            $user = $this->get('em')
+            $user = $this->em()
                          ->find(User::class, (int) $data['userId']);
 
             if ($user !== null) {
                 $user->addGroup($group);
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 return $user;
             }
@@ -499,7 +499,7 @@ class GroupsController extends AbstractAdminController
             $data['userId'] == $user->getId()) {
             if ($user !== null) {
                 $user->removeGroup($group);
-                $this->get('em')->flush();
+                $this->em()->flush();
             }
 
             return $user;

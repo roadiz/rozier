@@ -31,7 +31,7 @@ class UsersGroupsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if ($user !== null) {
             $this->assignation['user'] = $user;
@@ -51,10 +51,10 @@ class UsersGroupsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditGroupsPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -79,9 +79,9 @@ class UsersGroupsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
         /** @var Group|null $group */
-        $group = $this->get('em')->find(Group::class, $groupId);
+        $group = $this->em()->find(Group::class, $groupId);
 
         if (!$this->isGranted($group)) {
             throw $this->createAccessDeniedException();
@@ -106,10 +106,10 @@ class UsersGroupsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersEditGroupsPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -132,14 +132,14 @@ class UsersGroupsController extends RozierApp
             if (array_key_exists('group', $data) && $data['group'][0] instanceof Group) {
                 $group = $data['group'][0];
             } elseif (array_key_exists('group', $data) && is_numeric($data['group'])) {
-                $group = $this->get('em')->find(Group::class, $data['group']);
+                $group = $this->em()->find(Group::class, $data['group']);
             } else {
                 $group = null;
             }
 
             if ($group !== null) {
                 $user->addGroup($group);
-                $this->get('em')->flush();
+                $this->em()->flush();
             }
 
             return $group;
@@ -157,12 +157,12 @@ class UsersGroupsController extends RozierApp
     private function removeUserGroup($data, User $user)
     {
         if ($data['userId'] == $user->getId()) {
-            $group = $this->get('em')
+            $group = $this->em()
                           ->find(Group::class, $data['groupId']);
 
             if ($group !== null) {
                 $user->removeGroup($group);
-                $this->get('em')->flush();
+                $this->em()->flush();
             }
 
             return $group;

@@ -3,16 +3,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Node\NodeTaggedEvent;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\NodeTagsType;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\NodesTrait;
@@ -37,17 +32,17 @@ class NodesTagsController extends RozierApp
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
         /** @var NodesSources|null $source */
-        $source = $this->get('em')
+        $source = $this->em()
                        ->getRepository(NodesSources::class)
                        ->setDisplayingAllNodesStatuses(true)
                        ->setDisplayingNotPublishedNodes(true)
                        ->findOneBy([
                            'node.id' => $nodeId,
-                           'translation' => $this->get('defaultTranslation')
+                           'translation' => $this->em()->getRepository(Translation::class)->findDefault()
                        ]);
         if (null === $source) {
             /** @var NodesSources|null $source */
-            $source = $this->get('em')
+            $source = $this->em()
                 ->getRepository(NodesSources::class)
                 ->setDisplayingAllNodesStatuses(true)
                 ->setDisplayingNotPublishedNodes(true)
@@ -65,18 +60,18 @@ class NodesTagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new NodeTaggedEvent($node));
-                $this->get('em')->flush();
+                $this->dispatchEvent(new NodeTaggedEvent($node));
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('node.%node%.linked.tags', [
                     '%node%' => $node->getNodeName(),
                 ]);
                 $this->publishConfirmMessage($request, $msg, $source);
 
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodesEditTagsPage',
                     ['nodeId' => $node->getId()]
-                ));
+                );
             }
 
             $this->assignation['translation'] = $source->getTranslation();

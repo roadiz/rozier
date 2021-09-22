@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\Core\Bags\NodeTypes;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\Tag;
@@ -18,6 +19,20 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class AjaxNodeTreeController extends AbstractAjaxController
 {
+    private NodeChrootResolver $nodeChrootResolver;
+    private TreeWidgetFactory $treeWidgetFactory;
+    private NodeTypes $nodeTypesBag;
+
+    public function __construct(
+        NodeChrootResolver $nodeChrootResolver,
+        TreeWidgetFactory $treeWidgetFactory,
+        NodeTypes $nodeTypesBag
+    ) {
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+        $this->nodeTypesBag = $nodeTypesBag;
+    }
+
     /**
      * @param Request $request
      * @param int|null    $translationId
@@ -32,13 +47,12 @@ class AjaxNodeTreeController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if (null === $translationId) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
-            $translation = $this->get('em')
-                                ->find(
-                                    Translation::class,
-                                    $translationId
-                                );
+            $translation = $this->em()->find(
+                Translation::class,
+                $translationId
+            );
         }
 
         /** @var NodeTreeWidget|null $nodeTree */
@@ -51,22 +65,22 @@ class AjaxNodeTreeController extends AbstractAjaxController
              */
             case 'requestNodeTree':
                 if ($request->get('parentNodeId') > 0) {
-                    $node = $this->get('em')
+                    $node = $this->em()
                                 ->find(
                                     Node::class,
                                     (int) $request->get('parentNodeId')
                                 );
                 } elseif (null !== $this->getUser()) {
-                    $node = $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
+                    $node = $this->nodeChrootResolver->getChroot($this->getUser());
                 } else {
                     $node = null;
                 }
 
-                $nodeTree = $this->get(TreeWidgetFactory::class)->createNodeTree($node, $translation);
+                $nodeTree = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
                 if ($request->get('tagId') &&
                     $request->get('tagId') > 0) {
-                    $filterTag = $this->get('em')
+                    $filterTag = $this->em()
                                         ->find(
                                             Tag::class,
                                             (int) $request->get('tagId')
@@ -81,7 +95,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
                 $linkedTypes = $request->get('linkedTypes', []);
                 if (is_array($linkedTypes) && count($linkedTypes) > 0) {
                     $linkedTypes = array_filter(array_map(function (string $typeName) {
-                        return $this->get('nodeTypesBag')->get($typeName);
+                        return $this->nodeTypesBag->get($typeName);
                     }, $linkedTypes));
 
                     $nodeTree->setAdditionalCriteria([
@@ -101,10 +115,10 @@ class AjaxNodeTreeController extends AbstractAjaxController
             case 'requestMainNodeTree':
                 $parent = null;
                 if (null !== $this->getUser()) {
-                    $parent = $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
+                    $parent = $this->nodeChrootResolver->getChroot($this->getUser());
                 }
 
-                $nodeTree = $this->get(TreeWidgetFactory::class)->createNodeTree($parent, $translation);
+                $nodeTree = $this->treeWidgetFactory->createNodeTree($parent, $translation);
                 $this->assignation['mainNodeTree'] = true;
                 break;
         }

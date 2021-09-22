@@ -25,7 +25,7 @@ class UsersSecurityController extends RozierApp
         // Only user managers can review security
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
         /** @var User|null $user */
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if ($user !== null) {
             $this->assignation['user'] = $user;
@@ -35,7 +35,7 @@ class UsersSecurityController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans(
                     'user.%name%.security.updated',
@@ -47,10 +47,10 @@ class UsersSecurityController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'usersSecurityPage',
                     ['userId' => $user->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

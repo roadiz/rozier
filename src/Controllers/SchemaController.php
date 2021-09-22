@@ -6,12 +6,14 @@ namespace Themes\Rozier\Controllers;
 use Doctrine\ORM\Mapping\MappingException;
 use Exception;
 use RZ\Roadiz\Console\RoadizApplication;
+use RZ\Roadiz\Core\Kernel;
 use RZ\Roadiz\Utils\Doctrine\SchemaUpdater;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Themes\Rozier\RozierApp;
 
 /**
@@ -20,6 +22,19 @@ use Themes\Rozier\RozierApp;
  */
 class SchemaController extends RozierApp
 {
+    private SchemaUpdater $schemaUpdater;
+    private KernelInterface $kernel;
+
+    /**
+     * @param SchemaUpdater $schemaUpdater
+     * @param KernelInterface $kernel
+     */
+    public function __construct(SchemaUpdater $schemaUpdater, KernelInterface $kernel)
+    {
+        $this->schemaUpdater = $schemaUpdater;
+        $this->kernel = $kernel;
+    }
+
     /**
      * No preparation for this blind controller.
      *
@@ -39,14 +54,12 @@ class SchemaController extends RozierApp
     public function updateNodeTypesSchemaAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
-        /** @var SchemaUpdater $updater */
-        $updater = $this->get(SchemaUpdater::class);
-        $updater->clearMetadata();
-        $updater->updateNodeTypesSchema();
+        $this->schemaUpdater->clearMetadata();
+        $this->schemaUpdater->updateNodeTypesSchema();
 
-        return $this->redirect($this->generateUrl(
+        return $this->redirectToRoute(
             'nodeTypesHomePage'
-        ));
+        );
     }
 
     /**
@@ -59,17 +72,15 @@ class SchemaController extends RozierApp
     public function updateNodeTypeFieldsSchemaAction(Request $request, int $nodeTypeId)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
-        /** @var SchemaUpdater $updater */
-        $updater = $this->get(SchemaUpdater::class);
-        $updater->clearMetadata();
-        $updater->updateNodeTypesSchema();
+        $this->schemaUpdater->clearMetadata();
+        $this->schemaUpdater->updateNodeTypesSchema();
 
-        return $this->redirect($this->generateUrl(
+        return $this->redirectToRoute(
             'nodeTypeFieldsListPage',
             [
                 'nodeTypeId' => $nodeTypeId,
             ]
-        ));
+        );
     }
 
     /**
@@ -81,10 +92,8 @@ class SchemaController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_THEMES');
 
         try {
-            /** @var SchemaUpdater $updater */
-            $updater = $this->get(SchemaUpdater::class);
-            $updater->clearMetadata();
-            $updater->updateNodeTypesSchema();
+            $this->schemaUpdater->clearMetadata();
+            $this->schemaUpdater->updateNodeTypesSchema();
             return new JsonResponse(['status' => true], JsonResponse::HTTP_PARTIAL_CONTENT);
         } catch (MappingException $e) {
             return new JsonResponse([
@@ -106,23 +115,26 @@ class SchemaController extends RozierApp
          * Very important, when using standard-edition,
          * Kernel class is AppKernel or DevAppKernel.
          */
-        $kernelClass = get_class($this->get('kernel'));
-        $application = new RoadizApplication(new $kernelClass('prod', false));
-        $application->setAutoExit(false);
+        if ($this->kernel instanceof Kernel) {
+            /** @var class-string<Kernel> $kernelClass */
+            $kernelClass = get_class($this->kernel);
+            $application = new RoadizApplication(new $kernelClass('prod', false));
+            $application->setAutoExit(false);
 
-        $input = new ArrayInput([
-            'command' => 'cache:clear'
-        ]);
-        // You can use NullOutput() if you don't need the output
-        $output = new BufferedOutput();
-        $application->run($input, $output);
+            $input = new ArrayInput([
+                'command' => 'cache:clear'
+            ]);
+            // You can use NullOutput() if you don't need the output
+            $output = new BufferedOutput();
+            $application->run($input, $output);
 
-        $inputFpm = new ArrayInput([
-            'command' => 'cache:clear-fpm'
-        ]);
-        // You can use NullOutput() if you don't need the output
-        $outputFpm = new BufferedOutput();
-        $application->run($inputFpm, $outputFpm);
+            $inputFpm = new ArrayInput([
+                'command' => 'cache:clear-fpm'
+            ]);
+            // You can use NullOutput() if you don't need the output
+            $outputFpm = new BufferedOutput();
+            $application->run($inputFpm, $outputFpm);
+        }
 
         return new JsonResponse(['status' => true], JsonResponse::HTTP_PARTIAL_CONTENT);
     }

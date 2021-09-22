@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
 
-use Doctrine\ORM\EntityManager;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Entities\AttributeDocuments;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\Folder;
@@ -18,16 +18,18 @@ use RZ\Roadiz\Core\Events\DocumentUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\APINeedsAuthentificationException;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use RZ\Roadiz\Core\Handlers\DocumentHandler;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\ListManagers\QueryBuilderListManager;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Repositories\DocumentRepository;
+use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\Document\DocumentFactory;
 use RZ\Roadiz\Utils\MediaFinders\AbstractEmbedFinder;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\MediaFinders\SoundcloudEmbedFinder;
-use RZ\Roadiz\Utils\MediaFinders\SplashbasePictureFinder;
 use RZ\Roadiz\Utils\MediaFinders\YoutubeEmbedFinder;
+use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -44,7 +46,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Translation\Translator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
@@ -59,7 +61,18 @@ use Themes\Rozier\Utils\SessionListFilters;
  */
 class DocumentsController extends RozierApp
 {
-    protected $thumbnailFormat = [
+    private array $documentPlatforms;
+    private DocumentFactory $documentFactory;
+    private Packages $packages;
+    private HandlerFactoryInterface $handlerFactory;
+    private LoggerInterface $logger;
+    private RandomImageFinder $randomImageFinder;
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
+    private bool $webpSupported;
+
+    protected array $thumbnailFormat = [
         'quality' => 50,
         'fit' => '128x128',
         'sharpen' => 5,
@@ -67,6 +80,30 @@ class DocumentsController extends RozierApp
         'picture' => true,
         'loading' => 'lazy',
     ];
+
+    public function __construct(
+        array $documentPlatforms,
+        Packages $packages,
+        HandlerFactoryInterface $handlerFactory,
+        LoggerInterface $logger,
+        RandomImageFinder $randomImageFinder,
+        DocumentFactory $documentFactory,
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator,
+        bool $webpSupported
+    ) {
+        $this->documentPlatforms = $documentPlatforms;
+        $this->packages = $packages;
+        $this->handlerFactory = $handlerFactory;
+        $this->logger = $logger;
+        $this->randomImageFinder = $randomImageFinder;
+        $this->webpSupported = $webpSupported;
+        $this->documentFactory = $documentFactory;
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
+    }
 
     /**
      * @param Request $request
@@ -79,7 +116,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Translation $translation */
-        $translation = $this->get('em')
+        $translation = $this->em()
             ->getRepository(Translation::class)
             ->findDefault();
 
@@ -89,7 +126,7 @@ class DocumentsController extends RozierApp
 
         if (null !== $folderId &&
             $folderId > 0) {
-            $folder = $this->get('em')
+            $folder = $this->em()
                 ->find(Folder::class, $folderId);
 
             $prefilters['folders'] = [$folder];
@@ -107,7 +144,7 @@ class DocumentsController extends RozierApp
             $prefilters['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
             $this->assignation['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
         }
-        $this->assignation['availablePlatforms'] = $this->get('document.platforms');
+        $this->assignation['availablePlatforms'] = $this->documentPlatforms;
 
         /*
          * Handle bulk folder form
@@ -128,10 +165,10 @@ class DocumentsController extends RozierApp
 
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'documentsHomePage',
                 ['folderId' => $folderId]
-            ));
+            );
         }
         $this->assignation['joinFolderForm'] = $joinFolderForm->createView();
 
@@ -172,7 +209,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Document $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null && $document->isLocal()) {
             // Assign document
@@ -184,11 +221,9 @@ class DocumentsController extends RozierApp
 
             // Check if form is valid
             if ($fileForm->isSubmitted() && $fileForm->isValid()) {
-                /** @var EntityManager $em */
-                $em = $this->get('em');
+                $em = $this->em();
 
                 if (null !== $document->getRawDocument()) {
-                    /** @var Document $cloneDocument */
                     $cloneDocument = clone $document;
 
                     // need to remove raw document BEFORE
@@ -199,16 +234,14 @@ class DocumentsController extends RozierApp
 
                     $cloneDocument->setRawDocument($rawDocument);
 
-                    /** @var Packages $packages */
-                    $packages = $this->get('assetPackages');
-                    $oldPath = $packages->getDocumentFilePath($cloneDocument);
+                    $oldPath = $this->packages->getDocumentFilePath($cloneDocument);
                     $fs = new Filesystem();
 
                     /*
                      * Prefix document filename
                      */
                     $cloneDocument->setFilename('original_' . $cloneDocument);
-                    $newPath = $packages->getDocumentFilePath($cloneDocument);
+                    $newPath = $this->packages->getDocumentFilePath($cloneDocument);
                     $fs->rename(
                         $oldPath,
                         $newPath
@@ -220,23 +253,18 @@ class DocumentsController extends RozierApp
 
                 /** @var UploadedFile $uploadedFile */
                 $uploadedFile = $fileForm->get('editDocument')->getData();
-                /** @var DocumentFactory $documentFactory */
-                $documentFactory = $this->get('document.factory');
-                $documentFactory->setFile($uploadedFile);
-
-
-                $documentFactory->updateDocument($document);
+                $this->documentFactory->setFile($uploadedFile);
+                $this->documentFactory->updateDocument($document);
                 $em->flush();
 
-                /** @var Translator $translator */
-                $translator = $this->get('translator');
+                $translator = $this->getTranslator();
                 $msg = $translator->trans('document.%name%.updated', [
                     '%name%' => (string) $document,
                 ]);
 
                 return new JsonResponse([
                     'message' => $msg,
-                    'path' => $this->get('assetPackages')->getUrl($document->getRelativePath(), Packages::DOCUMENTS) . '?' . random_int(10, 999),
+                    'path' => $this->packages->getUrl($document->getRelativePath(), Packages::DOCUMENTS) . '?' . random_int(10, 999),
                 ]);
             }
 
@@ -260,34 +288,32 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Document|null $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null) {
             /*
              * Handle main form
              */
             $form = $this->createForm(DocumentEditType::class, $document, [
-                'referer' => $this->get('requestStack')->getCurrentRequest()->get('referer'),
-                'document_platforms' => $this->get('document.platforms'),
+                'referer' => $this->getRequest()->get('referer'),
+                'document_platforms' => $this->documentPlatforms,
             ]);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->flush();
+                    $this->em()->flush();
                     /*
                     * Update document file
                     * if present
                     */
                     if (null !== $newDocumentFile = $form->get('newDocument')->getData()) {
-                        /** @var DocumentFactory $documentFactory */
-                        $documentFactory = $this->get('document.factory');
-                        $documentFactory->setFile($newDocumentFile);
-                        $documentFactory->updateDocument($document);
+                        $this->documentFactory->setFile($newDocumentFile);
+                        $this->documentFactory->updateDocument($document);
                         $msg = $this->getTranslator()->trans('document.file.%name%.updated', [
                             '%name%' => (string) $document,
                         ]);
-                        $this->get('em')->flush();
+                        $this->em()->flush();
                         $this->publishConfirmMessage($request, $msg);
                     }
 
@@ -295,10 +321,10 @@ class DocumentsController extends RozierApp
                        '%name%' => (string) $document,
                     ]);
                     $this->publishConfirmMessage($request, $msg);
-                    $this->get("dispatcher")->dispatch(
+                    $this->dispatchEvent(
                         new DocumentUpdatedEvent($document)
                     );
-                    $this->get('em')->flush();
+                    $this->em()->flush();
 
                     $routeParams = ['documentId' => $document->getId()];
 
@@ -310,10 +336,10 @@ class DocumentsController extends RozierApp
                     /*
                     * Force redirect to avoid resending form when refreshing page
                     */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'documentsEditPage',
                         $routeParams
-                    ));
+                    );
                 } catch (FileException $exception) {
                     $form->get('filename')->addError(new FormError($exception->getMessage()));
                 }
@@ -340,7 +366,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Document|null $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null) {
             $this->assignation['document'] = $document;
@@ -377,7 +403,7 @@ class DocumentsController extends RozierApp
                 ],
             ];
 
-            if ($this->get('interventionRequestSupportsWebP')) {
+            if ($this->webpSupported) {
                 $this->assignation['thumbnailFormat']['picture'] = true;
             }
 
@@ -409,7 +435,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS_DELETE');
 
         /** @var Document|null $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null) {
             $this->assignation['document'] = $document;
@@ -420,11 +446,11 @@ class DocumentsController extends RozierApp
                 $form->isValid() &&
                 $form->getData()['documentId'] == $document->getId()) {
                 try {
-                    $this->get("dispatcher")->dispatch(
+                    $this->dispatchEvent(
                         new DocumentDeletedEvent($document)
                     );
-                    $this->get('em')->remove($document);
-                    $this->get('em')->flush();
+                    $this->em()->remove($document);
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans('document.%name%.deleted', [
                         '%name%' => (string) $document
                     ]);
@@ -433,13 +459,13 @@ class DocumentsController extends RozierApp
                     $msg = $this->getTranslator()->trans('document.%name%.cannot_delete', [
                         '%name%' => (string) $document
                     ]);
-                    $this->get('logger')->error($e->getMessage());
+                    $this->logger->error($e->getMessage());
                     $this->publishErrorMessage($request, $msg);
                 }
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('documentsHomePage'));
+                return $this->redirectToRoute('documentsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -467,7 +493,7 @@ class DocumentsController extends RozierApp
         }
 
         /** @var array<Document> $documents */
-        $documents = $this->get('em')
+        $documents = $this->em()
             ->getRepository(Document::class)
             ->findBy([
                 'id' => $documentsIds,
@@ -481,16 +507,16 @@ class DocumentsController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 foreach ($documents as $document) {
-                    $this->get('em')->remove($document);
+                    $this->em()->remove($document);
                     $msg = $this->getTranslator()->trans(
                         'document.%name%.deleted',
                         ['%name%' => (string) $document]
                     );
                     $this->publishConfirmMessage($request, $msg);
                 }
-                $this->get('em')->flush();
+                $this->em()->flush();
 
-                return $this->redirect($this->generateUrl('documentsHomePage'));
+                return $this->redirectToRoute('documentsHomePage');
             }
             $this->assignation['form'] = $form->createView();
             $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
@@ -519,7 +545,7 @@ class DocumentsController extends RozierApp
         }
 
         /** @var array<Document> $documents */
-        $documents = $this->get('em')
+        $documents = $this->em()
             ->getRepository(Document::class)
             ->findBy([
                 'id' => $documentsIds,
@@ -538,7 +564,7 @@ class DocumentsController extends RozierApp
                     $this->publishErrorMessage($request, $msg);
                 }
 
-                return $this->redirect($this->generateUrl('documentsHomePage'));
+                return $this->redirectToRoute('documentsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -564,7 +590,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         if (null !== $folderId && $folderId > 0) {
-            $folder = $this->get('em')->find(Folder::class, $folderId);
+            $folder = $this->em()->find(Folder::class, $folderId);
 
             $this->assignation['folder'] = $folder;
         }
@@ -573,7 +599,7 @@ class DocumentsController extends RozierApp
          * Handle main form
          */
         $form = $this->createForm(DocumentEmbedType::class, null, [
-            'document_platforms' => $this->get('document.platforms'),
+            'document_platforms' => $this->documentPlatforms,
         ]);
         $form->handleRequest($request);
 
@@ -587,7 +613,7 @@ class DocumentsController extends RozierApp
                             '%name%' => (string) $singleDocument,
                         ]);
                         $this->publishConfirmMessage($request, $msg);
-                        $this->get("dispatcher")->dispatch(
+                        $this->dispatchEvent(
                             new DocumentCreatedEvent($singleDocument)
                         );
                     }
@@ -596,16 +622,16 @@ class DocumentsController extends RozierApp
                         '%name%' => (string) $document,
                     ]);
                     $this->publishConfirmMessage($request, $msg);
-                    $this->get("dispatcher")->dispatch(
+                    $this->dispatchEvent(
                         new DocumentCreatedEvent($document)
                     );
                 }
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('documentsHomePage', ['folderId' => $folderId]));
+                return $this->redirectToRoute('documentsHomePage', ['folderId' => $folderId]);
             } catch (RequestException $e) {
-                $this->get('logger')->error($e->getRequest()->getUri() . ' failed.');
+                $this->logger->error($e->getRequest()->getUri() . ' failed.');
                 if (null !== $e->getResponse() && in_array($e->getResponse()->getStatusCode(), [401, 403, 404])) {
                     $form->addError(new FormError(
                         $this->getTranslator()->trans('document.media_not_found_or_private')
@@ -647,7 +673,7 @@ class DocumentsController extends RozierApp
             ]);
             $this->publishConfirmMessage($request, $msg);
 
-            $this->get("dispatcher")->dispatch(
+            $this->dispatchEvent(
                 new DocumentCreatedEvent($document)
             );
         } catch (\Exception $e) {
@@ -659,7 +685,7 @@ class DocumentsController extends RozierApp
         /*
          * Force redirect to avoid resending form when refreshing page
          */
-        return $this->redirect($this->generateUrl('documentsHomePage', ['folderId' => $folderId]));
+        return $this->redirectToRoute('documentsHomePage', ['folderId' => $folderId]);
     }
 
     /**
@@ -675,12 +701,11 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Document|null $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null) {
             /** @var DocumentHandler $handler */
-            $handler = $this->get('document.handler');
-            $handler->setDocument($document);
+            $handler = $this->handlerFactory->getHandler($document);
 
             return $handler->getDownloadResponse();
         }
@@ -699,7 +724,7 @@ class DocumentsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         if (null !== $folderId && $folderId > 0) {
-            $folder = $this->get('em')->find(Folder::class, $folderId);
+            $folder = $this->em()->find(Folder::class, $folderId);
 
             $this->assignation['folder'] = $folder;
         }
@@ -720,18 +745,23 @@ class DocumentsController extends RozierApp
                     ]);
                     $this->publishConfirmMessage($request, $msg);
 
-                    $this->get("dispatcher")->dispatch(
+                    $this->dispatchEvent(
                         new DocumentCreatedEvent($document)
                     );
 
                     if ($_format === 'json' || $request->isXmlHttpRequest()) {
-                        $documentModel = new DocumentModel($document, $this->getContainer());
+                        $documentModel = new DocumentModel(
+                            $document,
+                            $this->renderer,
+                            $this->documentUrlGenerator,
+                            $this->urlGenerator
+                        );
                         return new JsonResponse([
                             'success' => true,
                             'document' => $documentModel->toArray(),
                         ], JsonResponse::HTTP_CREATED);
                     } else {
-                        return $this->redirect($this->generateUrl('documentsHomePage', ['folderId' => $folderId]));
+                        return $this->redirectToRoute('documentsHomePage', ['folderId' => $folderId]);
                     }
                 } else {
                     $msg = $this->getTranslator()->trans('document.cannot_persist');
@@ -740,7 +770,7 @@ class DocumentsController extends RozierApp
                     if ($_format === 'json' || $request->isXmlHttpRequest()) {
                         throw $this->createNotFoundException($msg);
                     } else {
-                        return $this->redirect($this->generateUrl('documentsHomePage', ['folderId' => $folderId]));
+                        return $this->redirectToRoute('documentsHomePage', ['folderId' => $folderId]);
                     }
                 }
             } elseif ($_format === 'json' || $request->isXmlHttpRequest()) {
@@ -750,9 +780,9 @@ class DocumentsController extends RozierApp
                 $errorPerForm = [];
                 /** @var Form $child */
                 foreach ($form as $child) {
-                    if (!$child->isValid()) {
+                    if ($child->isSubmitted() && !$child->isValid()) {
                         foreach ($child->getErrors() as $error) {
-                            $errorPerForm[$child->getName()][] = $this->get('translator')->trans($error->getMessage());
+                            $errorPerForm[$child->getName()][] = $this->getTranslator()->trans($error->getMessage());
                         }
                     }
                 }
@@ -782,7 +812,7 @@ class DocumentsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
         /** @var Document|null $document */
-        $document = $this->get('em')->find(Document::class, $documentId);
+        $document = $this->em()->find(Document::class, $documentId);
 
         if ($document !== null) {
             $this->assignation['document'] = $document;
@@ -814,7 +844,7 @@ class DocumentsController extends RozierApp
 
         $this->assignation['orphans'] = true;
         /** @var DocumentRepository $documentRepository */
-        $documentRepository = $this->get('em')
+        $documentRepository = $this->em()
             ->getRepository(Document::class);
 
         $listManager = new QueryBuilderListManager(
@@ -1012,7 +1042,7 @@ class DocumentsController extends RozierApp
             !empty($data['folderPaths'])) {
             $documentsIds = explode(',', $data['documentsId']);
 
-            $documents = $this->get('em')
+            $documents = $this->em()
                 ->getRepository(Document::class)
                 ->findBy([
                     'id' => $documentsIds,
@@ -1023,7 +1053,7 @@ class DocumentsController extends RozierApp
 
             foreach ($folderPaths as $path) {
                 /** @var Folder $folder */
-                $folder = $this->get('em')
+                $folder = $this->em()
                     ->getRepository(Folder::class)
                     ->findOrCreateByPath($path);
 
@@ -1035,14 +1065,14 @@ class DocumentsController extends RozierApp
                 }
             }
 
-            $this->get('em')->flush();
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans('documents.linked_to.folders');
 
             /*
              * Dispatch events
              */
             foreach ($documents as $document) {
-                $this->get("dispatcher")->dispatch(
+                $this->dispatchEvent(
                     new DocumentInFolderEvent($document)
                 );
             }
@@ -1064,7 +1094,7 @@ class DocumentsController extends RozierApp
             !empty($data['folderPaths'])) {
             $documentsIds = explode(',', $data['documentsId']);
 
-            $documents = $this->get('em')
+            $documents = $this->em()
                 ->getRepository(Document::class)
                 ->findBy([
                     'id' => $documentsIds,
@@ -1075,7 +1105,7 @@ class DocumentsController extends RozierApp
 
             foreach ($folderPaths as $path) {
                 /** @var Folder $folder */
-                $folder = $this->get('em')
+                $folder = $this->em()
                     ->getRepository(Folder::class)
                     ->findByPath($path);
 
@@ -1088,14 +1118,14 @@ class DocumentsController extends RozierApp
                     }
                 }
             }
-            $this->get('em')->flush();
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans('documents.removed_from.folders');
 
             /*
              * Dispatch events
              */
             foreach ($documents as $document) {
-                $this->get("dispatcher")->dispatch(
+                $this->dispatchEvent(
                     new DocumentOutFolderEvent($document)
                 );
             }
@@ -1118,7 +1148,7 @@ class DocumentsController extends RozierApp
             /** @var Document $document */
             foreach ($documents as $document) {
                 if ($document->isLocal()) {
-                    $documentPath = $this->get('assetPackages')->getDocumentFilePath($document);
+                    $documentPath = $this->packages->getDocumentFilePath($document);
                     $zip->addFile($documentPath, $document->getFilename());
                 }
             }
@@ -1154,7 +1184,7 @@ class DocumentsController extends RozierApp
      */
     private function embedDocument($data, ?int $folderId = null)
     {
-        $handlers = $this->get('document.platforms');
+        $handlers = $this->documentPlatforms;
 
         if (isset($data['embedId']) &&
             isset($data['embedPlatform']) &&
@@ -1168,10 +1198,10 @@ class DocumentsController extends RozierApp
             $finder = new $class('', false);
 
             if ($finder instanceof YoutubeEmbedFinder) {
-                $finder->setKey($this->get('settingsBag')->get('google_server_id'));
+                $finder->setKey($this->getSettingsBag()->get('google_server_id'));
             }
             if ($finder instanceof SoundcloudEmbedFinder) {
-                $finder->setKey($this->get('settingsBag')->get('soundcloud_client_id'));
+                $finder->setKey($this->getSettingsBag()->get('soundcloud_client_id'));
             }
             $finder->setEmbedId($data['embedId']);
             return $this->createDocumentFromFinder($finder, $folderId);
@@ -1191,7 +1221,10 @@ class DocumentsController extends RozierApp
      */
     private function randomDocument(?int $folderId = null)
     {
-        return $this->createDocumentFromFinder($this->get(RandomImageFinder::class), $folderId);
+        if ($this->randomImageFinder instanceof AbstractEmbedFinder) {
+            return $this->createDocumentFromFinder($this->randomImageFinder, $folderId);
+        }
+        throw new \RuntimeException('Random image finder must be instance of ' . AbstractEmbedFinder::class);
     }
 
     /**
@@ -1202,11 +1235,11 @@ class DocumentsController extends RozierApp
      */
     private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null)
     {
-        $document = $finder->createDocumentFromFeed($this->get('em'), $this->get('document.factory'));
+        $document = $finder->createDocumentFromFeed($this->em(), $this->documentFactory);
 
         if (null !== $document && null !== $folderId && $folderId > 0) {
-            /** @var Folder $folder */
-            $folder = $this->get('em')->find(Folder::class, (int) $folderId);
+            /** @var Folder|null $folder */
+            $folder = $this->em()->find(Folder::class, $folderId);
 
             if (is_iterable($document)) {
                 /** @var DocumentInterface $singleDocument */
@@ -1219,7 +1252,7 @@ class DocumentsController extends RozierApp
                 $folder->addDocument($document);
             }
         }
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         return $document;
     }
@@ -1237,19 +1270,17 @@ class DocumentsController extends RozierApp
         $folder = null;
         if (null !== $folderId && $folderId > 0) {
             /** @var Folder $folder */
-            $folder = $this->get('em')->find(Folder::class, $folderId);
+            $folder = $this->em()->find(Folder::class, $folderId);
         }
 
         if (!empty($data['attachment'])) {
             $uploadedFile = $data['attachment']->getData();
 
-            /** @var DocumentFactory $documentFactory */
-            $documentFactory = $this->get('document.factory');
-            $documentFactory->setFile($uploadedFile);
-            $documentFactory->setFolder($folder);
+            $this->documentFactory->setFile($uploadedFile);
+            $this->documentFactory->setFolder($folder);
 
-            if (null !== $document = $documentFactory->getDocument()) {
-                $this->get('em')->flush();
+            if (null !== $document = $this->documentFactory->getDocument()) {
+                $this->em()->flush();
                 return $document;
             }
         }

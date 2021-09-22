@@ -55,7 +55,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         }
 
         /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $this->get('em')->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
+        $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
 
         $orderBy = [];
@@ -114,10 +114,10 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
 
         /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $this->get('em')->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
+        $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
         $cleanNodeIds = array_filter($request->query->get('ids'));
 

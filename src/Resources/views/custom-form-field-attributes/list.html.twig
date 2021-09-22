@@ -2,11 +2,11 @@
 
 {% import _self as macro %}
 
-{% macro column(type, request) %}
+{% macro column(type, app.request) %}
 <tr>
     <td class="uk-text-bold">{{ type.customFormField.label|trans }}</td>
     {% if type.customFormField.isCountry  %}
-        <td>{{ type.value|country_iso(request.locale) }}</td>
+        <td>{{ type.value|country_iso(app.request.locale) }}</td>
     {% elseif type.customFormField.isDate %}
         <td>{{ type.value|format_datetime('full', 'none', locale=app.request.locale) }}</td>
     {% elseif type.customFormField.isDateTime %}
@@ -40,13 +40,13 @@
                             <h3>{{ groupName|trans }}</h3>
                             <table class="uk-table uk-table-condensed">
                                 {% for type in answers %}
-                                    {{ macro.column(type, request) }}
+                                    {{ macro.column(type, app.request) }}
                                 {% endfor %}
                             </table>
                         </div>
                         <table class="uk-table-condensed uk-table">
                     {% else %}
-                        {{ macro.column(answers, request) }}
+                        {{ macro.column(answers, app.request) }}
                     {% endif %}
                 {% endfor %}
                 <tr>

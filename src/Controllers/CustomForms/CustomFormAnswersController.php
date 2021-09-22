@@ -34,7 +34,7 @@ class CustomFormAnswersController extends RozierApp
          * Manage get request to filter list
          */
 
-        $customForm = $this->get('em')->find(
+        $customForm = $this->em()->find(
             CustomForm::class,
             $customFormId
         );
@@ -65,7 +65,7 @@ class CustomFormAnswersController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS_DELETE');
 
-        $customFormAnswer = $this->get('em')->find(CustomFormAnswer::class, $customFormAnswerId);
+        $customFormAnswer = $this->em()->find(CustomFormAnswer::class, $customFormAnswerId);
 
         if (null !== $customFormAnswer) {
             $this->assignation['customFormAnswer'] = $customFormAnswer;
@@ -77,17 +77,17 @@ class CustomFormAnswersController extends RozierApp
             if ($form->isSubmitted() &&
                 $form->isValid() &&
                 $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()) {
-                $this->get("em")->remove($customFormAnswer);
+                $this->em()->remove($customFormAnswer);
 
                 $msg = $this->getTranslator()->trans('customFormAnswer.%id%.deleted', ['%id%' => $customFormAnswer->getId()]);
                 $this->publishConfirmMessage($request, $msg);
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'customFormAnswersHomePage',
                     ["customFormId" => $customFormAnswer->getCustomForm()->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();

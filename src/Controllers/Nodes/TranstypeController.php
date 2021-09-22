@@ -20,6 +20,16 @@ use Themes\Rozier\RozierApp;
  */
 class TranstypeController extends RozierApp
 {
+    private NodeTranstyper $nodeTranstyper;
+
+    /**
+     * @param NodeTranstyper $nodeTranstyper
+     */
+    public function __construct(NodeTranstyper $nodeTranstyper)
+    {
+        $this->nodeTranstyper = $nodeTranstyper;
+    }
+
     /**
      * @param Request $request
      * @param int $nodeId
@@ -31,8 +41,8 @@ class TranstypeController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, $nodeId);
-        $this->get('em')->refresh($node);
+        $node = $this->em()->find(Node::class, $nodeId);
+        $this->em()->refresh($node);
 
         if (null === $node) {
             throw new ResourceNotFoundException();
@@ -47,20 +57,17 @@ class TranstypeController extends RozierApp
             $data = $form->getData();
 
             /** @var NodeType $newNodeType */
-            $newNodeType = $this->get('em')->find(NodeType::class, (int) $data['nodeTypeId']);
-
-            /** @var NodeTranstyper $transtyper */
-            $transtyper = $this->get(NodeTranstyper::class);
-            $transtyper->transtype($node, $newNodeType);
-            $this->get('em')->flush();
-            $this->get('em')->refresh($node);
+            $newNodeType = $this->em()->find(NodeType::class, (int) $data['nodeTypeId']);
+            $this->nodeTranstyper->transtype($node, $newNodeType);
+            $this->em()->flush();
+            $this->em()->refresh($node);
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+            $this->dispatchEvent(new NodeUpdatedEvent($node));
 
             foreach ($node->getNodeSources() as $nodeSource) {
-                $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+                $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
             }
 
             $msg = $this->getTranslator()->trans('%node%.transtyped_to.%type%', [
@@ -69,13 +76,13 @@ class TranstypeController extends RozierApp
             ]);
             $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
                     'translationId' => $node->getNodeSources()->first()->getTranslation()->getId(),
                 ]
-            ));
+            );
         }
 
         $this->assignation['form'] = $form->createView();

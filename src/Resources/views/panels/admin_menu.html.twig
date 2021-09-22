@@ -2,8 +2,8 @@
     <header>
         <div id="frontend-home-area">
             {% set publicUrl = '/' %}
-            {% if request.basePath %}
-                {% set publicUrl = request.basePath %}
+            {% if app.request.basePath %}
+                {% set publicUrl = app.request.basePath %}
             {% endif %}
             {% if bags.settings.get('custom_public_scheme') %}
                 {% set publicUrl = bags.settings.get('custom_public_scheme') %}
@@ -28,46 +28,53 @@
     </header>
     {% apply spaceless %}
     <ul class="uk-nav uk-nav-parent-icon">
-
-        {% if themeServices['backoffice.entries'] %}
-            {% for mainEntry in themeServices['backoffice.entries'] %}
-                {% if (not mainEntry.roles or is_granted(mainEntry.roles)) %}
-                {# Define entry #}
-                <li {% if mainEntry.subentries %}class="uk-parent"{% endif %}>
+        {% for mainEntry in themeServices.backofficeMenuEntries %}
+            {% if (not mainEntry.roles or is_granted(mainEntry.roles)) %}
+            {# Define entry #}
+            <li {% if mainEntry.subentries %}class="uk-parent"{% endif %}>
+                {% if mainEntry.path or mainEntry.route %}
                     {% if mainEntry.path %}
-                    <a href="{{ mainEntry.path }}"><i class="{{ mainEntry.icon }}"></i><span class="info">{{ mainEntry.name|trans }}</span></a>
+                        {% set path = mainEntry.path %}
                     {% else %}
-                    <p><i class="{{ mainEntry.icon }}"></i><span class="info">{{ mainEntry.name|trans }}</span></p>
+                        {% set path = path(mainEntry.route) %}
                     {% endif %}
+                <a href="{{- path -}}"><i class="{{ mainEntry.icon }}"></i><span class="info">{{ mainEntry.name|trans }}</span></a>
+                {% else %}
+                <p><i class="{{ mainEntry.icon }}"></i><span class="info">{{ mainEntry.name|trans }}</span></p>
+                {% endif %}
 
-                    {% if mainEntry.subentries %}
-                    <ul class="uk-nav-sub">
-                        {% for subEntry in mainEntry.subentries %}
-                            {# Exception for settings groups #}
-                            {% if subEntry.name == 'setting.groups.dynamic' %}
-                                {% for group in themeServices.settingGroups %}
-                                    <li class="uk-nav-sub-item">
-                                        <a href="{{ path('settingGroupsSettingsPage', {'settingGroupId': group.id}) }}">
-                                            <i class="uk-icon-rz-settings-group"></i><span class="info">{{ group.name|trans }}</span>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% else %}
-                                {% if (not subEntry.roles or is_granted(subEntry.roles)) %}
-                                <li class="uk-nav-sub-item{% if not subEntry.path %} uk-rz-coming-soon{% endif %}">
-                                    <a href="{{ subEntry.path }}">
-                                        <i class="{{ subEntry.icon }}"></i><span class="info">{{ subEntry.name|trans }}</span>
+                {% if mainEntry.subentries %}
+                <ul class="uk-nav-sub">
+                    {% for subEntry in mainEntry.subentries %}
+                        {# Exception for settings groups #}
+                        {% if subEntry.name == 'setting.groups.dynamic' %}
+                            {% for group in themeServices.settingGroups %}
+                                <li class="uk-nav-sub-item">
+                                    <a href="{{ path('settingGroupsSettingsPage', {'settingGroupId': group.id}) }}">
+                                        <i class="uk-icon-rz-settings-group"></i><span class="info">{{ group.name|trans }}</span>
                                     </a>
                                 </li>
+                            {% endfor %}
+                        {% else %}
+                            {% if (not subEntry.roles or is_granted(subEntry.roles)) %}
+                            <li class="uk-nav-sub-item">
+                                {% if subEntry.path %}
+                                    {% set path = subEntry.path %}
+                                {% else %}
+                                    {% set path = path(subEntry.route) %}
                                 {% endif %}
+                                <a href="{{ path }}">
+                                    <i class="{{ subEntry.icon }}"></i><span class="info">{{ subEntry.name|trans }}</span>
+                                </a>
+                            </li>
                             {% endif %}
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
                 {% endif %}
-            {% endfor %}
-        {% endif %}
+            </li>
+            {% endif %}
+        {% endfor %}
     </ul>
     {% endapply %}
 </nav>

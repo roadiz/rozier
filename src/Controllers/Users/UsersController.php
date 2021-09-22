@@ -5,6 +5,7 @@ namespace Themes\Rozier\Controllers\Users;
 
 use RZ\Roadiz\Core\Entities\Role;
 use RZ\Roadiz\Core\Entities\User;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -66,7 +67,7 @@ class UsersController extends RozierApp
         )) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
         if ($user === null) {
             throw new ResourceNotFoundException();
         }
@@ -78,7 +79,7 @@ class UsersController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->get('em')->flush();
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans(
                 'user.%name%.updated',
                 ['%name%' => $user->getUsername()]
@@ -87,10 +88,10 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'usersEditPage',
                 ['userId' => $user->getId()]
-            ));
+            );
         }
 
         $this->assignation['user'] = $user;
@@ -115,7 +116,7 @@ class UsersController extends RozierApp
         )) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
-        $user = $this->get('em')->find(User::class, $userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if ($user === null) {
             throw new ResourceNotFoundException();
@@ -135,7 +136,7 @@ class UsersController extends RozierApp
                 $user->setPictureUrl($user->getGravatarUrl());
             }
 
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans(
                 'user.%name%.updated',
@@ -146,10 +147,10 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'usersEditDetailsPage',
                 ['userId' => $user->getId()]
-            ));
+            );
         }
 
         $this->assignation['user'] = $user;
@@ -175,13 +176,13 @@ class UsersController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->get('em')->persist($user);
-            $this->get('em')->flush();
+            $this->em()->persist($user);
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('user.%name%.created', ['%name%' => $user->getUsername()]);
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->redirect($this->generateUrl('usersHomePage'));
+            return $this->redirectToRoute('usersHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
@@ -198,7 +199,7 @@ class UsersController extends RozierApp
     public function deleteAction(Request $request, int $userId)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS_DELETE');
-        $user = $this->get('em')->find(User::class, (int) $userId);
+        $user = $this->em()->find(User::class, (int) $userId);
 
         if ($user === null) {
             throw new ResourceNotFoundException();
@@ -208,12 +209,12 @@ class UsersController extends RozierApp
             throw $this->createAccessDeniedException("You cannot edit a super admin.");
         }
 
-        $form = $this->createForm();
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->get('em')->remove($user);
-            $this->get('em')->flush();
+            $this->em()->remove($user);
+            $this->em()->flush();
             $msg = $this->getTranslator()->trans(
                 'user.%name%.deleted',
                 ['%name%' => $user->getUsername()]
@@ -222,7 +223,7 @@ class UsersController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl('usersHomePage'));
+            return $this->redirectToRoute('usersHomePage');
         }
 
         $this->assignation['user'] = $user;

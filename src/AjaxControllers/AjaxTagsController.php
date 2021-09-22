@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TagHandler;
 use RZ\Roadiz\Core\Repositories\TagRepository;
 use RZ\Roadiz\Utils\StringHandler;
@@ -20,12 +22,19 @@ use Themes\Rozier\Models\TagModel;
  */
 class AjaxTagsController extends AbstractAjaxController
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * @return TagRepository
      */
     protected function getRepository()
     {
-        return $this->get('em')->getRepository(Tag::class);
+        return $this->em()->getRepository(Tag::class);
     }
 
     /**
@@ -103,14 +112,14 @@ class AjaxTagsController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $arrayFilter = [
-            'translation' => $this->get('defaultTranslation')
+            'translation' => $this->em()->getRepository(Translation::class)->findDefault()
         ];
         $defaultOrder = [
             'createdAt' => 'DESC'
         ];
 
         if ($request->get('tagId') > 0) {
-            $parentTag = $this->get('em')
+            $parentTag = $this->em()
                 ->find(
                     Tag::class,
                     $request->get('tagId')
@@ -150,16 +159,15 @@ class AjaxTagsController extends AbstractAjaxController
     }
 
     /**
-     * @param Tag[]|null $tags
+     * @param array<Tag>|\Traversable<Tag>|null $tags
      * @return array
      */
-    protected function normalizeTags(array $tags = null)
+    protected function normalizeTags($tags)
     {
         $tagsArray = [];
         if ($tags !== null) {
-            /** @var Tag $tag */
             foreach ($tags as $tag) {
-                $tagModel = new TagModel($tag, $this->container);
+                $tagModel = new TagModel($tag, $this->get('router'));
                 $tagsArray[] = $tagModel->toArray();
             }
         }
@@ -208,30 +216,24 @@ class AjaxTagsController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->get('em')->find(Tag::class, (int) $tagId);
+        $tag = $this->em()->find(Tag::class, (int) $tagId);
 
         if ($tag !== null) {
-            $responseArray = null;
-
             /*
              * Get the right update method against "_action" parameter
              */
             switch ($request->get('_action')) {
                 case 'updatePosition':
-                    $responseArray = $this->updatePosition($request->request->all(), $tag);
+                    $this->updatePosition($request->request->all(), $tag);
                     break;
             }
 
-            if ($responseArray === null) {
-                $responseArray = [
+            return new JsonResponse(
+                [
                     'statusCode' => '200',
                     'status' => 'success',
                     'responseText' => ('Tag ' . $tagId . ' edited '),
-                ];
-            }
-
-            return new JsonResponse(
-                $responseArray,
+                ],
                 Response::HTTP_PARTIAL_CONTENT
             );
         }
@@ -295,7 +297,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         if (!empty($parameters['newParent']) &&
             $parameters['newParent'] > 0) {
-            $parent = $this->get('em')
+            $parent = $this->em()
                            ->find(Tag::class, (int) $parameters['newParent']);
 
             if ($parent !== null) {
@@ -310,33 +312,30 @@ class AjaxTagsController extends AbstractAjaxController
          */
         if (!empty($parameters['nextTagId']) &&
             $parameters['nextTagId'] > 0) {
-            $nextTag = $this->get('em')
-                            ->find(Tag::class, (int) $parameters['nextTagId']);
+            $nextTag = $this->em()->find(Tag::class, (int) $parameters['nextTagId']);
             if ($nextTag !== null) {
                 $tag->setPosition($nextTag->getPosition() - 0.5);
             }
         } elseif (!empty($parameters['prevTagId']) &&
             $parameters['prevTagId'] > 0) {
-            $prevTag = $this->get('em')
-                            ->find(Tag::class, (int) $parameters['prevTagId']);
+            $prevTag = $this->em()->find(Tag::class, (int) $parameters['prevTagId']);
             if ($prevTag !== null) {
                 $tag->setPosition($prevTag->getPosition() + 0.5);
             }
         }
         // Apply position update before cleaning
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /** @var TagHandler $tagHandler */
-        $tagHandler = $this->get('tag.handler');
-        $tagHandler->setTag($tag);
+        $tagHandler = $this->handlerFactory->getHandler($tag);
         $tagHandler->cleanPositions();
 
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /*
          * Dispatch event
          */
-        $this->get('dispatcher')->dispatch(new TagUpdatedEvent($tag));
+        $this->dispatchEvent(new TagUpdatedEvent($tag));
     }
 
     /**
@@ -359,7 +358,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         /** @var Tag $tag */
         $tag = $this->getRepository()->findOrCreateByPath($request->get('tagName'));
-        $tagModel = new TagModel($tag, $this->getContainer());
+        $tagModel = new TagModel($tag, $this->get('router'));
 
         return new JsonResponse(
             [

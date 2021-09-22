@@ -19,8 +19,8 @@
                     <div id="login-link">
                         {% if not hide_website %}
                             {% set publicUrl = '/' %}
-                            {% if request.basePath %}
-                                {% set publicUrl = request.basePath %}
+                            {% if app.request.basePath %}
+                                {% set publicUrl = app.request.basePath %}
                             {% endif %}
                             {% if bags.settings.get('custom_public_scheme') %}
                                 {% set publicUrl = bags.settings.get('custom_public_scheme') %}

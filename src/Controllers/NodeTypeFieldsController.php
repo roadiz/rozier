@@ -5,7 +5,9 @@ namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +22,16 @@ use Themes\Rozier\RozierApp;
  */
 class NodeTypeFieldsController extends RozierApp
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    /**
+     * @param HandlerFactoryInterface $handlerFactory
+     */
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * @param Request $request
      * @param int $nodeTypeId
@@ -31,7 +43,7 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if ($nodeType !== null) {
             $fields = $nodeType->getFields();
@@ -56,23 +68,20 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
         /** @var NodeTypeField|null $field */
-        $field = $this->get('em')->find(NodeTypeField::class, $nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
         if ($field !== null) {
             $this->assignation['nodeType'] = $field->getNodeType();
             $this->assignation['field'] = $field;
 
-            $form = $this->createForm(NodeTypeFieldType::class, $field, [
-                'inheritance_type' => $this->get('config')['inheritance']['type']
-            ]);
+            $form = $this->createForm(NodeTypeFieldType::class, $field);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
 
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('node_type.handler');
-                $handler->setNodeType($field->getNodeType());
+                $handler = $this->handlerFactory->getHandler($field->getNodeType());
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
@@ -81,12 +90,12 @@ class NodeTypeFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodeTypesFieldSchemaUpdate',
                     [
                         'nodeTypeId' => $field->getNodeType()->getId(),
                     ]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -109,10 +118,10 @@ class NodeTypeFieldsController extends RozierApp
 
         $field = new NodeTypeField();
         /** @var NodeType|null $nodeType */
-        $nodeType = $this->get('em')->find(NodeType::class, $nodeTypeId);
+        $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
         if ($nodeType !== null) {
-            $latestPosition = $this->get('em')
+            $latestPosition = $this->em()
                                    ->getRepository(NodeTypeField::class)
                                    ->findLatestPositionInNodeType($nodeType);
             $field->setNodeType($nodeType);
@@ -122,20 +131,17 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['nodeType'] = $nodeType;
             $this->assignation['field'] = $field;
 
-            $form = $this->createForm(NodeTypeFieldType::class, $field, [
-                'inheritance_type' => $this->get('config')['inheritance']['type']
-            ]);
+            $form = $this->createForm(NodeTypeFieldType::class, $field);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
-                    $this->get('em')->persist($field);
-                    $this->get('em')->flush();
-                    $this->get('em')->refresh($nodeType);
+                    $this->em()->persist($field);
+                    $this->em()->flush();
+                    $this->em()->refresh($nodeType);
 
                     /** @var NodeTypeHandler $handler */
-                    $handler = $this->get('node_type.handler');
-                    $handler->setNodeType($nodeType);
+                    $handler = $this->handlerFactory->getHandler($nodeType);
                     $handler->updateSchema();
 
                     $msg = $this->getTranslator()->trans(
@@ -147,22 +153,22 @@ class NodeTypeFieldsController extends RozierApp
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'nodeTypesFieldSchemaUpdate',
                         [
                             'nodeTypeId' => $nodeTypeId,
                         ]
-                    ));
+                    );
                 } catch (\Exception $e) {
                     $msg = $e->getMessage();
                     $this->publishErrorMessage($request, $msg);
                     /*
                      * Redirect to add page
                      */
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'nodeTypeFieldsAddPage',
                         ['nodeTypeId' => $nodeTypeId]
-                    ));
+                    );
                 }
             }
 
@@ -185,26 +191,25 @@ class NodeTypeFieldsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODEFIELDS_DELETE');
 
         /** @var NodeTypeField|null $field */
-        $field = $this->get('em')->find(NodeTypeField::class, $nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
         if ($field !== null) {
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $nodeTypeId = $field->getNodeType()->getId();
-                $this->get('em')->remove($field);
-                $this->get('em')->flush();
+                $this->em()->remove($field);
+                $this->em()->flush();
 
                 /*
                  * Update Database
                  */
                 /** @var NodeType|null $nodeType */
-                $nodeType = $this->get('em')->find(NodeType::class, (int) $nodeTypeId);
+                $nodeType = $this->em()->find(NodeType::class, (int) $nodeTypeId);
 
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->get('node_type.handler');
-                $handler->setNodeType($nodeType);
+                $handler = $this->handlerFactory->getHandler($nodeType);
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans(
@@ -216,12 +221,12 @@ class NodeTypeFieldsController extends RozierApp
                 /*
                  * Redirect to update schema page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'nodeTypesFieldSchemaUpdate',
                     [
                         'nodeTypeId' => $nodeTypeId,
                     ]
-                ));
+                );
             }
 
             $this->assignation['field'] = $field;

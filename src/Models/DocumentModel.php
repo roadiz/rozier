@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use Pimple\Container;
 use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Models\HasThumbnailInterface;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @package Themes\Rozier\Models
@@ -39,16 +39,26 @@ final class DocumentModel implements ModelInterface
     ];
 
     private DocumentInterface $document;
-    private Container $container;
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
 
     /**
      * @param DocumentInterface $document
-     * @param Container $container
+     * @param RendererInterface $renderer
+     * @param DocumentUrlGeneratorInterface $documentUrlGenerator
+     * @param UrlGeneratorInterface $urlGenerator
      */
-    public function __construct(DocumentInterface $document, Container $container)
-    {
+    public function __construct(
+        DocumentInterface $document,
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator
+    ) {
         $this->document = $document;
-        $this->container = $container;
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function toArray()
@@ -60,31 +70,26 @@ final class DocumentModel implements ModelInterface
             $this->document->getDocumentTranslations()->first()->getName()) {
             $name = $this->document->getDocumentTranslations()->first()->getName();
         }
-        /** @var RendererInterface $renderer */
-        $renderer = $this->container->offsetGet(RendererInterface::class);
 
-        /** @var DocumentUrlGeneratorInterface $documentUrlGenerator */
-        $documentUrlGenerator = $this->container->offsetGet('document.url_generator');
-        $documentUrlGenerator->setDocument($this->document);
+        $this->documentUrlGenerator->setDocument($this->document);
         $hasThumbnail = false;
 
         if ($this->document instanceof HasThumbnailInterface &&
             $this->document->needsThumbnail() &&
             $this->document->hasThumbnails()) {
-            $documentUrlGenerator->setDocument($this->document->getThumbnails()->first());
+            $this->documentUrlGenerator->setDocument($this->document->getThumbnails()->first());
             $hasThumbnail = true;
         }
 
-        $documentUrlGenerator->setOptions(static::$thumbnail80Array);
-        $thumbnail80Url = $documentUrlGenerator->getUrl();
+        $this->documentUrlGenerator->setOptions(static::$thumbnail80Array);
+        $thumbnail80Url = $this->documentUrlGenerator->getUrl();
 
-        $documentUrlGenerator->setOptions(static::$previewArray);
-        $previewUrl = $documentUrlGenerator->getUrl();
+        $this->documentUrlGenerator->setOptions(static::$previewArray);
+        $previewUrl = $this->documentUrlGenerator->getUrl();
 
         if ($this->document instanceof AbstractEntity) {
             $id = $this->document->getId();
-            $editUrl = $this->container
-                ->offsetGet('urlGenerator')
+            $editUrl = $this->urlGenerator
                 ->generate('documentsEditPage', [
                     'documentId' => $this->document->getId()
                 ]);
@@ -108,7 +113,7 @@ final class DocumentModel implements ModelInterface
             'shortType' => $this->document->getShortType(),
             'editUrl' => $editUrl,
             'preview' => $previewUrl,
-            'preview_html' => $renderer->render($this->document, static::$previewArray),
+            'preview_html' => $this->renderer->render($this->document, static::$previewArray),
             'embedPlatform' => $this->document->getEmbedPlatform(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,

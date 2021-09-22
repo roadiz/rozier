@@ -3,13 +3,15 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\Document\Renderer\RendererInterface;
+use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\DocumentModel;
 
 /**
@@ -17,6 +19,20 @@ use Themes\Rozier\Models\DocumentModel;
  */
 class AjaxDocumentsExplorerController extends AbstractAjaxController
 {
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator
+    ) {
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
+    }
+
     public static array $thumbnailArray = [
         "fit" => "40x40",
         "quality" => 50,
@@ -39,7 +55,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         ];
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
-            $folder = $this->get('em')
+            $folder = $this->em()
                         ->find(
                             Folder::class,
                             $request->get('folderId')
@@ -100,8 +116,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
         $cleanDocumentIds = array_filter($request->query->get('ids'));
 
-        /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $documents = $em->getRepository(Document::class)->findBy([
             'id' => $cleanDocumentIds,
             'raw' => false,
@@ -126,7 +141,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
     /**
      * Normalize response Document list result.
      *
-     * @param array|\Traversable $documents
+     * @param array<Document>|\Traversable<Document> $documents
      * @return array
      */
     private function normalizeDocuments($documents)
@@ -135,7 +150,12 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
         /** @var Document $doc */
         foreach ($documents as $doc) {
-            $documentModel = new DocumentModel($doc, $this->getContainer());
+            $documentModel = new DocumentModel(
+                $doc,
+                $this->renderer,
+                $this->documentUrlGenerator,
+                $this->urlGenerator
+            );
             $documentsArray[] = $documentModel->toArray();
         }
 

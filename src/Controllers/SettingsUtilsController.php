@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\SettingsImporter;
 use RZ\Roadiz\Core\Entities\Setting;
 use RZ\Roadiz\Core\Entities\SettingGroup;
@@ -23,6 +22,19 @@ use Themes\Rozier\RozierApp;
  */
 class SettingsUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+    private SettingsImporter $settingsImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param SettingsImporter $settingsImporter
+     */
+    public function __construct(SerializerInterface $serializer, SettingsImporter $settingsImporter)
+    {
+        $this->serializer = $serializer;
+        $this->settingsImporter = $settingsImporter;
+    }
+
     /**
      * Export all settings in a Json file.
      *
@@ -35,30 +47,25 @@ class SettingsUtilsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->get('em');
         if (null !== $settingGroupId) {
             /** @var SettingGroup|null $group */
-            $group = $entityManager->find(SettingGroup::class, $settingGroupId);
+            $group = $this->em()->find(SettingGroup::class, $settingGroupId);
             if (null === $group) {
                 throw $this->createNotFoundException();
             }
             $fileName = 'settings-' . strtolower(StringHandler::cleanForFilename($group->getName())) . '-' . date("YmdHis") . '.json';
-            $settings = $entityManager
+            $settings = $this->em()
                 ->getRepository(Setting::class)
                 ->findBySettingGroup($group);
         } else {
             $fileName = 'settings-' . date("YmdHis") . '.json';
-            $settings = $entityManager
+            $settings = $this->em()
                 ->getRepository(Setting::class)
                 ->findAll();
         }
 
-        /** @var Serializer $serializer */
-        $serializer = $this->get('serializer');
-
         return new JsonResponse(
-            $serializer->serialize(
+            $this->serializer->serialize(
                 $settings,
                 'json',
                 SerializationContext::create()->setGroups(['setting'])
@@ -94,16 +101,16 @@ class SettingsUtilsController extends RozierApp
             if ($form->isSubmitted() && $file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
-                if (null !== json_decode($serializedData)) {
-                    if ($this->get(SettingsImporter::class)->import($serializedData)) {
+                if (null !== \json_decode($serializedData)) {
+                    if ($this->settingsImporter->import($serializedData)) {
                         $msg = $this->getTranslator()->trans('setting.imported');
                         $this->publishConfirmMessage($request, $msg);
-                        $this->get('em')->flush();
+                        $this->em()->flush();
 
                         // redirect even if its null
-                        return $this->redirect($this->generateUrl(
+                        return $this->redirectToRoute(
                             'settingsHomePage'
-                        ));
+                        );
                     }
                 }
                 $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));

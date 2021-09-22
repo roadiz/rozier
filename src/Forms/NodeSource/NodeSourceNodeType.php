@@ -109,7 +109,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
 
         if (is_array($event->getData())) {
             $position = 0;
-            $manager = $this->managerRegistry->getManagerForClass(Node::class);
+            $manager = $this->managerRegistry->getManager();
             foreach ($event->getData() as $nodeId) {
                 /** @var Node|null $tempNode */
                 $tempNode = $manager->find(Node::class, (int) $nodeId);

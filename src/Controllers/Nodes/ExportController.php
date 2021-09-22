@@ -17,6 +17,16 @@ use Themes\Rozier\RozierApp;
  */
 class ExportController extends RozierApp
 {
+    private NodeSourceXlsxSerializer $xlsxSerializer;
+
+    /**
+     * @param NodeSourceXlsxSerializer $xlsxSerializer
+     */
+    public function __construct(NodeSourceXlsxSerializer $xlsxSerializer)
+    {
+        $this->xlsxSerializer = $xlsxSerializer;
+    }
+
     /**
      * Export all Node in a XLSX file (Excel).
      *
@@ -33,11 +43,11 @@ class ExportController extends RozierApp
         /*
          * Get translation
          */
-        $translation = $this->get('em')
+        $translation = $this->em()
             ->find(Translation::class, $translationId);
 
         if (null === $translation) {
-            $translation = $this->get('em')
+            $translation = $this->em()
                 ->getRepository(Translation::class)
                 ->findDefault();
         }
@@ -47,7 +57,7 @@ class ExportController extends RozierApp
 
         if (null !== $parentNodeId) {
             /** @var Node|null $parentNode */
-            $parentNode = $this->get('em')->find(Node::class, $parentNodeId);
+            $parentNode = $this->em()->find(Node::class, $parentNodeId);
             if (null === $parentNode) {
                 throw $this->createNotFoundException();
             }
@@ -55,16 +65,15 @@ class ExportController extends RozierApp
             $filename = $parentNode->getNodeName() . '-' . date("YmdHis") . '.' . $translation->getLocale() . '.xlsx';
         }
 
-        $sources = $this->get('em')
+        $sources = $this->em()
             ->getRepository(NodesSources::class)
             ->setDisplayingAllNodesStatuses(true)
             ->setDisplayingNotPublishedNodes(true)
             ->findBy($criteria, $order);
 
-        $serializer = new NodeSourceXlsxSerializer($this->get('em'), $this->get('translator'), $this->get('urlGenerator'));
-        $serializer->setOnlyTexts(true);
-        $serializer->addUrls($request, $this->get('settingsBag')->get('force_locale'));
-        $xlsx = $serializer->serialize($sources);
+        $this->xlsxSerializer->setOnlyTexts(true);
+        $this->xlsxSerializer->addUrls($request, $this->getSettingsBag()->get('force_locale'));
+        $xlsx = $this->xlsxSerializer->serialize($sources);
 
         $response = new Response(
             $xlsx,

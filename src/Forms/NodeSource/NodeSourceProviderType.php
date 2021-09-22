@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Pimple\Container;
+use Psr\Container\ContainerInterface;
 use RZ\Roadiz\CMS\Forms\DataTransformer\ProviderDataTransformer;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
 use RZ\Roadiz\Explorer\AbstractExplorerItem;
@@ -18,13 +18,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldType
 {
-    protected Container $container;
+    protected ContainerInterface $container;
 
     /**
      * @param ManagerRegistry $managerRegistry
-     * @param Container $container
+     * @param ContainerInterface $container
      */
-    public function __construct(ManagerRegistry $managerRegistry, Container $container)
+    public function __construct(ManagerRegistry $managerRegistry, ContainerInterface $container)
     {
         parent::__construct($managerRegistry);
         $this->container = $container;
@@ -67,8 +67,8 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
 
     protected function getProvider(array $configuration, array $options): ExplorerProviderInterface
     {
-        if ($this->container->offsetExists($configuration['classname'])) {
-            return $this->container->offsetGet($configuration['classname']);
+        if ($this->container->has($configuration['classname'])) {
+            return $this->container->get($configuration['classname']);
         } else {
             /** @var AbstractExplorerProvider $provider */
             $provider = new $configuration['classname'];

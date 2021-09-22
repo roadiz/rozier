@@ -229,11 +229,6 @@ searchNodeSourcePage:
         _controller: Themes\Rozier\Controllers\SearchController::searchNodeSourceAction
     requirements: { nodetypeId : "[0-9]+" }
 
-aboutPage:
-    path: /rz-admin/about
-    defaults:
-        _controller: Themes\Rozier\Controllers\AboutController::indexAction
-
 webhooksHomePage:
     path:     /rz-admin/webhooks
     defaults:

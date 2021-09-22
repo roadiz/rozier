@@ -7,7 +7,9 @@ use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\Translation\TranslationCreatedEvent;
 use RZ\Roadiz\Core\Events\Translation\TranslationDeletedEvent;
 use RZ\Roadiz\Core\Events\Translation\TranslationUpdatedEvent;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TranslationHandler;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +20,16 @@ use Themes\Rozier\RozierApp;
 class TranslationsController extends RozierApp
 {
     const ITEM_PER_PAGE = 5;
+
+    private HandlerFactoryInterface $handlerFactory;
+
+    /**
+     * @param HandlerFactoryInterface $handlerFactory
+     */
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
 
     /**
      * @param Request $request
@@ -46,18 +58,17 @@ class TranslationsController extends RozierApp
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var TranslationHandler $handler */
-                $handler = $this->get('translation.handler');
-                $handler->setTranslation($translation);
+                $handler = $this->handlerFactory->getHandler($translation);
                 $handler->makeDefault();
                 $msg = $this->getTranslator()->trans('translation.%name%.made_default', ['%name%' => $translation->getName()]);
                 $this->publishConfirmMessage($request, $msg);
-                $this->get('dispatcher')->dispatch(new TranslationUpdatedEvent($translation));
+                $this->dispatchEvent(new TranslationUpdatedEvent($translation));
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'translationsHomePage'
-                ));
+                );
             }
 
             $this->assignation['translations'][] = [
@@ -80,7 +91,7 @@ class TranslationsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if ($translation !== null) {
             $this->assignation['translation'] = $translation;
@@ -89,18 +100,18 @@ class TranslationsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 $msg = $this->getTranslator()->trans('translation.%name%.updated', ['%name%' => $translation->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
-                $this->get('dispatcher')->dispatch(new TranslationUpdatedEvent($translation));
+                $this->dispatchEvent(new TranslationUpdatedEvent($translation));
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'translationsEditPage',
                     ['translationId' => $translation->getId()]
-                ));
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -127,17 +138,17 @@ class TranslationsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->get('em')->persist($translation);
-            $this->get('em')->flush();
+            $this->em()->persist($translation);
+            $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('translation.%name%.created', ['%name%' => $translation->getName()]);
             $this->publishConfirmMessage($request, $msg);
 
-            $this->get('dispatcher')->dispatch(new TranslationCreatedEvent($translation));
+            $this->dispatchEvent(new TranslationCreatedEvent($translation));
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl('translationsHomePage'));
+            return $this->redirectToRoute('translationsHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
@@ -156,21 +167,21 @@ class TranslationsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->get('em')->find(Translation::class, $translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if (null !== $translation) {
             $this->assignation['translation'] = $translation;
-            $form = $this->createForm();
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 if (false === $translation->isDefaultTranslation()) {
-                    $this->get('em')->remove($translation);
-                    $this->get('em')->flush();
+                    $this->em()->remove($translation);
+                    $this->em()->flush();
                     $msg = $this->getTranslator()->trans('translation.%name%.deleted', ['%name%' => $translation->getName()]);
                     $this->publishConfirmMessage($request, $msg);
-                    $this->get('dispatcher')->dispatch(new TranslationDeletedEvent($translation));
+                    $this->dispatchEvent(new TranslationDeletedEvent($translation));
 
-                    return $this->redirect($this->generateUrl('translationsHomePage'));
+                    return $this->redirectToRoute('translationsHomePage');
                 }
                 $form->addError(new FormError($this->getTranslator()->trans(
                     'translation.%name%.cannot_delete_default_translation',

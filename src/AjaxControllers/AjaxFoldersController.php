@@ -5,6 +5,7 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Entities\Folder;
 use RZ\Roadiz\Core\Handlers\FolderHandler;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AjaxFoldersController extends AbstractAjaxController
 {
+    private HandlerFactoryInterface $handlerFactory;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory)
+    {
+        $this->handlerFactory = $handlerFactory;
+    }
+
     /**
      * Handle AJAX edition requests for Folder
      * such as coming from tag-tree widgets.
@@ -25,14 +33,10 @@ class AjaxFoldersController extends AbstractAjaxController
      */
     public function editAction(Request $request, int $folderId)
     {
-        /*
-         * Validate
-         */
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $folder = $this->get('em')
-            ->find(Folder::class, (int) $folderId);
+        $folder = $this->em()->find(Folder::class, (int) $folderId);
 
         if ($folder !== null) {
             $responseArray = null;
@@ -87,7 +91,7 @@ class AjaxFoldersController extends AbstractAjaxController
             $responseArray = [];
 
             $pattern = strip_tags($request->get('search'));
-            $folders = $this->get('em')
+            $folders = $this->em()
                         ->getRepository(Folder::class)
                         ->searchBy(
                             $pattern,
@@ -123,8 +127,7 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['newParent']) &&
             $parameters['newParent'] > 0) {
             /** @var Folder $parent */
-            $parent = $this->get('em')
-                ->find(Folder::class, (int) $parameters['newParent']);
+            $parent = $this->em()->find(Folder::class, (int) $parameters['newParent']);
 
             if ($parent !== null) {
                 $folder->setParent($parent);
@@ -139,28 +142,26 @@ class AjaxFoldersController extends AbstractAjaxController
         if (!empty($parameters['nextFolderId']) &&
             $parameters['nextFolderId'] > 0) {
             /** @var Folder $nextFolder */
-            $nextFolder = $this->get('em')
-                ->find(Folder::class, (int) $parameters['nextFolderId']);
+            $nextFolder = $this->em()->find(Folder::class, (int) $parameters['nextFolderId']);
             if ($nextFolder !== null) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
             }
         } elseif (!empty($parameters['prevFolderId']) &&
             $parameters['prevFolderId'] > 0) {
             /** @var Folder $prevFolder */
-            $prevFolder = $this->get('em')
+            $prevFolder = $this->em()
                 ->find(Folder::class, (int) $parameters['prevFolderId']);
             if ($prevFolder !== null) {
                 $folder->setPosition($prevFolder->getPosition() + 0.5);
             }
         }
         // Apply position update before cleaning
-        $this->get('em')->flush();
+        $this->em()->flush();
 
         /** @var FolderHandler $handler */
-        $handler = $this->get('folder.handler');
-        $handler->setFolder($folder);
+        $handler = $this->handlerFactory->getHandler($folder);
         $handler->cleanPositions();
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 }

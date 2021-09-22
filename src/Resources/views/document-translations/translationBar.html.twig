@@ -1,7 +1,7 @@
 {% set editRouteParams = { documentId: document.id } %}
 
-{% if request and request.get('referer') %}
-    {% set editRouteParams = editRouteParams|merge({ referer: request.get('referer') }) %}
+{% if app.request and app.request.get('referer') %}
+    {% set editRouteParams = editRouteParams|merge({ referer: app.request.get('referer') }) %}
 {% endif %}
 
 <nav class="document-translation-bar translation-bar uk-navbar">

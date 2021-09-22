@@ -16,7 +16,6 @@ use Themes\Rozier\Models\NodeTypeModel;
  */
 class AjaxNodeTypesController extends AjaxAbstractFieldsController
 {
-
     /**
      * @param Request $request
      *
@@ -71,7 +70,7 @@ class AjaxNodeTypesController extends AjaxAbstractFieldsController
         $cleanNodeTypesName = array_filter($request->query->get('names'));
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $nodeTypes = $em->getRepository(NodeType::class)->findBy([
             'name' => $cleanNodeTypesName
         ]);

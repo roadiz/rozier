@@ -3,13 +3,15 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Doctrine\Common\Cache\CacheProvider;
+use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeAssetsRequestEvent;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeRequestEvent;
 use RZ\Roadiz\Core\Kernel;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Themes\Rozier\RozierApp;
 
 /**
@@ -17,6 +19,25 @@ use Themes\Rozier\RozierApp;
  */
 class CacheController extends RozierApp
 {
+    private KernelInterface $kernel;
+    private LoggerInterface $logger;
+    private CacheProvider $nodesSourcesUrlCacheProvider;
+
+    /**
+     * @param KernelInterface $kernel
+     * @param LoggerInterface $logger
+     * @param CacheProvider $nodesSourcesUrlCacheProvider
+     */
+    public function __construct(
+        KernelInterface $kernel,
+        LoggerInterface $logger,
+        CacheProvider $nodesSourcesUrlCacheProvider
+    ) {
+        $this->kernel = $kernel;
+        $this->logger = $logger;
+        $this->nodesSourcesUrlCacheProvider = $nodesSourcesUrlCacheProvider;
+    }
+
     /**
      * @param Request $request
      *
@@ -30,30 +51,28 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var EventDispatcher $dispatcher */
-            $dispatcher = $this->get('dispatcher');
-            $event = new CachePurgeRequestEvent($this->get('kernel'));
-            $dispatcher->dispatch($event);
+            $event = new CachePurgeRequestEvent($this->kernel);
+            $this->dispatchEvent($event);
 
             // Clear cache for prod preview
-            $kernelClass = get_class($this->get('kernel'));
+            $kernelClass = get_class($this->kernel);
             /** @var Kernel $prodPreviewKernel */
             $prodPreviewKernel = new $kernelClass('prod', false, true);
             $prodPreviewKernel->boot();
             $prodPreviewEvent = new CachePurgeRequestEvent($prodPreviewKernel);
-            $dispatcher->dispatch($prodPreviewEvent);
+            $this->dispatchEvent($prodPreviewEvent);
 
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
 
             foreach ($event->getMessages() as $message) {
-                $this->get('logger')->info(sprintf('Cache cleared: %s', $message['description']));
+                $this->logger->info(sprintf('Cache cleared: %s', $message['description']));
             }
             foreach ($event->getErrors() as $message) {
                 $this->publishErrorMessage($request, sprintf('Could not clear cache: %s', $message['description']));
             }
             foreach ($prodPreviewEvent->getMessages() as $message) {
-                $this->get('logger')->info(sprintf('Preview cache cleared: %s', $message['description']));
+                $this->logger->info(sprintf('Preview cache cleared: %s', $message['description']));
             }
             foreach ($prodPreviewEvent->getErrors() as $message) {
                 $this->publishErrorMessage($request, sprintf('Could not clear creview cache: %s', $message['description']));
@@ -62,17 +81,17 @@ class CacheController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl('adminHomePage'));
+            return $this->redirectToRoute('adminHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
 
         $this->assignation['cachesInfo'] = [
-            'resultCache' => $this->get('em')->getConfiguration()->getResultCacheImpl(),
-            'hydratationCache' => $this->get('em')->getConfiguration()->getHydrationCacheImpl(),
-            'queryCache' => $this->get('em')->getConfiguration()->getQueryCacheImpl(),
-            'metadataCache' => $this->get('em')->getConfiguration()->getMetadataCacheImpl(),
-            'nodeSourcesUrlsCache' => $this->get('nodesSourcesUrlCacheProvider'),
+            'resultCache' => $this->em()->getConfiguration()->getResultCacheImpl(),
+            'hydratationCache' => $this->em()->getConfiguration()->getHydrationCacheImpl(),
+            'queryCache' => $this->em()->getConfiguration()->getQueryCacheImpl(),
+            'metadataCache' => $this->em()->getConfiguration()->getMetadataCacheImpl(),
+            'nodeSourcesUrlsCache' => $this->nodesSourcesUrlCacheProvider,
         ];
 
         foreach ($this->assignation['cachesInfo'] as $key => $value) {
@@ -110,14 +129,11 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var EventDispatcher $dispatcher */
-            $dispatcher = $this->get('dispatcher');
-            $event = $dispatcher->dispatch(new CachePurgeAssetsRequestEvent($this->get('kernel')));
-
+            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent($this->kernel));
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
             foreach ($event->getMessages() as $message) {
-                $this->get('logger')->info(sprintf('Cache cleared: %s', $message['description']));
+                $this->logger->info(sprintf('Cache cleared: %s', $message['description']));
             }
             foreach ($event->getErrors() as $message) {
                 $this->publishErrorMessage($request, sprintf('Could not clear cache: %s', $message['description']));
@@ -126,7 +142,7 @@ class CacheController extends RozierApp
             /*
              * Force redirect to avoid resending form when refreshing page
              */
-            return $this->redirect($this->generateUrl('adminHomePage'));
+            return $this->redirectToRoute('adminHomePage');
         }
 
         $this->assignation['form'] = $form->createView();

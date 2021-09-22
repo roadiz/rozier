@@ -72,7 +72,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
         $cleanCustomFormsIds = array_filter($request->query->get('ids'));
 
         /** @var EntityManager $em */
-        $em = $this->get('em');
+        $em = $this->em();
         $customForms = $em->getRepository(CustomForm::class)->findBy([
             'id' => $cleanCustomFormsIds,
         ]);
@@ -95,7 +95,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
     /**
      * Normalize response CustomForm list result.
      *
-     * @param array|\Traversable $customForms
+     * @param array<CustomForm>|\Traversable<CustomForm> $customForms
      * @return array
      */
     private function normalizeCustomForms($customForms)
@@ -104,7 +104,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         /** @var CustomForm $customForm */
         foreach ($customForms as $customForm) {
-            $customFormModel = new CustomFormModel($customForm, $this->getContainer());
+            $customFormModel = new CustomFormModel($customForm, $this->get('router'), $this->getTranslator());
             $customFormsArray[] = $customFormModel->toArray();
         }
 

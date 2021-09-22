@@ -14,6 +14,13 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class AjaxTagTreeController extends AbstractAjaxController
 {
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    public function __construct(TreeWidgetFactory $treeWidgetFactory)
+    {
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
+
     /**
      * @param Request $request
      *
@@ -35,7 +42,7 @@ class AjaxTagTreeController extends AbstractAjaxController
              */
             case 'requestTagTree':
                 if ($request->get('parentTagId') > 0) {
-                    $tag = $this->get('em')
+                    $tag = $this->em()
                                 ->find(
                                     Tag::class,
                                     (int) $request->get('parentTagId')
@@ -44,7 +51,7 @@ class AjaxTagTreeController extends AbstractAjaxController
                     $tag = null;
                 }
 
-                $tagTree = $this->get(TreeWidgetFactory::class)->createTagTree($tag);
+                $tagTree = $this->treeWidgetFactory->createTagTree($tag);
 
                 $this->assignation['mainTagTree'] = false;
 
@@ -54,7 +61,7 @@ class AjaxTagTreeController extends AbstractAjaxController
              */
             case 'requestMainTagTree':
                 $parent = null;
-                $tagTree = $this->get(TreeWidgetFactory::class)->createTagTree($parent);
+                $tagTree = $this->treeWidgetFactory->createTagTree($parent);
                 $this->assignation['mainTagTree'] = true;
                 break;
         }

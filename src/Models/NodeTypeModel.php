@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use Pimple\Container;
 use RZ\Roadiz\Core\Entities\NodeType;
 
 /**

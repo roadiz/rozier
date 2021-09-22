@@ -1,6 +1,6 @@
-{% set formattedLocale = request.locale|replace({'_': '-'})|lower %}
+{% set formattedLocale = app.request.locale|replace({'_': '-'})|lower %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ formattedLocale }}"{% if request.locale is rtl %} dir="rtl"{% endif %}>
+<html class="no-js" lang="{{ formattedLocale }}"{% if app.request.locale is rtl %} dir="rtl"{% endif %}>
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -30,14 +30,12 @@
                         'session' : session,
                         'head' : head,
                         'themeServices':themeServices,
-                        'request':request
                     } only %}
                 </section>
                 <section class="main-container-section navigation-container-section" id="admin-menu">
                     {% include '@Rozier/panels/admin_menu.html.twig' with {
                         'themeServices' : themeServices,
                         'backofficeEntries':backofficeEntries,
-                        'request':request
                     } only %}
                 </section>
                 {% if (is_granted('ROLE_ACCESS_NODES') or
@@ -49,7 +47,6 @@
                         {% include '@Rozier/panels/tree_panel.html.twig' with {
                             'themeServices': themeServices,
                             "nodeStatuses":nodeStatuses,
-                            "request":request,
                         } only %}
                     </div>
                 </section>
@@ -134,7 +131,7 @@
                         'portrait': '{{ 'blanchetteEditor.portrait'|trans|trim|escape }}',
                     },
                     'dropzone' : {
-                        'maxFilesize':                  {{ themeServices.maxFilesize }},
+                        'maxFilesize':                  {{ themeServices.maxFilesize ?? '0' }},
                         'dictDefaultMessage':           "{{ 'drop.files.here.to.upload.or.click.to.open.your.explorer'|trans|trim|escape }}",
                         'dictFallbackMessage':          "{{ 'your.browser.does.not.support.dragndrop.file.uploads'|trans|trim|escape }}",
                         'dictFallbackText':             "{{ 'please.use.the.fallback.form.below.to.upload.your.files.like.in.the.olden.days'|trans|trim|escape }}",

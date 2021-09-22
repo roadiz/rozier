@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AjaxFoldersExplorerController extends AbstractAjaxController
 {
-    public static $thumbnailArray = null;
     /**
      * @param Request $request
      *
@@ -23,7 +22,7 @@ class AjaxFoldersExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $folders = $this->get('em')
+        $folders = $this->em()
                         ->getRepository(Folder::class)
                         ->findBy(
                             [

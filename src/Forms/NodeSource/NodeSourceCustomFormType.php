@@ -104,7 +104,7 @@ final class NodeSourceCustomFormType extends AbstractNodeSourceFieldType
         if (is_array($event->getData())) {
             $position = 0;
             foreach ($event->getData() as $customFormId) {
-                $manager = $this->managerRegistry->getManagerForClass(CustomForm::class);
+                $manager = $this->managerRegistry->getManager();
                 /** @var CustomForm|null $tempCForm */
                 $tempCForm = $manager->find(CustomForm::class, (int) $customFormId);
 

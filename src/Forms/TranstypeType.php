@@ -82,7 +82,7 @@ class TranstypeType extends AbstractType
      */
     protected function getAvailableTypes(NodeType $currentType)
     {
-        $qb = $this->managerRegistry->getManagerForClass(NodeType::class)->createQueryBuilder();
+        $qb = $this->managerRegistry->getManager()->createQueryBuilder();
         $qb->select('n')
            ->from(NodeType::class, 'n')
            ->where($qb->expr()->neq('n.id', $currentType->getId()))

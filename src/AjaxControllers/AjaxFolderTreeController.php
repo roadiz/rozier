@@ -14,6 +14,13 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  */
 class AjaxFolderTreeController extends AbstractAjaxController
 {
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    public function __construct(TreeWidgetFactory $treeWidgetFactory)
+    {
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
+
     /**
      * @param Request $request
      *
@@ -35,7 +42,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
              */
             case 'requestFolderTree':
                 if ($request->get('parentFolderId') > 0) {
-                    $folder = $this->get('em')
+                    $folder = $this->em()
                                 ->find(
                                     Folder::class,
                                     (int) $request->get('parentFolderId')
@@ -44,7 +51,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
                     $folder = null;
                 }
 
-                $folderTree = $this->get(TreeWidgetFactory::class)->createFolderTree($folder);
+                $folderTree = $this->treeWidgetFactory->createFolderTree($folder);
 
                 $this->assignation['mainFolderTree'] = false;
 
@@ -54,7 +61,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
              */
             case 'requestMainFolderTree':
                 $parent = null;
-                $folderTree = $this->get(TreeWidgetFactory::class)->createFolderTree($parent);
+                $folderTree = $this->treeWidgetFactory->createFolderTree($parent);
                 $this->assignation['mainFolderTree'] = true;
                 break;
         }

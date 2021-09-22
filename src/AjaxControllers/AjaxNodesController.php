@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
@@ -21,15 +22,37 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Workflow\Workflow;
+use Symfony\Component\Workflow\Registry;
 
 /**
  * @package Themes\Rozier\AjaxControllers
  */
 class AjaxNodesController extends AbstractAjaxController
 {
+    private NodeNamePolicyInterface $nodeNamePolicy;
+    private LoggerInterface $logger;
+    private NodeMover $nodeMover;
+    private NodeChrootResolver $nodeChrootResolver;
+    private Registry $workflowRegistry;
+    private UniqueNodeGenerator $uniqueNodeGenerator;
+
+    public function __construct(
+        NodeNamePolicyInterface $nodeNamePolicy,
+        LoggerInterface $logger,
+        NodeMover $nodeMover,
+        NodeChrootResolver $nodeChrootResolver,
+        Registry $workflowRegistry,
+        UniqueNodeGenerator $uniqueNodeGenerator
+    ) {
+        $this->nodeNamePolicy = $nodeNamePolicy;
+        $this->logger = $logger;
+        $this->nodeMover = $nodeMover;
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->workflowRegistry = $workflowRegistry;
+        $this->uniqueNodeGenerator = $uniqueNodeGenerator;
+    }
+
     /**
-     *
      * @param  Request $request
      * @param  int $nodeId
      * @return JsonResponse
@@ -39,7 +62,7 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $tags = [];
         /** @var Node $node */
-        $node = $this->get('em')->find(Node::class, (int) $nodeId);
+        $node = $this->em()->find(Node::class, (int) $nodeId);
 
         /** @var Tag $tag */
         foreach ($node->getTags() as $tag) {
@@ -69,7 +92,7 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, (int) $nodeId);
+        $node = $this->em()->find(Node::class, (int) $nodeId);
 
         if ($node !== null) {
             $responseArray = null;
@@ -79,25 +102,25 @@ class AjaxNodesController extends AbstractAjaxController
              */
             switch ($request->get('_action')) {
                 case 'updatePosition':
-                    $responseArray = $this->updatePosition($request->request->all(), $node);
+                    $this->updatePosition($request->request->all(), $node);
                     break;
                 case 'duplicate':
                     $duplicator = new NodeDuplicator(
                         $node,
-                        $this->get('em'),
-                        $this->get(NodeNamePolicyInterface::class)
+                        $this->em(),
+                        $this->nodeNamePolicy
                     );
                     $newNode = $duplicator->duplicate();
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new NodeCreatedEvent($newNode));
-                    $this->get('dispatcher')->dispatch(new NodeDuplicatedEvent($newNode));
+                    $this->dispatchEvent(new NodeCreatedEvent($newNode));
+                    $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
                     $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
                         '%name%' => $node->getNodeName(),
                     ]);
-                    $this->get('logger')->info($msg, ['source' => $newNode->getNodeSources()->first()]);
+                    $this->logger->info($msg, ['source' => $newNode->getNodeSources()->first()]);
 
                     $responseArray = [
                         'statusCode' => '200',
@@ -146,34 +169,32 @@ class AjaxNodesController extends AbstractAjaxController
          */
         $position = $this->parsePosition($parameters, $node->getPosition());
 
-        /** @var NodeMover $nodeMover */
-        $nodeMover = $this->get(NodeMover::class);
         try {
             if ($node->getNodeType()->isReachable()) {
-                $oldPaths = $nodeMover->getNodeSourcesUrls($node);
+                $oldPaths = $this->nodeMover->getNodeSourcesUrls($node);
             }
         } catch (SameNodeUrlException $e) {
             $oldPaths = [];
         }
 
-        $nodeMover->move($node, $parent, $position);
-        $this->get('em')->flush();
+        $this->nodeMover->move($node, $parent, $position);
+        $this->em()->flush();
         /*
          * Dispatch event
          */
         if (isset($oldPaths) && count($oldPaths) > 0 && !$node->isHome()) {
-            $this->get('logger')->debug('NodesSources paths changed', ['paths' => $oldPaths]);
-            $this->get('dispatcher')->dispatch(new NodePathChangedEvent($node, $oldPaths));
+            $this->logger->debug('NodesSources paths changed', ['paths' => $oldPaths]);
+            $this->dispatchEvent(new NodePathChangedEvent($node, $oldPaths));
         } else {
-            $this->get('logger')->debug('NodesSources paths did not change');
+            $this->logger->debug('NodesSources paths did not change');
         }
-        $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+        $this->dispatchEvent(new NodeUpdatedEvent($node));
 
         foreach ($node->getNodeSources() as $nodeSource) {
-            $this->get('dispatcher')->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+            $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
         }
 
-        $this->get('em')->flush();
+        $this->em()->flush();
     }
 
     /**
@@ -184,10 +205,10 @@ class AjaxNodesController extends AbstractAjaxController
     protected function parseParentNode(array $parameters): ?Node
     {
         if (!empty($parameters['newParent']) && $parameters['newParent'] > 0) {
-            return $this->get('em')->find(Node::class, (int) $parameters['newParent']);
+            return $this->em()->find(Node::class, (int) $parameters['newParent']);
         } elseif (null !== $this->getUser()) {
             // If user is jailed in a node, prevent moving nodes out.
-            return $this->get(NodeChrootResolver::class)->getChroot($this->getUser());
+            return $this->nodeChrootResolver->getChroot($this->getUser());
         }
         return null;
     }
@@ -202,13 +223,13 @@ class AjaxNodesController extends AbstractAjaxController
     {
         if (key_exists('nextNodeId', $parameters) && (int) $parameters['nextNodeId'] > 0) {
             /** @var Node $nextNode */
-            $nextNode = $this->get('em')->find(Node::class, (int) $parameters['nextNodeId']);
+            $nextNode = $this->em()->find(Node::class, (int) $parameters['nextNodeId']);
             if ($nextNode !== null) {
                 return $nextNode->getPosition() - 0.5;
             }
         } elseif (key_exists('prevNodeId', $parameters) && $parameters['prevNodeId'] > 0) {
             /** @var Node $prevNode */
-            $prevNode = $this->get('em')->find(Node::class, (int) $parameters['prevNodeId']);
+            $prevNode = $this->em()->find(Node::class, (int) $parameters['prevNodeId']);
             if ($prevNode !== null) {
                 return $prevNode->getPosition() + 0.5;
             }
@@ -239,7 +260,7 @@ class AjaxNodesController extends AbstractAjaxController
         }
 
         /** @var Node|null $node */
-        $node = $this->get('em')->find(Node::class, (int) $request->get('nodeId'));
+        $node = $this->em()->find(Node::class, (int) $request->get('nodeId'));
         if (null === $node) {
             throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', [
                 '%nodeId%' => $request->get('nodeId'),
@@ -285,7 +306,7 @@ class AjaxNodesController extends AbstractAjaxController
                         '%visible%' => $node->isVisible() ? $this->getTranslator()->trans('visible') : $this->getTranslator()->trans('invisible'),
                     ]);
                     $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
-                    $this->get('dispatcher')->dispatch(new NodeVisibilityChangedEvent($node));
+                    $this->dispatchEvent(new NodeVisibilityChangedEvent($node));
                 } else {
                     $msg = $this->getTranslator()->trans('node.%name%.%field%.updated', [
                         '%name%' => $node->getNodeName(),
@@ -293,7 +314,7 @@ class AjaxNodesController extends AbstractAjaxController
                     ]);
                     $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
                 }
-                $this->get('dispatcher')->dispatch(new NodeUpdatedEvent($node));
+                $this->dispatchEvent(new NodeUpdatedEvent($node));
                 $this->em()->flush();
 
                 $responseArray = [
@@ -326,10 +347,8 @@ class AjaxNodesController extends AbstractAjaxController
      */
     protected function changeNodeStatus(Node $node, string $transition)
     {
-        /** @var Request $request */
-        $request = $this->get('requestStack')->getMasterRequest();
-        /** @var Workflow $workflow */
-        $workflow = $this->get('workflow.registry')->get($node);
+        $request = $this->getRequest();
+        $workflow = $this->workflowRegistry->get($node);
 
         $workflow->apply($node, $transition);
         $this->em()->flush();
@@ -364,14 +383,12 @@ class AjaxNodesController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         try {
-            /** @var UniqueNodeGenerator $generator */
-            $generator = $this->get('utils.uniqueNodeGenerator');
-            $source = $generator->generateFromRequest($request);
+            $source = $this->uniqueNodeGenerator->generateFromRequest($request);
 
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(new NodeCreatedEvent($source->getNode()));
+            $this->dispatchEvent(new NodeCreatedEvent($source->getNode()));
 
             $msg = $this->getTranslator()->trans(
                 'added.node.%name%',
@@ -388,7 +405,7 @@ class AjaxNodesController extends AbstractAjaxController
             ];
         } catch (\Exception $e) {
             $msg = $this->getTranslator()->trans($e->getMessage());
-            $this->get('logger')->error($msg);
+            $this->logger->error($msg);
             throw new BadRequestHttpException($msg);
         }
 

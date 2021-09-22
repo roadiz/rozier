@@ -12,12 +12,13 @@ use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
 use RZ\Roadiz\Core\Events\Tag\TagDeletedEvent;
 use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TagHandler;
 use RZ\Roadiz\Core\Repositories\TranslationRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,25 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
 class TagsController extends RozierApp
 {
     use VersionedControllerTrait;
+
+    private HandlerFactoryInterface $handlerFactory;
+    private FormFactoryInterface $formFactory;
+    private TreeWidgetFactory $treeWidgetFactory;
+
+    /**
+     * @param FormFactoryInterface $formFactory
+     * @param HandlerFactoryInterface $handlerFactory
+     * @param TreeWidgetFactory $treeWidgetFactory
+     */
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        HandlerFactoryInterface $handlerFactory,
+        TreeWidgetFactory $treeWidgetFactory
+    ) {
+        $this->handlerFactory = $handlerFactory;
+        $this->formFactory = $formFactory;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+    }
 
     /**
      * List every tags.
@@ -88,10 +108,10 @@ class TagsController extends RozierApp
 
         if (null === $translationId) {
             /** @var Translation|null $translation */
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
             /** @var Translation|null $translation */
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
 
         if (null === $translation) {
@@ -103,10 +123,10 @@ class TagsController extends RozierApp
          * that is initialized before calling route method.
          */
         /** @var Tag|null $tag */
-        $tag = $this->get('em')->find(Tag::class, $tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         /** @var TagTranslation|null $tagTranslation */
-        $tagTranslation = $this->get('em')->getRepository(TagTranslation::class)
+        $tagTranslation = $this->em()->getRepository(TagTranslation::class)
             ->findOneBy(['translation' => $translation, 'tag' => $tag]);
 
         if (null === $tag) {
@@ -117,7 +137,7 @@ class TagsController extends RozierApp
             /*
              * If translation does not exist, we created it.
              */
-            $this->get('em')->refresh($tag);
+            $this->em()->refresh($tag);
             $baseTranslation = $tag->getTranslatedTags()->first();
             $tagTranslation = new TagTranslation($tag, $translation);
             if (false !== $baseTranslation) {
@@ -125,8 +145,8 @@ class TagsController extends RozierApp
             } else {
                 $tagTranslation->setName('tag_' . $tag->getId());
             }
-            $this->get('em')->persist($tagTranslation);
-            $this->get('em')->flush();
+            $this->em()->persist($tagTranslation);
+            $this->em()->flush();
         }
 
         /**
@@ -158,11 +178,11 @@ class TagsController extends RozierApp
                         $tag->setTagName($tagTranslation->getName());
                     }
                 }
-                $this->get('em')->flush();
+                $this->em()->flush();
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(
+                $this->dispatchEvent(
                     new TagUpdatedEvent($tag)
                 );
 
@@ -190,7 +210,7 @@ class TagsController extends RozierApp
             }
         }
         /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->get('em')->getRepository(Translation::class);
+        $translationRepository = $this->em()->getRepository(Translation::class);
 
         $this->assignation['tag'] = $tag;
         $this->assignation['translation'] = $translation;
@@ -210,7 +230,7 @@ class TagsController extends RozierApp
      */
     protected function tagNameExists(string $name): bool
     {
-        $entity = $this->get('em')->getRepository(Tag::class)->findOneByTagName($name);
+        $entity = $this->em()->getRepository(Tag::class)->findOneByTagName($name);
 
         return (null !== $entity);
     }
@@ -229,7 +249,7 @@ class TagsController extends RozierApp
             $tagsIds = explode(',', $tagsIds);
             array_filter($tagsIds);
 
-            $tags = $this->get('em')
+            $tags = $this->em()
                 ->getRepository(Tag::class)
                 ->findBy([
                     'id' => $tagsIds,
@@ -250,7 +270,7 @@ class TagsController extends RozierApp
                     if (!empty($form->getData()['referer'])) {
                         return $this->redirect($form->getData()['referer']);
                     } else {
-                        return $this->redirect($this->generateUrl('tagsHomePage'));
+                        return $this->redirectToRoute('tagsHomePage');
                     }
                 }
 
@@ -278,7 +298,7 @@ class TagsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $tag = new Tag();
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if ($translation !== null) {
             $this->assignation['tag'] = $tag;
@@ -289,29 +309,29 @@ class TagsController extends RozierApp
                 /*
                  * Get latest position to add tags after.
                  */
-                $latestPosition = $this->get('em')
+                $latestPosition = $this->em()
                     ->getRepository(Tag::class)
                     ->findLatestPositionInParent();
                 $tag->setPosition($latestPosition + 1);
 
-                $this->get('em')->persist($tag);
-                $this->get('em')->flush();
+                $this->em()->persist($tag);
+                $this->em()->flush();
 
                 $translatedTag = new TagTranslation($tag, $translation);
-                $this->get('em')->persist($translatedTag);
-                $this->get('em')->flush();
+                $this->em()->persist($translatedTag);
+                $this->em()->flush();
 
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
+                $this->dispatchEvent(new TagCreatedEvent($tag));
 
                 $msg = $this->getTranslator()->trans('tag.%name%.created', ['%name%' => $tag->getTagName()]);
                 $this->publishConfirmMessage($request, $msg);
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('tagsHomePage'));
+                return $this->redirectToRoute('tagsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -332,10 +352,10 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         /** @var Tag|null $tag */
-        $tag = $this->get('em')->find(Tag::class, $tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         if ($tag === null) {
             throw new ResourceNotFoundException();
@@ -349,11 +369,11 @@ class TagsController extends RozierApp
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $this->get('em')->flush();
+                $this->em()->flush();
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagUpdatedEvent($tag));
+                $this->dispatchEvent(new TagUpdatedEvent($tag));
 
                 $msg = $this->getTranslator()->trans('tag.%name%.updated', ['%name%' => $tag->getTagName()]);
                 $this->publishConfirmMessage($request, $msg);
@@ -361,10 +381,10 @@ class TagsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl(
+                return $this->redirectToRoute(
                     'tagsSettingsPage',
                     ['tagId' => $tag->getId()]
-                ));
+                );
             }
             /*
              * Handle errors when Ajax POST requests
@@ -397,20 +417,20 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->get('em')
+        $tag = $this->em()
             ->find(Tag::class, $tagId);
-        $this->get('em')->refresh($tag);
+        $this->em()->refresh($tag);
 
         if (null !== $translationId) {
-            $translation = $this->get('em')
+            $translation = $this->em()
                 ->getRepository(Translation::class)
                 ->findOneBy(['id' => $translationId]);
         } else {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
         if (null !== $tag) {
-            $widget = $this->get(TreeWidgetFactory::class)->createTagTree($tag);
+            $widget = $this->treeWidgetFactory->createTagTree($tag);
             $this->assignation['tag'] = $tag;
             $this->assignation['translation'] = $translation;
             $this->assignation['specificTagTree'] = $widget;
@@ -432,7 +452,7 @@ class TagsController extends RozierApp
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS_DELETE');
 
         /** @var Tag $tag */
-        $tag = $this->get('em')->find(Tag::class, $tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         if ($tag !== null &&
             !$tag->isLocked()) {
@@ -447,10 +467,10 @@ class TagsController extends RozierApp
                 /*
                  * Dispatch event
                  */
-                $this->get('dispatcher')->dispatch(new TagDeletedEvent($tag));
+                $this->dispatchEvent(new TagDeletedEvent($tag));
 
-                $this->get('em')->remove($tag);
-                $this->get('em')->flush();
+                $this->em()->remove($tag);
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('tag.%name%.deleted', ['%name%' => $tag->getTranslatedTags()->first()->getName()]);
                 $this->publishConfirmMessage($request, $msg);
@@ -458,7 +478,7 @@ class TagsController extends RozierApp
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
-                return $this->redirect($this->generateUrl('tagsHomePage'));
+                return $this->redirectToRoute('tagsHomePage');
             }
 
             $this->assignation['form'] = $form->createView();
@@ -482,12 +502,12 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->get('defaultTranslation');
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if ($translationId !== null) {
-            $translation = $this->get('em')->find(Translation::class, $translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
-        $parentTag = $this->get('em')->find(Tag::class, $tagId);
+        $parentTag = $this->em()->find(Tag::class, $tagId);
         $tag = new Tag();
         $tag->setParent($parentTag);
 
@@ -501,29 +521,29 @@ class TagsController extends RozierApp
                     /*
                      * Get latest position to add tags after.
                      */
-                    $latestPosition = $this->get('em')
+                    $latestPosition = $this->em()
                         ->getRepository(Tag::class)
                         ->findLatestPositionInParent($parentTag);
                     $tag->setPosition($latestPosition + 1);
 
-                    $this->get('em')->persist($tag);
-                    $this->get('em')->flush();
+                    $this->em()->persist($tag);
+                    $this->em()->flush();
 
                     $translatedTag = new TagTranslation($tag, $translation);
-                    $this->get('em')->persist($translatedTag);
-                    $this->get('em')->flush();
+                    $this->em()->persist($translatedTag);
+                    $this->em()->flush();
                     /*
                      * Dispatch event
                      */
-                    $this->get('dispatcher')->dispatch(new TagCreatedEvent($tag));
+                    $this->dispatchEvent(new TagCreatedEvent($tag));
 
                     $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
                     $this->publishConfirmMessage($request, $msg);
 
-                    return $this->redirect($this->generateUrl(
+                    return $this->redirectToRoute(
                         'tagsEditPage',
                         ['tagId' => $tag->getId()]
-                    ));
+                    );
                 } catch (EntityAlreadyExistsException $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }
@@ -551,10 +571,10 @@ class TagsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->get('em')->find(Tag::class, $tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         if (null !== $tag) {
-            $translation = $this->get('defaultTranslation');
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
             $this->assignation['tag'] = $tag;
 
@@ -609,8 +629,7 @@ class TagsController extends RozierApp
         $referer = false,
         array $tagsIds = []
     ) {
-        /** @var FormBuilder $builder */
-        $builder = $this->get('formFactory')
+        $builder = $this->formFactory
             ->createNamedBuilder('deleteForm')
             ->add('tagsIds', HiddenType::class, [
                 'data' => implode(',', $tagsIds),
@@ -642,7 +661,7 @@ class TagsController extends RozierApp
             $tagsIds = explode(',', $tagsIds);
             array_filter($tagsIds);
 
-            $tags = $this->get('em')
+            $tags = $this->em()
                 ->getRepository(Tag::class)
                 ->findBy([
                     'id' => $tagsIds,
@@ -651,11 +670,11 @@ class TagsController extends RozierApp
             /** @var Tag $tag */
             foreach ($tags as $tag) {
                 /** @var TagHandler $handler */
-                $handler = $this->get('factory.handler')->getHandler($tag);
+                $handler = $this->handlerFactory->getHandler($tag);
                 $handler->removeWithChildrenAndAssociations();
             }
 
-            $this->get('em')->flush();
+            $this->em()->flush();
 
             return $this->getTranslator()->trans('tags.bulk.deleted');
         }
@@ -666,11 +685,11 @@ class TagsController extends RozierApp
     protected function onPostUpdate(AbstractEntity $entity, Request $request): void
     {
         if ($entity instanceof TagTranslation) {
-            $this->get('em')->flush();
+            $this->em()->flush();
             /*
              * Dispatch event
              */
-            $this->get('dispatcher')->dispatch(
+            $this->dispatchEvent(
                 new TagUpdatedEvent($entity->getTag())
             );
 
@@ -684,10 +703,10 @@ class TagsController extends RozierApp
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
         if ($entity instanceof TagTranslation) {
-            return $this->redirect($this->generateUrl(
+            return $this->redirectToRoute(
                 'tagsEditTranslatedPage',
                 ['tagId' => $entity->getTag()->getId(), 'translationId' => $entity->getTranslation()->getId()]
-            ));
+            );
         }
         return null;
     }
