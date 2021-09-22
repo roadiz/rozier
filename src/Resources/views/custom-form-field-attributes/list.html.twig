@@ -2,15 +2,15 @@
 
 {% import _self as macro %}
 
-{% macro column(type, app.request) %}
+{% macro column(type, request) %}
 <tr>
     <td class="uk-text-bold">{{ type.customFormField.label|trans }}</td>
     {% if type.customFormField.isCountry  %}
-        <td>{{ type.value|country_iso(app.request.locale) }}</td>
+        <td>{{ type.value|country_iso(request.locale) }}</td>
     {% elseif type.customFormField.isDate %}
-        <td>{{ type.value|format_datetime('full', 'none', locale=app.request.locale) }}</td>
+        <td>{{ type.value|format_datetime('full', 'none', locale=request.locale) }}</td>
     {% elseif type.customFormField.isDateTime %}
-        <td>{{ type.value|format_datetime('full', 'medium', locale=app.request.locale) }}</td>
+        <td>{{ type.value|format_datetime('full', 'medium', locale=request.locale) }}</td>
     {% elseif type.customFormField.isDocuments %}
         <td>
             {% for document in type.documents %}
