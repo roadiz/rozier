@@ -53,7 +53,7 @@ final class CustomFormModel implements ModelInterface
             'countFields' => $countFields,
             'color' => $this->customForm->getColor(),
             'customFormsEditPage' => $this->urlGenerator->generate('customFormsEditPage', [
-                'customFormId' => $this->customForm->getId()
+                'id' => $this->customForm->getId()
             ]),
         ];
     }
