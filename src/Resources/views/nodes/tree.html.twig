@@ -48,11 +48,11 @@
     <article class="content content-node-tree">
         {% if availableTags %}
             <div class="available-nodetree-tags uk-visible-large">
-                <a href="?" class="uk-badge">{{- 'see_all'|trans -}}</a>
+                <a href="?" class="uk-badge{% if not filterTag %} active{% endif %}">{{- 'see_all'|trans -}}</a>
                 {% for tag in availableTags %}
                     {% set ttag = tag.translatedTagsByTranslation(translation) %}
                     {% set tagName = ttag[0].name|default(tag.tagName) %}
-                    <a href="?tagId={{ tag.id }}" class="uk-badge"><i class="uk-icon-tag"></i> {{ tagName -}}</a>
+                    <a href="?tagId={{ tag.id }}" class="uk-badge{% if filterTag and filterTag.id == tag.id %} active{% endif %}"><i class="uk-icon-tag"></i> {{ tagName -}}</a>
                 {% endfor %}
             </div>
         {% endif %}
