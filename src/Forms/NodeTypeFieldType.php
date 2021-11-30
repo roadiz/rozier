@@ -25,16 +25,6 @@ use Symfony\Component\Validator\Constraints\NotNull;
  */
 class NodeTypeFieldType extends AbstractType
 {
-    protected string $inheritanceType;
-
-    /**
-     * @param string $inheritanceType
-     */
-    public function __construct(string $inheritanceType)
-    {
-        $this->inheritanceType = $inheritanceType;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('name', TextType::class, [
@@ -86,7 +76,6 @@ class NodeTypeFieldType extends AbstractType
             'label' => 'indexed',
             'required' => false,
             'help' => 'field_should_be_indexed_if_you_plan_to_query_or_order_by_it',
-            'disabled' => $this->inheritanceType === Configuration::INHERITANCE_TYPE_SINGLE_TABLE,
         ])
         ->add('universal', CheckboxType::class, [
             'label' => 'universal',
