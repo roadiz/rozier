@@ -143,10 +143,6 @@ final class RozierServiceProvider implements ServiceProviderInterface
             );
         };
 
-        $container[NodeTypeFieldType::class] = function (Container $c) {
-            return new NodeTypeFieldType($c['config']['inheritance']['type']);
-        };
-
         $container[AddNodeType::class] = function (Container $c) {
             return new AddNodeType($c[ManagerRegistry::class]);
         };
