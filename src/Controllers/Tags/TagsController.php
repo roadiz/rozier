@@ -703,9 +703,14 @@ class TagsController extends RozierApp
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
         if ($entity instanceof TagTranslation) {
+            /** @var Translation $translation */
+            $translation = $entity->getTranslation();
             return $this->redirectToRoute(
                 'tagsEditTranslatedPage',
-                ['tagId' => $entity->getTag()->getId(), 'translationId' => $entity->getTranslation()->getId()]
+                [
+                    'tagId' => $entity->getTag()->getId(),
+                    'translationId' => $translation->getId()
+                ]
             );
         }
         return null;

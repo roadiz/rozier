@@ -271,11 +271,13 @@ class NodesSourcesController extends RozierApp
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
         if ($entity instanceof NodesSources) {
+            /** @var Translation $translation */
+            $translation = $entity->getTranslation();
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $entity->getNode()->getId(),
-                    'translationId' => $entity->getTranslation()->getId()
+                    'translationId' => $translation->getId()
                 ]
             );
         }

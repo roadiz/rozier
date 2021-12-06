@@ -6,6 +6,7 @@ namespace Themes\Rozier\Models;
 use JMS\Serializer\Annotation as Serializer;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
+use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -31,6 +32,8 @@ final class NodeSourceModel implements ModelInterface
 
         /** @var NodesSourcesDocuments|false $thumbnail */
         $thumbnail = $this->nodeSource->getDocumentsByFields()->first();
+        /** @var Translation $translation */
+        $translation = $this->nodeSource->getTranslation();
 
         $result = [
             'id' => $node->getId(),
@@ -40,7 +43,7 @@ final class NodeSourceModel implements ModelInterface
             'isPublished' => $node->isPublished(),
             'nodesEditPage' => $this->urlGenerator->generate('nodesEditSourcePage', [
                 'nodeId' => $node->getId(),
-                'translationId' => $this->nodeSource->getTranslation()->getId(),
+                'translationId' => $translation->getId(),
             ]),
             'nodeType' => [
                 'color' => $node->getNodeType()->getColor()

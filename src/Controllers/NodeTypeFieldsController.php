@@ -80,8 +80,10 @@ class NodeTypeFieldsController extends RozierApp
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->em()->flush();
 
+                /** @var NodeType $nodeType */
+                $nodeType = $field->getNodeType();
                 /** @var NodeTypeHandler $handler */
-                $handler = $this->handlerFactory->getHandler($field->getNodeType());
+                $handler = $this->handlerFactory->getHandler($nodeType);
                 $handler->updateSchema();
 
                 $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
@@ -93,7 +95,7 @@ class NodeTypeFieldsController extends RozierApp
                 return $this->redirectToRoute(
                     'nodeTypesFieldSchemaUpdate',
                     [
-                        'nodeTypeId' => $field->getNodeType()->getId(),
+                        'nodeTypeId' => $nodeType->getId(),
                     ]
                 );
             }
@@ -182,9 +184,13 @@ class NodeTypeFieldsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $nodeTypeFieldId
+     * @param int $nodeTypeFieldId
      *
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Twig\Error\RuntimeError
      */
     public function deleteAction(Request $request, int $nodeTypeFieldId)
     {
@@ -198,7 +204,9 @@ class NodeTypeFieldsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $nodeTypeId = $field->getNodeType()->getId();
+                /** @var NodeType $nodeType */
+                $nodeType = $field->getNodeType();
+                $nodeTypeId = $nodeType->getId();
                 $this->em()->remove($field);
                 $this->em()->flush();
 
