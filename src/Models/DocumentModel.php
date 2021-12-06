@@ -64,6 +64,8 @@ final class DocumentModel implements ModelInterface
     public function toArray()
     {
         $name = (string) $this->document;
+        $thumbnail80Url = null;
+        $previewUrl = null;
 
         if ($this->document instanceof Document &&
             $this->document->getDocumentTranslations()->first() &&
@@ -81,11 +83,12 @@ final class DocumentModel implements ModelInterface
             $hasThumbnail = true;
         }
 
-        $this->documentUrlGenerator->setOptions(static::$thumbnail80Array);
-        $thumbnail80Url = $this->documentUrlGenerator->getUrl();
-
-        $this->documentUrlGenerator->setOptions(static::$previewArray);
-        $previewUrl = $this->documentUrlGenerator->getUrl();
+        if (!empty($this->document->getRelativePath())) {
+            $this->documentUrlGenerator->setOptions(DocumentModel::$thumbnail80Array);
+            $thumbnail80Url = $this->documentUrlGenerator->getUrl();
+            $this->documentUrlGenerator->setOptions(DocumentModel::$previewArray);
+            $previewUrl = $this->documentUrlGenerator->getUrl();
+        }
 
         if ($this->document instanceof AbstractEntity) {
             $id = $this->document->getId();
@@ -113,7 +116,7 @@ final class DocumentModel implements ModelInterface
             'shortType' => $this->document->getShortType(),
             'editUrl' => $editUrl,
             'preview' => $previewUrl,
-            'preview_html' => $this->renderer->render($this->document, static::$previewArray),
+            'preview_html' => $this->renderer->render($this->document, DocumentModel::$previewArray),
             'embedPlatform' => $this->document->getEmbedPlatform(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
