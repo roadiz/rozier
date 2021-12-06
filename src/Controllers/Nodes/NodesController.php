@@ -677,6 +677,8 @@ class NodesController extends RozierApp
 
         try {
             $source = $this->uniqueNodeGenerator->generateFromRequest($request);
+            /** @var Translation $translation */
+            $translation = $source->getTranslation();
             /*
              * Dispatch event
              */
@@ -684,7 +686,10 @@ class NodesController extends RozierApp
 
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
-                ['nodeId' => $source->getNode()->getId(), 'translationId' => $source->getTranslation()->getId()]
+                [
+                    'nodeId' => $source->getNode()->getId(),
+                    'translationId' => $translation->getId()
+                ]
             );
         } catch (\Exception $e) {
             $msg = $this->getTranslator()->trans('node.noCreation.alreadyExists');
