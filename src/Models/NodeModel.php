@@ -7,6 +7,7 @@ use JMS\Serializer\Annotation as Serializer;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
+use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -32,21 +33,36 @@ final class NodeModel implements ModelInterface
     {
         /** @var NodesSources|false $nodeSource */
         $nodeSource = $this->node->getNodeSources()->first();
-        $thumbnail = null;
-        if (false !== $nodeSource) {
-            /** @var NodesSourcesDocuments|false $thumbnail */
-            $thumbnail = $nodeSource->getDocumentsByFields()->first();
+
+        if (false === $nodeSource) {
+            return [
+                'id' => $this->node->getId(),
+                'title' => $this->node->getNodeName(),
+                'nodeName' => $this->node->getNodeName(),
+                'isPublished' => $this->node->isPublished(),
+                'nodesEditPage' => $this->urlGenerator->generate('nodesEditPage', [
+                    'nodeId' => $this->node->getId(),
+                ]),
+                'nodeType' => [
+                    'color' => $this->node->getNodeType()->getColor()
+                ]
+            ];
         }
+
+        /** @var NodesSourcesDocuments|false $thumbnail */
+        $thumbnail = $nodeSource->getDocumentsByFields()->first();
+        /** @var Translation $translation */
+        $translation = $nodeSource->getTranslation();
 
         $result = [
             'id' => $this->node->getId(),
-            'title' => $nodeSource ? $nodeSource->getTitle() : $this->node->getNodeName(),
+            'title' => $nodeSource->getTitle() ?? $this->node->getNodeName(),
             'thumbnail' => $thumbnail ? $thumbnail->getDocument() : null,
             'nodeName' => $this->node->getNodeName(),
             'isPublished' => $this->node->isPublished(),
             'nodesEditPage' => $this->urlGenerator->generate('nodesEditSourcePage', [
                 'nodeId' => $this->node->getId(),
-                'translationId' => $nodeSource->getTranslation()->getId(),
+                'translationId' => $translation->getId(),
             ]),
             'nodeType' => [
                 'color' => $this->node->getNodeType()->getColor()
@@ -59,11 +75,10 @@ final class NodeModel implements ModelInterface
             $result['parent'] = [
                 'title' => $parent->getNodeSources()->first()->getTitle()
             ];
-
-            $subparent = $parent->getParent();
-            if ($subparent instanceof Node) {
+            $subParent = $parent->getParent();
+            if ($subParent instanceof Node) {
                 $result['subparent'] = [
-                    'title' => $subparent->getNodeSources()->first()->getTitle()
+                    'title' => $subParent->getNodeSources()->first()->getTitle()
                 ];
             }
         }

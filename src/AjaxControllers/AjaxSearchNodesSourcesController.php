@@ -5,6 +5,7 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
+use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\SearchEngine\GlobalNodeSourceSearchHandler;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -86,6 +87,8 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
     protected function getNodeSourceData(NodesSources $source): array
     {
         $thumbnail = null;
+        /** @var Translation $translation */
+        $translation = $source->getTranslation();
         $displayableNSDoc = $source->getDocumentsByFields()->filter(function (NodesSourcesDocuments $nsDoc) {
             return $nsDoc->getDocument()->isImage() || $nsDoc->getDocument()->isSvg();
         })->first();
@@ -104,14 +107,14 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
                 null,
             'thumbnail' => $thumbnail ? $this->documentUrlGenerator->getUrl() : null,
             'nodeId' => $source->getNode()->getId(),
-            'translationId' => $source->getTranslation()->getId(),
+            'translationId' => $translation->getId(),
             'typeName' => $source->getNode()->getNodeType()->getDisplayName(),
             'typeColor' => $source->getNode()->getNodeType()->getColor(),
             'url' => $this->generateUrl(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $source->getNode()->getId(),
-                    'translationId' => $source->getTranslation()->getId(),
+                    'translationId' => $translation->getId(),
                 ]
             ),
         ];

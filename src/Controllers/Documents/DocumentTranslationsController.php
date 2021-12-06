@@ -246,7 +246,9 @@ class DocumentTranslationsController extends RozierApp
      */
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
-        if ($entity instanceof DocumentTranslation && $entity->getDocument() instanceof Document) {
+        if ($entity instanceof DocumentTranslation &&
+            $entity->getDocument() instanceof Document &&
+            $entity->getTranslation() instanceof Translation) {
             $routeParams = [
                 'documentId' => $entity->getDocument()->getId(),
                 'translationId' => $entity->getTranslation()->getId(),
