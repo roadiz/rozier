@@ -127,7 +127,7 @@ final class DocumentModel implements ModelInterface
             'embedPlatform' => $this->document->getEmbedPlatform(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
-            'thumbnail' => $previewUrl ?? $thumbnail80Url ?? null,
+            'url' => $previewUrl ?? $thumbnail80Url ?? null,
         ];
     }
 }
