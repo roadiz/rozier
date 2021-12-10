@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -72,8 +73,10 @@ class HistoryController extends RozierApp
     {
         $this->denyAccessUnlessGranted(['ROLE_BACKEND_USER', 'ROLE_ACCESS_LOGS']);
 
-        if (!($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
-            || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))) {
+        if (
+            !($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
+            || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))
+        ) {
             throw new AccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
@@ -172,9 +173,11 @@ class TagsController extends RozierApp
                  */
                 $newTagName = StringHandler::slugify($tagTranslation->getName());
                 if ($tag->getTagName() !== $newTagName) {
-                    if (!$tag->isLocked() &&
+                    if (
+                        !$tag->isLocked() &&
                         $translation->isDefaultTranslation() &&
-                        !$this->tagNameExists($newTagName)) {
+                        !$this->tagNameExists($newTagName)
+                    ) {
                         $tag->setTagName($tagTranslation->getName());
                     }
                 }
@@ -454,16 +457,20 @@ class TagsController extends RozierApp
         /** @var Tag $tag */
         $tag = $this->em()->find(Tag::class, $tagId);
 
-        if ($tag !== null &&
-            !$tag->isLocked()) {
+        if (
+            $tag !== null &&
+            !$tag->isLocked()
+        ) {
             $this->assignation['tag'] = $tag;
 
             $form = $this->buildDeleteForm($tag);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['tagId'] == $tag->getId()) {
+                $form->getData()['tagId'] == $tag->getId()
+            ) {
                 /*
                  * Dispatch event
                  */
@@ -511,8 +518,10 @@ class TagsController extends RozierApp
         $tag = new Tag();
         $tag->setParent($parentTag);
 
-        if ($translation !== null &&
-            $parentTag !== null) {
+        if (
+            $translation !== null &&
+            $parentTag !== null
+        ) {
             $form = $this->createForm(TagType::class, $tag);
             $form->handleRequest($request);
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -93,9 +94,11 @@ class SettingsUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['setting_file'])) {
+            !empty($form['setting_file'])
+        ) {
             $file = $form['setting_file']->getData();
 
             if ($form->isSubmitted() && $file->isValid()) {

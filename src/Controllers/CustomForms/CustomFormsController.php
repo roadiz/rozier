@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
@@ -102,6 +103,6 @@ class CustomFormsController extends AbstractAdminController
         if ($item instanceof CustomForm) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 }

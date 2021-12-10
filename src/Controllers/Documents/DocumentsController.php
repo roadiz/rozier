@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
@@ -124,8 +125,10 @@ class DocumentsController extends RozierApp
             'raw' => false,
         ];
 
-        if (null !== $folderId &&
-            $folderId > 0) {
+        if (
+            null !== $folderId &&
+            $folderId > 0
+        ) {
             $folder = $this->em()
                 ->find(Folder::class, $folderId);
 
@@ -133,14 +136,18 @@ class DocumentsController extends RozierApp
             $this->assignation['folder'] = $folder;
         }
 
-        if ($request->query->has('type') &&
-            $request->query->get('type', '') !== '') {
+        if (
+            $request->query->has('type') &&
+            $request->query->get('type', '') !== ''
+        ) {
             $prefilters['mimeType'] = trim($request->query->get('type', ''));
             $this->assignation['mimeType'] = trim($request->query->get('type', ''));
         }
 
-        if ($request->query->has('embedPlatform') &&
-            $request->query->get('embedPlatform', '') !== '') {
+        if (
+            $request->query->has('embedPlatform') &&
+            $request->query->get('embedPlatform', '') !== ''
+        ) {
             $prefilters['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
             $this->assignation['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
         }
@@ -442,9 +449,11 @@ class DocumentsController extends RozierApp
             $form = $this->buildDeleteForm($document);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['documentId'] == $document->getId()) {
+                $form->getData()['documentId'] == $document->getId()
+            ) {
                 try {
                     $this->dispatchEvent(
                         new DocumentDeletedEvent($document)
@@ -975,8 +984,10 @@ class DocumentsController extends RozierApp
                 ],
             ]);
 
-        if (null !== $folderId &&
-            $folderId > 0) {
+        if (
+            null !== $folderId &&
+            $folderId > 0
+        ) {
             $builder->add('folderId', HiddenType::class, [
                 'data' => $folderId,
             ]);
@@ -1038,8 +1049,10 @@ class DocumentsController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('no_documents.linked_to.folders');
 
-        if (!empty($data['documentsId']) &&
-            !empty($data['folderPaths'])) {
+        if (
+            !empty($data['documentsId']) &&
+            !empty($data['folderPaths'])
+        ) {
             $documentsIds = explode(',', $data['documentsId']);
 
             $documents = $this->em()
@@ -1090,8 +1103,10 @@ class DocumentsController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('no_documents.removed_from.folders');
 
-        if (!empty($data['documentsId']) &&
-            !empty($data['folderPaths'])) {
+        if (
+            !empty($data['documentsId']) &&
+            !empty($data['folderPaths'])
+        ) {
             $documentsIds = explode(',', $data['documentsId']);
 
             $documents = $this->em()
@@ -1186,9 +1201,11 @@ class DocumentsController extends RozierApp
     {
         $handlers = $this->documentPlatforms;
 
-        if (isset($data['embedId']) &&
+        if (
+            isset($data['embedId']) &&
             isset($data['embedPlatform']) &&
-            in_array($data['embedPlatform'], array_keys($handlers))) {
+            in_array($data['embedPlatform'], array_keys($handlers))
+        ) {
             $class = $handlers[$data['embedPlatform']];
 
             /*

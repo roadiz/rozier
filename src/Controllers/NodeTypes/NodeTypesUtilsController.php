@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\NodeTypes;
@@ -202,9 +203,11 @@ class NodeTypesUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['node_type_file'])) {
+            !empty($form['node_type_file'])
+        ) {
             $file = $form['node_type_file']->getData();
 
             if ($form->isSubmitted() && $file->isValid()) {

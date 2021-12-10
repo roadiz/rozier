@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -78,8 +79,10 @@ class AjaxNodeTreeController extends AbstractAjaxController
 
                 $nodeTree = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
-                if ($request->get('tagId') &&
-                    $request->get('tagId') > 0) {
+                if (
+                    $request->get('tagId') &&
+                    $request->get('tagId') > 0
+                ) {
                     $filterTag = $this->em()
                                         ->find(
                                             Tag::class,
@@ -105,7 +108,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
 
                 $this->assignation['mainNodeTree'] = false;
 
-                if (true === (boolean) $request->get('stackTree')) {
+                if (true === (bool) $request->get('stackTree')) {
                     $nodeTree->setStackTree(true);
                 }
                 break;

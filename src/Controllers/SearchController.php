@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -160,13 +161,15 @@ class SearchController extends RozierApp
                 /** @var NodeTypeField $field */
                 foreach ($fields as $field) {
                     if ($key == $field->getName()) {
-                        if ($field->getType() === AbstractField::MARKDOWN_T
+                        if (
+                            $field->getType() === AbstractField::MARKDOWN_T
                             || $field->getType() === AbstractField::STRING_T
                             || $field->getType() === AbstractField::YAML_T
                             || $field->getType() === AbstractField::JSON_T
                             || $field->getType() === AbstractField::TEXT_T
                             || $field->getType() === AbstractField::EMAIL_T
-                            || $field->getType() === AbstractField::CSS_T) {
+                            || $field->getType() === AbstractField::CSS_T
+                        ) {
                             $data[$field->getVarName()] = ["LIKE", "%" . $value . "%"];
                             if (isset($data[$key . '_exact']) && $data[$key . '_exact'] === true) {
                                 $data[$field->getVarName()] = $value;
@@ -214,8 +217,10 @@ class SearchController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             $data = [];
             foreach ($form->getData() as $key => $value) {
-                if ((!is_array($value) && $this->notBlank($value)) ||
-                    (is_array($value) && isset($value["compareDatetime"]))) {
+                if (
+                    (!is_array($value) && $this->notBlank($value)) ||
+                    (is_array($value) && isset($value["compareDatetime"]))
+                ) {
                     $data[$key] = $value;
                 }
             }
@@ -367,10 +372,12 @@ class SearchController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             $data = [];
             foreach ($form->getData() as $key => $value) {
-                if ((!is_array($value) && $this->notBlank($value))
+                if (
+                    (!is_array($value) && $this->notBlank($value))
                     || (is_array($value) && isset($value["compareDatetime"]))
                     || (is_array($value) && isset($value["compareDate"]))
-                    || (is_array($value) && $value != [] && !isset($value["compareOp"]))) {
+                    || (is_array($value) && $value != [] && !isset($value["compareOp"]))
+                ) {
                     if (strstr($key, "__node__") == 0) {
                         $data[str_replace("__node__", "node.", $key)] = $value;
                     } else {
@@ -612,11 +619,13 @@ class SearchController extends RozierApp
             /*
              * Prevent searching on complex fields
              */
-            if ($field->isMultipleProvider() ||
+            if (
+                $field->isMultipleProvider() ||
                 $field->isSingleProvider() ||
                 $field->isCollection() ||
                 $field->isManyToMany() ||
-                $field->isManyToOne()) {
+                $field->isManyToOne()
+            ) {
                 continue;
             }
 
@@ -653,7 +662,8 @@ class SearchController extends RozierApp
                 $type = NodeSourceType::getFormTypeFromFieldType($field);
             }
 
-            if ($field->getType() === AbstractField::MARKDOWN_T ||
+            if (
+                $field->getType() === AbstractField::MARKDOWN_T ||
                 $field->getType() === AbstractField::STRING_T ||
                 $field->getType() === AbstractField::TEXT_T ||
                 $field->getType() === AbstractField::EMAIL_T ||

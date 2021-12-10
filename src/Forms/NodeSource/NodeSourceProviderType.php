@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
@@ -71,7 +72,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             return $this->container->get($configuration['classname']);
         } else {
             /** @var AbstractExplorerProvider $provider */
-            $provider = new $configuration['classname'];
+            $provider = new $configuration['classname']();
             $provider->setContainer($this->container);
             return $provider;
         }

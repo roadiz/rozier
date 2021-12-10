@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
@@ -67,18 +68,22 @@ final class DocumentModel implements ModelInterface
         $thumbnail80Url = null;
         $previewUrl = null;
 
-        if ($this->document instanceof Document &&
+        if (
+            $this->document instanceof Document &&
             $this->document->getDocumentTranslations()->first() &&
-            $this->document->getDocumentTranslations()->first()->getName()) {
+            $this->document->getDocumentTranslations()->first()->getName()
+        ) {
             $name = $this->document->getDocumentTranslations()->first()->getName();
         }
 
         $this->documentUrlGenerator->setDocument($this->document);
         $hasThumbnail = false;
 
-        if ($this->document instanceof HasThumbnailInterface &&
+        if (
+            $this->document instanceof HasThumbnailInterface &&
             $this->document->needsThumbnail() &&
-            $this->document->hasThumbnails()) {
+            $this->document->hasThumbnails()
+        ) {
             $this->documentUrlGenerator->setDocument($this->document->getThumbnails()->first());
             $hasThumbnail = true;
         }

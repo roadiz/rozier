@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
@@ -109,8 +110,10 @@ class CustomFormFieldsController extends RozierApp
         $customForm = $this->em()->find(CustomForm::class, $customFormId);
         $field->setCustomForm($customForm);
 
-        if ($customForm !== null &&
-            $field !== null) {
+        if (
+            $customForm !== null &&
+            $field !== null
+        ) {
             $this->assignation['customForm'] = $customForm;
             $this->assignation['field'] = $field;
             $form = $this->createForm(CustomFormFieldType::class, $field);
@@ -176,9 +179,11 @@ class CustomFormFieldsController extends RozierApp
             $form = $this->buildDeleteForm($field);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['customFormFieldId'] == $field->getId()) {
+                $form->getData()['customFormFieldId'] == $field->getId()
+            ) {
                 $customFormId = $field->getCustomForm()->getId();
 
                 $this->em()->remove($field);

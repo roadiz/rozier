@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -100,7 +101,7 @@ class GroupsController extends AbstractAdminController
         if ($item instanceof Group) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
@@ -451,8 +452,10 @@ class GroupsController extends AbstractAdminController
      */
     private function removeRole($data, Group $group, Role $role)
     {
-        if ($data['groupId'] == $group->getId() &&
-            $data['roleId'] == $role->getId()) {
+        if (
+            $data['groupId'] == $group->getId() &&
+            $data['roleId'] == $role->getId()
+        ) {
             if ($role !== null) {
                 $group->removeRole($role);
                 $this->em()->flush();
@@ -495,8 +498,10 @@ class GroupsController extends AbstractAdminController
      */
     private function removeUser($data, Group $group, User $user)
     {
-        if ($data['groupId'] == $group->getId() &&
-            $data['userId'] == $user->getId()) {
+        if (
+            $data['groupId'] == $group->getId() &&
+            $data['userId'] == $user->getId()
+        ) {
             if ($user !== null) {
                 $user->removeGroup($group);
                 $this->em()->flush();

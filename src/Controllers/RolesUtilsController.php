@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -82,9 +83,11 @@ class RolesUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['role_file'])) {
+            !empty($form['role_file'])
+        ) {
             $file = $form['role_file']->getData();
 
             if ($form->isSubmitted() && $file->isValid()) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -37,8 +38,10 @@ abstract class AbstractAjaxController extends RozierApp
             }
         }
 
-        if (in_array(strtolower($method), static::$validMethods) &&
-            strtolower($request->getMethod()) != strtolower($method)) {
+        if (
+            in_array(strtolower($method), static::$validMethods) &&
+            strtolower($request->getMethod()) != strtolower($method)
+        ) {
             throw new BadRequestHttpException('Bad method');
         }
 

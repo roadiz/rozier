@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
@@ -48,9 +49,11 @@ final class TagTreeWidget extends AbstractWidget
         $ordering = [
             'position' => 'ASC',
         ];
-        if (null !== $this->parentTag &&
+        if (
+            null !== $this->parentTag &&
             $this->parentTag->getChildrenOrder() !== 'order' &&
-            $this->parentTag->getChildrenOrder() !== 'position') {
+            $this->parentTag->getChildrenOrder() !== 'position'
+        ) {
             $ordering = [
                 $this->parentTag->getChildrenOrder() => $this->parentTag->getChildrenOrderDirection(),
             ];
@@ -76,8 +79,10 @@ final class TagTreeWidget extends AbstractWidget
             $ordering = [
                 'position' => 'ASC',
             ];
-            if ($parent->getChildrenOrder() !== 'order' &&
-                $parent->getChildrenOrder() !== 'position') {
+            if (
+                $parent->getChildrenOrder() !== 'order' &&
+                $parent->getChildrenOrder() !== 'position'
+            ) {
                 $ordering = [
                     $parent->getChildrenOrder() => $parent->getChildrenOrderDirection(),
                 ];

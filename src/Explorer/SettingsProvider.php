@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
@@ -21,7 +22,7 @@ final class SettingsProvider extends AbstractDoctrineExplorerProvider
 
     protected function getDefaultOrdering(): array
     {
-        return ['name' =>'ASC'];
+        return ['name' => 'ASC'];
     }
 
     /**

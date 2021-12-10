@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
@@ -446,13 +447,16 @@ final class NodeSourceType extends AbstractType
         if ($field->getMaxLength() > 0) {
             $options['attr']['data-max-length'] = $field->getMaxLength();
         }
-        if ($field->isVirtual() &&
+        if (
+            $field->isVirtual() &&
             $field->getType() !== AbstractField::MANY_TO_ONE_T &&
-            $field->getType() !== AbstractField::MANY_TO_MANY_T) {
+            $field->getType() !== AbstractField::MANY_TO_MANY_T
+        ) {
             $options['mapped'] = false;
         }
 
-        if (in_array($field->getType(), [
+        if (
+            in_array($field->getType(), [
             AbstractField::MANY_TO_ONE_T,
             AbstractField::MANY_TO_MANY_T,
             AbstractField::DOCUMENTS_T,
@@ -460,7 +464,8 @@ final class NodeSourceType extends AbstractType
             AbstractField::CUSTOM_FORMS_T,
             AbstractField::MULTI_PROVIDER_T,
             AbstractField::SINGLE_PROVIDER_T,
-        ])) {
+            ])
+        ) {
             $options['nodeTypeField'] = $field;
             $options['nodeSource'] = $nodeSource;
             unset($options['attr']['dir']);

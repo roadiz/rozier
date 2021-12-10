@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -62,8 +63,10 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             'itemPerPage' => $request->query->get('itemPerPage') ?: 30,
             'search' => $request->query->get('search') ?: null,
         ];
-        if ($request->query->has('options') &&
-            is_array($request->query->get('options'))) {
+        if (
+            $request->query->has('options') &&
+            is_array($request->query->get('options'))
+        ) {
             $options = array_merge($request->query->get('options'), $options);
         }
         $entities = $provider->getItems($options);

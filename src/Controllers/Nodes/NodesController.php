@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
@@ -301,7 +302,7 @@ class NodesController extends RozierApp
             );
             $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
-            return $this->redirectToRoute('nodesEditPage', ['nodeId'=>$node->getId()]);
+            return $this->redirectToRoute('nodesEditPage', ['nodeId' => $node->getId()]);
         }
 
         throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
@@ -509,9 +510,11 @@ class NodesController extends RozierApp
         $form = $this->buildDeleteForm($node);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            $form->getData()['nodeId'] == $node->getId()) {
+            $form->getData()['nodeId'] == $node->getId()
+        ) {
             /** @var Node|null $parent */
             $parent = $node->getParent();
             /*
@@ -530,8 +533,10 @@ class NodesController extends RozierApp
             );
             $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
-            if ($request->query->has('referer') &&
-                (new UnicodeString($request->query->get('referer')))->startsWith('/')) {
+            if (
+                $request->query->has('referer') &&
+                (new UnicodeString($request->query->get('referer')))->startsWith('/')
+            ) {
                 return $this->redirect($request->query->get('referer'));
             }
             if (null !== $parent) {

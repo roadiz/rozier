@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
@@ -126,7 +127,7 @@ class UrlAliasesController extends RozierApp
              */
             $alias = new UrlAlias();
             $addAliasForm = $this->formFactory->createNamed(
-                'add_urlalias_'.$node->getId(),
+                'add_urlalias_' . $node->getId(),
                 UrlAliasType::class,
                 $alias,
                 [
@@ -150,7 +151,7 @@ class UrlAliasesController extends RozierApp
                     return $this->redirect($this->generateUrl(
                         'nodesEditSEOPage',
                         ['nodeId' => $node->getId(), 'translationId' => $translationId]
-                    ).'#manage-aliases');
+                    ) . '#manage-aliases');
                 } catch (EntityAlreadyExistsException $e) {
                     $addAliasForm->addError(new FormError($e->getMessage()));
                 } catch (NoTranslationAvailableException $e) {
@@ -205,11 +206,11 @@ class UrlAliasesController extends RozierApp
     private function handleSingleUrlAlias(UrlAlias $alias, Request $request): ?RedirectResponse
     {
         $editForm = $this->formFactory->createNamed(
-            'edit_urlalias_'.$alias->getId(),
+            'edit_urlalias_' . $alias->getId(),
             UrlAliasType::class,
             $alias
         );
-        $deleteForm = $this->formFactory->createNamed('delete_urlalias_'.$alias->getId());
+        $deleteForm = $this->formFactory->createNamed('delete_urlalias_' . $alias->getId());
         // Match edit
         $editForm->handleRequest($request);
         if ($editForm->isSubmitted() && $editForm->isValid()) {
@@ -234,7 +235,7 @@ class UrlAliasesController extends RozierApp
                             'nodeId' => $alias->getNodeSource()->getNode()->getId(),
                             'translationId' => $translation->getId()
                         ]
-                    ).'#manage-aliases');
+                    ) . '#manage-aliases');
                 } catch (\RuntimeException $exception) {
                     $editForm->addError(new FormError($exception->getMessage()));
                 }
@@ -265,7 +266,7 @@ class UrlAliasesController extends RozierApp
                     'nodeId' => $alias->getNodeSource()->getNode()->getId(),
                     'translationId' => $translation->getId()
                 ]
-            ).'#manage-aliases');
+            ) . '#manage-aliases');
         }
 
         $this->assignation['aliases'][] = [
@@ -312,7 +313,7 @@ class UrlAliasesController extends RozierApp
                     'nodeId' => $redirection->getRedirectNodeSource()->getNode()->getId(),
                     'translationId' => $translation->getId()
                 ]
-            ).'#manage-redirections');
+            ) . '#manage-redirections');
         }
 
         $this->assignation['addRedirection'] = $addForm->createView();
@@ -328,7 +329,7 @@ class UrlAliasesController extends RozierApp
     private function handleSingleRedirection(Redirection $redirection, Request $request): ?RedirectResponse
     {
         $editForm = $this->formFactory->createNamed(
-            'edit_redirection_'.$redirection->getId(),
+            'edit_redirection_' . $redirection->getId(),
             RedirectionType::class,
             $redirection,
             [
@@ -339,7 +340,7 @@ class UrlAliasesController extends RozierApp
         /** @var Translation $translation */
         $translation = $redirection->getRedirectNodeSource()->getTranslation();
 
-        $deleteForm = $this->formFactory->createNamed('delete_redirection_'.$redirection->getId());
+        $deleteForm = $this->formFactory->createNamed('delete_redirection_' . $redirection->getId());
 
         $editForm->handleRequest($request);
         if ($editForm->isSubmitted() && $editForm->isValid()) {
@@ -350,7 +351,7 @@ class UrlAliasesController extends RozierApp
                     'nodeId' => $redirection->getRedirectNodeSource()->getNode()->getId(),
                     'translationId' => $translation->getId()
                 ]
-            ).'#manage-redirections');
+            ) . '#manage-redirections');
         }
 
         // Match delete
@@ -364,7 +365,7 @@ class UrlAliasesController extends RozierApp
                     'nodeId' => $redirection->getRedirectNodeSource()->getNode()->getId(),
                     'translationId' => $translation->getId()
                 ]
-            ).'#manage-redirections');
+            ) . '#manage-redirections');
         }
         $this->assignation['redirections'][] = [
             'redirection' => $redirection,

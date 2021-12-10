@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
@@ -74,9 +75,11 @@ class CustomFormAnswersController extends RozierApp
 
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()) {
+                $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()
+            ) {
                 $this->em()->remove($customFormAnswer);
 
                 $msg = $this->getTranslator()->trans('customFormAnswer.%id%.deleted', ['%id%' => $customFormAnswer->getId()]);

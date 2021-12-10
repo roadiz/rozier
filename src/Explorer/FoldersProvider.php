@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
@@ -21,7 +22,7 @@ final class FoldersProvider extends AbstractDoctrineExplorerProvider
 
     protected function getDefaultOrdering(): array
     {
-        return ['folderName' =>'ASC'];
+        return ['folderName' => 'ASC'];
     }
 
     /**

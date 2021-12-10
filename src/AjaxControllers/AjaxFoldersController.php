@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -124,8 +125,10 @@ class AjaxFoldersController extends AbstractAjaxController
          */
         $parent = null;
 
-        if (!empty($parameters['newParent']) &&
-            $parameters['newParent'] > 0) {
+        if (
+            !empty($parameters['newParent']) &&
+            $parameters['newParent'] > 0
+        ) {
             /** @var Folder $parent */
             $parent = $this->em()->find(Folder::class, (int) $parameters['newParent']);
 
@@ -139,15 +142,19 @@ class AjaxFoldersController extends AbstractAjaxController
         /*
          * Then compute new position
          */
-        if (!empty($parameters['nextFolderId']) &&
-            $parameters['nextFolderId'] > 0) {
+        if (
+            !empty($parameters['nextFolderId']) &&
+            $parameters['nextFolderId'] > 0
+        ) {
             /** @var Folder $nextFolder */
             $nextFolder = $this->em()->find(Folder::class, (int) $parameters['nextFolderId']);
             if ($nextFolder !== null) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
             }
-        } elseif (!empty($parameters['prevFolderId']) &&
-            $parameters['prevFolderId'] > 0) {
+        } elseif (
+            !empty($parameters['prevFolderId']) &&
+            $parameters['prevFolderId'] > 0
+        ) {
             /** @var Folder $prevFolder */
             $prevFolder = $this->em()
                 ->find(Folder::class, (int) $parameters['prevFolderId']);

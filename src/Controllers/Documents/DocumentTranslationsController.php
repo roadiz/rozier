@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
@@ -153,16 +154,20 @@ class DocumentTranslationsController extends RozierApp
         $document = $this->em()
                          ->find(Document::class, $documentId);
 
-        if ($documentTr !== null &&
-            $document !== null) {
+        if (
+            $documentTr !== null &&
+            $document !== null
+        ) {
             $this->assignation['documentTr'] = $documentTr;
             $this->assignation['document'] = $document;
             $form = $this->buildDeleteForm($documentTr);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['documentId'] == $documentTr->getId()) {
+                $form->getData()['documentId'] == $documentTr->getId()
+            ) {
                 try {
                     $this->em()->remove($documentTr);
                     $this->em()->flush();
@@ -246,9 +251,11 @@ class DocumentTranslationsController extends RozierApp
      */
     protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
     {
-        if ($entity instanceof DocumentTranslation &&
+        if (
+            $entity instanceof DocumentTranslation &&
             $entity->getDocument() instanceof Document &&
-            $entity->getTranslation() instanceof Translation) {
+            $entity->getTranslation() instanceof Translation
+        ) {
             $routeParams = [
                 'documentId' => $entity->getDocument()->getId(),
                 'translationId' => $entity->getTranslation()->getId(),

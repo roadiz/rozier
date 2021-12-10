@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -110,9 +111,11 @@ class GroupsUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['group_file'])) {
+            !empty($form['group_file'])
+        ) {
             /** @var UploadedFile $file */
             $file = $form['group_file']->getData();
 

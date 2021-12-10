@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Serialization;
@@ -36,10 +37,12 @@ final class DocumentThumbnailSerializeSubscriber implements EventSubscriberInter
         $visitor = $event->getVisitor();
         $context = $event->getContext();
 
-        if ($visitor instanceof SerializationVisitorInterface &&
+        if (
+            $visitor instanceof SerializationVisitorInterface &&
             $document instanceof Document &&
             $context->hasAttribute('groups') &&
-            in_array('explorer_thumbnail', $context->getAttribute('groups'))) {
+            in_array('explorer_thumbnail', $context->getAttribute('groups'))
+        ) {
             $visitor->visitProperty(
                 new StaticPropertyMetadata('string', 'url', []),
                 $this->documentUrlGenerator

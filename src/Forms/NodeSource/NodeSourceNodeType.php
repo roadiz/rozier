@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
@@ -118,7 +119,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
                     $this->nodeHandler->addNodeForField($tempNode, $nodeTypeField, false, $position);
                     $position++;
                 } else {
-                    throw new \RuntimeException('Node #'.$nodeId.' was not found during relationship creation.');
+                    throw new \RuntimeException('Node #' . $nodeId . ' was not found during relationship creation.');
                 }
             }
         }

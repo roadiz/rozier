@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -152,7 +153,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             10000000,
             $currentPage
         );
-        $pageCount = ceil($results->getResultCount()/$this->getItemPerPage());
+        $pageCount = ceil($results->getResultCount() / $this->getItemPerPage());
         $nodesArray = $this->normalizeNodes($results);
 
         return [

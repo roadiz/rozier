@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Attributes;
@@ -129,7 +130,7 @@ class AttributeController extends AbstractAdminController
         if ($item instanceof Attribute) {
             return $item->getCode();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**

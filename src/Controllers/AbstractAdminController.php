@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -353,8 +354,10 @@ abstract class AbstractAdminController extends RozierApp
         /*
          * Force redirect to avoid resending form when refreshing page
          */
-        if (null !== $request && $request->query->has('referer') &&
-            (new UnicodeString($request->query->get('referer')))->startsWith('/')) {
+        if (
+            null !== $request && $request->query->has('referer') &&
+            (new UnicodeString($request->query->get('referer')))->startsWith('/')
+        ) {
             return $this->redirect($request->query->get('referer'));
         }
 

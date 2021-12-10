@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -47,8 +48,10 @@ class AjaxTagsController extends AbstractAjaxController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
         $onlyParents = false;
 
-        if ($request->query->has('onlyParents') &&
-            $request->query->get('onlyParents') == true) {
+        if (
+            $request->query->has('onlyParents') &&
+            $request->query->get('onlyParents') == true
+        ) {
             $onlyParents = true;
         }
 
@@ -295,8 +298,10 @@ class AjaxTagsController extends AbstractAjaxController
          */
         $parent = null;
 
-        if (!empty($parameters['newParent']) &&
-            $parameters['newParent'] > 0) {
+        if (
+            !empty($parameters['newParent']) &&
+            $parameters['newParent'] > 0
+        ) {
             $parent = $this->em()
                            ->find(Tag::class, (int) $parameters['newParent']);
 
@@ -310,14 +315,18 @@ class AjaxTagsController extends AbstractAjaxController
         /*
          * Then compute new position
          */
-        if (!empty($parameters['nextTagId']) &&
-            $parameters['nextTagId'] > 0) {
+        if (
+            !empty($parameters['nextTagId']) &&
+            $parameters['nextTagId'] > 0
+        ) {
             $nextTag = $this->em()->find(Tag::class, (int) $parameters['nextTagId']);
             if ($nextTag !== null) {
                 $tag->setPosition($nextTag->getPosition() - 0.5);
             }
-        } elseif (!empty($parameters['prevTagId']) &&
-            $parameters['prevTagId'] > 0) {
+        } elseif (
+            !empty($parameters['prevTagId']) &&
+            $parameters['prevTagId'] > 0
+        ) {
             $prevTag = $this->em()->find(Tag::class, (int) $parameters['prevTagId']);
             if ($prevTag !== null) {
                 $tag->setPosition($prevTag->getPosition() + 0.5);

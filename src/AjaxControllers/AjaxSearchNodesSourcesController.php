@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -60,9 +61,11 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             ];
 
             foreach ($nodesSources as $source) {
-                if (!key_exists($source->getNode()->getId(), $responseArray['data']) &&
+                if (
+                    !key_exists($source->getNode()->getId(), $responseArray['data']) &&
                     null !== $source &&
-                    $source instanceof NodesSources) {
+                    $source instanceof NodesSources
+                ) {
                     $responseArray['data'][$source->getNode()->getId()] = $this->getNodeSourceData($source);
                 }
             }

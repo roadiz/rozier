@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -47,8 +48,10 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
      */
     protected function getFieldConfiguration(NodeTypeField $nodeTypeField)
     {
-        if ($nodeTypeField->getType() !== AbstractField::MANY_TO_MANY_T &&
-            $nodeTypeField->getType() !== AbstractField::MANY_TO_ONE_T) {
+        if (
+            $nodeTypeField->getType() !== AbstractField::MANY_TO_MANY_T &&
+            $nodeTypeField->getType() !== AbstractField::MANY_TO_ONE_T
+        ) {
             throw new InvalidParameterException('nodeTypeField is not a valid entity join.');
         }
 

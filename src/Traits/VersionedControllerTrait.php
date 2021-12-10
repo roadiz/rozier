@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
@@ -53,8 +54,10 @@ trait VersionedControllerTrait
         $repo = $this->em()->getRepository(UserLogEntry::class);
         $logs = $repo->getLogEntries($entity);
 
-        if ($request->get('version', null) !== null &&
-            $request->get('version', null) > 0) {
+        if (
+            $request->get('version', null) !== null &&
+            $request->get('version', null) > 0
+        ) {
             try {
                 $versionNumber = (int) $request->get('version', null);
                 $repo->revert($entity, $versionNumber);

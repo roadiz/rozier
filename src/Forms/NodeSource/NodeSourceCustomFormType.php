@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
@@ -112,7 +113,7 @@ final class NodeSourceCustomFormType extends AbstractNodeSourceFieldType
                     $this->nodeHandler->addCustomFormForField($tempCForm, $nodeTypeField, false, $position);
                     $position++;
                 } else {
-                    throw new \RuntimeException('Custom form #'.$customFormId.' was not found during relationship creation.');
+                    throw new \RuntimeException('Custom form #' . $customFormId . ' was not found during relationship creation.');
                 }
             }
         }

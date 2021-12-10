@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
@@ -121,7 +122,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
                     $this->nodesSourcesHandler->addDocumentForField($tempDoc, $nodeTypeField, false, $position);
                     $position++;
                 } else {
-                    throw new \RuntimeException('Document #'.$documentId.' was not found during relationship creation.');
+                    throw new \RuntimeException('Document #' . $documentId . ' was not found during relationship creation.');
                 }
             }
         }

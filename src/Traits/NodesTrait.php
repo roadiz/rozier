@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
@@ -47,8 +48,10 @@ trait NodesTrait
      */
     public function addStackType($data, Node $node)
     {
-        if ($data['nodeId'] == $node->getId() &&
-            !empty($data['nodeTypeId'])) {
+        if (
+            $data['nodeId'] == $node->getId() &&
+            !empty($data['nodeTypeId'])
+        ) {
             $nodeType = $this->em()->find(NodeType::class, (int) $data['nodeTypeId']);
 
             if (null !== $nodeType) {
@@ -136,7 +139,7 @@ trait NodesTrait
      */
     protected function buildDeleteForm(Node $node)
     {
-        $builder = $this->createNamedFormBuilder('remove_stack_type_'.$node->getId())
+        $builder = $this->createNamedFormBuilder('remove_stack_type_' . $node->getId())
                         ->add('nodeId', HiddenType::class, [
                             'data' => $node->getId(),
                             'constraints' => [

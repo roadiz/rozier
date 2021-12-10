@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
@@ -61,10 +62,12 @@ class UsersController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!(
+        if (
+            !(
             $this->isGranted('ROLE_ACCESS_USERS') ||
             ($this->getUser() instanceof User && $this->getUser()->getId() == $userId)
-        )) {
+            )
+        ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
         $user = $this->em()->find(User::class, $userId);
@@ -110,10 +113,12 @@ class UsersController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!(
+        if (
+            !(
             $this->isGranted('ROLE_ACCESS_USERS') ||
             ($this->getUser() instanceof User && $this->getUser()->getId() == $userId)
-        )) {
+            )
+        ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
         $user = $this->em()->find(User::class, $userId);

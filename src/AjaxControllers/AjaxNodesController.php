@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -233,9 +234,9 @@ class AjaxNodesController extends AbstractAjaxController
             if ($prevNode !== null) {
                 return $prevNode->getPosition() + 0.5;
             }
-        } elseif (key_exists('firstPosition', $parameters) && (boolean) $parameters['firstPosition'] === true) {
+        } elseif (key_exists('firstPosition', $parameters) && (bool) $parameters['firstPosition'] === true) {
             return -0.5;
-        } elseif (key_exists('lastPosition', $parameters) && (boolean) $parameters['lastPosition'] === true) {
+        } elseif (key_exists('lastPosition', $parameters) && (bool) $parameters['lastPosition'] === true) {
             return 99999999;
         }
         return $default;

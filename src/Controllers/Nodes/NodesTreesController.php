@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
@@ -96,8 +97,10 @@ class NodesTreesController extends RozierApp
 
         $widget = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
-        if ($request->get('tagId') &&
-            $request->get('tagId') > 0) {
+        if (
+            $request->get('tagId') &&
+            $request->get('tagId') > 0
+        ) {
             $filterTag = $this->em()->find(Tag::class, (int) $request->get('tagId'));
             $this->assignation['filterTag'] = $filterTag;
             $widget->setTag($filterTag);
@@ -431,8 +434,10 @@ class NodesTreesController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('nodes.bulk.not_tagged');
 
-        if (!empty($data['tagsPaths']) &&
-            !empty($data['nodesIds'])) {
+        if (
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
+        ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 
@@ -472,8 +477,10 @@ class NodesTreesController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('nodes.bulk.not_untagged');
 
-        if (!empty($data['tagsPaths']) &&
-            !empty($data['nodesIds'])) {
+        if (
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
+        ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
@@ -85,7 +86,7 @@ final class NodeTreeWidget extends AbstractWidget
      */
     public function setStackTree(bool $newstackTree)
     {
-        $this->stackTree = (boolean) $newstackTree;
+        $this->stackTree = (bool) $newstackTree;
 
         return $this;
     }
@@ -132,9 +133,11 @@ final class NodeTreeWidget extends AbstractWidget
             return false;
         }
 
-        if ($parent->getChildrenOrder() !== 'position' &&
+        if (
+            $parent->getChildrenOrder() !== 'position' &&
             in_array($parent->getChildrenOrder(), Node::$orderingFields) &&
-            in_array($parent->getChildrenOrderDirection(), ['ASC', 'DESC'])) {
+            in_array($parent->getChildrenOrderDirection(), ['ASC', 'DESC'])
+        ) {
             return true;
         }
 
