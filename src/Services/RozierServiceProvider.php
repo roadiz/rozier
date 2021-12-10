@@ -34,6 +34,7 @@ use Symfony\Component\Security\Http\AccessMap;
 use Symfony\Component\Security\Http\FirewallMap;
 use Themes\Rozier\AjaxControllers\AjaxCustomFormFieldsController;
 use Themes\Rozier\AjaxControllers\AjaxDocumentsExplorerController;
+use Themes\Rozier\AjaxControllers\AjaxEntitiesExplorerController;
 use Themes\Rozier\AjaxControllers\AjaxExplorerProviderController;
 use Themes\Rozier\AjaxControllers\AjaxFoldersController;
 use Themes\Rozier\AjaxControllers\AjaxFolderTreeController;
@@ -465,6 +466,13 @@ final class RozierServiceProvider implements ServiceProviderInterface
         };
         $container[AjaxDocumentsExplorerController::class] = function (Container $c) {
             return new AjaxDocumentsExplorerController(
+                $c[RendererInterface::class],
+                $c['document.url_generator'],
+                $c['router']
+            );
+        };
+        $container[AjaxEntitiesExplorerController::class] = function (Container $c) {
+            return new AjaxEntitiesExplorerController(
                 $c[RendererInterface::class],
                 $c['document.url_generator'],
                 $c['router']
