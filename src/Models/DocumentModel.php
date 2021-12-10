@@ -119,12 +119,15 @@ final class DocumentModel implements ModelInterface
             'isPdf' => $this->document->isPdf(),
             'isPrivate' => $this->document->isPrivate(),
             'shortType' => $this->document->getShortType(),
+            'processable' => $this->document->isProcessable(),
+            'relativePath' => $this->document->getRelativePath(),
             'editUrl' => $editUrl,
             'preview' => $previewUrl,
             'preview_html' => $this->renderer->render($this->document, DocumentModel::$previewArray),
             'embedPlatform' => $this->document->getEmbedPlatform(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
+            'thumbnail' => $previewUrl ?? $thumbnail80Url ?? null,
         ];
     }
 }

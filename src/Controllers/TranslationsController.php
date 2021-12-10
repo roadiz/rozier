@@ -20,7 +20,7 @@ use Themes\Rozier\RozierApp;
 
 class TranslationsController extends RozierApp
 {
-    const ITEM_PER_PAGE = 5;
+    public const ITEM_PER_PAGE = 5;
 
     private HandlerFactoryInterface $handlerFactory;
 

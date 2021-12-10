@@ -23,7 +23,7 @@ class RozierApp extends BackendController
     protected static string $themeCopyright = 'REZO ZERO';
     protected static string $themeDir = 'Rozier';
 
-    const DEFAULT_ITEM_PER_PAGE = 50;
+    public const DEFAULT_ITEM_PER_PAGE = 50;
 
     public static array $backendLanguages = [
         'Arabic' => 'ar',

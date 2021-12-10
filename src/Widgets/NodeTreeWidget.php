@@ -19,8 +19,7 @@ use Themes\Rozier\Utils\SessionListFilters;
  */
 final class NodeTreeWidget extends AbstractWidget
 {
-    const SESSION_ITEM_PER_PAGE = 'nodetree_item_per_page';
-
+    public const SESSION_ITEM_PER_PAGE = 'nodetree_item_per_page';
     protected ?Node $parentNode = null;
     /**
      * @var array<Node>|Paginator<Node>|null

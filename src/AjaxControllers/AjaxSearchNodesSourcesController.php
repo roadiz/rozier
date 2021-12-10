@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class AjaxSearchNodesSourcesController extends AbstractAjaxController
 {
-    const RESULT_COUNT = 8;
+    public const RESULT_COUNT = 8;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
 
     public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator)

@@ -20,7 +20,7 @@ use Themes\Rozier\Utils\SessionListFilters;
 
 abstract class AbstractAdminController extends RozierApp
 {
-    const ITEM_PER_PAGE = 20;
+    public const ITEM_PER_PAGE = 20;
 
     protected SerializerInterface $serializer;
     protected UrlGeneratorInterface $urlGenerator;
