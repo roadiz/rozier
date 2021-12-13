@@ -52,6 +52,11 @@ abstract class AbstractAdminController extends RozierApp
         return '';
     }
 
+    protected function additionalAssignation(Request $request): void
+    {
+        $this->assignation['controller_namespace'] = $this->getNamespace();
+    }
+
     /**
      * @param Request $request
      * @return Response|null
@@ -60,6 +65,7 @@ abstract class AbstractAdminController extends RozierApp
     public function defaultAction(Request $request)
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
+        $this->additionalAssignation($request);
 
         $elm = $this->createEntityListManager(
             $this->getEntityClass(),
@@ -93,6 +99,7 @@ abstract class AbstractAdminController extends RozierApp
     public function addAction(Request $request)
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
+        $this->additionalAssignation($request);
 
         $item = $this->createEmptyItem($request);
         $form = $this->createForm($this->getFormType(), $item);
@@ -142,11 +149,12 @@ abstract class AbstractAdminController extends RozierApp
     public function editAction(Request $request, $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
+        $this->additionalAssignation($request);
 
         /** @var mixed|object|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
 
-        if (null === $item || !($item instanceof PersistableInterface)) {
+        if (!($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
         }
 
@@ -192,9 +200,10 @@ abstract class AbstractAdminController extends RozierApp
     /**
      * @return JsonResponse
      */
-    public function exportAction()
+    public function exportAction(Request $request)
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
+        $this->additionalAssignation($request);
 
         $items = $this->em()->getRepository($this->getEntityClass())->findAll();
 
@@ -225,6 +234,7 @@ abstract class AbstractAdminController extends RozierApp
     public function deleteAction(Request $request, $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredDeletionRole());
+        $this->additionalAssignation($request);
 
         /** @var mixed|object|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
@@ -363,10 +373,19 @@ abstract class AbstractAdminController extends RozierApp
 
         return $this->redirect($this->urlGenerator->generate(
             $this->getEditRouteName(),
-            [
-                'id' => $item->getId()
-            ]
+            $this->getEditRouteParameters($item)
         ));
+    }
+
+    /**
+     * @param PersistableInterface $item
+     * @return array
+     */
+    protected function getEditRouteParameters(PersistableInterface $item): array
+    {
+        return [
+            'id' => $item->getId()
+        ];
     }
 
     /**
