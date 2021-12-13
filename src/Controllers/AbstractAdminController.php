@@ -57,6 +57,11 @@ abstract class AbstractAdminController extends RozierApp
         $this->assignation['controller_namespace'] = $this->getNamespace();
     }
 
+    protected function prepareWorkingItem(PersistableInterface $item): void
+    {
+        // Add or modify current working item.
+    }
+
     /**
      * @param Request $request
      * @return Response|null
@@ -102,6 +107,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->additionalAssignation($request);
 
         $item = $this->createEmptyItem($request);
+        $this->prepareWorkingItem($item);
         $form = $this->createForm($this->getFormType(), $item);
         $form->handleRequest($request);
 
@@ -153,11 +159,11 @@ abstract class AbstractAdminController extends RozierApp
 
         /** @var mixed|object|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
-
         if (!($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
         }
 
+        $this->prepareWorkingItem($item);
         $this->denyAccessUnlessItemGranted($item);
 
         $form = $this->createForm($this->getFormType(), $item);
@@ -239,10 +245,11 @@ abstract class AbstractAdminController extends RozierApp
         /** @var mixed|object|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
 
-        if (null === $item) {
+        if (!($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
         }
 
+        $this->prepareWorkingItem($item);
         $this->denyAccessUnlessItemGranted($item);
 
         $form = $this->createForm(FormType::class);
