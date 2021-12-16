@@ -233,6 +233,15 @@
     } %}
 {% endblock tags_widget %}
 
+{% block sortable_tags_widget %}
+    {% include '@Rozier/widgets/drawer.html.twig' with {
+        widget_attributes: block('widget_attributes'),
+        enableDropzone: false,
+        entity: 'tag',
+        icon: 'uk-icon-tags'
+    } %}
+{% endblock sortable_tags_widget %}
+
 {% block documents_widget %}
     {% include '@Rozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
