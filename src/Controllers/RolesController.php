@@ -104,7 +104,7 @@ class RolesController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['name' => 'ASC'];
     }

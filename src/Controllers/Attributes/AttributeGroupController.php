@@ -101,7 +101,7 @@ class AttributeGroupController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['canonicalName' => 'ASC'];
     }

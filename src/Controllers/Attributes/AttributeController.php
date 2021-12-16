@@ -101,7 +101,7 @@ class AttributeController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['code' => 'ASC'];
     }
@@ -135,7 +135,6 @@ class AttributeController extends AbstractAdminController
 
     /**
      * @param Request $request
-     *
      * @return Response
      */
     public function importAction(Request $request)

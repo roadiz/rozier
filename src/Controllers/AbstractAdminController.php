@@ -74,8 +74,8 @@ abstract class AbstractAdminController extends RozierApp
 
         $elm = $this->createEntityListManager(
             $this->getEntityClass(),
-            $this->getDefaultCriteria(),
-            $this->getDefaultOrder()
+            $this->getDefaultCriteria($request),
+            $this->getDefaultOrder($request)
         );
         $elm->setDisplayingNotPublishedNodes(true);
         /*
@@ -149,7 +149,7 @@ abstract class AbstractAdminController extends RozierApp
     /**
      * @param Request $request
      * @param int|string $id Numeric ID or UUID
-     * @return RedirectResponse|Response|null
+     * @return Response|null
      * @throws \Twig\Error\RuntimeError
      */
     public function editAction(Request $request, $id)
@@ -336,17 +336,19 @@ abstract class AbstractAdminController extends RozierApp
     abstract protected function getFormType(): string;
 
     /**
+     * @param Request $request
      * @return array
      */
-    protected function getDefaultCriteria(): array
+    protected function getDefaultCriteria(Request $request): array
     {
         return [];
     }
 
     /**
+     * @param Request $request
      * @return array
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return [];
     }
