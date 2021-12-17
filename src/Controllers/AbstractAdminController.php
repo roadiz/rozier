@@ -7,6 +7,7 @@ namespace Themes\Rozier\Controllers;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use Symfony\Component\Form\Exception\InvalidConfigurationException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -108,7 +109,7 @@ abstract class AbstractAdminController extends RozierApp
 
         $item = $this->createEmptyItem($request);
         $this->prepareWorkingItem($item);
-        $form = $this->createForm($this->getFormType(), $item);
+        $form = $this->createForm($this->getFormTypeFromRequest($request), $item);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -166,7 +167,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->prepareWorkingItem($item);
         $this->denyAccessUnlessItemGranted($item);
 
-        $form = $this->createForm($this->getFormType(), $item);
+        $form = $this->createForm($this->getFormTypeFromRequest($request), $item);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -331,9 +332,29 @@ abstract class AbstractAdminController extends RozierApp
     abstract protected function getEntityClass(): string;
 
     /**
-     * @return string
+     * @return class-string
      */
     abstract protected function getFormType(): string;
+
+    /**
+     * @param Request $request
+     * @return class-string
+     */
+    protected function getFormTypeFromRequest(Request $request): string
+    {
+        /*
+         * Routing can define defaults._type to change edition Form dynamically.
+         */
+        if (null !== $type = $request->attributes->get('_type')) {
+            if (!class_exists($type)) {
+                throw new InvalidConfigurationException(\sprintf('Route uses non-existent %s form type class.', $type));
+            }
+            return (string) $type;
+        }
+
+        // Falls back on child-class implemented form type.
+        return $this->getFormType();
+    }
 
     /**
      * @param Request $request
