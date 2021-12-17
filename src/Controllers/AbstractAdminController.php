@@ -401,6 +401,19 @@ abstract class AbstractAdminController extends RozierApp
             return $this->redirect($request->query->get('referer'));
         }
 
+        /*
+         * Try to redirect to same route as defined in Request attribute
+         */
+        if (
+            null !== $request &&
+            null !== $route = $request->attributes->get('_route')
+        ) {
+            return $this->redirect($this->urlGenerator->generate(
+                $route,
+                $this->getEditRouteParameters($item)
+            ));
+        }
+
         return $this->redirect($this->urlGenerator->generate(
             $this->getEditRouteName(),
             $this->getEditRouteParameters($item)
