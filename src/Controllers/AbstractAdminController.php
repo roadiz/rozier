@@ -133,7 +133,7 @@ abstract class AbstractAdminController extends RozierApp
             );
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->getPostSubmitResponse($item, $request);
+            return $this->getPostSubmitResponse($item, true, $request);
         }
 
         $this->assignation['form'] = $form->createView();
@@ -190,7 +190,7 @@ abstract class AbstractAdminController extends RozierApp
             );
             $this->publishConfirmMessage($request, $msg);
 
-            return $this->getPostSubmitResponse($item, $request);
+            return $this->getPostSubmitResponse($item, false, $request);
         }
 
         $this->assignation['form'] = $form->createView();
@@ -386,11 +386,15 @@ abstract class AbstractAdminController extends RozierApp
 
     /**
      * @param PersistableInterface $item
+     * @param bool $forceDefaultEditRoute
      * @param Request|null $request
      * @return Response
      */
-    protected function getPostSubmitResponse(PersistableInterface $item, ?Request $request = null): Response
-    {
+    protected function getPostSubmitResponse(
+        PersistableInterface $item,
+        bool $forceDefaultEditRoute = false,
+        ?Request $request = null
+    ): Response {
         /*
          * Force redirect to avoid resending form when refreshing page
          */
@@ -405,6 +409,7 @@ abstract class AbstractAdminController extends RozierApp
          * Try to redirect to same route as defined in Request attribute
          */
         if (
+            false === $forceDefaultEditRoute &&
             null !== $request &&
             null !== $route = $request->attributes->get('_route')
         ) {
