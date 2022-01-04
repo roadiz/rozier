@@ -21,7 +21,6 @@
             {% else %}
                 {% set userPath = '#' %}
             {% endif %}
-
             <a href="{{ userPath }}">
                 <img width="60"
                      height="60"
@@ -72,17 +71,19 @@
                 </div>
             {% endif %}
             <div class="table-cell">
-                {% if log.channel and log.channel != 'roadiz' %}
+                {% if log.channel and log.channel != 'roadiz' and log.channel != 'app' %}
                     <span class="uk-badge">{{ log.channel|trans }}</span>&nbsp;
                 {% endif %}
                 {% if log.level and log.level >= 300 %}
                     <span class="uk-badge{% if log.level >= 400 %} uk-badge-danger{% elseif log.level >= 300 %} uk-badge-warning{% endif %}">{{ levels[log.level]|trans }}</span>
                 {% endif %}
-                {{ log.message -}}
+                {{ log.message|u.truncate(300, '[…]') -}}
                 <div class="history-log-message-details">
                     <dl>
-                        <dt>{{ 'username'|trans }}</dt>
-                        <dd>{{ log.username }}</dd>
+                        {% if log.username %}
+                            <dt>{{ 'username'|trans }}</dt>
+                            <dd>{{ log.username }}</dd>
+                        {% endif %}
                         {% for key, data in log.additionalData %}
                             <dt>{{ key|trans }}</dt>
                             <dd>{{ data }}</dd>
