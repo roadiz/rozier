@@ -6,7 +6,6 @@ namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\Core\Entities\CustomForm;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -21,6 +20,7 @@ final class CustomFormModel implements ModelInterface
     /**
      * @param CustomForm $customForm
      * @param UrlGeneratorInterface $urlGenerator
+     * @param TranslatorInterface $translator
      */
     public function __construct(CustomForm $customForm, UrlGeneratorInterface $urlGenerator, TranslatorInterface $translator)
     {
@@ -31,22 +31,12 @@ final class CustomFormModel implements ModelInterface
 
     public function toArray()
     {
-        if ($this->translator instanceof Translator) {
-            $countFields = strip_tags($this->translator->transChoice(
-                '{0} no.customFormField|{1} 1.customFormField|]1,Inf] %count%.customFormFields',
-                $this->customForm->getFields()->count(),
-                [
-                    '%count%' => $this->customForm->getFields()->count()
-                ]
-            ));
-        } else {
-            $countFields = strip_tags($this->translator->trans(
-                '{0} no.customFormField|{1} 1.customFormField|]1,Inf] %count%.customFormFields',
-                [
-                    '%count%' => $this->customForm->getFields()->count()
-                ]
-            ));
-        }
+        $countFields = strip_tags($this->translator->trans(
+            '{0} no.customFormField|{1} 1.customFormField|]1,Inf] %count%.customFormFields',
+            [
+                '%count%' => $this->customForm->getFields()->count()
+            ]
+        ));
 
         return [
             'id' => $this->customForm->getId(),
