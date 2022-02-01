@@ -124,6 +124,11 @@ abstract class AbstractAdminController extends RozierApp
             $this->em()->persist($item);
             $this->em()->flush();
 
+            $event = $this->createPostCreateEvent($item);
+            if (null !== $event) {
+                $this->dispatchEvent($event);
+            }
+
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_created',
                 [
@@ -180,6 +185,14 @@ abstract class AbstractAdminController extends RozierApp
                 $this->dispatchEvent($event);
             }
             $this->em()->flush();
+
+            /*
+             * Event that requires that EM is flushed
+             */
+            $event = $this->createPostUpdateEvent($item);
+            if (null !== $event) {
+                $this->dispatchEvent($event);
+            }
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_updated',
@@ -267,6 +280,11 @@ abstract class AbstractAdminController extends RozierApp
             }
             $this->em()->remove($item);
             $this->em()->flush();
+
+            $event = $this->createPostDeleteEvent($item);
+            if (null !== $event) {
+                $this->dispatchEvent($event);
+            }
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_deleted',
@@ -458,6 +476,15 @@ abstract class AbstractAdminController extends RozierApp
      * @param PersistableInterface $item
      * @return Event|null
      */
+    protected function createPostCreateEvent(PersistableInterface $item): ?Event
+    {
+        return null;
+    }
+
+    /**
+     * @param PersistableInterface $item
+     * @return Event|null
+     */
     protected function createUpdateEvent(PersistableInterface $item): ?Event
     {
         return null;
@@ -467,7 +494,25 @@ abstract class AbstractAdminController extends RozierApp
      * @param PersistableInterface $item
      * @return Event|null
      */
+    protected function createPostUpdateEvent(PersistableInterface $item): ?Event
+    {
+        return null;
+    }
+
+    /**
+     * @param PersistableInterface $item
+     * @return Event|null
+     */
     protected function createDeleteEvent(PersistableInterface $item): ?Event
+    {
+        return null;
+    }
+
+    /**
+     * @param PersistableInterface $item
+     * @return Event|null
+     */
+    protected function createPostDeleteEvent(PersistableInterface $item): ?Event
     {
         return null;
     }

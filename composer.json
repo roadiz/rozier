@@ -74,5 +74,10 @@
             "php -d \"memory_limit=-1\" bin/roadiz lint:twig",
             "php -d \"memory_limit=-1\" bin/roadiz lint:twig src/Resources/views"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
+        }
     }
 }
