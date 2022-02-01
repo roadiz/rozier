@@ -118,16 +118,13 @@ abstract class AbstractAdminController extends RozierApp
              * to be able to throw exceptions before it is persisted.
              */
             $event = $this->createCreateEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $this->dispatchSingleOrMultipleEvent($event);
+
             $this->em()->persist($item);
             $this->em()->flush();
 
-            $event = $this->createPostCreateEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $postEvent = $this->createPostCreateEvent($item);
+            $this->dispatchSingleOrMultipleEvent($postEvent);
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_created',
@@ -181,18 +178,14 @@ abstract class AbstractAdminController extends RozierApp
              * to be able to throw exceptions before it is persisted.
              */
             $event = $this->createUpdateEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $this->dispatchSingleOrMultipleEvent($event);
             $this->em()->flush();
 
             /*
              * Event that requires that EM is flushed
              */
-            $event = $this->createPostUpdateEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $postEvent = $this->createPostUpdateEvent($item);
+            $this->dispatchSingleOrMultipleEvent($postEvent);
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_updated',
@@ -275,16 +268,12 @@ abstract class AbstractAdminController extends RozierApp
              * to be able to throw exceptions before it is persisted.
              */
             $event = $this->createDeleteEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $this->dispatchSingleOrMultipleEvent($event);
             $this->em()->remove($item);
             $this->em()->flush();
 
-            $event = $this->createPostDeleteEvent($item);
-            if (null !== $event) {
-                $this->dispatchEvent($event);
-            }
+            $postEvent = $this->createPostDeleteEvent($item);
+            $this->dispatchSingleOrMultipleEvent($postEvent);
 
             $msg = $this->getTranslator()->trans(
                 '%namespace%.%item%.was_deleted',
@@ -464,55 +453,77 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
-     * @param PersistableInterface $item
-     * @return Event|null
+     * @param Event|Event[]|mixed|null $event
+     * @return object|object[]|null
      */
-    protected function createCreateEvent(PersistableInterface $item): ?Event
+    protected function dispatchSingleOrMultipleEvent($event)
+    {
+        if (null === $event) {
+            return null;
+        }
+        if ($event instanceof Event) {
+            return $this->dispatchEvent($event);
+        }
+        if (is_iterable($event)) {
+            $events = [];
+            foreach ($event as $singleEvent) {
+                $events[] = $this->dispatchSingleOrMultipleEvent($singleEvent);
+            }
+            return $events;
+        }
+        throw new \InvalidArgumentException('Event must be null, Event or array of Event');
+    }
+
+    /**
+     * @param PersistableInterface $item
+     * @return Event|Event[]|null
+     */
+    protected function createCreateEvent(PersistableInterface $item)
     {
         return null;
     }
 
     /**
      * @param PersistableInterface $item
-     * @return Event|null
+     * @return Event|Event[]|null
      */
-    protected function createPostCreateEvent(PersistableInterface $item): ?Event
+    protected function createPostCreateEvent(PersistableInterface $item)
     {
         return null;
     }
 
     /**
      * @param PersistableInterface $item
-     * @return Event|null
+     * @return Event|Event[]|null
      */
-    protected function createUpdateEvent(PersistableInterface $item): ?Event
+    protected function createUpdateEvent(PersistableInterface $item)
     {
         return null;
     }
 
     /**
      * @param PersistableInterface $item
-     * @return Event|null
+     * @return Event|Event[]|null
      */
-    protected function createPostUpdateEvent(PersistableInterface $item): ?Event
+    protected function createPostUpdateEvent(PersistableInterface $item)
     {
         return null;
     }
 
     /**
      * @param PersistableInterface $item
-     * @return Event|null
+     * @return Event|Event[]|null
      */
-    protected function createDeleteEvent(PersistableInterface $item): ?Event
+    protected function createDeleteEvent(PersistableInterface $item)
     {
         return null;
     }
 
     /**
      * @param PersistableInterface $item
-     * @return Event|null
+     * @return Event|Event[]|null
      */
-    protected function createPostDeleteEvent(PersistableInterface $item): ?Event
+    protected function createPostDeleteEvent(PersistableInterface $item)
     {
         return null;
     }
