@@ -2859,6 +2859,10 @@
         <source>add.child.folder</source>
         <target></target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="add.folder.%name%.child">
+        <source>add.folder.%name%.child</source>
+        <target></target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="edit.folder">
         <source>edit.folder</source>
         <target></target>
