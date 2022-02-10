@@ -46,7 +46,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
         $searchHandler = new GlobalNodeSourceSearchHandler($this->em());
         $searchHandler->setDisplayNonPublishedNodes(true);
 
-        /** @var array $nodesSources */
+        /** @var array<mixed> $nodesSources */
         $nodesSources = $searchHandler->getNodeSourcesBySearchTerm(
             $request->get('searchTerms'),
             static::RESULT_COUNT
@@ -62,9 +62,8 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
 
             foreach ($nodesSources as $source) {
                 if (
-                    !key_exists($source->getNode()->getId(), $responseArray['data']) &&
-                    null !== $source &&
-                    $source instanceof NodesSources
+                    $source instanceof NodesSources &&
+                    !key_exists($source->getNode()->getId(), $responseArray['data'])
                 ) {
                     $responseArray['data'][$source->getNode()->getId()] = $this->getNodeSourceData($source);
                 }
