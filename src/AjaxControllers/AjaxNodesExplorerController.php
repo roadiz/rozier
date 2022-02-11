@@ -52,11 +52,12 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        $arrayFilter = $this->parseFilterFromRequest($request);
+        $criteria = $this->parseFilterFromRequest($request);
+        $sorting = $this->parseSortingFromRequest($request);
         if ($request->get('search') !== '' && null !== $this->nodeSourceSearchHandler) {
-            $responseArray = $this->getSolrSearchResults($request, $arrayFilter);
+            $responseArray = $this->getSolrSearchResults($request, $criteria);
         } else {
-            $responseArray = $this->getNodeSearchResults($request, $arrayFilter);
+            $responseArray = $this->getNodeSearchResults($request, $criteria, $sorting);
         }
 
         if ($request->query->has('tagId') && $request->get('tagId') > 0) {
@@ -70,7 +71,6 @@ class AjaxNodesExplorerController extends AbstractAjaxController
 
     /**
      * @param Request $request
-     *
      * @return array
      */
     protected function parseFilterFromRequest(Request $request): array
@@ -105,17 +105,36 @@ class AjaxNodesExplorerController extends AbstractAjaxController
 
     /**
      * @param Request $request
-     * @param array $arrayFilter
      * @return array
      */
-    protected function getNodeSearchResults(Request $request, array $arrayFilter): array
+    protected function parseSortingFromRequest(Request $request): array
+    {
+        if ($request->query->has('sort-alpha')) {
+            return [
+                'nodeName' => 'ASC',
+            ];
+        }
+
+        return [
+            'updatedAt' => 'DESC',
+        ];
+    }
+
+    /**
+     * @param Request $request
+     * @param array $criteria
+     * @param array $sorting
+     * @return array
+     */
+    protected function getNodeSearchResults(Request $request, array $criteria, array $sorting = []): array
     {
         /*
          * Manage get request to filter list
          */
         $listManager = $this->createEntityListManager(
             Node::class,
-            $arrayFilter
+            $criteria,
+            $sorting
         );
         $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->setItemPerPage($this->getItemPerPage());
