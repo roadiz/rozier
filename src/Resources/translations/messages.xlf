@@ -5,15 +5,10 @@
       <trans-unit xml:space="preserve" id="2">
         <source>node.%name%.updated</source>
         <target></target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3">
         <source>node.%nodeId%.not_exists</source>
         <target></target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4">
         <source>node.%name%.status.%field%.updated</source>
@@ -2846,7 +2841,10 @@
         <target></target>
       </trans-unit>
 
-
+      <trans-unit xml:space="preserve" id="folder">
+        <source>folder</source>
+        <target></target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree">
         <source>folderTree</source>
         <target></target>

@@ -5,15 +5,10 @@
       <trans-unit xml:space="preserve" id="2" approved="yes">
         <source>node.%name%.updated</source>
         <target state="final">Node "%name%" has been updated.</target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3" approved="yes">
         <source>node.%nodeId%.not_exists</source>
         <target state="final">Node %nodeId% does not exists.</target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4" approved="yes">
         <source>node.%name%.status.%field%.updated</source>
@@ -2801,6 +2796,10 @@
       <trans-unit xml:space="preserve" id="document.translation.%name%.cannot_delete" approved="yes">
         <source>document.translation.%name%.cannot_delete</source>
         <target state="final">Document “%name%” translation cannot be deleted.</target>
+      </trans-unit>
+      <trans-unit xml:space="preserve" id="folder" approved="yes">
+        <source>folder</source>
+        <target state="final">Folder</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree" approved="yes">
         <source>folderTree</source>

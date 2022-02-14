@@ -5,35 +5,26 @@
       <trans-unit xml:space="preserve" id="2" approved="yes">
         <source>node.%name%.updated</source>
         <target state="final">Le nœud %name% a été mis à jour.</target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3" approved="yes">
         <source>node.%nodeId%.not_exists</source>
         <target state="final">Le nœud %nodeId% n’existe pas.</target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4" approved="yes">
         <source>node.%name%.status.%field%.updated</source>
         <target state="final">Le statut (%field%) du nœud %name% a été mis à jour.</target>
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="5" approved="yes">
         <source>node.has_no.field.%field%</source>
         <target state="final">Le nœud ne possède aucun champ %field%.</target>
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="6" approved="yes">
         <source>node.id.not_specified</source>
         <target state="final">L’id du nœud n’a pas été spécifié.</target>
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="7" approved="yes">
         <source>document.%name%.updated</source>
         <target state="final">Le document %name% a été mis à jour.</target>
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="8" approved="yes">
         <source>document.%name%.deleted</source>
@@ -2801,6 +2792,10 @@
       <trans-unit xml:space="preserve" id="document.translation.%name%.cannot_delete" approved="yes">
         <source>document.translation.%name%.cannot_delete</source>
         <target state="final">Les méta-données du document «%name%» ne peuvent pas être supprimées.</target>
+      </trans-unit>
+      <trans-unit xml:space="preserve" id="folder" approved="yes">
+        <source>folder</source>
+        <target state="final">Dossier</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree" approved="yes">
         <source>folderTree</source>
