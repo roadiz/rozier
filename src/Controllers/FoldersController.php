@@ -324,7 +324,10 @@ class FoldersController extends RozierApp
             /** @var Document $document */
             foreach ($documents as $document) {
                 if ($document->isLocal()) {
-                    $zip->addFile($this->packages->getDocumentFilePath($document), $document->getFilename());
+                    $zip->addFile(
+                        $this->packages->getDocumentFilePath($document),
+                        $document->getFolder() . DIRECTORY_SEPARATOR . $document->getFilename()
+                    );
                 }
             }
 
