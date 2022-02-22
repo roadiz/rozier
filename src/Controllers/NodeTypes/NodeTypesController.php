@@ -62,7 +62,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['node_types'] = $listManager->getEntities();
 
-        return $this->render('node-types/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/list.html.twig', $this->assignation);
     }
 
     /**
@@ -108,7 +108,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -150,7 +150,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/add.html.twig', $this->assignation);
     }
 
     /**
@@ -192,6 +192,6 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/delete.html.twig', $this->assignation);
     }
 }

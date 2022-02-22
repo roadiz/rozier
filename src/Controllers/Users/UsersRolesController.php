@@ -59,7 +59,7 @@ class UsersRolesController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/roles.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/roles.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -115,7 +115,7 @@ class UsersRolesController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/removeRole.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/removeRole.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

@@ -30,6 +30,6 @@ class DashboardController extends RozierApp
              ->findLatestByNodesSources(8);
 
 
-        return $this->render('dashboard/index.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/dashboard/index.html.twig', $this->assignation);
     }
 }

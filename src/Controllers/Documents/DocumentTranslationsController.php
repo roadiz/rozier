@@ -111,7 +111,7 @@ class DocumentTranslationsController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['readOnly'] = $this->isReadOnly;
 
-            return $this->render('document-translations/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/document-translations/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -195,7 +195,7 @@ class DocumentTranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('document-translations/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/document-translations/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

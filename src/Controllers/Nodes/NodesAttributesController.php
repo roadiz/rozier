@@ -143,7 +143,7 @@ class NodesAttributesController extends RozierApp
         $this->assignation['available_translations'] = $availableTranslations;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -246,7 +246,7 @@ class NodesAttributesController extends RozierApp
         $this->assignation['translation'] = $translation;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/delete.html.twig', $this->assignation);
     }
 
     /**
@@ -321,6 +321,6 @@ class NodesAttributesController extends RozierApp
         $this->assignation['translation'] = $translation;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/reset.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/reset.html.twig', $this->assignation);
     }
 }

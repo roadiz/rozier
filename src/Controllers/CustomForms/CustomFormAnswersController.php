@@ -51,7 +51,7 @@ class CustomFormAnswersController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['custom_form_answers'] = $listManager->getEntities();
 
-        return $this->render('custom-form-answers/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/custom-form-answers/list.html.twig', $this->assignation);
     }
 
     /**
@@ -95,7 +95,7 @@ class CustomFormAnswersController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('custom-form-answers/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-answers/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

@@ -85,7 +85,7 @@ class LoginController extends RozierApp
             $this->logger->error($exception->getMessage());
         }
 
-        return $this->render('login/login.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/login.html.twig', $this->assignation);
     }
 
     /**
@@ -95,7 +95,7 @@ class LoginController extends RozierApp
      */
     public function checkAction(Request $request)
     {
-        return $this->render('login/check.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/check.html.twig', $this->assignation);
     }
 
     /**
@@ -105,7 +105,7 @@ class LoginController extends RozierApp
      */
     public function logoutAction(Request $request)
     {
-        return $this->render('login/check.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/check.html.twig', $this->assignation);
     }
 
     /**

@@ -56,7 +56,7 @@ class UsersSecurityController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/security.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/security.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

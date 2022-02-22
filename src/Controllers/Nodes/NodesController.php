@@ -166,7 +166,7 @@ class NodesController extends RozierApp
                 'visible' => true,
             ]);
 
-        return $this->render('nodes/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/list.html.twig', $this->assignation);
     }
 
     /**
@@ -268,7 +268,7 @@ class NodesController extends RozierApp
             $this->assignation['translation'] = $translation;
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('nodes/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
@@ -381,7 +381,7 @@ class NodesController extends RozierApp
             $this->assignation['type'] = $type;
             $this->assignation['nodeTypesCount'] = true;
 
-            return $this->render('nodes/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/add.html.twig', $this->assignation);
         }
         throw new ResourceNotFoundException(sprintf('Node-type #%s does not exist.', $nodeTypeId));
     }
@@ -468,7 +468,7 @@ class NodesController extends RozierApp
             $this->assignation['parentNode'] = $parentNode;
             $this->assignation['nodeTypesCount'] = $nodeTypesCount;
 
-            return $this->render('nodes/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException(sprintf('Translation does not exist'));
@@ -551,7 +551,7 @@ class NodesController extends RozierApp
             return $this->redirectToRoute('nodesHomePage');
         }
         $this->assignation['form'] = $form->createView();
-        return $this->render('nodes/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/delete.html.twig', $this->assignation);
     }
 
     /**
@@ -605,7 +605,7 @@ class NodesController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('nodes/emptyTrash.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/emptyTrash.html.twig', $this->assignation);
     }
 
     /**
@@ -668,7 +668,7 @@ class NodesController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('nodes/undelete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/undelete.html.twig', $this->assignation);
     }
 
     /**
@@ -748,6 +748,6 @@ class NodesController extends RozierApp
         $this->assignation['node'] = $node;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('nodes/publishAll.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/publishAll.html.twig', $this->assignation);
     }
 }

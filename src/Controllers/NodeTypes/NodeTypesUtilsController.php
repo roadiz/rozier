@@ -230,7 +230,7 @@ class NodeTypesUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('node-types/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/import.html.twig', $this->assignation);
     }
 
     /**

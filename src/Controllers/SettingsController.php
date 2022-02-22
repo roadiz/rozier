@@ -46,7 +46,7 @@ class SettingsController extends RozierApp
             return $response->send();
         }
 
-        return $this->render('settings/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
     }
 
     /**
@@ -69,7 +69,7 @@ class SettingsController extends RozierApp
                 return $response->send();
             }
 
-            return $this->render('settings/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -210,7 +210,7 @@ class SettingsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('settings/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/edit.html.twig', $this->assignation);
         }
 
         throw $this->createNotFoundException();
@@ -262,7 +262,7 @@ class SettingsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('settings/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/add.html.twig', $this->assignation);
     }
 
     /**
@@ -302,7 +302,7 @@ class SettingsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('settings/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

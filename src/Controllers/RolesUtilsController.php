@@ -120,7 +120,7 @@ class RolesUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('roles/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/roles/import.html.twig', $this->assignation);
     }
 
     /**

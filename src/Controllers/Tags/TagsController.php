@@ -91,7 +91,7 @@ class TagsController extends RozierApp
             $this->assignation['deleteTagsForm'] = $deleteTagsForm->createView();
         }
 
-        return $this->render('tags/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/list.html.twig', $this->assignation);
     }
 
     /**
@@ -223,7 +223,7 @@ class TagsController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['readOnly'] = $this->isReadOnly;
 
-        return $this->render('tags/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -284,7 +284,7 @@ class TagsController extends RozierApp
                     $this->assignation['referer'] = $request->get('deleteForm')['referer'];
                 }
 
-                return $this->render('tags/bulkDelete.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/tags/bulkDelete.html.twig', $this->assignation);
             }
         }
 
@@ -339,7 +339,7 @@ class TagsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('tags/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -406,7 +406,7 @@ class TagsController extends RozierApp
         $this->assignation['tag'] = $tag;
         $this->assignation['translation'] = $translation;
 
-        return $this->render('tags/settings.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/settings.html.twig', $this->assignation);
     }
 
     /**
@@ -439,7 +439,7 @@ class TagsController extends RozierApp
             $this->assignation['specificTagTree'] = $widget;
         }
 
-        return $this->render('tags/tree.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/tree.html.twig', $this->assignation);
     }
 
     /**
@@ -490,7 +490,7 @@ class TagsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('tags/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -562,7 +562,7 @@ class TagsController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['parentTag'] = $parentTag;
 
-            return $this->render('tags/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -603,7 +603,7 @@ class TagsController extends RozierApp
             $this->assignation['nodes'] = $listManager->getEntities();
             $this->assignation['translation'] = $translation;
 
-            return $this->render('tags/nodes.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/nodes.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

@@ -160,6 +160,6 @@ class AttributeController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('attributes/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/attributes/import.html.twig', $this->assignation);
     }
 }

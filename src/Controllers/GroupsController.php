@@ -154,7 +154,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/roles.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/roles.html.twig', $this->assignation);
     }
 
     /**
@@ -206,7 +206,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/removeRole.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/removeRole.html.twig', $this->assignation);
     }
 
     /**
@@ -249,7 +249,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/users.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/users.html.twig', $this->assignation);
     }
 
     /**
@@ -302,7 +302,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/removeUser.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/removeUser.html.twig', $this->assignation);
     }
 
     /**

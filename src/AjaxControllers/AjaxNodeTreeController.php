@@ -136,7 +136,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
             'linkedTypes' => array_map(function (NodeType $nodeType) {
                 return $nodeType->getName();
             }, $linkedTypes),
-            'nodeTree' => trim($this->getTwig()->render('widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
+            'nodeTree' => trim($this->getTwig()->render('@RoadizRozier/widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
         ];
 
         return new JsonResponse(

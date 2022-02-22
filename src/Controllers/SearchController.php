@@ -246,7 +246,7 @@ class SearchController extends RozierApp
         $this->assignation['nodeTypeForm'] = $nodeTypeForm->createView();
         $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('search/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**
@@ -284,7 +284,7 @@ class SearchController extends RozierApp
         $this->assignation['nodeType'] = $nodetype;
         $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('search/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**

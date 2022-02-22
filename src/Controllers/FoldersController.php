@@ -55,7 +55,7 @@ class FoldersController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['folders'] = $listManager->getEntities();
 
-        return $this->render('folders/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/folders/list.html.twig', $this->assignation);
     }
 
     /**
@@ -112,7 +112,7 @@ class FoldersController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('folders/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/folders/add.html.twig', $this->assignation);
     }
 
     /**
@@ -160,7 +160,7 @@ class FoldersController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['folder'] = $folder;
 
-            return $this->render('folders/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -215,7 +215,7 @@ class FoldersController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['translation'] = $translation;
 
-            return $this->render('folders/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -288,7 +288,7 @@ class FoldersController extends RozierApp
             $this->assignation['available_translations'] = $translationRepository->findAllAvailable();
             $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
 
-            return $this->render('folders/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

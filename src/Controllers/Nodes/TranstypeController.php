@@ -91,6 +91,6 @@ class TranstypeController extends RozierApp
         $this->assignation['parentNode'] = $node->getParent();
         $this->assignation['type'] = $node->getNodeType();
 
-        return $this->render('nodes/transtype.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/transtype.html.twig', $this->assignation);
     }
 }

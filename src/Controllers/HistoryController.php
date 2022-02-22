@@ -55,7 +55,7 @@ class HistoryController extends RozierApp
         $this->assignation['logs'] = $listManager->getEntities();
         $this->assignation['levels'] = static::$levelToHuman;
 
-        return $this->render('history/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
     }
 
     /**
@@ -102,7 +102,7 @@ class HistoryController extends RozierApp
             $this->assignation['levels'] = static::$levelToHuman;
             $this->assignation['user'] = $user;
 
-            return $this->render('history/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

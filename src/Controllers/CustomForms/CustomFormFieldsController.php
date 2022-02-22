@@ -42,7 +42,7 @@ class CustomFormFieldsController extends RozierApp
             $this->assignation['customForm'] = $customForm;
             $this->assignation['fields'] = $fields;
 
-            return $this->render('custom-form-fields/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-fields/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -88,7 +88,7 @@ class CustomFormFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('custom-form-fields/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-fields/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -154,7 +154,7 @@ class CustomFormFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('custom-form-fields/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-fields/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -211,7 +211,7 @@ class CustomFormFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('custom-form-fields/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-fields/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

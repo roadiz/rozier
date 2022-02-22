@@ -165,7 +165,7 @@ class NodesSourcesController extends RozierApp
                 $this->assignation['form'] = $form->createView();
                 $this->assignation['readOnly'] = $this->isReadOnly;
 
-                return $this->render('nodes/editSource.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/editSource.html.twig', $this->assignation);
             }
         }
 
@@ -247,7 +247,7 @@ class NodesSourcesController extends RozierApp
         $this->assignation["nodeSource"] = $ns;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('nodes/deleteSource.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', $this->assignation);
     }
 
     protected function onPostUpdate(AbstractEntity $entity, Request $request): void

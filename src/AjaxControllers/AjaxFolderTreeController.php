@@ -72,7 +72,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
         $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
-            'folderTree' => $this->getTwig()->render('widgets/folderTree/folderTree.html.twig', $this->assignation),
+            'folderTree' => $this->getTwig()->render('@RoadizRozier/widgets/folderTree/folderTree.html.twig', $this->assignation),
         ];
 
         return new JsonResponse(

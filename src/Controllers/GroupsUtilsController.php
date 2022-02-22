@@ -142,7 +142,7 @@ class GroupsUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/import.html.twig', $this->assignation);
     }
 
     /**

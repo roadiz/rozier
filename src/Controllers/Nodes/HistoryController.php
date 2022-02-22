@@ -54,6 +54,6 @@ class HistoryController extends RozierApp
         $this->assignation['entries'] = $listManager->getEntities();
         $this->assignation['filters'] = $listManager->getAssignation();
 
-        return $this->render('nodes/history.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/history.html.twig', $this->assignation);
     }
 }

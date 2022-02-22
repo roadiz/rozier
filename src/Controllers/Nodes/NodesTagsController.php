@@ -80,7 +80,7 @@ class NodesTagsController extends RozierApp
             $this->assignation['source'] = $source;
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('nodes/editTags.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/editTags.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

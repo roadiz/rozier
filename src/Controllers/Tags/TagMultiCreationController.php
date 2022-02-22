@@ -91,7 +91,7 @@ class TagMultiCreationController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['tag'] = $parentTag;
 
-            return $this->render('tags/add-multiple.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add-multiple.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

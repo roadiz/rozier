@@ -61,7 +61,7 @@ class LoginRequestController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('login/request.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/request.html.twig', $this->assignation);
     }
 
     /**
@@ -69,6 +69,6 @@ class LoginRequestController extends RozierApp
      */
     public function confirmAction()
     {
-        return $this->render('login/requestConfirm.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/requestConfirm.html.twig', $this->assignation);
     }
 }

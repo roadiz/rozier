@@ -72,7 +72,7 @@ class AjaxTagTreeController extends AbstractAjaxController
         $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
-            'tagTree' => $this->getTwig()->render('widgets/tagTree/tagTree.html.twig', $this->assignation),
+            'tagTree' => $this->getTwig()->render('@RoadizRozier/widgets/tagTree/tagTree.html.twig', $this->assignation),
         ];
 
         return new JsonResponse(

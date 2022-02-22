@@ -102,7 +102,7 @@ class CacheController extends RozierApp
             }
         }
 
-        return $this->render('cache/deleteDoctrine.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/cache/deleteDoctrine.html.twig', $this->assignation);
     }
 
     /**
@@ -147,7 +147,7 @@ class CacheController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('cache/deleteAssets.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/cache/deleteAssets.html.twig', $this->assignation);
     }
 
     /**

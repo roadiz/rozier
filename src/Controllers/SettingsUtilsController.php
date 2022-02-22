@@ -124,7 +124,7 @@ class SettingsUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('settings/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/import.html.twig', $this->assignation);
     }
 
     /**

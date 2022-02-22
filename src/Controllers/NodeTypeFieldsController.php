@@ -52,7 +52,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['nodeType'] = $nodeType;
             $this->assignation['fields'] = $fields;
 
-            return $this->render('node-type-fields/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -103,7 +103,7 @@ class NodeTypeFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -177,7 +177,7 @@ class NodeTypeFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -241,7 +241,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['field'] = $field;
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

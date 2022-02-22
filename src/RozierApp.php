@@ -100,7 +100,7 @@ class RozierApp extends BackendController
      */
     public function indexAction(Request $request)
     {
-        return $this->render('index.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/index.html.twig', $this->assignation);
     }
 
     /**
@@ -120,7 +120,7 @@ class RozierApp extends BackendController
         ]);
 
         $response = new Response(
-            $this->getTwig()->render('css/mainColor.css.twig', $this->assignation),
+            $this->getTwig()->render('@RoadizRozier/css/mainColor.css.twig', $this->assignation),
             Response::HTTP_OK,
             ['content-type' => 'text/css']
         );

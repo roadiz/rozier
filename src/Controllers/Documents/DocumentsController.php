@@ -278,7 +278,7 @@ class DocumentsController extends RozierApp
             // Create form view and assign it
             $this->assignation['file_form'] = $fileForm->createView();
 
-            return $this->render('documents/adjust.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/adjust.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -356,7 +356,7 @@ class DocumentsController extends RozierApp
             $this->assignation['rawDocument'] = $document->getRawDocument();
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('documents/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -423,7 +423,7 @@ class DocumentsController extends RozierApp
                 $this->assignation['infos']['duration'] = $document->getMediaDuration() . ' sec';
             }
 
-            return $this->render('documents/preview.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/preview.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -479,7 +479,7 @@ class DocumentsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('documents/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -531,7 +531,7 @@ class DocumentsController extends RozierApp
             $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
             $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-            return $this->render('documents/bulkDelete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/bulkDelete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -580,7 +580,7 @@ class DocumentsController extends RozierApp
             $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
             $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-            return $this->render('documents/bulkDownload.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/bulkDownload.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -659,7 +659,7 @@ class DocumentsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('documents/embed.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/embed.html.twig', $this->assignation);
     }
 
     /**
@@ -806,7 +806,7 @@ class DocumentsController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['maxUploadSize'] = UploadedFile::getMaxFilesize() / 1024 / 1024;
 
-        return $this->render('documents/upload.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/upload.html.twig', $this->assignation);
     }
 
     /**
@@ -835,7 +835,7 @@ class DocumentsController extends RozierApp
                     return $tagTranslationDocuments->getTagTranslation()->getTag();
                 });
 
-            return $this->render('documents/usage.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/usage.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -876,7 +876,7 @@ class DocumentsController extends RozierApp
         $this->assignation['documents'] = $listManager->getEntities();
         $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-        return $this->render('documents/list-table.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/list-table.html.twig', $this->assignation);
     }
 
     /**
@@ -1310,8 +1310,8 @@ class DocumentsController extends RozierApp
     private function getListingTemplate(Request $request): string
     {
         if ($request->query->get('list') === '1') {
-            return 'documents/list-table.html.twig';
+            return '@RoadizRozier/documents/list-table.html.twig';
         }
-        return 'documents/list.html.twig';
+        return '@RoadizRozier/documents/list.html.twig';
     }
 }

@@ -170,7 +170,7 @@ class NodesTreesController extends RozierApp
             $this->assignation['deleteNodesForm'] = $deleteNodesForm->createView();
         }
 
-        return $this->render('nodes/tree.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/tree.html.twig', $this->assignation);
     }
 
     /**
@@ -218,7 +218,7 @@ class NodesTreesController extends RozierApp
                     $this->assignation['referer'] = $request->get('deleteForm')['referer'];
                 }
 
-                return $this->render('nodes/bulkDelete.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/bulkDelete.html.twig', $this->assignation);
             }
         }
 
@@ -273,7 +273,7 @@ class NodesTreesController extends RozierApp
                     $this->assignation['referer'] = $request->get('statusForm')['referer'];
                 }
 
-                return $this->render('nodes/bulkStatus.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/bulkStatus.html.twig', $this->assignation);
             }
         }
 

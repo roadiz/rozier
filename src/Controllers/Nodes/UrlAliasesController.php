@@ -162,7 +162,7 @@ class UrlAliasesController extends RozierApp
             $this->assignation['form'] = $addAliasForm->createView();
             $this->assignation['seoForm'] = $seoForm->createView();
 
-            return $this->render('nodes/editAliases.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/editAliases.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

@@ -78,7 +78,7 @@ class TranslationsController extends RozierApp
             ];
         }
 
-        return $this->render('translations/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/translations/list.html.twig', $this->assignation);
     }
 
     /**
@@ -117,7 +117,7 @@ class TranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('translations/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/translations/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -154,7 +154,7 @@ class TranslationsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('translations/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/translations/add.html.twig', $this->assignation);
     }
 
     /**
@@ -192,7 +192,7 @@ class TranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('translations/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/translations/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

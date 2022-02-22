@@ -75,7 +75,7 @@ class TranslateController extends RozierApp
                 $this->assignation['available_translations'][] = $ns->getTranslation();
             }
 
-            return $this->render('nodes/translate.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/nodes/translate.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

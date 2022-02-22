@@ -38,7 +38,7 @@ class CustomFormFieldAttributesController extends RozierApp
         $this->assignation['answer'] = $customFormAnswer;
         $this->assignation['customFormId'] = $customFormAnswer->getCustomForm()->getId();
 
-        return $this->render('custom-form-field-attributes/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/custom-form-field-attributes/list.html.twig', $this->assignation);
     }
 
     /**

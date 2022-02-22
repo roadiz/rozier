@@ -46,7 +46,7 @@ class LoginResetController extends RozierApp
             $this->assignation['error'] = $this->getTranslator()->trans('confirmation.token.is.invalid');
         }
 
-        return $this->render('login/reset.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/reset.html.twig', $this->assignation);
     }
 
     /**
@@ -54,6 +54,6 @@ class LoginResetController extends RozierApp
      */
     public function confirmAction()
     {
-        return $this->render('login/resetConfirm.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/resetConfirm.html.twig', $this->assignation);
     }
 }
