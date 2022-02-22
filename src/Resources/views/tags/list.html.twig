@@ -1,17 +1,17 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global content-nav-and-filters">
 
     <header class="content-header header-tags header-nodes-list">
         <h1 class="content-title tags-list-title">{% trans %}tags{% endtrans %}</h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         <div class="content-header-action-menu">
             <nav><a class="uk-button" href="{{ path('tagsAddPage') }}"><i class="uk-icon-rz-plus"></i> {% trans %}add.a.tag{% endtrans %}</a></nav>
         </div>
     </header>
 
-    {% include '@Rozier/tags/filtersBar.html.twig' with {
+    {% include '@RoadizRozier/tags/filtersBar.html.twig' with {
         filters: filters,
         deleteTagsForm: deleteTagsForm
     } only %}
@@ -24,7 +24,7 @@
                         <th class="table-id-row">{% trans %}id{% endtrans %}</th>
                         <th>
                             {% trans %}name{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'tagName',
                                 'filters': filters,
                             } only %}

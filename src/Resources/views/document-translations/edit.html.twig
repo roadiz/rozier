@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 
 {% block content %}
@@ -6,9 +6,9 @@
 
     <header class="content-header header-document header-document-edit">
         <h1 class="content-title document-edit-title">{{ "edit.document.%name%"|trans({'%name%': document})|u.truncate(25, '[…]', true) }}</h1>
-        {% include '@Rozier/documents/navBar.html.twig' with {'document':document, current:'metas'} %}
-        {% include '@Rozier/document-translations/translationBar.html.twig' with {"current": translation.getId} %}
-        {% include '@Rozier/documents/backLink.html.twig' %}
+        {% include '@RoadizRozier/documents/navBar.html.twig' with {'document':document, current:'metas'} %}
+        {% include '@RoadizRozier/document-translations/translationBar.html.twig' with {"current": translation.getId} %}
+        {% include '@RoadizRozier/documents/backLink.html.twig' %}
     </header>
 
     <article class="content content-document-edit">
@@ -39,7 +39,7 @@
                 {% endif %}
             </div>
         {% endif %}
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         {{ form_start(form, { attr: { id: "edit-document-form"}}) }}
             {{ form_widget(form) }}
             <fieldset data-uk-margin>
@@ -55,6 +55,6 @@
         {{ form_end(form) }}
     </article>
 
-    {% include '@Rozier/documents/actionsMenu.html.twig' %}
+    {% include '@RoadizRozier/documents/actionsMenu.html.twig' %}
 </section>
 {% endblock %}

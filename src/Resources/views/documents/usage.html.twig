@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 
 {% block content %}
@@ -6,8 +6,8 @@
 
     <header class="content-header header-document header-document-edit">
         <h1 class="content-title document-edit-title">{{ "document.%name%.usage"|trans({'%name%': document})|u.truncate(25, '[…]', true) }}</h1>
-        {% include '@Rozier/documents/navBar.html.twig' with {'document':document, current:'usage'} %}
-        {% include '@Rozier/documents/backLink.html.twig' %}
+        {% include '@RoadizRozier/documents/navBar.html.twig' with {'document':document, current:'usage'} %}
+        {% include '@RoadizRozier/documents/backLink.html.twig' %}
     </header>
     {# usages #}
 

@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
     <section class="content-global content-nav-and-filters">
@@ -12,7 +12,7 @@
                 </nav>
             </div>
 
-            {% include '@Rozier/node-types/navBar.html.twig' with {
+            {% include '@RoadizRozier/node-types/navBar.html.twig' with {
             nodeType: nodeType,
             current: 'nodeTypeFields'
             } only %}

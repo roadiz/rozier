@@ -7,7 +7,7 @@
     </div>
 
     {# Make this block overidable from themes. #}
-    {% include 'admin/blocks/adminImage.html.twig' %}
+    {% include '@RoadizRozier/admin/blocks/adminImage.html.twig' %}
     <div class="user-actions-menu">
         {% if app.user and app.user.id %}
             <a id="user-picture" href="{{ path('usersEditPage', {'userId':app.user.id }) }}">

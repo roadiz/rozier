@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global">
@@ -10,7 +10,7 @@
     </header>
 
     <article class="content">
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         {{ form_start(form, { attr: {id: "add-node-type-form"}}) }}
             {{ form_widget(form) }}
             <fieldset data-uk-margin>
@@ -24,6 +24,6 @@
         {{ form_end(form) }}
     </article>
 
-    {% include '@Rozier/node-types/actionsMenu.html.twig' %}
+    {% include '@RoadizRozier/node-types/actionsMenu.html.twig' %}
 </section>
 {% endblock %}

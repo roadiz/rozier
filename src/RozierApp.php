@@ -39,6 +39,26 @@ class RozierApp extends BackendController
     ];
 
     /**
+     * Returns a fully qualified view path for Twig rendering.
+     *
+     * @param string $view
+     * @param string $namespace
+     * @return string
+     */
+    protected function getNamespacedView(string $view, string $namespace = ''): string
+    {
+        if ($namespace !== "" && $namespace !== "/") {
+            $view = '@' . $namespace . '/' . $view;
+        } elseif ($namespace !== "/") {
+            // when no namespace is used
+            // use current theme directory
+            $view = '@RoadizRozier/' . $view;
+        }
+
+        return $view;
+    }
+
+    /**
      * @return $this
      */
     public function prepareBaseAssignation()

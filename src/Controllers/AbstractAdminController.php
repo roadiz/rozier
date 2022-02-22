@@ -50,7 +50,7 @@ abstract class AbstractAdminController extends RozierApp
      */
     protected function getTemplateNamespace(): string
     {
-        return '';
+        return '@RoadizRozier';
     }
 
     protected function additionalAssignation(Request $request): void

@@ -1,4 +1,4 @@
-{% extends '@Rozier/login/base.html.twig' %}
+{% extends '@RoadizRozier/login/base.html.twig' %}
 
 {% block login_content %}
     {% if error %}
@@ -16,7 +16,7 @@
         <hr>
     {% endif %}
 
-    {% form_theme form '@Rozier/forms.html.twig' %}
+    {% form_theme form '@RoadizRozier/forms.html.twig' %}
     <form id="login-form"
           class="uk-form uk-form-stacked {% if error %}uk-animation-shake{% endif %}"
           action="{{ path('loginCheckPage') }}"

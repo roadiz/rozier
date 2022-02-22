@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% if app.user %}
     {% set displayName = app.user.firstName|default(app.user.nickname|default(app.user.givenName|default(app.user.name|default(app.user.username)))) %}
@@ -10,7 +10,7 @@
 <section class="content-global">
     <header class="content-header dashboard-header">
         <h1 class="content-title dashboard-title">{{ "hello.%name%"|trans({'%name%': displayName}) }}</h1>
-        {% include '@Rozier/dashboard/navBar.html.twig' with {'current':'dashboard'} %}
+        {% include '@RoadizRozier/dashboard/navBar.html.twig' with {'current':'dashboard'} %}
     </header>
 
     <article class="content content-dashboard">

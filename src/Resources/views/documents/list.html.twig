@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global content-nav-and-filters">
@@ -6,14 +6,14 @@
         {% if folder %}
             {% set folderName = folder.translatedFolders.first.name|default(folder.folderName) %}
             <h1 class="content-title">{{ folderName|u.truncate(25, '[…]', true) }}</h1>
-            {% include '@Rozier/folders/navBar.html.twig' with {'folder':folder, current:'list'} %}
+            {% include '@RoadizRozier/folders/navBar.html.twig' with {'folder':folder, current:'list'} %}
         {% elseif orphans %}
         <h1 class="content-title">{% trans %}unused_documents{% endtrans %}</h1>
         {% else %}
         <h1 class="content-title">{% trans %}documents{% endtrans %}</h1>
         {% endif %}
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
-        {% include '@Rozier/documents/backLink.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/documents/backLink.html.twig' %}
         <div class="content-header-action-menu">
             <a class="uk-button" href="{{ path('documentsUploadPage', {folderId: folder.id}) }}"><i class="uk-icon-rz-upload"></i> {% trans %}upload.document{% endtrans %}</a>
             <a class="uk-button" href="{{ path('documentsEmbedPage', {folderId: folder.id}) }}"><i class="uk-icon-rz-embed"></i> {% trans %}embed.document{% endtrans %}</a>
@@ -24,14 +24,14 @@
         </div>
     </header>
 
-    {% include '@Rozier/documents/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/documents/filtersBar.html.twig' %}
 
     {% block content_body %}
     <article class="content">
         {% apply spaceless %}
             <div class="documents-list">
                 {% for document in documents %}
-                    {% include '@Rozier/documents/singleDocumentThumbnail.html.twig' with {
+                    {% include '@RoadizRozier/documents/singleDocumentThumbnail.html.twig' with {
                         document: document,
                         thumbnailFormat: thumbnailFormat,
                         controls: true

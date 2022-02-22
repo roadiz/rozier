@@ -1,4 +1,4 @@
-{% extends "custom-forms/add.html.twig" %}
+{% extends "@RoadizRozier/custom-forms/add.html.twig" %}
 
 {%- block content_title -%}{{ item.displayName|u.truncate(25, '[…]', true) }}{%- endblock -%}
 
@@ -7,7 +7,7 @@
        href="{{ path('customFormsHomePage') }}"
        title="{% trans %}back_to.customForms{% endtrans %}"
        data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-back-parent"></i></a>
-    {% include '@Rozier/custom-forms/navBar.html.twig' with {
+    {% include '@RoadizRozier/custom-forms/navBar.html.twig' with {
         type: item,
         current: 'customForm'
     } only %}

@@ -224,7 +224,7 @@
 {%- endblock collection_widget -%}
 
 {% block tags_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'tag',
@@ -234,7 +234,7 @@
 {% endblock tags_widget %}
 
 {% block sortable_tags_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'tag',
@@ -243,7 +243,7 @@
 {% endblock sortable_tags_widget %}
 
 {% block documents_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: true,
         entity: 'document',
@@ -252,7 +252,7 @@
 {% endblock documents_widget %}
 
 {% block folders_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'explorer-provider',
@@ -261,7 +261,7 @@
 {% endblock folders_widget %}
 
 {% block nodes_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'node',
@@ -270,7 +270,7 @@
 {% endblock nodes_widget %}
 
 {% block join_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'join',
@@ -279,7 +279,7 @@
 {% endblock join_widget %}
 
 {% block provider_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'explorer-provider',
@@ -288,7 +288,7 @@
 {% endblock provider_widget %}
 
 {% block explorer_provider_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'explorer-provider',
@@ -297,7 +297,7 @@
 {% endblock explorer_provider_widget %}
 
 {% block custom_forms_widget %}
-    {% include '@Rozier/widgets/drawer.html.twig' with {
+    {% include '@RoadizRozier/widgets/drawer.html.twig' with {
         widget_attributes: block('widget_attributes'),
         enableDropzone: false,
         entity: 'custom-form',
@@ -391,7 +391,7 @@
                 </div>
             </nav>
             <div class="children-nodes-tree">
-                {% include '@Rozier/widgets/nodeTree/nodeTree.html.twig' with {
+                {% include '@RoadizRozier/widgets/nodeTree/nodeTree.html.twig' with {
                 "nodeTree": nodeTree,
                 "node": nodeTree.getRootNode,
                 'mainNodeTree': false,

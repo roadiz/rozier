@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global manage-custom-form-field">
@@ -7,6 +7,6 @@
          <a class="content-header-nav-back uk-navbar-content" href="{{ path('customFormFieldsListPage', { customFormId: customForm.getId }) }}" title="{% trans %}back_to.nodeTypeFields{% endtrans %}" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-back-parent"></i></a>
     </header>
     {% block subcontent %}{% endblock %}
-    {% include '@Rozier/custom-form-fields/actionsMenu.html.twig' %}
+    {% include '@RoadizRozier/custom-form-fields/actionsMenu.html.twig' %}
 </section>
 {% endblock %}
