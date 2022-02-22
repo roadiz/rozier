@@ -62,7 +62,7 @@
                             {% if setting.document %}
                             <figure>{{- setting.document|display({height:30}) -}}</figure>
                             {% endif %}
-                            {% form_theme setting.form 'horizontalForms.html.twig' %}
+                            {% form_theme setting.form '@RoadizRozier/horizontalForms.html.twig' %}
                             {{ form_start(setting.form) }}
                                 {{ form_widget(setting.form) }}
                                 <button class="uk-button uk-button-settings-submit uk-button-small" type="submit"><i class="uk-icon-rz-save-mini"></i></button>

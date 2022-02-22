@@ -1,7 +1,7 @@
 <tr class="{% if loop.index0 is odd %}odd{% endif %}">
     <td>
         {# Update URL alias #}
-        {% form_theme urlAlias.editForm 'horizontalForms.html.twig' %}
+        {% form_theme urlAlias.editForm '@RoadizRozier/horizontalForms.html.twig' %}
         {{ form_start(urlAlias.editForm, {
             attr: { class: "uk-form uk-form-horizontal urlalias-form" }
         }) }}
@@ -12,7 +12,7 @@
     <td>{{ urlAlias.alias.getNodeSource.getTranslation.getName }}</td>
     <td>
         {# Delete URL Alias #}
-        {% form_theme urlAlias.deleteForm 'horizontalForms.html.twig' %}
+        {% form_theme urlAlias.deleteForm '@RoadizRozier/horizontalForms.html.twig' %}
         {{ form_start(urlAlias.deleteForm) }}
             {{ form_widget(urlAlias.deleteForm) }}
             <button class="uk-button uk-button-danger" type="submit" value="{% trans %}delete{% endtrans %}"><i class="uk-icon-rz-trash-o"></i> {% trans %}delete{% endtrans %}</button>
