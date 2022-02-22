@@ -62,7 +62,7 @@ class AttributeController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'attributes';
+        return '@RoadizRozier/attributes';
     }
 
     /**

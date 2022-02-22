@@ -44,7 +44,7 @@ class AttributeGroupController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'attributes/groups';
+        return '@RoadizRozier/attributes/groups';
     }
 
     /**

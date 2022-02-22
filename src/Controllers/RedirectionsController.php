@@ -43,7 +43,7 @@ class RedirectionsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'redirections';
+        return '@RoadizRozier/redirections';
     }
 
     /**

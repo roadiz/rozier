@@ -40,7 +40,7 @@ class SettingGroupsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'settingGroups';
+        return '@RoadizRozier/settingGroups';
     }
 
     /**

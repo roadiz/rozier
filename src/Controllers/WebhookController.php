@@ -95,7 +95,7 @@ final class WebhookController extends AbstractAdminController
 
     protected function getTemplateFolder(): string
     {
-        return 'admin/webhooks';
+        return '@RoadizRozier/admin/webhooks';
     }
 
     protected function getRequiredRole(): string

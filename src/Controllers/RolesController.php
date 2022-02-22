@@ -47,7 +47,7 @@ class RolesController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'roles';
+        return '@RoadizRozier/roles';
     }
 
     /**

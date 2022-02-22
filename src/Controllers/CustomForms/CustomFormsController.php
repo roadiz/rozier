@@ -44,7 +44,7 @@ class CustomFormsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'custom-forms';
+        return '@RoadizRozier/custom-forms';
     }
 
     /**

@@ -68,7 +68,7 @@ class FontsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'fonts';
+        return '@RoadizRozier/fonts';
     }
 
     /**
