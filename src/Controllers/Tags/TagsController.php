@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\Entities\TagTranslation;
@@ -691,7 +691,7 @@ class TagsController extends RozierApp
         return $this->getTranslator()->trans('wrong.request');
     }
 
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         if ($entity instanceof TagTranslation) {
             $this->em()->flush();
@@ -709,7 +709,7 @@ class TagsController extends RozierApp
         }
     }
 
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if ($entity instanceof TagTranslation) {
             /** @var Translation $translation */

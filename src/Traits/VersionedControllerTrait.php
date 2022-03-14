@@ -6,7 +6,7 @@ namespace Themes\Rozier\Traits;
 
 use Gedmo\Exception\UnexpectedValueException;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\UserLogEntry;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,14 +37,7 @@ trait VersionedControllerTrait
         return $this;
     }
 
-
-    /**
-     * @param Request        $request
-     * @param AbstractEntity $entity
-     *
-     * @return Response|null
-     */
-    protected function handleVersions(Request $request, AbstractEntity $entity): ?Response
+    protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
     {
         /**
          * Versioning.
@@ -92,7 +85,7 @@ trait VersionedControllerTrait
         return null;
     }
 
-    abstract protected function onPostUpdate(AbstractEntity $entity, Request $request): void;
+    abstract protected function onPostUpdate(PersistableInterface $entity, Request $request): void;
 
-    abstract protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response;
+    abstract protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response;
 }

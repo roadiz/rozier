@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -250,7 +250,7 @@ class NodesSourcesController extends RozierApp
         return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', $this->assignation);
     }
 
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         /*
          * Dispatch pre-flush event
@@ -269,7 +269,7 @@ class NodesSourcesController extends RozierApp
         }
     }
 
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if ($entity instanceof NodesSources) {
             /** @var Translation $translation */

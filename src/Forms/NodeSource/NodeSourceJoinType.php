@@ -6,7 +6,7 @@ namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\Proxy;
 use RZ\Roadiz\CMS\Forms\DataTransformer\JoinDataTransformer;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -67,7 +67,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
         $entities = call_user_func([$options['nodeSource'], $options['nodeTypeField']->getGetterName()]);
 
         if ($entities instanceof \Traversable) {
-            /** @var AbstractEntity $entity */
+            /** @var PersistableInterface $entity */
             foreach ($entities as $entity) {
                 if ($entity instanceof Proxy) {
                     $entity->__load();
@@ -81,7 +81,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
                 }
                 $displayableData[] = $data;
             }
-        } elseif ($entities instanceof AbstractEntity) {
+        } elseif ($entities instanceof PersistableInterface) {
             if ($entities instanceof Proxy) {
                 $entities->__load();
             }

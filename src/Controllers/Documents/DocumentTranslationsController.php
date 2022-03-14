@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Documents;
 
 use Exception;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\DocumentTranslation;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -223,11 +223,7 @@ class DocumentTranslationsController extends RozierApp
         return $builder->getForm();
     }
 
-    /**
-     * @param AbstractEntity $entity
-     * @param Request        $request
-     */
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         /*
          * Dispatch pre-flush event
@@ -245,11 +241,11 @@ class DocumentTranslationsController extends RozierApp
     }
 
     /**
-     * @param AbstractEntity $entity
+     * @param PersistableInterface $entity
      *
      * @return Response
      */
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if (
             $entity instanceof DocumentTranslation &&

@@ -7,8 +7,8 @@ namespace Themes\Rozier\AjaxControllers;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\Config\JoinNodeTypeFieldConfiguration;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
@@ -174,7 +174,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
     {
         $entitiesArray = [];
 
-        /** @var AbstractEntity $entity */
+        /** @var PersistableInterface $entity */
         foreach ($entities as $entity) {
             $alt = $configuration['classname'];
             /** @var DocumentInterface|null $thumbnail */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Models\HasThumbnailInterface;
@@ -95,7 +95,7 @@ final class DocumentModel implements ModelInterface
             $previewUrl = $this->documentUrlGenerator->getUrl();
         }
 
-        if ($this->document instanceof AbstractEntity) {
+        if ($this->document instanceof PersistableInterface) {
             $id = $this->document->getId();
             $editUrl = $this->urlGenerator
                 ->generate('documentsEditPage', [
