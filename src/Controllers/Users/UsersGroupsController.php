@@ -6,6 +6,8 @@ namespace Themes\Rozier\Controllers\Users;
 use RZ\Roadiz\CMS\Forms\GroupsType;
 use RZ\Roadiz\Core\Entities\Group;
 use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\Core\Events\User\UserJoinedGroupEvent;
+use RZ\Roadiz\Core\Events\User\UserLeavedGroupEvent;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,13 +22,7 @@ use Themes\Rozier\RozierApp;
  */
 class UsersGroupsController extends RozierApp
 {
-    /**
-     * @param Request $request
-     * @param int     $userId
-     *
-     * @return Response
-     */
-    public function editGroupsAction(Request $request, int $userId)
+    public function editGroupsAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
@@ -40,21 +36,37 @@ class UsersGroupsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $group = $this->addUserGroup($form->getData(), $user);
+                $data = $form->getData();
+                if ($data['userId'] == $user->getId()) {
+                    if (array_key_exists('group', $data) && $data['group'][0] instanceof Group) {
+                        $group = $data['group'][0];
+                    } elseif (array_key_exists('group', $data) && is_numeric($data['group'])) {
+                        $group = $this->em()->find(Group::class, $data['group']);
+                    } else {
+                        $group = null;
+                    }
 
-                $msg = $this->getTranslator()->trans('user.%user%.group.%group%.linked', [
-                    '%user%' => $user->getUserName(),
-                    '%group%' => $group->getName(),
-                ]);
-                $this->publishConfirmMessage($request, $msg);
+                    if ($group !== null) {
+                        $user->addGroup($group);
+                        $this->em()->flush();
 
-                /*
-                 * Force redirect to avoid resending form when refreshing page
-                 */
-                return $this->redirectToRoute(
-                    'usersEditGroupsPage',
-                    ['userId' => $user->getId()]
-                );
+                        $this->dispatchEvent(new UserJoinedGroupEvent($user, $group));
+
+                        $msg = $this->getTranslator()->trans('user.%user%.group.%group%.linked', [
+                            '%user%' => $user->getUserName(),
+                            '%group%' => $group->getName(),
+                        ]);
+                        $this->publishConfirmMessage($request, $msg);
+
+                        /*
+                         * Force redirect to avoid resending form when refreshing page
+                         */
+                        return $this->redirectToRoute(
+                            'usersEditGroupsPage',
+                            ['userId' => $user->getId()]
+                        );
+                    }
+                }
             }
 
             $this->assignation['form'] = $form->createView();
@@ -65,16 +77,7 @@ class UsersGroupsController extends RozierApp
         throw new ResourceNotFoundException();
     }
 
-    /**
-     * Return a deletion form for requested group depending on the user.
-     *
-     * @param Request $request
-     * @param int     $userId
-     * @param int     $groupId
-     *
-     * @return Response
-     */
-    public function removeGroupAction(Request $request, int $userId, int $groupId)
+    public function removeGroupAction(Request $request, int $userId, int $groupId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
@@ -95,21 +98,31 @@ class UsersGroupsController extends RozierApp
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $group = $this->removeUserGroup($form->getData(), $user);
+                $data = $form->getData();
+                if ($data['userId'] === $user->getId()) {
+                    $group = $this->em()
+                        ->find(Group::class, $data['groupId']);
+                    if ($group !== null) {
+                        $user->removeGroup($group);
+                        $this->em()->flush();
 
-                $msg = $this->getTranslator()->trans('user.%user%.group.%group%.removed', [
-                    '%user%' => $user->getUserName(),
-                    '%group%' => $group->getName(),
-                ]);
-                $this->publishConfirmMessage($request, $msg);
+                        $this->dispatchEvent(new UserLeavedGroupEvent($user, $group));
 
-                /*
-                 * Force redirect to avoid resending form when refreshing page
-                 */
-                return $this->redirectToRoute(
-                    'usersEditGroupsPage',
-                    ['userId' => $user->getId()]
-                );
+                        $msg = $this->getTranslator()->trans('user.%user%.group.%group%.removed', [
+                            '%user%' => $user->getUserName(),
+                            '%group%' => $group->getName(),
+                        ]);
+                        $this->publishConfirmMessage($request, $msg);
+
+                        /*
+                         * Force redirect to avoid resending form when refreshing page
+                         */
+                        return $this->redirectToRoute(
+                            'usersEditGroupsPage',
+                            ['userId' => $user->getId()]
+                        );
+                    }
+                }
             }
 
             $this->assignation['form'] = $form->createView();
@@ -118,57 +131,6 @@ class UsersGroupsController extends RozierApp
         }
 
         throw new ResourceNotFoundException();
-    }
-
-    /**
-     * @param array $data
-     * @param User  $user
-     *
-     * @return Group|null
-     */
-    private function addUserGroup($data, User $user)
-    {
-        if ($data['userId'] == $user->getId()) {
-            if (array_key_exists('group', $data) && $data['group'][0] instanceof Group) {
-                $group = $data['group'][0];
-            } elseif (array_key_exists('group', $data) && is_numeric($data['group'])) {
-                $group = $this->em()->find(Group::class, $data['group']);
-            } else {
-                $group = null;
-            }
-
-            if ($group !== null) {
-                $user->addGroup($group);
-                $this->em()->flush();
-            }
-
-            return $group;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $data
-     * @param User  $user
-     *
-     * @return Group|null
-     */
-    private function removeUserGroup($data, User $user)
-    {
-        if ($data['userId'] == $user->getId()) {
-            $group = $this->em()
-                          ->find(Group::class, $data['groupId']);
-
-            if ($group !== null) {
-                $user->removeGroup($group);
-                $this->em()->flush();
-            }
-
-            return $group;
-        }
-
-        return null;
     }
 
     /**
