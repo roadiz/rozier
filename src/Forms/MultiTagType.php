@@ -28,7 +28,7 @@ class MultiTagType extends AbstractType
         ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'multitags';
     }

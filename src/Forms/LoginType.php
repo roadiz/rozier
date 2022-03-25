@@ -91,7 +91,7 @@ class LoginType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         /*
          * No prefix for firewall to catch username and password from request.

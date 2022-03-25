@@ -98,7 +98,7 @@ class AddNodeType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'childnode';
     }

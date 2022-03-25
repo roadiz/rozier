@@ -28,7 +28,7 @@ class FolderTranslationType extends AbstractType
         ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'folder_translation';
     }

@@ -146,7 +146,7 @@ class DocumentEditType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'document_edit';
     }

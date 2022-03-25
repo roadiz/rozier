@@ -25,7 +25,7 @@ class AddUserType extends UserType
         ;
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'add_user';
     }

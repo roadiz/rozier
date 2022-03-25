@@ -101,7 +101,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'join';
     }

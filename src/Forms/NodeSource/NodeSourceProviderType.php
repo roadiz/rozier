@@ -135,7 +135,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'provider';
     }

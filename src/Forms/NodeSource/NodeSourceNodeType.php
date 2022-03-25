@@ -68,7 +68,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'nodes';
     }
