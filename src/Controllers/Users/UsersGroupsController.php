@@ -9,6 +9,7 @@ use RZ\Roadiz\Core\Entities\Group;
 use RZ\Roadiz\Core\Entities\User;
 use RZ\Roadiz\Core\Events\User\UserJoinedGroupEvent;
 use RZ\Roadiz\Core\Events\User\UserLeavedGroupEvent;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -95,35 +96,28 @@ class UsersGroupsController extends RozierApp
             $this->assignation['user'] = $user;
             $this->assignation['group'] = $group;
 
-            $form = $this->buildRemoveGroupForm($user, $group);
+            $form = $this->createForm(FormType::class);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $data = $form->getData();
-                if ($data['userId'] === $user->getId()) {
-                    $group = $this->em()
-                        ->find(Group::class, $data['groupId']);
-                    if ($group !== null) {
-                        $user->removeGroup($group);
-                        $this->em()->flush();
+                $user->removeGroup($group);
+                $this->em()->flush();
 
-                        $this->dispatchEvent(new UserLeavedGroupEvent($user, $group));
+                $this->dispatchEvent(new UserLeavedGroupEvent($user, $group));
 
-                        $msg = $this->getTranslator()->trans('user.%user%.group.%group%.removed', [
-                            '%user%' => $user->getUserName(),
-                            '%group%' => $group->getName(),
-                        ]);
-                        $this->publishConfirmMessage($request, $msg);
+                $msg = $this->getTranslator()->trans('user.%user%.group.%group%.removed', [
+                    '%user%' => $user->getUserName(),
+                    '%group%' => $group->getName(),
+                ]);
+                $this->publishConfirmMessage($request, $msg);
 
-                        /*
-                         * Force redirect to avoid resending form when refreshing page
-                         */
-                        return $this->redirectToRoute(
-                            'usersEditGroupsPage',
-                            ['userId' => $user->getId()]
-                        );
-                    }
-                }
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute(
+                    'usersEditGroupsPage',
+                    ['userId' => $user->getId()]
+                );
             }
 
             $this->assignation['form'] = $form->createView();
@@ -164,41 +158,6 @@ class UsersGroupsController extends RozierApp
                 ]
             )
         ;
-
-        return $builder->getForm();
-    }
-
-    /**
-     * @param User  $user
-     * @param Group $group
-     *
-     * @return FormInterface
-     */
-    private function buildRemoveGroupForm(User $user, Group $group)
-    {
-        $builder = $this->createFormBuilder()
-                        ->add(
-                            'userId',
-                            HiddenType::class,
-                            [
-                                'data' => $user->getId(),
-                                'constraints' => [
-                                    new NotNull(),
-                                    new NotBlank(),
-                                ],
-                            ]
-                        )
-                        ->add(
-                            'groupId',
-                            HiddenType::class,
-                            [
-                                'data' => $group->getId(),
-                                'constraints' => [
-                                    new NotNull(),
-                                    new NotBlank(),
-                                ],
-                            ]
-                        );
 
         return $builder->getForm();
     }
