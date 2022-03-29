@@ -1,3 +1,9 @@
+## 1.7.9 (2022-03-29)
+
+### Features
+
+* Styled invalid state for inputs ([956d12a](https://github.com/roadiz/rozier/commit/956d12a32f95aef4afd3125d79473f5ee57b9cdb))
+
 ## 1.7.8 (2022-03-29)
 
 ### Bug Fixes
