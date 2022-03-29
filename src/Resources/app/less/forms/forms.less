@@ -82,6 +82,11 @@
             border-color: @grey-form-submit-border-hover;
             color: #333;
         }
+        &:invalid {
+            color: darken(@alert-color, 15%);
+            border-color: fade(@alert-color, 50%);
+            background-color: fade(@alert-color, 20%);
+        }
     }
 
     // Radio
