@@ -30,6 +30,10 @@ type|lower,
     {% set classes = classes|merge(['has-children']) %}
 {% endif %}
 
+{% if nodeTree.isStackTree and node.tags|length %}
+    {% set classes = classes|merge(['has-tag']) %}
+{% endif %}
+
 {% set innerClasses = [
 'tree-element-inner',
 'uk-nestable-panel',
