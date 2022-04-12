@@ -1,3 +1,9 @@
+## 1.7.11 (2022-04-12)
+
+### Bug Fixes
+
+* Use :not(:placeholder-shown):invalid instead of :invalid ([7f8bace](https://github.com/roadiz/rozier/commit/7f8bacec4064a5c7f2cd5b66c1f9b79a7841d389))
+
 ## 1.7.10 (2022-04-07)
 
 ### Bug Fixes
