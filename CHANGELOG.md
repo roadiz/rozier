@@ -1,3 +1,9 @@
+## 1.7.12 (2022-05-25)
+
+### Bug Fixes
+
+* Non required CustomForm closeDate form ([5a58ee8](https://github.com/roadiz/rozier/commit/5a58ee869c1ad870cbe1befa3c35df86e3b81a8f))
+
 ## 1.7.11 (2022-04-12)
 
 ### Bug Fixes
