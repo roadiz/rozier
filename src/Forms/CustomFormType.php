@@ -51,7 +51,7 @@ class CustomFormType extends AbstractType
             ])
             ->add('closeDate', DateTimeType::class, [
                 'label' => 'customForm.closeDate',
-                'required' => true,
+                'required' => false,
                 'date_widget' => 'single_text',
                 'date_format' => 'yyyy-MM-dd',
                 'attr' => [
