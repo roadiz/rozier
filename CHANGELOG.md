@@ -1,3 +1,9 @@
+## 1.7.14 (2022-06-02)
+
+### Features
+
+* Allow multiple email comma-separated in CustomFormType ([a98fa8e](https://github.com/roadiz/rozier/commit/a98fa8ee6b7d314175aa04b673371ccf79734bcb))
+
 ## 1.7.13 (2022-06-02)
 
 ### Bug Fixes
