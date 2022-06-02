@@ -1,3 +1,9 @@
+## 1.7.13 (2022-06-02)
+
+### Bug Fixes
+
+* Fixed input[type=datetime-local] style ([b04d426](https://github.com/roadiz/rozier/commit/b04d4269cf4f939da4440e0142ce7cadc054ac59))
+
 ## 1.7.12 (2022-05-25)
 
 ### Bug Fixes
