@@ -11,14 +11,15 @@ use RZ\Roadiz\Core\Entities\CustomForm;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class CustomFormType extends AbstractType
 {
@@ -38,11 +39,23 @@ class CustomFormType extends AbstractType
                 'label' => 'description',
                 'required' => false,
             ])
-            ->add('email', EmailType::class, [
+            ->add('email', TextType::class, [
                 'label' => 'email',
                 'required' => false,
                 'constraints' => [
-                    new Email(),
+                    new Callback(function ($value, ExecutionContextInterface $context) {
+                        $emails = array_filter(
+                            array_map('trim', explode(',', $value ?? ''))
+                        );
+                        foreach ($emails as $email) {
+                            if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                                $context->buildViolation('{{ value }} is not a valid email address.')
+                                    ->setParameter('{{ value }}', $email)
+                                    ->setCode(Email::INVALID_FORMAT_ERROR)
+                                    ->addViolation();
+                            }
+                        }
+                    }),
                 ],
             ])
             ->add('open', CheckboxType::class, [
