@@ -33,7 +33,8 @@
     input[type="password"],
     input[type="submit"],
     input[type="image"],
-    input[type="date"] {
+    input[type="date"],
+    input[type="datetime-local"] {
         -webkit-appearance:none;
         -moz-appearance:none;
         appearance:none;
@@ -54,6 +55,7 @@
     input[type="email"],
     input[type="number"],
     input[type="date"],
+    input[type="datetime-local"],
     textarea {
         font-size: 12px;
         line-height: 16px;
@@ -105,7 +107,6 @@
 
     // Checkbox
     input[type=checkbox]{
-
         &:focus{
             border-color: @grey-form-submit-border-hover;
         }
@@ -295,7 +296,7 @@
             display: none;
         }
 
-        input {
+        input:not([type="datetime-local"]) {
             border-right: 0 none;
         }
 
@@ -337,6 +338,7 @@
     input[type="search"],
     input[type="email"],
     input[type="date"],
+    input[type="datetime-local"],
     input[type="number"] {
         height: 36px;
     }
@@ -507,11 +509,8 @@
     line-height: 24px;
 }
 
-input::-webkit-calendar-picker-indicator{
+input:not([type="datetime-local"])::-webkit-calendar-picker-indicator {
     display: none;
-}
-input[type="date"]::-webkit-input-placeholder{
-    visibility: hidden !important;
 }
 
 .field-dev-name {
