@@ -2,9 +2,6 @@
    ALERTS
 \*------------------------------------*/
 
-
-/* -------- STYLES -------- */
-
 .uk-alert {
     text-align: center;
     padding: 18px;
@@ -19,6 +16,10 @@
     //border-top: none;
     list-style: none;
     text-shadow: none;
+
+    p {
+        margin-top: 0;
+    }
 }
 
 .uk-alert-danger {
@@ -51,9 +52,9 @@ td.uk-alert {
 
 .install .uk-alert {
     position: static;
-    width:100%;
-    left:0;
-    margin:20px 0;
+    width: 100%;
+    left: 0;
+    margin: 20px 0;
     border-top: 1px solid rgba(216,80,48,.3);
     word-wrap: break-word;
 
@@ -67,7 +68,7 @@ td.uk-alert {
  */
 .uk-form {
     .errors {
-        padding: 0px;
+        padding: 0;
         margin: 7px 0;
     }
 
@@ -76,7 +77,7 @@ td.uk-alert {
         display: inline-block;
         left:0;
         border:0;
-        margin: 0px;
+        margin: 0;
         padding: 10px 20px;
     }
 
@@ -88,14 +89,15 @@ td.uk-alert {
         line-height: 1.35em;
     }
 
-    .form-help{
+    .form-help {
         position: absolute;
         display: inline-block;
-        top:100%; left: 0px;
-        max-width: 200px; width: auto; max-width: 400px;
+        top: 100%;
+        left: 0;
+        width: auto;
+        max-width: 400px;
         border: 1px dashed #CCC;
         text-align: left;
-        // height:0;
         .transform(scaleY(0));
         .transform-origin(left, top);
         .opacity(0);
@@ -110,15 +112,13 @@ td.uk-alert {
         border: 1px dashed #CCC;
     }
 
-    .form-col-focus{
-        .form-help{
-            // height:100%;
+    .form-col-focus {
+        .form-help {
             .transform(scaleY(1));
             .opacity(1);
         }
     }
 }
-
 
 .uk-notify-message {
     font-size: 12px;
