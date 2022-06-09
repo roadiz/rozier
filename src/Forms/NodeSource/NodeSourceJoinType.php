@@ -23,16 +23,10 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
     {
         parent::configureOptions($resolver);
 
-        $resolver->setDefault('multiple', false);
-        $resolver->setAllowedTypes('multiple', ['bool']);
-        $resolver->setNormalizer('multiple', function (Options $options) {
-            /** @var NodeTypeField $nodeTypeField */
-            $nodeTypeField = $options['nodeTypeField'];
-            if ($nodeTypeField->isManyToMany()) {
-                return true;
-            }
-            return false;
-        });
+        /*
+         * NodeSourceJoinType MUST always be multiple as data is submitted as array
+         */
+        $resolver->setDefault('multiple', true);
     }
 
     /**
