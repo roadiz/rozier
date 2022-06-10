@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Common\Cache\CacheProvider;
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeAssetsRequestEvent;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeRequestEvent;
@@ -21,28 +20,20 @@ class CacheController extends RozierApp
 {
     private KernelInterface $kernel;
     private LoggerInterface $logger;
-    private CacheProvider $nodesSourcesUrlCacheProvider;
 
     /**
      * @param KernelInterface $kernel
      * @param LoggerInterface $logger
-     * @param CacheProvider $nodesSourcesUrlCacheProvider
      */
     public function __construct(
         KernelInterface $kernel,
-        LoggerInterface $logger,
-        CacheProvider $nodesSourcesUrlCacheProvider
+        LoggerInterface $logger
     ) {
         $this->kernel = $kernel;
         $this->logger = $logger;
-        $this->nodesSourcesUrlCacheProvider = $nodesSourcesUrlCacheProvider;
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return Response
-     */
+
     public function deleteDoctrineCache(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCTRINE_CACHE_DELETE');
@@ -91,7 +82,6 @@ class CacheController extends RozierApp
             'hydratationCache' => $this->em()->getConfiguration()->getHydrationCacheImpl(),
             'queryCache' => $this->em()->getConfiguration()->getQueryCacheImpl(),
             'metadataCache' => $this->em()->getConfiguration()->getMetadataCacheImpl(),
-            'nodeSourcesUrlsCache' => $this->nodesSourcesUrlCacheProvider,
         ];
 
         foreach ($this->assignation['cachesInfo'] as $key => $value) {

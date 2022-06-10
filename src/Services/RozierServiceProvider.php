@@ -619,8 +619,7 @@ final class RozierServiceProvider implements ServiceProviderInterface
         $container[CacheController::class] = function (Container $c) {
             return new CacheController(
                 $c['kernel'],
-                $c['logger'],
-                $c['nodesSourcesUrlCacheProvider']
+                $c['logger']
             );
         };
         $container[FoldersController::class] = function (Container $c) {
