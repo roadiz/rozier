@@ -284,7 +284,7 @@ class FoldersController extends RozierApp
             $this->assignation['folder'] = $folder;
             $this->assignation['translation'] = $translation;
             $this->assignation['form'] = $form->createView();
-            $this->assignation['available_translations'] = $translationRepository->findAllAvailable();
+            $this->assignation['available_translations'] = $translationRepository->findAll();
             $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
 
             return $this->render('folders/edit.html.twig', $this->assignation);

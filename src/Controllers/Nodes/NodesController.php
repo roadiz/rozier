@@ -157,7 +157,7 @@ class NodesController extends RozierApp
         $this->assignation['translation'] = $translation;
         $this->assignation['availableTranslations'] = $this->em()
             ->getRepository(Translation::class)
-            ->findAllAvailable();
+            ->findAll();
         $this->assignation['nodes'] = $listManager->getEntities();
         $this->assignation['nodeTypes'] = $this->em()
             ->getRepository(NodeType::class)
