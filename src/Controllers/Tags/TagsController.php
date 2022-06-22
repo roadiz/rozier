@@ -215,7 +215,7 @@ class TagsController extends RozierApp
         $this->assignation['tag'] = $tag;
         $this->assignation['translation'] = $translation;
         $this->assignation['translatedTag'] = $tagTranslation;
-        $this->assignation['available_translations'] = $translationRepository->findAllAvailable();
+        $this->assignation['available_translations'] = $translationRepository->findAll();
         $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForTag($tag);
         $this->assignation['form'] = $form->createView();
         $this->assignation['readOnly'] = $this->isReadOnly;
