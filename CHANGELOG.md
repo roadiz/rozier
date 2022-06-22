@@ -1,3 +1,9 @@
+## 1.7.16 (2022-06-22)
+
+### Bug Fixes
+
+* Display always all translations for backend users, not only available ones ([fd4f44d](https://github.com/roadiz/rozier/commit/fd4f44d6c830887d31233aee5bbacb532cf2ceec))
+
 ## 1.7.14 (2022-06-02)
 
 ### Features
