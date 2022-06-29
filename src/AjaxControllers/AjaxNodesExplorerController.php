@@ -200,11 +200,11 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanNodeIds = array_filter($request->query->get('ids'));
+        $cleanNodeIds = array_filter($request->query->all('ids'));
 
         /** @var EntityManager $em */
         $em = $this->em();

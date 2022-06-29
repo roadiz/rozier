@@ -64,13 +64,13 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
      */
     public function listAction(Request $request)
     {
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        $cleanCustomFormsIds = array_filter($request->query->get('ids'));
+        $cleanCustomFormsIds = array_filter($request->query->all('ids'));
 
         /** @var EntityManager $em */
         $em = $this->em();
