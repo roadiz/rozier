@@ -6,9 +6,9 @@ namespace Themes\Rozier\Widgets;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\ListManagers\EntityListManager;
 use RZ\Roadiz\Core\ListManagers\EntityListManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -26,7 +26,7 @@ final class NodeTreeWidget extends AbstractWidget
      */
     protected $nodes = null;
     protected ?Tag $tag = null;
-    protected ?Translation $translation = null;
+    protected ?TranslationInterface $translation = null;
     protected bool $stackTree = false;
     protected ?array $filters = null;
     protected bool $canReorder = true;
@@ -36,13 +36,13 @@ final class NodeTreeWidget extends AbstractWidget
      * @param RequestStack $requestStack
      * @param ManagerRegistry $managerRegistry
      * @param Node|null $parent Entry point of NodeTreeWidget, set null if it's root
-     * @param Translation|null $translation NodeTree translation
+     * @param TranslationInterface|null $translation NodeTree translation
      */
     public function __construct(
         RequestStack $requestStack,
         ManagerRegistry $managerRegistry,
         ?Node $parent = null,
-        ?Translation $translation = null
+        ?TranslationInterface $translation = null
     ) {
         parent::__construct($requestStack, $managerRegistry);
 
@@ -247,20 +247,20 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return Translation
+     * @return TranslationInterface
      */
-    public function getTranslation(): Translation
+    public function getTranslation(): TranslationInterface
     {
         return $this->translation ?? parent::getTranslation();
     }
 
     /**
-     * @return array<Translation>
+     * @return array<TranslationInterface>
      */
     public function getAvailableTranslations(): array
     {
         return $this->getManagerRegistry()
-            ->getRepository(Translation::class)
+            ->getRepository(TranslationInterface::class)
             ->findBy([], [
                 'defaultTranslation' => 'DESC',
                 'locale' => 'ASC',

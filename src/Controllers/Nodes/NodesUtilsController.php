@@ -7,7 +7,6 @@ namespace Themes\Rozier\Controllers\Nodes;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Events\Node\NodeCreatedEvent;
 use RZ\Roadiz\Core\Events\Node\NodeDuplicatedEvent;
-use RZ\Roadiz\Core\Serializers\NodeJsonSerializer;
 use RZ\Roadiz\Utils\Node\NodeDuplicator;
 use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,87 +27,6 @@ class NodesUtilsController extends RozierApp
     public function __construct(NodeNamePolicyInterface $nodeNamePolicy)
     {
         $this->nodeNamePolicy = $nodeNamePolicy;
-    }
-
-    /**
-     * Export a Node in a Json file (.json).
-     *
-     * @param Request $request
-     * @param int     $nodeId
-     *
-     * @return Response
-     */
-    public function exportAction(Request $request, int $nodeId)
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-
-        /** @var Node $existingNode */
-        $existingNode = $this->em()->find(Node::class, $nodeId);
-        $this->em()->refresh($existingNode);
-
-        $serializer = new NodeJsonSerializer($this->em());
-        $node = $serializer->serialize([$existingNode]);
-
-        $response = new Response(
-            $node,
-            Response::HTTP_OK,
-            []
-        );
-
-        $response->headers->set(
-            'Content-Disposition',
-            $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                'node-' . $existingNode->getNodeName() . '-' . date("YmdHis") . '.json'
-            )
-        );
-
-        $response->prepare($request);
-
-        return $response;
-    }
-
-    /**
-     * Export all Node in a Json file (.rzn).
-     *
-     * @param Request $request
-     *
-     * @return Response
-     */
-    public function exportAllAction(Request $request)
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-
-        /** @var Node[] $existingNodes */
-        $existingNodes = $this->em()
-            ->getRepository(Node::class)
-            ->setDisplayingNotPublishedNodes(true)
-            ->findBy(["parent" => null]);
-
-        foreach ($existingNodes as $existingNode) {
-            $this->em()->refresh($existingNode);
-        }
-
-        $serializer = new NodeJsonSerializer($this->em());
-        $node = $serializer->serialize($existingNodes);
-
-        $response = new Response(
-            $node,
-            Response::HTTP_OK,
-            []
-        );
-
-        $response->headers->set(
-            'Content-Disposition',
-            $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                'node-all-' . date("YmdHis") . '.json'
-            )
-        );
-
-        $response->prepare($request);
-
-        return $response;
     }
 
     /**

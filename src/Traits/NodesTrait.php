@@ -6,6 +6,8 @@ namespace Themes\Rozier\Traits;
 
 use RZ\Roadiz\CMS\Forms\Constraints\UniqueNodeName;
 use RZ\Roadiz\CMS\Forms\NodeTypesType;
+use RZ\Roadiz\Contracts\NodeType\NodeTypeInterface;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -20,16 +22,20 @@ trait NodesTrait
 {
     /**
      * @param string        $title
-     * @param Translation   $translation
+     * @param TranslationInterface   $translation
      * @param Node|null     $node
-     * @param NodeType|null $type
+     * @param NodeTypeInterface|null $type
      *
      * @return Node
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    protected function createNode($title, Translation $translation, Node $node = null, NodeType $type = null)
-    {
+    protected function createNode(
+        $title,
+        TranslationInterface $translation,
+        Node $node = null,
+        NodeTypeInterface $type = null
+    ) {
         /** @var NodeFactory $factory */
         $factory = $this->get(NodeFactory::class);
         $node = $factory->create($title, $type, $translation, $node);

@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers\Documents;
 
 use Exception;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\DocumentTranslation;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -119,11 +120,11 @@ class DocumentTranslationsController extends RozierApp
 
     /**
      * @param Document $document
-     * @param Translation $translation
+     * @param TranslationInterface $translation
      *
      * @return DocumentTranslation
      */
-    protected function createDocumentTranslation(Document $document, Translation $translation)
+    protected function createDocumentTranslation(Document $document, TranslationInterface $translation)
     {
         $dt = new DocumentTranslation();
         $dt->setDocument($document);

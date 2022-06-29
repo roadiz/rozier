@@ -6,11 +6,7 @@ namespace Themes\Rozier\Controllers;
 
 use Doctrine\ORM\Mapping\MappingException;
 use Exception;
-use RZ\Roadiz\Console\RoadizApplication;
-use RZ\Roadiz\Core\Kernel;
 use RZ\Roadiz\Utils\Doctrine\SchemaUpdater;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,16 +20,13 @@ use Themes\Rozier\RozierApp;
 class SchemaController extends RozierApp
 {
     private SchemaUpdater $schemaUpdater;
-    private KernelInterface $kernel;
 
     /**
      * @param SchemaUpdater $schemaUpdater
-     * @param KernelInterface $kernel
      */
-    public function __construct(SchemaUpdater $schemaUpdater, KernelInterface $kernel)
+    public function __construct(SchemaUpdater $schemaUpdater)
     {
         $this->schemaUpdater = $schemaUpdater;
-        $this->kernel = $kernel;
     }
 
     /**
@@ -102,41 +95,5 @@ class SchemaController extends RozierApp
                 'error' => $e->getMessage(),
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * @return Response
-     * @throws Exception
-     */
-    public function clearThemeCacheAction()
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_THEMES');
-
-        /*
-         * Very important, when using standard-edition,
-         * Kernel class is AppKernel or DevAppKernel.
-         */
-        if ($this->kernel instanceof Kernel) {
-            /** @var class-string<Kernel> $kernelClass */
-            $kernelClass = get_class($this->kernel);
-            $application = new RoadizApplication(new $kernelClass('prod', false));
-            $application->setAutoExit(false);
-
-            $input = new ArrayInput([
-                'command' => 'cache:clear'
-            ]);
-            // You can use NullOutput() if you don't need the output
-            $output = new BufferedOutput();
-            $application->run($input, $output);
-
-            $inputFpm = new ArrayInput([
-                'command' => 'cache:clear-fpm'
-            ]);
-            // You can use NullOutput() if you don't need the output
-            $outputFpm = new BufferedOutput();
-            $application->run($inputFpm, $outputFpm);
-        }
-
-        return new JsonResponse(['status' => true], JsonResponse::HTTP_PARTIAL_CONTENT);
     }
 }

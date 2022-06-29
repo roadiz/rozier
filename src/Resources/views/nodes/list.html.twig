@@ -21,7 +21,6 @@
                 </button>
                 <div class="uk-dropdown uk-dropdown-flip uk-dropdown-small">
                     <ul class="uk-nav uk-nav-dropdown">
-                        <li><a class="rz-no-ajax-link" href="{{ path('nodesExportAllPage') }}"><i class="uk-icon-file-code-o"></i> {% trans %}export_format.rzn{% endtrans %}</a></li>
                         {% for translationItem in availableTranslations %}
                             <li><a class="rz-no-ajax-link" href="{{ path('nodesExportAllXlsxPage', {translationId:translationItem.id}) }}"><i class="uk-icon-file-excel-o"></i> {{ 'export_format.excel.%language%'|trans({'%language%':translationItem.name }) }}</a></li>
                         {% endfor %}

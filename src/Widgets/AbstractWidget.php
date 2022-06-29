@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Widgets;
 
 use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Exceptions\NoTranslationAvailableException;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ abstract class AbstractWidget
 {
     private RequestStack $requestStack;
     private ManagerRegistry $managerRegistry;
-    protected ?Translation $defaultTranslation = null;
+    protected ?TranslationInterface $defaultTranslation = null;
 
     /**
      * @param RequestStack $requestStack
@@ -46,7 +47,7 @@ abstract class AbstractWidget
         return $this->managerRegistry;
     }
 
-    protected function getTranslation(): Translation
+    protected function getTranslation(): TranslationInterface
     {
         if (null === $this->defaultTranslation) {
             $this->defaultTranslation = $this->getManagerRegistry()

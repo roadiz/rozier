@@ -6,11 +6,9 @@ namespace Themes\Rozier\Controllers;
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeAssetsRequestEvent;
 use RZ\Roadiz\Core\Events\Cache\CachePurgeRequestEvent;
-use RZ\Roadiz\Core\Kernel;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Themes\Rozier\RozierApp;
 
 /**
@@ -18,18 +16,14 @@ use Themes\Rozier\RozierApp;
  */
 class CacheController extends RozierApp
 {
-    private KernelInterface $kernel;
     private LoggerInterface $logger;
 
     /**
-     * @param KernelInterface $kernel
      * @param LoggerInterface $logger
      */
     public function __construct(
-        KernelInterface $kernel,
         LoggerInterface $logger
     ) {
-        $this->kernel = $kernel;
         $this->logger = $logger;
     }
 
@@ -42,16 +36,8 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $event = new CachePurgeRequestEvent($this->kernel);
+            $event = new CachePurgeRequestEvent();
             $this->dispatchEvent($event);
-
-            // Clear cache for prod preview
-            $kernelClass = get_class($this->kernel);
-            /** @var Kernel $prodPreviewKernel */
-            $prodPreviewKernel = new $kernelClass('prod', false, true);
-            $prodPreviewKernel->boot();
-            $prodPreviewEvent = new CachePurgeRequestEvent($prodPreviewKernel);
-            $this->dispatchEvent($prodPreviewEvent);
 
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
@@ -61,12 +47,6 @@ class CacheController extends RozierApp
             }
             foreach ($event->getErrors() as $message) {
                 $this->publishErrorMessage($request, sprintf('Could not clear cache: %s', $message['description']));
-            }
-            foreach ($prodPreviewEvent->getMessages() as $message) {
-                $this->logger->info(sprintf('Preview cache cleared: %s', $message['description']));
-            }
-            foreach ($prodPreviewEvent->getErrors() as $message) {
-                $this->publishErrorMessage($request, sprintf('Could not clear creview cache: %s', $message['description']));
             }
 
             /*
@@ -119,7 +99,7 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent($this->kernel));
+            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent());
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
             foreach ($event->getMessages() as $message) {

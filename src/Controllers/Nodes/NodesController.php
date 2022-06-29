@@ -43,7 +43,6 @@ class NodesController extends RozierApp
 
     private NodeChrootResolver $nodeChrootResolver;
     private NodeMover $nodeMover;
-    private AuthorizationCheckerInterface $authorizationChecker;
     private Registry $workflowRegistry;
     private HandlerFactoryInterface $handlerFactory;
     private UniqueNodeGenerator $uniqueNodeGenerator;
@@ -59,7 +58,6 @@ class NodesController extends RozierApp
     /**
      * @param NodeChrootResolver $nodeChrootResolver
      * @param NodeMover $nodeMover
-     * @param AuthorizationCheckerInterface $authorizationChecker
      * @param Registry $workflowRegistry
      * @param HandlerFactoryInterface $handlerFactory
      * @param UniqueNodeGenerator $uniqueNodeGenerator
@@ -69,7 +67,6 @@ class NodesController extends RozierApp
     public function __construct(
         NodeChrootResolver $nodeChrootResolver,
         NodeMover $nodeMover,
-        AuthorizationCheckerInterface $authorizationChecker,
         Registry $workflowRegistry,
         HandlerFactoryInterface $handlerFactory,
         UniqueNodeGenerator $uniqueNodeGenerator,
@@ -78,7 +75,6 @@ class NodesController extends RozierApp
     ) {
         $this->nodeChrootResolver = $nodeChrootResolver;
         $this->nodeMover = $nodeMover;
-        $this->authorizationChecker = $authorizationChecker;
         $this->workflowRegistry = $workflowRegistry;
         $this->handlerFactory = $handlerFactory;
         $this->nodeFormTypeClass = $nodeFormTypeClass;
