@@ -147,7 +147,7 @@ final class NodeTreeWidget extends AbstractWidget
      * @param Node|null $parent
      * @param bool $subRequest Default: false
      * @param array $additionalCriteria Default: []
-     * @return EntityListManagerInterface
+     * @return EntityListManager
      */
     protected function getListManager(Node $parent = null, bool $subRequest = false, array $additionalCriteria = [])
     {

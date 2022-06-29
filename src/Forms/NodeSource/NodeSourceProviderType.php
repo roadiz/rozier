@@ -69,13 +69,17 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
     protected function getProvider(array $configuration, array $options): ExplorerProviderInterface
     {
         if ($this->container->has($configuration['classname'])) {
-            return $this->container->get($configuration['classname']);
+            $provider = $this->container->get($configuration['classname']);
         } else {
-            /** @var AbstractExplorerProvider $provider */
+            /** @var ExplorerProviderInterface $provider */
             $provider = new $configuration['classname']();
-            $provider->setContainer($this->container);
-            return $provider;
         }
+
+        if ($provider instanceof AbstractExplorerProvider) {
+            $provider->setContainer($this->container);
+        }
+
+        return $provider;
     }
 
     /**

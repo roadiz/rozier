@@ -101,7 +101,7 @@ class SettingsUtilsController extends RozierApp
         ) {
             $file = $form['setting_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== \json_decode($serializedData)) {

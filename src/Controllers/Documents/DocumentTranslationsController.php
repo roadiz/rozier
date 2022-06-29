@@ -43,7 +43,9 @@ class DocumentTranslationsController extends RozierApp
 
         if (null === $translationId) {
             $translation = $this->em()->getRepository(Translation::class)->findDefault();
-            $translationId = $translation->getId();
+            if ($translation instanceof PersistableInterface) {
+                $translationId = $translation->getId();
+            }
         } else {
             $translation = $this->em()->find(Translation::class, $translationId);
         }

@@ -109,7 +109,7 @@ class SettingsController extends RozierApp
             ]);
             $form->handleRequest($request);
             if ($form->isSubmitted()) {
-                if ($form->isSubmitted() && $form->isValid()) {
+                if ($form->isValid()) {
                     try {
                         $this->resetSettingsCache();
                         $this->em()->flush();

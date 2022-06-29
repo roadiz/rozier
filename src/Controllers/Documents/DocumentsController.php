@@ -745,7 +745,7 @@ class DocumentsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isValid()) {
                 $document = $this->uploadDocument($form, $folderId);
 
                 if (false !== $document) {

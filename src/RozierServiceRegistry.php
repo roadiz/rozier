@@ -50,28 +50,6 @@ final class RozierServiceRegistry
     }
 
     /**
-     * @param string $amount
-     * @return int Always return value in Megas
-     */
-    private function parseSuffixedAmount(string $amount)
-    {
-        $intValue = intval(preg_replace('#([0-9]+)[s|k|m|g|t]#i', '$1', $amount));
-
-        /*
-         * If actual is in Gigas
-         */
-        if (preg_match('#([0-9]+)g#i', $amount) > 0) {
-            return $intValue * 1024;
-        } elseif (preg_match('#([0-9]+)t#i', $amount) > 0) {
-            return $intValue * 1024 * 1024;
-        } elseif (preg_match('#([0-9]+)k#i', $amount) > 0) {
-            return $intValue / 1024;
-        } else {
-            return $intValue;
-        }
-    }
-
-    /**
      * @return int
      */
     public function getMaxFilesize(): int

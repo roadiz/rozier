@@ -110,7 +110,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             'thumbnail' => $thumbnail ? $this->documentUrlGenerator->getUrl() : null,
             'nodeId' => $source->getNode()->getId(),
             'translationId' => $translation->getId(),
-            'typeName' => $source->getNode()->getNodeType()->getDisplayName(),
+            'typeName' => $source->getNode()->getNodeType()->getLabel(),
             'typeColor' => $source->getNode()->getNodeType()->getColor(),
             'url' => $this->generateUrl(
                 'nodesEditSourcePage',

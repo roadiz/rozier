@@ -1,5 +1,5 @@
 parameters:
-    level: 5
+    level: 4
     paths:
         - src
     excludePaths:
@@ -20,6 +20,7 @@ parameters:
         - '#Doctrine\\Persistence\\ObjectRepository#'
         - '#Call to an undefined method Doctrine\\Persistence\\ObjectRepository::#'
         - '#Call to an undefined method RZ\\Roadiz\\Core\\Repositories\\EntityRepository#'
+        - '#Call to an undefined method RZ\\Roadiz\\CoreBundle\\Repository\\EntityRepository#'
         - '#Call to an undefined method Doctrine\\Persistence\\ObjectManager::#'
         - '#Call to an undefined method Doctrine\\ORM\\EntityRepository::#'
         - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::#'
@@ -27,6 +28,7 @@ parameters:
         - '#Call to method publish\(\) on an unknown class Gelf\\IMessagePublisher#'
         - '#RZ\\Roadiz\\Core\\Entities\\Tag does not have a field named \$translation#'
         - '#does not have a field named \$node\.home#'
+        - '#does not have a field named \$translation#'
         - '#Raven_Client#'
         - '#Raven_ErrorHandler#'
         - '#should return RZ\\Roadiz\\Core\\Repositories\\([a-zA-Z\\\&\>\<]+)Repository but returns RZ\\Roadiz\\Core\\Repositories\\EntityRepository#'
@@ -38,6 +40,7 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false
+
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-doctrine/rules.neon
