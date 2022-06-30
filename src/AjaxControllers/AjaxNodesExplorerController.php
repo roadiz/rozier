@@ -8,9 +8,9 @@ use Doctrine\ORM\EntityManager;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Utils\NodeTypeApi;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\Core\SearchEngine\NodeSourceSearchHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,7 +38,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         $this->serializer = $serializer;
     }
 
-    protected function getItemPerPage()
+    protected function getItemPerPage(): int
     {
         return 30;
     }

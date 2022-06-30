@@ -7,7 +7,7 @@ namespace Themes\Rozier\Forms\NodeSource;
 use Doctrine\Persistence\Proxy;
 use RZ\Roadiz\CMS\Forms\DataTransformer\JoinDataTransformer;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
@@ -19,7 +19,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -33,7 +33,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $configuration = $this->getFieldConfiguration($options);
 
@@ -51,7 +51,7 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
      * @param FormInterface $form
      * @param array $options
      */
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         parent::buildView($view, $form, $options);
 

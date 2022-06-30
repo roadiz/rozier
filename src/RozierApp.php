@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier;
 
-use RZ\Roadiz\CMS\Controllers\BackendController;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\RozierBundle\Controller\BackendController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Error\LoaderError;

@@ -1,5 +1,5 @@
 parameters:
-    level: 4
+    level: 7
     paths:
         - src
     excludePaths:
@@ -36,6 +36,10 @@ parameters:
         - '#Property ([a-zA-Z\\\:\$]+) type mapping mismatch: property can contain ([a-zA-Z\\\&\>\<]+)Interface\>?\|null but database expects ([a-zA-Z\\\&\>\<]+)\|null#'
         - '#Property ([a-zA-Z\\\:\$]+) type mapping mismatch: property can contain ([a-zA-Z\\\&\>\<]+)Interface\>? but database expects ([a-zA-Z\\\&\>\<]+)#'
         - '#type mapping mismatch: database can contain array\|bool\|float\|int\|JsonSerializable\|stdClass\|string\|null but property expects array\|null#'
+        # Dealing with entities aliases
+        - '#Unable to resolve the template type T in call to method Doctrine\\Persistence\\ObjectManager::find#'
+        - '#Unable to resolve the template type T in call to method Doctrine\\Persistence\\ObjectManager::getRepository#'
+        - '#Unable to resolve the template type T in call to method Doctrine\\ORM\\EntityManager::getRepository#'
 
     reportUnmatchedIgnoredErrors: false
     checkGenericClassInNonGenericObjectType: false

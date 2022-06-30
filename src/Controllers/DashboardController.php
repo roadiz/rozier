@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Log;
+use RZ\Roadiz\CoreBundle\Entity\Log;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Users;
 
 use RZ\Roadiz\CMS\Forms\GroupsType;
-use RZ\Roadiz\Core\Entities\Group;
-use RZ\Roadiz\Core\Entities\User;
-use RZ\Roadiz\Core\Events\User\UserJoinedGroupEvent;
-use RZ\Roadiz\Core\Events\User\UserLeavedGroupEvent;
+use RZ\Roadiz\CoreBundle\Entity\Group;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Event\User\UserJoinedGroupEvent;
+use RZ\Roadiz\CoreBundle\Event\User\UserLeavedGroupEvent;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodesSourcesDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\Core\SearchEngine\GlobalNodeSourceSearchHandler;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

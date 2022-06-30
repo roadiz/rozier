@@ -15,7 +15,7 @@ class DocumentEmbedType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $services = [];
         foreach (array_keys($options['document_platforms']) as $value) {
@@ -44,7 +44,7 @@ class DocumentEmbedType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('required', true);
         $resolver->setRequired('document_platforms');

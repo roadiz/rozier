@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\Config\JoinNodeTypeFieldConfiguration;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;

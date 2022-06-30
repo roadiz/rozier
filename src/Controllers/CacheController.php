@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Events\Cache\CachePurgeAssetsRequestEvent;
-use RZ\Roadiz\Core\Events\Cache\CachePurgeRequestEvent;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeAssetsRequestEvent;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeRequestEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,8 +27,7 @@ class CacheController extends RozierApp
         $this->logger = $logger;
     }
 
-
-    public function deleteDoctrineCache(Request $request)
+    public function deleteDoctrineCache(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCTRINE_CACHE_DELETE');
 
@@ -78,7 +77,7 @@ class CacheController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildDeleteDoctrineForm()
+    private function buildDeleteDoctrineForm(): FormInterface
     {
         $builder = $this->createFormBuilder();
 
@@ -91,7 +90,7 @@ class CacheController extends RozierApp
      * @return Response
      * @throws \Twig\Error\RuntimeError
      */
-    public function deleteAssetsCache(Request $request)
+    public function deleteAssetsCache(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCTRINE_CACHE_DELETE');
 
@@ -123,7 +122,7 @@ class CacheController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildDeleteAssetsForm()
+    private function buildDeleteAssetsForm(): FormInterface
     {
         $builder = $this->createFormBuilder();
 

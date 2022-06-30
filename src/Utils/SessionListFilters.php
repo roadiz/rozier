@@ -33,7 +33,7 @@ class SessionListFilters
      * @param Request $request
      * @param EntityListManagerInterface $listManager
      */
-    public function handleItemPerPage(Request $request, EntityListManagerInterface $listManager)
+    public function handleItemPerPage(Request $request, EntityListManagerInterface $listManager): void
     {
         /*
          * Check if item_per_page is available from session

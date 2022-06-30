@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\Core\Handlers\FolderHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -118,7 +118,7 @@ class AjaxFoldersController extends AbstractAjaxController
      * @param array $parameters
      * @param Folder $folder
      */
-    protected function updatePosition($parameters, Folder $folder)
+    protected function updatePosition($parameters, Folder $folder): void
     {
         /*
          * First, we set the new parent

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**

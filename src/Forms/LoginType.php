@@ -19,14 +19,8 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class LoginType extends AbstractType
 {
-    /**
-     * @var UrlGeneratorInterface
-     */
-    protected $urlGenerator;
-    /**
-     * @var RequestStack
-     */
-    protected $requestStack;
+    protected UrlGeneratorInterface $urlGenerator;
+    protected RequestStack $requestStack;
 
     /**
      * @param UrlGeneratorInterface $urlGenerator
@@ -41,7 +35,7 @@ class LoginType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('_username', TextType::class, [
             'label' => 'username',
@@ -81,7 +75,7 @@ class LoginType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setNormalizer('action', function (Options $options) {
             return $this->urlGenerator->generate('loginCheckPage');

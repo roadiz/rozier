@@ -13,6 +13,7 @@ use RZ\Roadiz\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class WebhookController extends AbstractAdminController
@@ -29,7 +30,7 @@ final class WebhookController extends AbstractAdminController
     }
 
 
-    public function triggerAction(Request $request, string $id)
+    public function triggerAction(Request $request, string $id): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 

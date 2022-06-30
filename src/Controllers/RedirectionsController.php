@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Redirection;
+use RZ\Roadiz\CoreBundle\Entity\Redirection;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Forms\RedirectionType;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Log;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Log;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -17,7 +17,7 @@ use Themes\Rozier\RozierApp;
  */
 class HistoryController extends RozierApp
 {
-    public static $levelToHuman = [
+    public static array $levelToHuman = [
         Log::EMERGENCY => "emergency",
         Log::CRITICAL => "critical",
         Log::ALERT => "alert",

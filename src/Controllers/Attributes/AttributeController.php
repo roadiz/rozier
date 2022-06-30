@@ -9,7 +9,7 @@ use RZ\Roadiz\Attribute\Form\AttributeImportType;
 use RZ\Roadiz\Attribute\Form\AttributeType;
 use RZ\Roadiz\Attribute\Importer\AttributeImporter;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Attribute;
+use RZ\Roadiz\CoreBundle\Entity\Attribute;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;

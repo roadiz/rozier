@@ -7,7 +7,7 @@ namespace Themes\Rozier\Traits;
 use Gedmo\Exception\UnexpectedValueException;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\UserLogEntry;
+use RZ\Roadiz\CoreBundle\Entity\UserLogEntry;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

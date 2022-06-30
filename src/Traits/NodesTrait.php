@@ -8,9 +8,9 @@ use RZ\Roadiz\CMS\Forms\Constraints\UniqueNodeName;
 use RZ\Roadiz\CMS\Forms\NodeTypesType;
 use RZ\Roadiz\Contracts\NodeType\NodeTypeInterface;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\Utils\Node\NodeFactory;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -35,7 +35,7 @@ trait NodesTrait
         TranslationInterface $translation,
         Node $node = null,
         NodeTypeInterface $type = null
-    ) {
+    ): Node {
         /** @var NodeFactory $factory */
         $factory = $this->get(NodeFactory::class);
         $node = $factory->create($title, $type, $translation, $node);
@@ -52,7 +52,7 @@ trait NodesTrait
      *
      * @return NodeType|null
      */
-    public function addStackType($data, Node $node)
+    public function addStackType($data, Node $node): ?NodeType
     {
         if (
             $data['nodeId'] == $node->getId() &&
@@ -76,7 +76,7 @@ trait NodesTrait
      *
      * @return FormInterface|null
      */
-    public function buildStackTypesForm(Node $node)
+    public function buildStackTypesForm(Node $node): ?FormInterface
     {
         if ($node->isHidingChildren()) {
             $defaults = [];
@@ -104,7 +104,7 @@ trait NodesTrait
      *
      * @return FormInterface
      */
-    protected function buildAddChildForm(Node $parentNode = null)
+    protected function buildAddChildForm(Node $parentNode = null): FormInterface
     {
         $defaults = [];
 
@@ -143,7 +143,7 @@ trait NodesTrait
      *
      * @return FormInterface
      */
-    protected function buildDeleteForm(Node $node)
+    protected function buildDeleteForm(Node $node): FormInterface
     {
         $builder = $this->createNamedFormBuilder('remove_stack_type_' . $node->getId())
                         ->add('nodeId', HiddenType::class, [
@@ -160,7 +160,7 @@ trait NodesTrait
     /**
      * @return FormInterface
      */
-    protected function buildEmptyTrashForm()
+    protected function buildEmptyTrashForm(): FormInterface
     {
         $builder = $this->createFormBuilder();
         return $builder->getForm();

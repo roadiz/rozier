@@ -6,7 +6,7 @@ namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\CMS\Forms\LoginResetForm;
 use RZ\Roadiz\CMS\Traits\LoginResetTrait;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 

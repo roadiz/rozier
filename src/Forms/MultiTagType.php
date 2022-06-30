@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class MultiTagType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('names', TextareaType::class, [
             'label' => 'tags.names',

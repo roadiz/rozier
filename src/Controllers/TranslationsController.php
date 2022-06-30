@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Translation\TranslationCreatedEvent;
-use RZ\Roadiz\Core\Events\Translation\TranslationDeletedEvent;
-use RZ\Roadiz\Core\Events\Translation\TranslationUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TranslationHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;

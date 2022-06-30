@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use RZ\Roadiz\Core\Entities\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

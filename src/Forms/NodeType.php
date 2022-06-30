@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CMS\Forms\Constraints\UniqueNodeName;
-use RZ\Roadiz\Core\Entities\Node;
+use RZ\Roadiz\CoreBundle\Entity\Node;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class NodeType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('nodeName', TextType::class, [
                 'label' => 'nodeName',
@@ -82,7 +82,7 @@ class NodeType extends AbstractType
         return 'node';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'compound' => true,

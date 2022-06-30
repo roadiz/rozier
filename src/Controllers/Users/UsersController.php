@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Role;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

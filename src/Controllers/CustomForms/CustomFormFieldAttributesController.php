@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\CustomForms;
 
 use Doctrine\Common\Collections\Collection;
-use RZ\Roadiz\Core\Entities\CustomFormAnswer;
-use RZ\Roadiz\Core\Entities\CustomFormFieldAttribute;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormFieldAttribute;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 

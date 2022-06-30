@@ -14,7 +14,7 @@ use Themes\Rozier\RozierApp;
  */
 abstract class AbstractAjaxController extends RozierApp
 {
-    protected static $validMethods = [
+    protected static array $validMethods = [
         Request::METHOD_POST,
         Request::METHOD_GET,
     ];
@@ -48,7 +48,7 @@ abstract class AbstractAjaxController extends RozierApp
         return true;
     }
 
-    protected function sortIsh(array &$arr, array $map)
+    protected function sortIsh(array &$arr, array $map): array
     {
         $return = [];
 

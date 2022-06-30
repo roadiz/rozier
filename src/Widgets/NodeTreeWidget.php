@@ -7,10 +7,9 @@ namespace Themes\Rozier\Widgets;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\Core\ListManagers\EntityListManager;
-use RZ\Roadiz\Core\ListManagers\EntityListManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Themes\Rozier\Utils\SessionListFilters;
 
@@ -63,7 +62,7 @@ final class NodeTreeWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setTag(?Tag $tag)
+    public function setTag(?Tag $tag): NodeTreeWidget
     {
         $this->tag = $tag;
 
@@ -83,7 +82,7 @@ final class NodeTreeWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setStackTree(bool $newstackTree)
+    public function setStackTree(bool $newstackTree): NodeTreeWidget
     {
         $this->stackTree = (bool) $newstackTree;
 
@@ -93,7 +92,7 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * Fill twig assignation array with NodeTree entities.
      */
-    protected function getRootListManager()
+    protected function getRootListManager(): EntityListManager
     {
         /*
          * Only use additional criteria for ROOT list-manager
@@ -149,8 +148,11 @@ final class NodeTreeWidget extends AbstractWidget
      * @param array $additionalCriteria Default: []
      * @return EntityListManager
      */
-    protected function getListManager(Node $parent = null, bool $subRequest = false, array $additionalCriteria = [])
-    {
+    protected function getListManager(
+        Node $parent = null,
+        bool $subRequest = false,
+        array $additionalCriteria = []
+    ): EntityListManager {
         $criteria = array_merge($additionalCriteria, [
             'parent' => $parent,
             'translation' => $this->translation,
@@ -207,9 +209,9 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * @param Node|null $parent
      * @param bool $subRequest Default: false
-     * @return array|Paginator
+     * @return array<int, Node>|Paginator<Node>
      */
-    public function getChildrenNodes(Node $parent = null, bool $subRequest = false)
+    public function getChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
         return $this->getListManager($parent, $subRequest)->getEntities();
     }
@@ -217,9 +219,9 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * @param Node|null $parent
      * @param bool $subRequest Default: false
-     * @return array|Paginator
+     * @return array<int, Node>|Paginator<Node>
      */
-    public function getReachableChildrenNodes(Node $parent = null, bool $subRequest = false)
+    public function getReachableChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
         return $this->getListManager($parent, $subRequest, [
             'nodeType.reachable' => true,
@@ -241,7 +243,7 @@ final class NodeTreeWidget extends AbstractWidget
      *
      * @return array|null
      */
-    public function getFilters()
+    public function getFilters(): ?array
     {
         return $this->filters;
     }
@@ -268,9 +270,9 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return array<Node>|Paginator<Node>
+     * @return array<int, Node>|Paginator<Node>
      */
-    public function getNodes()
+    public function getNodes(): iterable
     {
         if (null === $this->nodes) {
             $manager = $this->getRootListManager();

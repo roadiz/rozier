@@ -6,7 +6,7 @@ namespace Themes\Rozier\Forms\DataTransformer;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ObjectManager;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 

@@ -6,7 +6,7 @@ namespace Themes\Rozier\Forms;
 
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CMS\Forms\DataTransformer\FolderCollectionTransformer;
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\Form\AbstractType as AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -32,7 +32,7 @@ final class FolderCollectionType extends AbstractType
      * @param FormInterface $form
      * @param array $options
      */
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         parent::buildView($view, $form, $options);
 
@@ -42,7 +42,7 @@ final class FolderCollectionType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'required' => false,
@@ -58,7 +58,7 @@ final class FolderCollectionType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addModelTransformer(new FolderCollectionTransformer(
             $this->managerRegistry->getManager(),

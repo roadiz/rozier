@@ -6,8 +6,8 @@ namespace Themes\Rozier\Forms\Node;
 
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CMS\Forms\DataTransformer\TranslationTransformer;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -33,7 +33,7 @@ class TranslateNodeType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $translations = $this->managerRegistry->getRepository(Translation::class)
                            ->findUnavailableTranslationsForNode($options['node']);
@@ -70,7 +70,7 @@ class TranslateNodeType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

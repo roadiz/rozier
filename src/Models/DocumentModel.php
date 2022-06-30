@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Document;
+use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Models\HasThumbnailInterface;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
@@ -82,9 +82,10 @@ final class DocumentModel implements ModelInterface
         if (
             $this->document instanceof HasThumbnailInterface &&
             $this->document->needsThumbnail() &&
-            $this->document->hasThumbnails()
+            $this->document->hasThumbnails() &&
+            false !== $thumbnail = $this->document->getThumbnails()->first()
         ) {
-            $this->documentUrlGenerator->setDocument($this->document->getThumbnails()->first());
+            $this->documentUrlGenerator->setDocument($thumbnail);
             $hasThumbnail = true;
         }
 

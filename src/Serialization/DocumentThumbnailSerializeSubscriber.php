@@ -8,22 +8,19 @@ use JMS\Serializer\EventDispatcher\EventSubscriberInterface;
 use JMS\Serializer\EventDispatcher\ObjectEvent;
 use JMS\Serializer\Metadata\StaticPropertyMetadata;
 use JMS\Serializer\Visitor\SerializationVisitorInterface;
-use RZ\Roadiz\Core\Entities\Document;
+use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 
 final class DocumentThumbnailSerializeSubscriber implements EventSubscriberInterface
 {
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
 
-    /**
-     * @param DocumentUrlGeneratorInterface $documentUrlGenerator
-     */
     public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator)
     {
         $this->documentUrlGenerator = $documentUrlGenerator;
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [[
             'event' => 'serializer.post_serialize',
@@ -31,7 +28,7 @@ final class DocumentThumbnailSerializeSubscriber implements EventSubscriberInter
         ]];
     }
 
-    public function onPostSerialize(ObjectEvent $event)
+    public function onPostSerialize(ObjectEvent $event): void
     {
         $document = $event->getObject();
         $visitor = $event->getVisitor();

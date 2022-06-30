@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Events\Node\NodeCreatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeDuplicatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeDuplicatedEvent;
 use RZ\Roadiz\Utils\Node\NodeDuplicator;
 use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
 use Symfony\Component\HttpFoundation\Request;

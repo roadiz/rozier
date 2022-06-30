@@ -14,7 +14,7 @@ final class NodeSourceCollectionType extends CollectionType
     /**
      * @inheritDoc
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -24,7 +24,7 @@ final class NodeSourceCollectionType extends CollectionType
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'onSubmit'], 40);
     }
 
-    public function onSubmit(FormEvent $event)
+    public function onSubmit(FormEvent $event): void
     {
         $data = $event->getData();
         $event->setData(array_values($data));

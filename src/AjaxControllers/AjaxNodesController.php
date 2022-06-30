@@ -6,14 +6,14 @@ namespace Themes\Rozier\AjaxControllers;
 
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Events\Node\NodeCreatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeDuplicatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodePathChangedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeUpdatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeVisibilityChangedEvent;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeDuplicatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodePathChangedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeVisibilityChangedEvent;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\Utils\Node\Exception\SameNodeUrlException;
 use RZ\Roadiz\Utils\Node\NodeDuplicator;
 use RZ\Roadiz\Utils\Node\NodeMover;
@@ -156,7 +156,7 @@ class AjaxNodesController extends AbstractAjaxController
      * @param array $parameters
      * @param Node  $node
      */
-    protected function updatePosition($parameters, Node $node)
+    protected function updatePosition($parameters, Node $node): void
     {
         if ($node->isLocked()) {
             throw new BadRequestHttpException('Locked node cannot be moved.');

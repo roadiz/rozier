@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,7 +45,7 @@ class AjaxFoldersExplorerController extends AbstractAjaxController
         );
     }
 
-    protected function recurseFolders($folders = null)
+    protected function recurseFolders(?iterable $folders = null): array
     {
         $foldersArray = [];
         if ($folders !== null) {

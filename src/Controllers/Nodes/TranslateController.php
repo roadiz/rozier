@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesCreatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesCreatedEvent;
 use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +27,7 @@ class TranslateController extends RozierApp
      *
      * @return Response
      */
-    public function translateAction(Request $request, int $nodeId)
+    public function translateAction(Request $request, int $nodeId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
@@ -87,7 +87,7 @@ class TranslateController extends RozierApp
      * @param Translation $translation
      * @param Node $node
      */
-    protected function translateNode(Translation $translation, Node $node)
+    protected function translateNode(Translation $translation, Node $node): void
     {
         $existing = $this->em()
                          ->getRepository(NodesSources::class)
@@ -120,7 +120,7 @@ class TranslateController extends RozierApp
      * @param Node $node
      * @param bool $translateChildren
      */
-    protected function doTranslate(Translation $translation, Node $node, bool $translateChildren = false)
+    protected function doTranslate(Translation $translation, Node $node, bool $translateChildren = false): void
     {
         $this->translateNode($translation, $node);
 

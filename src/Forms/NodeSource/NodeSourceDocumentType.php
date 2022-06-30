@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\Core\Handlers\NodesSourcesHandler;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -35,7 +35,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
@@ -51,7 +51,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -79,7 +79,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
     /**
      * @param FormEvent $event
      */
-    public function onPreSetData(FormEvent $event)
+    public function onPreSetData(FormEvent $event): void
     {
         /** @var NodesSources $nodeSource */
         $nodeSource = $event->getForm()->getConfig()->getOption('nodeSource');
@@ -101,7 +101,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function onPostSubmit(FormEvent $event)
+    public function onPostSubmit(FormEvent $event): void
     {
         /** @var NodesSources $nodeSource */
         $nodeSource = $event->getForm()->getConfig()->getOption('nodeSource');
@@ -112,7 +112,7 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
         $this->nodesSourcesHandler->cleanDocumentsFromField($nodeTypeField, false);
 
         if (is_array($event->getData())) {
-            $position = 0;
+            $position = 0.0;
             $manager = $this->managerRegistry->getManager();
             foreach ($event->getData() as $documentId) {
                 /** @var Document|null $tempDoc */

@@ -6,8 +6,8 @@ namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Font;
-use RZ\Roadiz\Core\Events\Font\PreUpdatedFontEvent;
+use RZ\Roadiz\CoreBundle\Entity\Font;
+use RZ\Roadiz\CoreBundle\Event\Font\PreUpdatedFontEvent;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;

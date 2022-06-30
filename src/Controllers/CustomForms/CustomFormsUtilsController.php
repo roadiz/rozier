@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
 
-use RZ\Roadiz\Core\Entities\CustomForm;
-use RZ\Roadiz\Core\Entities\CustomFormAnswer;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
 use RZ\Roadiz\Utils\CustomForm\CustomFormAnswerSerializer;
 use RZ\Roadiz\Utils\XlsxExporter;
 use Symfony\Component\HttpFoundation\Request;

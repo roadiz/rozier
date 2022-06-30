@@ -7,7 +7,7 @@ namespace Themes\Rozier\Controllers;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CMS\Importers\GroupsImporter;
-use RZ\Roadiz\Core\Entities\Group;
+use RZ\Roadiz\CoreBundle\Entity\Group;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;

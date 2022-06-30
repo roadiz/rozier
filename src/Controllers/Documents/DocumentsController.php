@@ -6,23 +6,23 @@ namespace Themes\Rozier\Controllers\Documents;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Entities\AttributeDocuments;
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Core\Entities\TagTranslationDocuments;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\AttributeDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\Core\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Core\Events\DocumentDeletedEvent;
 use RZ\Roadiz\Core\Events\DocumentInFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentOutFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\APINeedsAuthentificationException;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
-use RZ\Roadiz\Core\Handlers\DocumentHandler;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\ListManagers\QueryBuilderListManager;
+use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
 use RZ\Roadiz\Core\Models\DocumentInterface;
-use RZ\Roadiz\Core\Repositories\DocumentRepository;
+use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\Document\DocumentFactory;
@@ -1282,7 +1282,7 @@ class DocumentsController extends RozierApp
      * @param FormInterface $data
      * @param int|null      $folderId
      *
-     * @return bool|DocumentInterface
+     * @return false|DocumentInterface
      */
     private function uploadDocument($data, ?int $folderId = null)
     {

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\TagHandler;
-use RZ\Roadiz\Core\Repositories\TagRepository;
+use RZ\Roadiz\CoreBundle\Repository\TagRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,7 +43,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
         $onlyParents = false;
@@ -78,7 +78,7 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function listArrayAction(Request $request)
+    public function listArrayAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -110,7 +110,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function explorerListAction(Request $request)
+    public function explorerListAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -163,9 +163,9 @@ class AjaxTagsController extends AbstractAjaxController
 
     /**
      * @param array<Tag>|\Traversable<Tag>|null $tags
-     * @return array
+     * @return array<int, array>
      */
-    protected function normalizeTags($tags)
+    protected function normalizeTags($tags): array
     {
         $tagsArray = [];
         if ($tags !== null) {
@@ -184,7 +184,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return array
      */
-    protected function recurseTags(array $tags = null, bool $onlyParents = false)
+    protected function recurseTags(array $tags = null, bool $onlyParents = false): array
     {
         $tagsArray = [];
         if ($tags !== null) {
@@ -213,9 +213,9 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @param int     $tagId
      *
-     * @return Response JSON response
+     * @return JsonResponse
      */
-    public function editAction(Request $request, int $tagId)
+    public function editAction(Request $request, int $tagId): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -249,7 +249,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return JsonResponse
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -291,7 +291,7 @@ class AjaxTagsController extends AbstractAjaxController
      * @param array $parameters
      * @param Tag   $tag
      */
-    protected function updatePosition($parameters, Tag $tag)
+    protected function updatePosition($parameters, Tag $tag): void
     {
         /*
          * First, we set the new parent
@@ -353,7 +353,7 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function createAction(Request $request)
+    public function createAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 

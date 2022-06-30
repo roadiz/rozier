@@ -6,8 +6,8 @@ namespace Themes\Rozier\Widgets;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Repositories\TagRepository;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Repository\TagRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -44,7 +44,7 @@ final class TagTreeWidget extends AbstractWidget
     /**
      * Fill twig assignation array with TagTree entities.
      */
-    protected function getTagTreeAssignationForParent()
+    protected function getTagTreeAssignationForParent(): void
     {
         $ordering = [
             'position' => 'ASC',
@@ -73,7 +73,7 @@ final class TagTreeWidget extends AbstractWidget
      *
      * @return array<Tag>|Paginator<Tag>|null
      */
-    public function getChildrenTags(?Tag $parent)
+    public function getChildrenTags(?Tag $parent): ?iterable
     {
         if ($parent !== null) {
             $ordering = [
@@ -103,9 +103,9 @@ final class TagTreeWidget extends AbstractWidget
         return null;
     }
     /**
-     * @return Tag
+     * @return Tag|null
      */
-    public function getRootTag()
+    public function getRootTag(): ?Tag
     {
         return $this->parentTag;
     }
@@ -113,7 +113,7 @@ final class TagTreeWidget extends AbstractWidget
     /**
      * @return array<Tag>|Paginator<Tag>|null
      */
-    public function getTags()
+    public function getTags(): ?iterable
     {
         if ($this->tags === null) {
             $this->getTagTreeAssignationForParent();
@@ -124,7 +124,7 @@ final class TagTreeWidget extends AbstractWidget
     /**
      * @return TagRepository
      */
-    protected function getTagRepository()
+    protected function getTagRepository(): TagRepository
     {
         return $this->getManagerRegistry()->getRepository(Tag::class);
     }
@@ -134,7 +134,7 @@ final class TagTreeWidget extends AbstractWidget
      *
      * @return bool
      */
-    public function getCanReorder()
+    public function getCanReorder(): bool
     {
         return $this->canReorder;
     }

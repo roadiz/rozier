@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Core\Entities\FolderTranslation;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Folder\FolderCreatedEvent;
-use RZ\Roadiz\Core\Events\Folder\FolderDeletedEvent;
-use RZ\Roadiz\Core\Events\Folder\FolderUpdatedEvent;
-use RZ\Roadiz\Core\Repositories\TranslationRepository;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Entity\FolderTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;

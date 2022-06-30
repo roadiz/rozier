@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\CustomForms;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 use Themes\Rozier\Forms\CustomFormType;

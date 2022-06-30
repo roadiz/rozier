@@ -334,7 +334,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
-     * @return string
+     * @return class-string
      */
     abstract protected function getEntityClass(): string;
 

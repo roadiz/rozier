@@ -7,7 +7,7 @@ namespace Themes\Rozier;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\Core\Bags\Settings;
-use RZ\Roadiz\Core\Entities\SettingGroup;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Themes\Rozier\Widgets\FolderTreeWidget;
