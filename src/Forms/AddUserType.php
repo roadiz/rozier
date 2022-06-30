@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\GroupsType;
+use RZ\Roadiz\CoreBundle\Form\GroupsType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 /**

@@ -9,7 +9,7 @@ use RZ\Roadiz\CoreBundle\Event\Translation\TranslationCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Translation\TranslationDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Translation\TranslationUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\TranslationHandler;
+use RZ\Roadiz\CoreBundle\EntityHandler\TranslationHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;

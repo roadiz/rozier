@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Attributes;
 
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\Attribute\Form\AttributeImportType;
-use RZ\Roadiz\Attribute\Form\AttributeType;
-use RZ\Roadiz\Attribute\Importer\AttributeImporter;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\Attribute;
+use RZ\Roadiz\CoreBundle\Form\AttributeImportType;
+use RZ\Roadiz\CoreBundle\Form\AttributeType;
+use RZ\Roadiz\CoreBundle\Importer\AttributeImporter;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;

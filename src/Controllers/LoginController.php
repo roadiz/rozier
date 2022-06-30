@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
-use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;

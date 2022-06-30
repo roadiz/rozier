@@ -6,7 +6,7 @@ namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\SettingsImporter;
+use RZ\Roadiz\CoreBundle\Importer\SettingsImporter;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use RZ\Roadiz\Utils\StringHandler;

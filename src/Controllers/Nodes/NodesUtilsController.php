@@ -7,11 +7,10 @@ namespace Themes\Rozier\Controllers\Nodes;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeDuplicatedEvent;
-use RZ\Roadiz\Utils\Node\NodeDuplicator;
-use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
+use RZ\Roadiz\CoreBundle\Node\NodeDuplicator;
+use RZ\Roadiz\CoreBundle\Node\NodeNamePolicyInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Themes\Rozier\RozierApp;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\NodeTypes;
 
-use RZ\Roadiz\CoreBundle\Entity\NodeType;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;

@@ -6,10 +6,10 @@ namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Webhook\Entity\Webhook;
-use RZ\Roadiz\Webhook\Exception\TooManyWebhookTriggeredException;
-use RZ\Roadiz\Webhook\Form\WebhookType;
-use RZ\Roadiz\Webhook\WebhookDispatcher;
+use RZ\Roadiz\CoreBundle\Entity\Webhook;
+use RZ\Roadiz\CoreBundle\Form\WebhookType;
+use RZ\Roadiz\CoreBundle\Webhook\Exception\TooManyWebhookTriggeredException;
+use RZ\Roadiz\CoreBundle\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;

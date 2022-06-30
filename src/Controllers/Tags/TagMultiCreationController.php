@@ -7,7 +7,7 @@ namespace Themes\Rozier\Controllers\Tags;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Tag\TagCreatedEvent;
-use RZ\Roadiz\Utils\Tag\TagFactory;
+use RZ\Roadiz\CoreBundle\Tag\TagFactory;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use RZ\Roadiz\CMS\Forms\RolesType;
 use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Form\RolesType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;

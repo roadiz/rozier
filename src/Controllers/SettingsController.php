@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
-use RZ\Roadiz\CMS\Forms\SettingType;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Form\SettingType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;

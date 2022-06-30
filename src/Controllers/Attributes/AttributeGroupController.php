@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Attributes;
 
-use RZ\Roadiz\Attribute\Form\AttributeGroupType;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\AttributeGroup;
+use RZ\Roadiz\CoreBundle\Form\AttributeGroupType;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 

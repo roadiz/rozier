@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Psr\Container\ContainerInterface;
-use RZ\Roadiz\Explorer\AbstractExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerItemInterface;
-use RZ\Roadiz\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,8 +27,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
 
     /**
      * @param class-string $providerClass
-     *
      * @return ExplorerProviderInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     protected function getProvider(string $providerClass): ExplorerProviderInterface
     {

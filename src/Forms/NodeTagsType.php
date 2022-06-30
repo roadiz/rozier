@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CMS\Forms\TagsType;
 use RZ\Roadiz\CoreBundle\Entity\Node;
-use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Form\TagsType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;

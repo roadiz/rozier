@@ -6,11 +6,11 @@ namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Container\ContainerInterface;
-use RZ\Roadiz\CMS\Forms\DataTransformer\ProviderDataTransformer;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\Explorer\AbstractExplorerItem;
-use RZ\Roadiz\Explorer\AbstractExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Form\DataTransformer\ProviderDataTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;

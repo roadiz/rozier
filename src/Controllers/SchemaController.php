@@ -6,7 +6,7 @@ namespace Themes\Rozier\Controllers;
 
 use Doctrine\ORM\Mapping\MappingException;
 use Exception;
-use RZ\Roadiz\Utils\Doctrine\SchemaUpdater;
+use RZ\Roadiz\CoreBundle\Doctrine\SchemaUpdater;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

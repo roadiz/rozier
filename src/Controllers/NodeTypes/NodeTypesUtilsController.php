@@ -6,9 +6,9 @@ namespace Themes\Rozier\Controllers\NodeTypes;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
-use RZ\Roadiz\Core\Bags\NodeTypes;
+use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Importer\NodeTypesImporter;
 use RZ\Roadiz\Documentation\Generators\DocumentationGenerator;
 use RZ\Roadiz\Typescript\Declaration\DeclarationGeneratorFactory;
 use RZ\Roadiz\Typescript\Declaration\Generators\DeclarationGenerator;

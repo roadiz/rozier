@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\Proxy;
-use RZ\Roadiz\CMS\Forms\DataTransformer\JoinDataTransformer;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Form\DataTransformer\JoinDataTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
-use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType

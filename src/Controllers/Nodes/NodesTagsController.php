@@ -7,6 +7,7 @@ namespace Themes\Rozier\Controllers\Nodes;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeTaggedEvent;
+use RZ\Roadiz\CoreBundle\Node\NodeFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\NodeTagsType;
@@ -20,13 +21,26 @@ class NodesTagsController extends RozierApp
 {
     use NodesTrait;
 
+    private NodeFactory $nodeFactory;
+
+    public function __construct(NodeFactory $nodeFactory)
+    {
+        $this->nodeFactory = $nodeFactory;
+    }
+
+    protected function getNodeFactory(): NodeFactory
+    {
+        return $this->nodeFactory;
+    }
+
     /**
      * Return tags form for requested node.
      *
      * @param Request $request
-     * @param int     $nodeId
+     * @param int $nodeId
      *
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Twig\Error\RuntimeError
      */
     public function editTagsAction(Request $request, int $nodeId)
     {

@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodePathChangedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUndeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
-use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\NodeHandler;
-use RZ\Roadiz\Utils\Node\Exception\SameNodeUrlException;
-use RZ\Roadiz\Utils\Node\NodeMover;
-use RZ\Roadiz\Utils\Node\UniqueNodeGenerator;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Node\Exception\SameNodeUrlException;
+use RZ\Roadiz\CoreBundle\Node\NodeFactory;
+use RZ\Roadiz\CoreBundle\Node\NodeMover;
+use RZ\Roadiz\CoreBundle\Node\UniqueNodeGenerator;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\Workflow;
@@ -46,6 +46,8 @@ class NodesController extends RozierApp
     private Registry $workflowRegistry;
     private HandlerFactoryInterface $handlerFactory;
     private UniqueNodeGenerator $uniqueNodeGenerator;
+    private NodeFactory $nodeFactory;
+
     /**
      * @var class-string<AbstractType>
      */
@@ -61,8 +63,8 @@ class NodesController extends RozierApp
      * @param Registry $workflowRegistry
      * @param HandlerFactoryInterface $handlerFactory
      * @param UniqueNodeGenerator $uniqueNodeGenerator
-     * @param string $nodeFormTypeClass
-     * @param string $addNodeFormTypeClass
+     * @param class-string<AbstractType> $nodeFormTypeClass
+     * @param class-string<AbstractType> $addNodeFormTypeClass
      */
     public function __construct(
         NodeChrootResolver $nodeChrootResolver,
@@ -70,6 +72,7 @@ class NodesController extends RozierApp
         Registry $workflowRegistry,
         HandlerFactoryInterface $handlerFactory,
         UniqueNodeGenerator $uniqueNodeGenerator,
+        NodeFactory $nodeFactory,
         string $nodeFormTypeClass,
         string $addNodeFormTypeClass
     ) {
@@ -80,6 +83,12 @@ class NodesController extends RozierApp
         $this->nodeFormTypeClass = $nodeFormTypeClass;
         $this->addNodeFormTypeClass = $addNodeFormTypeClass;
         $this->uniqueNodeGenerator = $uniqueNodeGenerator;
+        $this->nodeFactory = $nodeFactory;
+    }
+
+    protected function getNodeFactory(): NodeFactory
+    {
+        return $this->nodeFactory;
     }
 
     /**

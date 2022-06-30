@@ -9,7 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\Core\ListManagers\EntityListManager;
+use RZ\Roadiz\CoreBundle\ListManager\EntityListManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Themes\Rozier\Utils\SessionListFilters;
 

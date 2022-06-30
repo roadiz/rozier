@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueFilename;
-use RZ\Roadiz\CMS\Forms\DocumentCollectionType;
 use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueFilename;
+use RZ\Roadiz\CoreBundle\Form\DocumentCollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;

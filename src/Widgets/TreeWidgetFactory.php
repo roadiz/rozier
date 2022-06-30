@@ -9,7 +9,6 @@ use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\CoreBundle\Entity\Translation;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 final class TreeWidgetFactory

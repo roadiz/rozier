@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\CustomFormModel;
 
 /**
@@ -17,6 +18,13 @@ use Themes\Rozier\Models\CustomFormModel;
  */
 class AjaxCustomFormsExplorerController extends AbstractAjaxController
 {
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator)
+    {
+        $this->urlGenerator = $urlGenerator;
+    }
+
     /**
      * @param Request $request
      *
@@ -105,7 +113,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         /** @var CustomForm $customForm */
         foreach ($customForms as $customForm) {
-            $customFormModel = new CustomFormModel($customForm, $this->get('router'), $this->getTranslator());
+            $customFormModel = new CustomFormModel($customForm, $this->urlGenerator, $this->getTranslator());
             $customFormsArray[] = $customFormModel->toArray();
         }
 

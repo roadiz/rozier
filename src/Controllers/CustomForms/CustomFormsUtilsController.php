@@ -6,8 +6,8 @@ namespace Themes\Rozier\Controllers\CustomForms;
 
 use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
-use RZ\Roadiz\Utils\CustomForm\CustomFormAnswerSerializer;
-use RZ\Roadiz\Utils\XlsxExporter;
+use RZ\Roadiz\CoreBundle\CustomForm\CustomFormAnswerSerializer;
+use RZ\Roadiz\CoreBundle\Xlsx\XlsxExporter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;

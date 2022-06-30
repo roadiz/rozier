@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\MarkdownType;
-use RZ\Roadiz\CMS\Forms\TagTranslationDocumentType;
 use RZ\Roadiz\CoreBundle\Entity\TagTranslation;
+use RZ\Roadiz\CoreBundle\Form\MarkdownType;
+use RZ\Roadiz\CoreBundle\Form\TagTranslationDocumentType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;

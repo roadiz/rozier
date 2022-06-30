@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
 
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueNodeName;
-use RZ\Roadiz\CMS\Forms\NodeTypesType;
 use RZ\Roadiz\Contracts\NodeType\NodeTypeInterface;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
-use RZ\Roadiz\CoreBundle\Entity\Translation;
-use RZ\Roadiz\Utils\Node\NodeFactory;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueNodeName;
+use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
+use RZ\Roadiz\CoreBundle\Node\NodeFactory;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
@@ -20,6 +19,8 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 trait NodesTrait
 {
+    abstract protected function getNodeFactory(): NodeFactory;
+
     /**
      * @param string        $title
      * @param TranslationInterface   $translation
@@ -36,8 +37,7 @@ trait NodesTrait
         Node $node = null,
         NodeTypeInterface $type = null
     ): Node {
-        /** @var NodeFactory $factory */
-        $factory = $this->get(NodeFactory::class);
+        $factory = $this->getNodeFactory();
         $node = $factory->create($title, $type, $translation, $node);
 
         $entityManager = $this->em();

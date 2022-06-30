@@ -11,7 +11,7 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
-use RZ\Roadiz\Core\Routing\NodeRouter;
+use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;

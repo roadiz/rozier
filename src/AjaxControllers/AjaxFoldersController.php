@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Folder;
-use RZ\Roadiz\Core\Handlers\FolderHandler;
+use RZ\Roadiz\CoreBundle\EntityHandler\FolderHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

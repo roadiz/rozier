@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\Node;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CMS\Forms\DataTransformer\NodeTypeTransformer;
-use RZ\Roadiz\CMS\Forms\NodeTypesType;
 use RZ\Roadiz\CoreBundle\Entity\Node;
-use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Form\DataTransformer\NodeTypeTransformer;
+use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

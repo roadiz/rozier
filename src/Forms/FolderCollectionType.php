@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CMS\Forms\DataTransformer\FolderCollectionTransformer;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Form\DataTransformer\FolderCollectionTransformer;
 use Symfony\Component\Form\AbstractType as AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\Setting;
-use RZ\Roadiz\Explorer\AbstractExplorerItem;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
 
 final class SettingExplorerItem extends AbstractExplorerItem
 {

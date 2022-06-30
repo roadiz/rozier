@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\CMS\Forms\LoginResetForm;
-use RZ\Roadiz\CMS\Traits\LoginResetTrait;
 use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Form\LoginResetForm;
+use RZ\Roadiz\CoreBundle\Traits\LoginResetTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 

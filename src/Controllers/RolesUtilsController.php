@@ -7,7 +7,7 @@ namespace Themes\Rozier\Controllers;
 use Doctrine\Common\Cache\CacheProvider;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\RolesImporter;
+use RZ\Roadiz\CoreBundle\Importer\RolesImporter;
 use RZ\Roadiz\CoreBundle\Entity\Role;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;

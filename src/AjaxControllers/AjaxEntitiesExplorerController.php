@@ -6,7 +6,7 @@ namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
-use RZ\Roadiz\Config\JoinNodeTypeFieldConfiguration;
+use RZ\Roadiz\CoreBundle\Configuration\JoinNodeTypeFieldConfiguration;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;

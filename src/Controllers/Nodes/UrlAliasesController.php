@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\CMS\Forms\UrlAliasType;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\Redirection;
@@ -14,8 +13,9 @@ use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\UrlAlias\UrlAliasCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\UrlAlias\UrlAliasDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\UrlAlias\UrlAliasUpdatedEvent;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
-use RZ\Roadiz\Core\Exceptions\NoTranslationAvailableException;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Exception\NoTranslationAvailableException;
+use RZ\Roadiz\CoreBundle\Form\UrlAliasType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;

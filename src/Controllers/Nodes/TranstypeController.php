@@ -8,7 +8,7 @@ use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
-use RZ\Roadiz\Utils\Node\NodeTranstyper;
+use RZ\Roadiz\CoreBundle\Node\NodeTranstyper;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

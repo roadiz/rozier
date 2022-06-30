@@ -8,7 +8,7 @@ use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\TagHandler;
+use RZ\Roadiz\CoreBundle\EntityHandler\TagHandler;
 use RZ\Roadiz\CoreBundle\Repository\TagRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\TagModel;
 
 /**
@@ -24,10 +25,12 @@ use Themes\Rozier\Models\TagModel;
 class AjaxTagsController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
+    private UrlGeneratorInterface $urlGenerator;
 
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(HandlerFactoryInterface $handlerFactory, UrlGeneratorInterface $urlGenerator)
     {
         $this->handlerFactory = $handlerFactory;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -50,7 +53,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         if (
             $request->query->has('onlyParents') &&
-            $request->query->get('onlyParents') == true
+            $request->query->get('onlyParents')
         ) {
             $onlyParents = true;
         }
@@ -170,7 +173,7 @@ class AjaxTagsController extends AbstractAjaxController
         $tagsArray = [];
         if ($tags !== null) {
             foreach ($tags as $tag) {
-                $tagModel = new TagModel($tag, $this->get('router'));
+                $tagModel = new TagModel($tag, $this->urlGenerator);
                 $tagsArray[] = $tagModel->toArray();
             }
         }
@@ -367,7 +370,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         /** @var Tag $tag */
         $tag = $this->getRepository()->findOrCreateByPath($request->get('tagName'));
-        $tagModel = new TagModel($tag, $this->get('router'));
+        $tagModel = new TagModel($tag, $this->urlGenerator);
 
         return new JsonResponse(
             [

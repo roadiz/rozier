@@ -7,7 +7,7 @@ namespace Themes\Rozier\Widgets;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
-use RZ\Roadiz\Core\Exceptions\NoTranslationAvailableException;
+use RZ\Roadiz\CoreBundle\Exception\NoTranslationAvailableException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 

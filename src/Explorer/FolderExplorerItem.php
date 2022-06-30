@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\Folder;
-use RZ\Roadiz\Explorer\AbstractExplorerItem;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
 
 final class FolderExplorerItem extends AbstractExplorerItem
 {

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\NodeTypeField as NodeTypeFieldConstraint;
-use RZ\Roadiz\CMS\Forms\Constraints\NonSqlReservedWord;
-use RZ\Roadiz\CMS\Forms\Constraints\SimpleLatinString;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
-use RZ\Roadiz\Config\Configuration;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Form\Constraint\NodeTypeField as NodeTypeFieldConstraint;
+use RZ\Roadiz\CoreBundle\Form\Constraint\NonSqlReservedWord;
+use RZ\Roadiz\CoreBundle\Form\Constraint\SimpleLatinString;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

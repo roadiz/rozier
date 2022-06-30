@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Models\HasThumbnailInterface;
+use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

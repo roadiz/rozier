@@ -6,30 +6,30 @@ namespace Themes\Rozier\Controllers\Documents;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\CoreBundle\Entity\AttributeDocuments;
-use RZ\Roadiz\CoreBundle\Entity\Document;
-use RZ\Roadiz\CoreBundle\Entity\Folder;
-use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
-use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\Core\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Core\Events\DocumentDeletedEvent;
 use RZ\Roadiz\Core\Events\DocumentInFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentOutFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\APINeedsAuthentificationException;
-use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
-use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
 use RZ\Roadiz\Core\Models\DocumentInterface;
+use RZ\Roadiz\CoreBundle\Document\DocumentFactory;
+use RZ\Roadiz\CoreBundle\Document\MediaFinder\SoundcloudEmbedFinder;
+use RZ\Roadiz\CoreBundle\Document\MediaFinder\YoutubeEmbedFinder;
+use RZ\Roadiz\CoreBundle\Entity\AttributeDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
 use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
-use RZ\Roadiz\Utils\Document\DocumentFactory;
 use RZ\Roadiz\Utils\MediaFinders\AbstractEmbedFinder;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
-use RZ\Roadiz\Utils\MediaFinders\SoundcloudEmbedFinder;
-use RZ\Roadiz\Utils\MediaFinders\YoutubeEmbedFinder;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\ClickableInterface;
@@ -46,6 +46,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\File;
@@ -1157,6 +1158,9 @@ class DocumentsController extends RozierApp
     {
         if (count($documents) > 0) {
             $tmpFileName = tempnam(sys_get_temp_dir(), "rzdocs_");
+            if (false === $tmpFileName) {
+                throw new \RuntimeException('Failed to create a unique file name in system temp dir');
+            }
             $zip = new \ZipArchive();
             $zip->open($tmpFileName, \ZipArchive::CREATE);
 
@@ -1171,9 +1175,13 @@ class DocumentsController extends RozierApp
             }
 
             $zip->close();
+            $fileContent = file_get_contents($tmpFileName);
+            if (false === $fileContent) {
+                throw new \RuntimeException(sprintf('Failed to read temp file %s', $fileContent));
+            }
 
             $response = new Response(
-                file_get_contents($tmpFileName),
+                $fileContent,
                 Response::HTTP_OK,
                 [
                     'content-control' => 'private',
@@ -1234,14 +1242,21 @@ class DocumentsController extends RozierApp
      *
      * @param int|null $folderId
      *
-     * @return DocumentInterface
+     * @return DocumentInterface|null
      * @throws \Exception
      * @throws EntityAlreadyExistsException
      */
-    private function randomDocument(?int $folderId = null)
+    private function randomDocument(?int $folderId = null): ?DocumentInterface
     {
         if ($this->randomImageFinder instanceof AbstractEmbedFinder) {
-            return $this->createDocumentFromFinder($this->randomImageFinder, $folderId);
+            $document = $this->createDocumentFromFinder($this->randomImageFinder, $folderId);
+            if ($document instanceof DocumentInterface) {
+                return $document;
+            }
+            if (is_array($document) && isset($document[0])) {
+                return $document[0];
+            }
+            return null;
         }
         throw new \RuntimeException('Random image finder must be instance of ' . AbstractEmbedFinder::class);
     }
@@ -1250,7 +1265,7 @@ class DocumentsController extends RozierApp
      * @param AbstractEmbedFinder $finder
      * @param int|null            $folderId
      *
-     * @return array|DocumentInterface
+     * @return DocumentInterface|array<DocumentInterface>
      */
     private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null)
     {

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\Constraints\NonSqlReservedWord;
-use RZ\Roadiz\CMS\Forms\Constraints\SimpleLatinString;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\Constraint\NonSqlReservedWord;
+use RZ\Roadiz\CoreBundle\Form\Constraint\SimpleLatinString;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
