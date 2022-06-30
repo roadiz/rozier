@@ -1,8 +1,5 @@
 node_js:
-    - "lts/*"
     - "14"
-    - "12"
-    - "10"
 php:
     - 7.4
     - 8.0
@@ -23,15 +20,7 @@ jobs:
     include:
         -   stage: "Backoffice assets tests"
             language: node_js
-            node_js: "lts/*"
-            script: sh .travis/backoffice_assets.sh
-        -   stage: "Backoffice assets tests"
-            language: node_js
-            node_js: "12"
-            script: sh .travis/backoffice_assets.sh
-        -   stage: "Backoffice assets tests"
-            language: node_js
-            node_js: "10"
+            node_js: "14"
             script: sh .travis/backoffice_assets.sh
 
         -   stage: "PHP lint tests"
