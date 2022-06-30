@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\CMS\Forms\RolesType;
-use RZ\Roadiz\CMS\Forms\UsersType;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Group;
-use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Group;
+use RZ\Roadiz\CoreBundle\Entity\Role;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Form\RolesType;
+use RZ\Roadiz\CoreBundle\Form\UsersType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -49,7 +50,7 @@ class GroupsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'groups';
+        return '@RoadizRozier/groups';
     }
 
     /**
@@ -100,7 +101,7 @@ class GroupsController extends AbstractAdminController
         if ($item instanceof Group) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
@@ -153,7 +154,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/roles.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/roles.html.twig', $this->assignation);
     }
 
     /**
@@ -205,7 +206,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/removeRole.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/removeRole.html.twig', $this->assignation);
     }
 
     /**
@@ -248,7 +249,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/users.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/users.html.twig', $this->assignation);
     }
 
     /**
@@ -301,7 +302,7 @@ class GroupsController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/removeUser.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/removeUser.html.twig', $this->assignation);
     }
 
     /**
@@ -451,8 +452,10 @@ class GroupsController extends AbstractAdminController
      */
     private function removeRole($data, Group $group, Role $role)
     {
-        if ($data['groupId'] == $group->getId() &&
-            $data['roleId'] == $role->getId()) {
+        if (
+            $data['groupId'] == $group->getId() &&
+            $data['roleId'] == $role->getId()
+        ) {
             if ($role !== null) {
                 $group->removeRole($role);
                 $this->em()->flush();
@@ -495,8 +498,10 @@ class GroupsController extends AbstractAdminController
      */
     private function removeUser($data, Group $group, User $user)
     {
-        if ($data['groupId'] == $group->getId() &&
-            $data['userId'] == $user->getId()) {
+        if (
+            $data['groupId'] == $group->getId() &&
+            $data['userId'] == $user->getId()
+        ) {
             if ($user !== null) {
                 $user->removeGroup($group);
                 $this->em()->flush();

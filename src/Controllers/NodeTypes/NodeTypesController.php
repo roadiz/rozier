@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\NodeTypes;
 
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +62,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['node_types'] = $listManager->getEntities();
 
-        return $this->render('node-types/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/list.html.twig', $this->assignation);
     }
 
     /**
@@ -107,7 +108,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -149,7 +150,7 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/add.html.twig', $this->assignation);
     }
 
     /**
@@ -191,6 +192,6 @@ class NodeTypesController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
 
-        return $this->render('node-types/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/delete.html.twig', $this->assignation);
     }
 }

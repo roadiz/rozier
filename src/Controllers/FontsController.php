@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Font;
-use RZ\Roadiz\Core\Events\Font\PreUpdatedFontEvent;
+use RZ\Roadiz\CoreBundle\Entity\Font;
+use RZ\Roadiz\CoreBundle\Event\Font\PreUpdatedFontEvent;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -67,7 +68,7 @@ class FontsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'fonts';
+        return '@RoadizRozier/fonts';
     }
 
     /**
@@ -97,7 +98,7 @@ class FontsController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['name' => 'ASC'];
     }
@@ -137,7 +138,7 @@ class FontsController extends AbstractAdminController
         if ($item instanceof Font) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**

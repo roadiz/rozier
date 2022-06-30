@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use RZ\Roadiz\CMS\Forms\RolesType;
-use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Role;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Form\RolesType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
@@ -58,7 +59,7 @@ class UsersRolesController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/roles.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/roles.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -114,7 +115,7 @@ class UsersRolesController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/removeRole.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/removeRole.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

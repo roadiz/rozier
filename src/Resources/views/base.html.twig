@@ -7,10 +7,10 @@
         <title>{% block title %}{% trans %}back_office{% endtrans %}{% endblock %}</title>
         <meta name="description" content="{% block description %}{% trans %}back_office{% endtrans %}{% endblock %}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        {% include 'admin/meta-icon.html.twig' %}
+        {% include '@RoadizRozier/admin/meta-icon.html.twig' %}
 
         {# CSS scripts inclusions / Using webpack #}
-        {% include '@Rozier/partials/css-inject.html.twig' %}
+        {% include '@RoadizRozier/partials/css-inject.html.twig' %}
 
         <link rel="stylesheet" href="{{ path('cssMainColor') }}" />
         {% block customStyles %}{% endblock %}
@@ -26,14 +26,14 @@
         <div id="main-container" >
             <div id="main-container-inner">
                 <section class="main-container-section navigation-container-section" id="user-panel">
-                    {% include '@Rozier/panels/user_panel.html.twig' with {
+                    {% include '@RoadizRozier/panels/user_panel.html.twig' with {
                         'session' : session,
                         'head' : head,
                         'themeServices':themeServices,
                     } only %}
                 </section>
                 <section class="main-container-section navigation-container-section" id="admin-menu">
-                    {% include '@Rozier/panels/admin_menu.html.twig' with {
+                    {% include '@RoadizRozier/panels/admin_menu.html.twig' with {
                         'themeServices' : themeServices,
                         'backofficeEntries':backofficeEntries,
                     } only %}
@@ -44,7 +44,7 @@
                 <section class="main-container-section navigation-container-section" id="main-trees">
                     <div id="main-trees-overlay"></div>
                     <div id="main-trees-container">
-                        {% include '@Rozier/panels/tree_panel.html.twig' with {
+                        {% include '@RoadizRozier/panels/tree_panel.html.twig' with {
                             'themeServices': themeServices,
                             "nodeStatuses":nodeStatuses,
                         } only %}
@@ -224,7 +224,7 @@
         {% endif %}
 
         {# JS scripts inclusions / Using webpack #}
-        {% include '@Rozier/partials/js-inject.html.twig' %}
+        {% include '@RoadizRozier/partials/js-inject.html.twig' %}
 
         {% block customScripts %}{% endblock %}
         {% if additionalScripts %}

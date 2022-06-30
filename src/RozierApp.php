@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier;
 
-use RZ\Roadiz\CMS\Controllers\BackendController;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\RozierBundle\Controller\BackendController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Error\LoaderError;
@@ -22,7 +23,7 @@ class RozierApp extends BackendController
     protected static string $themeCopyright = 'REZO ZERO';
     protected static string $themeDir = 'Rozier';
 
-    const DEFAULT_ITEM_PER_PAGE = 50;
+    public const DEFAULT_ITEM_PER_PAGE = 50;
 
     public static array $backendLanguages = [
         'Arabic' => 'ar',
@@ -36,6 +37,26 @@ class RozierApp extends BackendController
         'српска ћирилица' => 'sr',
         '中文' => 'zh',
     ];
+
+    /**
+     * Returns a fully qualified view path for Twig rendering.
+     *
+     * @param string $view
+     * @param string $namespace
+     * @return string
+     */
+    protected function getNamespacedView(string $view, string $namespace = ''): string
+    {
+        if ($namespace !== "" && $namespace !== "/") {
+            $view = '@' . $namespace . '/' . $view;
+        } elseif ($namespace !== "/") {
+            // when no namespace is used
+            // use current theme directory
+            $view = '@RoadizRozier/' . $view;
+        }
+
+        return $view;
+    }
 
     /**
      * @return $this
@@ -79,7 +100,7 @@ class RozierApp extends BackendController
      */
     public function indexAction(Request $request)
     {
-        return $this->render('index.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/index.html.twig', $this->assignation);
     }
 
     /**
@@ -99,7 +120,7 @@ class RozierApp extends BackendController
         ]);
 
         $response = new Response(
-            $this->getTwig()->render('css/mainColor.css.twig', $this->assignation),
+            $this->getTwig()->render('@RoadizRozier/css/mainColor.css.twig', $this->assignation),
             Response::HTTP_OK,
             ['content-type' => 'text/css']
         );

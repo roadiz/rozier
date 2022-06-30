@@ -1,9 +1,9 @@
-{% extends 'node-type-fields/editBase.html.twig' %}
+{% extends '@RoadizRozier/node-type-fields/editBase.html.twig' %}
 
 {% block subcontent %}
     <node-type-field-form-container inline-template data-vuejs>
         <article class="content content-node-type-field-edit">
-           {% form_theme form '@Rozier/forms.html.twig' %}
+           {% form_theme form '@RoadizRozier/forms.html.twig' %}
             {{ form_start(form, { attr: { id: 'edit-node-type-field-form'}}) }}
                 {{ form_widget(form) }}
                 <fieldset data-uk-margin>

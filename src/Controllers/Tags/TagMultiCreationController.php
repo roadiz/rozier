@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
-use RZ\Roadiz\Utils\Tag\TagFactory;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagCreatedEvent;
+use RZ\Roadiz\CoreBundle\Tag\TagFactory;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,7 +91,7 @@ class TagMultiCreationController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['tag'] = $parentTag;
 
-            return $this->render('tags/add-multiple.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add-multiple.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

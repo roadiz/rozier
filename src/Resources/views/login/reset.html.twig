@@ -1,11 +1,11 @@
-{% extends '@Rozier/login/base.html.twig' %}
+{% extends '@RoadizRozier/login/base.html.twig' %}
 
 {% block login_content %}
     {% if error %}
         <div data-uk-alert class="uk-alert uk-alert-danger">{{ error }}</div>
     {% endif %}
     {% if form %}
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         <form id="login-form" class="uk-form uk-form-stacked {% if error %}uk-animation-shake{% endif %}" method="post">
             {{ form_widget(form) }}
             <fieldset>

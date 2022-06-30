@@ -3,15 +3,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Common\Cache\CacheProvider;
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Events\Cache\CachePurgeAssetsRequestEvent;
-use RZ\Roadiz\Core\Events\Cache\CachePurgeRequestEvent;
-use RZ\Roadiz\Core\Kernel;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeAssetsRequestEvent;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeRequestEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Themes\Rozier\RozierApp;
 
 /**
@@ -19,31 +16,18 @@ use Themes\Rozier\RozierApp;
  */
 class CacheController extends RozierApp
 {
-    private KernelInterface $kernel;
     private LoggerInterface $logger;
-    private CacheProvider $nodesSourcesUrlCacheProvider;
 
     /**
-     * @param KernelInterface $kernel
      * @param LoggerInterface $logger
-     * @param CacheProvider $nodesSourcesUrlCacheProvider
      */
     public function __construct(
-        KernelInterface $kernel,
-        LoggerInterface $logger,
-        CacheProvider $nodesSourcesUrlCacheProvider
+        LoggerInterface $logger
     ) {
-        $this->kernel = $kernel;
         $this->logger = $logger;
-        $this->nodesSourcesUrlCacheProvider = $nodesSourcesUrlCacheProvider;
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return Response
-     */
-    public function deleteDoctrineCache(Request $request)
+    public function deleteDoctrineCache(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCTRINE_CACHE_DELETE');
 
@@ -51,16 +35,8 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $event = new CachePurgeRequestEvent($this->kernel);
+            $event = new CachePurgeRequestEvent();
             $this->dispatchEvent($event);
-
-            // Clear cache for prod preview
-            $kernelClass = get_class($this->kernel);
-            /** @var Kernel $prodPreviewKernel */
-            $prodPreviewKernel = new $kernelClass('prod', false, true);
-            $prodPreviewKernel->boot();
-            $prodPreviewEvent = new CachePurgeRequestEvent($prodPreviewKernel);
-            $this->dispatchEvent($prodPreviewEvent);
 
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
@@ -70,12 +46,6 @@ class CacheController extends RozierApp
             }
             foreach ($event->getErrors() as $message) {
                 $this->publishErrorMessage($request, sprintf('Could not clear cache: %s', $message['description']));
-            }
-            foreach ($prodPreviewEvent->getMessages() as $message) {
-                $this->logger->info(sprintf('Preview cache cleared: %s', $message['description']));
-            }
-            foreach ($prodPreviewEvent->getErrors() as $message) {
-                $this->publishErrorMessage($request, sprintf('Could not clear creview cache: %s', $message['description']));
             }
 
             /*
@@ -91,7 +61,6 @@ class CacheController extends RozierApp
             'hydratationCache' => $this->em()->getConfiguration()->getHydrationCacheImpl(),
             'queryCache' => $this->em()->getConfiguration()->getQueryCacheImpl(),
             'metadataCache' => $this->em()->getConfiguration()->getMetadataCacheImpl(),
-            'nodeSourcesUrlsCache' => $this->nodesSourcesUrlCacheProvider,
         ];
 
         foreach ($this->assignation['cachesInfo'] as $key => $value) {
@@ -102,13 +71,13 @@ class CacheController extends RozierApp
             }
         }
 
-        return $this->render('cache/deleteDoctrine.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/cache/deleteDoctrine.html.twig', $this->assignation);
     }
 
     /**
      * @return FormInterface
      */
-    private function buildDeleteDoctrineForm()
+    private function buildDeleteDoctrineForm(): FormInterface
     {
         $builder = $this->createFormBuilder();
 
@@ -121,7 +90,7 @@ class CacheController extends RozierApp
      * @return Response
      * @throws \Twig\Error\RuntimeError
      */
-    public function deleteAssetsCache(Request $request)
+    public function deleteAssetsCache(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCTRINE_CACHE_DELETE');
 
@@ -129,7 +98,7 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent($this->kernel));
+            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent());
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
             foreach ($event->getMessages() as $message) {
@@ -147,13 +116,13 @@ class CacheController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('cache/deleteAssets.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/cache/deleteAssets.html.twig', $this->assignation);
     }
 
     /**
      * @return FormInterface
      */
-    private function buildDeleteAssetsForm()
+    private function buildDeleteAssetsForm(): FormInterface
     {
         $builder = $this->createFormBuilder();
 

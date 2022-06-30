@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
-use RZ\Roadiz\Core\Entities\Document;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\Core\Models\HasThumbnailInterface;
+use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -67,19 +68,24 @@ final class DocumentModel implements ModelInterface
         $thumbnail80Url = null;
         $previewUrl = null;
 
-        if ($this->document instanceof Document &&
+        if (
+            $this->document instanceof Document &&
             $this->document->getDocumentTranslations()->first() &&
-            $this->document->getDocumentTranslations()->first()->getName()) {
+            $this->document->getDocumentTranslations()->first()->getName()
+        ) {
             $name = $this->document->getDocumentTranslations()->first()->getName();
         }
 
         $this->documentUrlGenerator->setDocument($this->document);
         $hasThumbnail = false;
 
-        if ($this->document instanceof HasThumbnailInterface &&
+        if (
+            $this->document instanceof HasThumbnailInterface &&
             $this->document->needsThumbnail() &&
-            $this->document->hasThumbnails()) {
-            $this->documentUrlGenerator->setDocument($this->document->getThumbnails()->first());
+            $this->document->hasThumbnails() &&
+            false !== $thumbnail = $this->document->getThumbnails()->first()
+        ) {
+            $this->documentUrlGenerator->setDocument($thumbnail);
             $hasThumbnail = true;
         }
 
@@ -90,7 +96,7 @@ final class DocumentModel implements ModelInterface
             $previewUrl = $this->documentUrlGenerator->getUrl();
         }
 
-        if ($this->document instanceof AbstractEntity) {
+        if ($this->document instanceof PersistableInterface) {
             $id = $this->document->getId();
             $editUrl = $this->urlGenerator
                 ->generate('documentsEditPage', [
@@ -114,12 +120,15 @@ final class DocumentModel implements ModelInterface
             'isPdf' => $this->document->isPdf(),
             'isPrivate' => $this->document->isPrivate(),
             'shortType' => $this->document->getShortType(),
+            'processable' => $this->document->isProcessable(),
+            'relativePath' => $this->document->getRelativePath(),
             'editUrl' => $editUrl,
             'preview' => $previewUrl,
             'preview_html' => $this->renderer->render($this->document, DocumentModel::$previewArray),
             'embedPlatform' => $this->document->getEmbedPlatform(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
+            'url' => $previewUrl ?? $thumbnail80Url ?? null,
         ];
     }
 }

@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\NodeHandler;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -96,8 +97,10 @@ class NodesTreesController extends RozierApp
 
         $widget = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
-        if ($request->get('tagId') &&
-            $request->get('tagId') > 0) {
+        if (
+            $request->get('tagId') &&
+            $request->get('tagId') > 0
+        ) {
             $filterTag = $this->em()->find(Tag::class, (int) $request->get('tagId'));
             $this->assignation['filterTag'] = $filterTag;
             $widget->setTag($filterTag);
@@ -167,7 +170,7 @@ class NodesTreesController extends RozierApp
             $this->assignation['deleteNodesForm'] = $deleteNodesForm->createView();
         }
 
-        return $this->render('nodes/tree.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/tree.html.twig', $this->assignation);
     }
 
     /**
@@ -215,7 +218,7 @@ class NodesTreesController extends RozierApp
                     $this->assignation['referer'] = $request->get('deleteForm')['referer'];
                 }
 
-                return $this->render('nodes/bulkDelete.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/bulkDelete.html.twig', $this->assignation);
             }
         }
 
@@ -270,7 +273,7 @@ class NodesTreesController extends RozierApp
                     $this->assignation['referer'] = $request->get('statusForm')['referer'];
                 }
 
-                return $this->render('nodes/bulkStatus.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/bulkStatus.html.twig', $this->assignation);
             }
         }
 
@@ -431,8 +434,10 @@ class NodesTreesController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('nodes.bulk.not_tagged');
 
-        if (!empty($data['tagsPaths']) &&
-            !empty($data['nodesIds'])) {
+        if (
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
+        ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 
@@ -472,8 +477,10 @@ class NodesTreesController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('nodes.bulk.not_untagged');
 
-        if (!empty($data['tagsPaths']) &&
-            !empty($data['nodesIds'])) {
+        if (
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
+        ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 

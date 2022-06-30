@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
 
-use RZ\Roadiz\Core\Entities\Setting;
-use RZ\Roadiz\Explorer\AbstractDoctrineExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerItemInterface;
+use RZ\Roadiz\CoreBundle\Entity\Setting;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractDoctrineExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 
 final class SettingsProvider extends AbstractDoctrineExplorerProvider
 {
@@ -21,7 +22,7 @@ final class SettingsProvider extends AbstractDoctrineExplorerProvider
 
     protected function getDefaultOrdering(): array
     {
-        return ['name' =>'ASC'];
+        return ['name' => 'ASC'];
     }
 
     /**

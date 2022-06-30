@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global edit-item">
@@ -9,7 +9,7 @@
     </header>
 
     <article class="content content-edit">
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         {{ form_start(form, { attr: { id: "edit-attribute-form" }}) }}
             {{ form_widget(form) }}
             <fieldset data-uk-margin>
@@ -21,6 +21,6 @@
         {{ form_end(form) }}
     </article>
 
-    {% include '@Rozier/attributes/actionsMenu.html.twig' with {"item": item} only %}
+    {% include '@RoadizRozier/attributes/actionsMenu.html.twig' with {"item": item} only %}
 </section>
 {% endblock %}

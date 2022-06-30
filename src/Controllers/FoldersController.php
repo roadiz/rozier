@@ -1,16 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Core\Entities\FolderTranslation;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Folder\FolderCreatedEvent;
-use RZ\Roadiz\Core\Events\Folder\FolderDeletedEvent;
-use RZ\Roadiz\Core\Events\Folder\FolderUpdatedEvent;
-use RZ\Roadiz\Core\Repositories\TranslationRepository;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Entity\FolderTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Folder\FolderUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -54,7 +55,7 @@ class FoldersController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['folders'] = $listManager->getEntities();
 
-        return $this->render('folders/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/folders/list.html.twig', $this->assignation);
     }
 
     /**
@@ -111,7 +112,7 @@ class FoldersController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('folders/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/folders/add.html.twig', $this->assignation);
     }
 
     /**
@@ -159,7 +160,7 @@ class FoldersController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['folder'] = $folder;
 
-            return $this->render('folders/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -214,7 +215,7 @@ class FoldersController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['translation'] = $translation;
 
-            return $this->render('folders/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -287,7 +288,7 @@ class FoldersController extends RozierApp
             $this->assignation['available_translations'] = $translationRepository->findAll();
             $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
 
-            return $this->render('folders/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -323,7 +324,10 @@ class FoldersController extends RozierApp
             /** @var Document $document */
             foreach ($documents as $document) {
                 if ($document->isLocal()) {
-                    $zip->addFile($this->packages->getDocumentFilePath($document), $document->getFilename());
+                    $zip->addFile(
+                        $this->packages->getDocumentFilePath($document),
+                        $document->getFolder() . DIRECTORY_SEPARATOR . $document->getFilename()
+                    );
                 }
             }
 

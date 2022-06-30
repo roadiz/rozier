@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\NodeTypes;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\NodeTypesImporter;
-use RZ\Roadiz\Core\Bags\NodeTypes;
-use RZ\Roadiz\Core\Entities\NodeType;
+use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Importer\NodeTypesImporter;
 use RZ\Roadiz\Documentation\Generators\DocumentationGenerator;
 use RZ\Roadiz\Typescript\Declaration\DeclarationGeneratorFactory;
 use RZ\Roadiz\Typescript\Declaration\Generators\DeclarationGenerator;
@@ -202,12 +203,14 @@ class NodeTypesUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['node_type_file'])) {
+            !empty($form['node_type_file'])
+        ) {
             $file = $form['node_type_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== json_decode($serializedData)) {
@@ -227,7 +230,7 @@ class NodeTypesUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('node-types/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/node-types/import.html.twig', $this->assignation);
     }
 
     /**

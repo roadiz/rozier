@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\CMS\Forms\LoginResetForm;
-use RZ\Roadiz\CMS\Traits\LoginResetTrait;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Form\LoginResetForm;
+use RZ\Roadiz\CoreBundle\Traits\LoginResetTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 
@@ -45,7 +46,7 @@ class LoginResetController extends RozierApp
             $this->assignation['error'] = $this->getTranslator()->trans('confirmation.token.is.invalid');
         }
 
-        return $this->render('login/reset.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/reset.html.twig', $this->assignation);
     }
 
     /**
@@ -53,6 +54,6 @@ class LoginResetController extends RozierApp
      */
     public function confirmAction()
     {
-        return $this->render('login/resetConfirm.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/login/resetConfirm.html.twig', $this->assignation);
     }
 }

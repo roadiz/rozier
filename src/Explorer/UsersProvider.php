@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
 
-use RZ\Roadiz\Core\Entities\User;
-use RZ\Roadiz\Explorer\AbstractDoctrineExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerItemInterface;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractDoctrineExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 
 final class UsersProvider extends AbstractDoctrineExplorerProvider
 {
@@ -21,7 +22,7 @@ final class UsersProvider extends AbstractDoctrineExplorerProvider
 
     protected function getDefaultOrdering(): array
     {
-        return ['username' =>'ASC'];
+        return ['username' => 'ASC'];
     }
 
     /**

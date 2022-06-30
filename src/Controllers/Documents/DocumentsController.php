@@ -1,34 +1,35 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Entities\AttributeDocuments;
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Core\Entities\TagTranslationDocuments;
-use RZ\Roadiz\Core\Entities\Translation;
 use RZ\Roadiz\Core\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Core\Events\DocumentDeletedEvent;
 use RZ\Roadiz\Core\Events\DocumentInFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentOutFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentUpdatedEvent;
 use RZ\Roadiz\Core\Exceptions\APINeedsAuthentificationException;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
-use RZ\Roadiz\Core\Handlers\DocumentHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\ListManagers\QueryBuilderListManager;
 use RZ\Roadiz\Core\Models\DocumentInterface;
-use RZ\Roadiz\Core\Repositories\DocumentRepository;
+use RZ\Roadiz\CoreBundle\Document\DocumentFactory;
+use RZ\Roadiz\CoreBundle\Document\MediaFinder\SoundcloudEmbedFinder;
+use RZ\Roadiz\CoreBundle\Document\MediaFinder\YoutubeEmbedFinder;
+use RZ\Roadiz\CoreBundle\Entity\AttributeDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
+use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
-use RZ\Roadiz\Utils\Document\DocumentFactory;
 use RZ\Roadiz\Utils\MediaFinders\AbstractEmbedFinder;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
-use RZ\Roadiz\Utils\MediaFinders\SoundcloudEmbedFinder;
-use RZ\Roadiz\Utils\MediaFinders\YoutubeEmbedFinder;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\ClickableInterface;
@@ -45,6 +46,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\File;
@@ -124,8 +126,10 @@ class DocumentsController extends RozierApp
             'raw' => false,
         ];
 
-        if (null !== $folderId &&
-            $folderId > 0) {
+        if (
+            null !== $folderId &&
+            $folderId > 0
+        ) {
             $folder = $this->em()
                 ->find(Folder::class, $folderId);
 
@@ -133,14 +137,18 @@ class DocumentsController extends RozierApp
             $this->assignation['folder'] = $folder;
         }
 
-        if ($request->query->has('type') &&
-            $request->query->get('type', '') !== '') {
+        if (
+            $request->query->has('type') &&
+            $request->query->get('type', '') !== ''
+        ) {
             $prefilters['mimeType'] = trim($request->query->get('type', ''));
             $this->assignation['mimeType'] = trim($request->query->get('type', ''));
         }
 
-        if ($request->query->has('embedPlatform') &&
-            $request->query->get('embedPlatform', '') !== '') {
+        if (
+            $request->query->has('embedPlatform') &&
+            $request->query->get('embedPlatform', '') !== ''
+        ) {
             $prefilters['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
             $this->assignation['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
         }
@@ -271,7 +279,7 @@ class DocumentsController extends RozierApp
             // Create form view and assign it
             $this->assignation['file_form'] = $fileForm->createView();
 
-            return $this->render('documents/adjust.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/adjust.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -349,7 +357,7 @@ class DocumentsController extends RozierApp
             $this->assignation['rawDocument'] = $document->getRawDocument();
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('documents/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -416,7 +424,7 @@ class DocumentsController extends RozierApp
                 $this->assignation['infos']['duration'] = $document->getMediaDuration() . ' sec';
             }
 
-            return $this->render('documents/preview.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/preview.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -442,9 +450,11 @@ class DocumentsController extends RozierApp
             $form = $this->buildDeleteForm($document);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['documentId'] == $document->getId()) {
+                $form->getData()['documentId'] == $document->getId()
+            ) {
                 try {
                     $this->dispatchEvent(
                         new DocumentDeletedEvent($document)
@@ -470,7 +480,7 @@ class DocumentsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('documents/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -522,7 +532,7 @@ class DocumentsController extends RozierApp
             $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
             $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-            return $this->render('documents/bulkDelete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/bulkDelete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -571,7 +581,7 @@ class DocumentsController extends RozierApp
             $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
             $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-            return $this->render('documents/bulkDownload.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/bulkDownload.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -650,7 +660,7 @@ class DocumentsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('documents/embed.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/embed.html.twig', $this->assignation);
     }
 
     /**
@@ -736,7 +746,7 @@ class DocumentsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isValid()) {
                 $document = $this->uploadDocument($form, $folderId);
 
                 if (false !== $document) {
@@ -797,7 +807,7 @@ class DocumentsController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['maxUploadSize'] = UploadedFile::getMaxFilesize() / 1024 / 1024;
 
-        return $this->render('documents/upload.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/upload.html.twig', $this->assignation);
     }
 
     /**
@@ -826,7 +836,7 @@ class DocumentsController extends RozierApp
                     return $tagTranslationDocuments->getTagTranslation()->getTag();
                 });
 
-            return $this->render('documents/usage.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/documents/usage.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -867,7 +877,7 @@ class DocumentsController extends RozierApp
         $this->assignation['documents'] = $listManager->getEntities();
         $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
 
-        return $this->render('documents/list-table.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/documents/list-table.html.twig', $this->assignation);
     }
 
     /**
@@ -975,8 +985,10 @@ class DocumentsController extends RozierApp
                 ],
             ]);
 
-        if (null !== $folderId &&
-            $folderId > 0) {
+        if (
+            null !== $folderId &&
+            $folderId > 0
+        ) {
             $builder->add('folderId', HiddenType::class, [
                 'data' => $folderId,
             ]);
@@ -1038,8 +1050,10 @@ class DocumentsController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('no_documents.linked_to.folders');
 
-        if (!empty($data['documentsId']) &&
-            !empty($data['folderPaths'])) {
+        if (
+            !empty($data['documentsId']) &&
+            !empty($data['folderPaths'])
+        ) {
             $documentsIds = explode(',', $data['documentsId']);
 
             $documents = $this->em()
@@ -1090,8 +1104,10 @@ class DocumentsController extends RozierApp
     {
         $msg = $this->getTranslator()->trans('no_documents.removed_from.folders');
 
-        if (!empty($data['documentsId']) &&
-            !empty($data['folderPaths'])) {
+        if (
+            !empty($data['documentsId']) &&
+            !empty($data['folderPaths'])
+        ) {
             $documentsIds = explode(',', $data['documentsId']);
 
             $documents = $this->em()
@@ -1142,21 +1158,30 @@ class DocumentsController extends RozierApp
     {
         if (count($documents) > 0) {
             $tmpFileName = tempnam(sys_get_temp_dir(), "rzdocs_");
+            if (false === $tmpFileName) {
+                throw new \RuntimeException('Failed to create a unique file name in system temp dir');
+            }
             $zip = new \ZipArchive();
             $zip->open($tmpFileName, \ZipArchive::CREATE);
 
             /** @var Document $document */
             foreach ($documents as $document) {
                 if ($document->isLocal()) {
-                    $documentPath = $this->packages->getDocumentFilePath($document);
-                    $zip->addFile($documentPath, $document->getFilename());
+                    $zip->addFile(
+                        $this->packages->getDocumentFilePath($document),
+                        $document->getFolder() . DIRECTORY_SEPARATOR . $document->getFilename()
+                    );
                 }
             }
 
             $zip->close();
+            $fileContent = file_get_contents($tmpFileName);
+            if (false === $fileContent) {
+                throw new \RuntimeException(sprintf('Failed to read temp file %s', $fileContent));
+            }
 
             $response = new Response(
-                file_get_contents($tmpFileName),
+                $fileContent,
                 Response::HTTP_OK,
                 [
                     'content-control' => 'private',
@@ -1186,9 +1211,11 @@ class DocumentsController extends RozierApp
     {
         $handlers = $this->documentPlatforms;
 
-        if (isset($data['embedId']) &&
+        if (
+            isset($data['embedId']) &&
             isset($data['embedPlatform']) &&
-            in_array($data['embedPlatform'], array_keys($handlers))) {
+            in_array($data['embedPlatform'], array_keys($handlers))
+        ) {
             $class = $handlers[$data['embedPlatform']];
 
             /*
@@ -1215,14 +1242,21 @@ class DocumentsController extends RozierApp
      *
      * @param int|null $folderId
      *
-     * @return DocumentInterface
+     * @return DocumentInterface|null
      * @throws \Exception
      * @throws EntityAlreadyExistsException
      */
-    private function randomDocument(?int $folderId = null)
+    private function randomDocument(?int $folderId = null): ?DocumentInterface
     {
         if ($this->randomImageFinder instanceof AbstractEmbedFinder) {
-            return $this->createDocumentFromFinder($this->randomImageFinder, $folderId);
+            $document = $this->createDocumentFromFinder($this->randomImageFinder, $folderId);
+            if ($document instanceof DocumentInterface) {
+                return $document;
+            }
+            if (is_array($document) && isset($document[0])) {
+                return $document[0];
+            }
+            return null;
         }
         throw new \RuntimeException('Random image finder must be instance of ' . AbstractEmbedFinder::class);
     }
@@ -1231,7 +1265,7 @@ class DocumentsController extends RozierApp
      * @param AbstractEmbedFinder $finder
      * @param int|null            $folderId
      *
-     * @return array|DocumentInterface
+     * @return DocumentInterface|array<DocumentInterface>
      */
     private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null)
     {
@@ -1263,7 +1297,7 @@ class DocumentsController extends RozierApp
      * @param FormInterface $data
      * @param int|null      $folderId
      *
-     * @return bool|DocumentInterface
+     * @return false|DocumentInterface
      */
     private function uploadDocument($data, ?int $folderId = null)
     {
@@ -1291,8 +1325,8 @@ class DocumentsController extends RozierApp
     private function getListingTemplate(Request $request): string
     {
         if ($request->query->get('list') === '1') {
-            return 'documents/list-table.html.twig';
+            return '@RoadizRozier/documents/list-table.html.twig';
         }
-        return 'documents/list.html.twig';
+        return '@RoadizRozier/documents/list.html.twig';
     }
 }

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
-use RZ\Roadiz\Core\Entities\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,11 +64,11 @@ class AjaxNodeTypesController extends AjaxAbstractFieldsController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        if (!$request->query->has('names') || !is_array($request->query->get('names'))) {
+        if (!$request->query->has('names') || !is_array($request->query->all('names'))) {
             throw new InvalidParameterException('Names array should be provided within an array');
         }
 
-        $cleanNodeTypesName = array_filter($request->query->get('names'));
+        $cleanNodeTypesName = array_filter($request->query->all('names'));
 
         /** @var EntityManager $em */
         $em = $this->em();

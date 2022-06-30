@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Attributes;
 
-use RZ\Roadiz\Attribute\Form\AttributeGroupType;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\AttributeGroup;
+use RZ\Roadiz\CoreBundle\Entity\AttributeGroup;
+use RZ\Roadiz\CoreBundle\Form\AttributeGroupType;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 
@@ -43,7 +44,7 @@ class AttributeGroupController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'attributes/groups';
+        return '@RoadizRozier/attributes/groups';
     }
 
     /**
@@ -94,13 +95,13 @@ class AttributeGroupController extends AbstractAdminController
         if ($item instanceof AttributeGroup) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['canonicalName' => 'ASC'];
     }

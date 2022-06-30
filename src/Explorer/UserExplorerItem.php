@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
 
-use RZ\Roadiz\Core\Entities\User;
-use RZ\Roadiz\Explorer\AbstractExplorerItem;
+use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
 
 final class UserExplorerItem extends AbstractExplorerItem
 {
@@ -39,7 +40,11 @@ final class UserExplorerItem extends AbstractExplorerItem
      */
     public function getDisplayable(): string
     {
-        $fullName = trim($this->user->getFirstName() ?? '' . ' ' . $this->user->getLastName() ?? '');
+        $fullName = trim(
+            ($this->user->getFirstName() ?? '') .
+            ' ' .
+            ($this->user->getLastName() ?? '')
+        );
         if ($fullName !== '') {
             return $fullName;
         }

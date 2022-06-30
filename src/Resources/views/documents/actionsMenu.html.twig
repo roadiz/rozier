@@ -10,7 +10,7 @@
                 }) }}">{% trans %}versions.working_copy{% endtrans %}</a>
                 {% for version in versions %}
                     {% if loop.index0 > 0 and loop.index <= bags.settings.get('max_versions_showed', 6) %}
-                        {% include '@Rozier/widgets/versionItem.html.twig' with {
+                        {% include '@RoadizRozier/widgets/versionItem.html.twig' with {
                             version: version,
                             currentVersion: currentVersion,
                             url: path('documentsMetaPage', {

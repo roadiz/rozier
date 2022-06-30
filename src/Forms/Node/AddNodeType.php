@@ -1,13 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\Node;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CMS\Forms\DataTransformer\NodeTypeTransformer;
-use RZ\Roadiz\CMS\Forms\NodeTypesType;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Form\DataTransformer\NodeTypeTransformer;
+use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -37,7 +37,7 @@ class AddNodeType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('title', TextType::class, [
             'label' => 'title',
@@ -97,7 +97,7 @@ class AddNodeType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'childnode';
     }
@@ -105,7 +105,7 @@ class AddNodeType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

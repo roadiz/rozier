@@ -1,21 +1,22 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\CssType;
-use RZ\Roadiz\CMS\Forms\EnumerationType;
-use RZ\Roadiz\CMS\Forms\JsonType;
-use RZ\Roadiz\CMS\Forms\MarkdownType;
-use RZ\Roadiz\CMS\Forms\MultipleEnumerationType;
-use RZ\Roadiz\CMS\Forms\YamlType;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\CssType;
+use RZ\Roadiz\CoreBundle\Form\EnumerationType;
+use RZ\Roadiz\CoreBundle\Form\JsonType;
+use RZ\Roadiz\CoreBundle\Form\MarkdownType;
+use RZ\Roadiz\CoreBundle\Form\MultipleEnumerationType;
+use RZ\Roadiz\CoreBundle\Form\YamlType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
@@ -51,7 +52,7 @@ final class NodeSourceType extends AbstractType
      * @param  FormBuilderInterface $builder
      * @param  array                $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $fields = $this->getFieldsForSource($builder->getData(), $options['nodeType']);
 
@@ -76,7 +77,7 @@ final class NodeSourceType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'property' => 'id',
@@ -96,7 +97,7 @@ final class NodeSourceType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'source';
     }
@@ -106,7 +107,7 @@ final class NodeSourceType extends AbstractType
      * @param NodeType $nodeType
      * @return array
      */
-    private function getFieldsForSource(NodesSources $source, NodeType $nodeType)
+    private function getFieldsForSource(NodesSources $source, NodeType $nodeType): array
     {
         $criteria = [
             'nodeType' => $nodeType,
@@ -410,7 +411,7 @@ final class NodeSourceType extends AbstractType
      * @param array $formOptions
      * @return array
      */
-    public function getDefaultOptions(NodesSources $nodeSource, NodeTypeField $field, array &$formOptions)
+    public function getDefaultOptions(NodesSources $nodeSource, NodeTypeField $field, array &$formOptions): array
     {
         $label = $field->getLabel();
         $devName = '{{ nodeSource.' . $field->getVarName() . ' }}';
@@ -446,13 +447,16 @@ final class NodeSourceType extends AbstractType
         if ($field->getMaxLength() > 0) {
             $options['attr']['data-max-length'] = $field->getMaxLength();
         }
-        if ($field->isVirtual() &&
+        if (
+            $field->isVirtual() &&
             $field->getType() !== AbstractField::MANY_TO_ONE_T &&
-            $field->getType() !== AbstractField::MANY_TO_MANY_T) {
+            $field->getType() !== AbstractField::MANY_TO_MANY_T
+        ) {
             $options['mapped'] = false;
         }
 
-        if (in_array($field->getType(), [
+        if (
+            in_array($field->getType(), [
             AbstractField::MANY_TO_ONE_T,
             AbstractField::MANY_TO_MANY_T,
             AbstractField::DOCUMENTS_T,
@@ -460,7 +464,8 @@ final class NodeSourceType extends AbstractType
             AbstractField::CUSTOM_FORMS_T,
             AbstractField::MULTI_PROVIDER_T,
             AbstractField::SINGLE_PROVIDER_T,
-        ])) {
+            ])
+        ) {
             $options['nodeTypeField'] = $field;
             $options['nodeSource'] = $nodeSource;
             unset($options['attr']['dir']);

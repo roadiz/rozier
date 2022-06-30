@@ -1,23 +1,24 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Events\Node\NodeCreatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeDuplicatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodePathChangedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeUpdatedEvent;
-use RZ\Roadiz\Core\Events\Node\NodeVisibilityChangedEvent;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
-use RZ\Roadiz\Utils\Node\Exception\SameNodeUrlException;
-use RZ\Roadiz\Utils\Node\NodeDuplicator;
-use RZ\Roadiz\Utils\Node\NodeMover;
-use RZ\Roadiz\Utils\Node\NodeNamePolicyInterface;
-use RZ\Roadiz\Utils\Node\UniqueNodeGenerator;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeDuplicatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodePathChangedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeVisibilityChangedEvent;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Node\Exception\SameNodeUrlException;
+use RZ\Roadiz\CoreBundle\Node\NodeDuplicator;
+use RZ\Roadiz\CoreBundle\Node\NodeMover;
+use RZ\Roadiz\CoreBundle\Node\NodeNamePolicyInterface;
+use RZ\Roadiz\CoreBundle\Node\UniqueNodeGenerator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -155,7 +156,7 @@ class AjaxNodesController extends AbstractAjaxController
      * @param array $parameters
      * @param Node  $node
      */
-    protected function updatePosition($parameters, Node $node)
+    protected function updatePosition($parameters, Node $node): void
     {
         if ($node->isLocked()) {
             throw new BadRequestHttpException('Locked node cannot be moved.');
@@ -233,9 +234,9 @@ class AjaxNodesController extends AbstractAjaxController
             if ($prevNode !== null) {
                 return $prevNode->getPosition() + 0.5;
             }
-        } elseif (key_exists('firstPosition', $parameters) && (boolean) $parameters['firstPosition'] === true) {
+        } elseif (key_exists('firstPosition', $parameters) && (bool) $parameters['firstPosition'] === true) {
             return -0.5;
-        } elseif (key_exists('lastPosition', $parameters) && (boolean) $parameters['lastPosition'] === true) {
+        } elseif (key_exists('lastPosition', $parameters) && (bool) $parameters['lastPosition'] === true) {
             return 99999999;
         }
         return $default;
@@ -246,11 +247,11 @@ class AjaxNodesController extends AbstractAjaxController
      *
      * @param Request $request
      *
-     * @return Response
+     * @return JsonResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function statusesAction(Request $request)
+    public function statusesAction(Request $request): JsonResponse
     {
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
@@ -345,7 +346,7 @@ class AjaxNodesController extends AbstractAjaxController
      *
      * @return JsonResponse
      */
-    protected function changeNodeStatus(Node $node, string $transition)
+    protected function changeNodeStatus(Node $node, string $transition): JsonResponse
     {
         $request = $this->getRequest();
         $workflow = $this->workflowRegistry->get($node);
@@ -374,7 +375,7 @@ class AjaxNodesController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function quickAddAction(Request $request)
+    public function quickAddAction(Request $request): JsonResponse
     {
         /*
          * Validate

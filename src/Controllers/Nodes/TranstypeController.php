@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Events\Node\NodeUpdatedEvent;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
-use RZ\Roadiz\Utils\Node\NodeTranstyper;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Node\NodeTranstyper;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -90,6 +91,6 @@ class TranstypeController extends RozierApp
         $this->assignation['parentNode'] = $node->getParent();
         $this->assignation['type'] = $node->getNodeType();
 
-        return $this->render('nodes/transtype.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/transtype.html.twig', $this->assignation);
     }
 }

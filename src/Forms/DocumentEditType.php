@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueFilename;
-use RZ\Roadiz\CMS\Forms\DocumentCollectionType;
-use RZ\Roadiz\Core\Entities\Document;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueFilename;
+use RZ\Roadiz\CoreBundle\Form\DocumentCollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -25,7 +26,7 @@ class DocumentEditType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var Document $document */
         $document = $builder->getData();
@@ -128,7 +129,7 @@ class DocumentEditType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Document::class
@@ -145,7 +146,7 @@ class DocumentEditType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'document_edit';
     }

@@ -1,17 +1,18 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\AttributeValue;
-use RZ\Roadiz\Core\Entities\Node;
+use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
+use RZ\Roadiz\CoreBundle\Entity\Node;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AjaxAttributeValuesController extends AbstractAjaxController
 {
-    protected static $validMethods = [
+    protected static array $validMethods = [
         Request::METHOD_POST,
     ];
 

@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
 
 use Exception;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
-use RZ\Roadiz\Core\Entities\Document;
-use RZ\Roadiz\Core\Entities\DocumentTranslation;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\DocumentTranslationUpdatedEvent;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
+use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\CoreBundle\Entity\DocumentTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Document\DocumentTranslationUpdatedEvent;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,7 +43,9 @@ class DocumentTranslationsController extends RozierApp
 
         if (null === $translationId) {
             $translation = $this->em()->getRepository(Translation::class)->findDefault();
-            $translationId = $translation->getId();
+            if ($translation instanceof PersistableInterface) {
+                $translationId = $translation->getId();
+            }
         } else {
             $translation = $this->em()->find(Translation::class, $translationId);
         }
@@ -110,7 +114,7 @@ class DocumentTranslationsController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['readOnly'] = $this->isReadOnly;
 
-            return $this->render('document-translations/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/document-translations/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -118,11 +122,11 @@ class DocumentTranslationsController extends RozierApp
 
     /**
      * @param Document $document
-     * @param Translation $translation
+     * @param TranslationInterface $translation
      *
      * @return DocumentTranslation
      */
-    protected function createDocumentTranslation(Document $document, Translation $translation)
+    protected function createDocumentTranslation(Document $document, TranslationInterface $translation)
     {
         $dt = new DocumentTranslation();
         $dt->setDocument($document);
@@ -153,16 +157,20 @@ class DocumentTranslationsController extends RozierApp
         $document = $this->em()
                          ->find(Document::class, $documentId);
 
-        if ($documentTr !== null &&
-            $document !== null) {
+        if (
+            $documentTr !== null &&
+            $document !== null
+        ) {
             $this->assignation['documentTr'] = $documentTr;
             $this->assignation['document'] = $document;
             $form = $this->buildDeleteForm($documentTr);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['documentId'] == $documentTr->getId()) {
+                $form->getData()['documentId'] == $documentTr->getId()
+            ) {
                 try {
                     $this->em()->remove($documentTr);
                     $this->em()->flush();
@@ -190,7 +198,7 @@ class DocumentTranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('document-translations/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/document-translations/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -218,11 +226,7 @@ class DocumentTranslationsController extends RozierApp
         return $builder->getForm();
     }
 
-    /**
-     * @param AbstractEntity $entity
-     * @param Request        $request
-     */
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         /*
          * Dispatch pre-flush event
@@ -240,15 +244,17 @@ class DocumentTranslationsController extends RozierApp
     }
 
     /**
-     * @param AbstractEntity $entity
+     * @param PersistableInterface $entity
      *
      * @return Response
      */
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
-        if ($entity instanceof DocumentTranslation &&
+        if (
+            $entity instanceof DocumentTranslation &&
             $entity->getDocument() instanceof Document &&
-            $entity->getTranslation() instanceof Translation) {
+            $entity->getTranslation() instanceof Translation
+        ) {
             $routeParams = [
                 'documentId' => $entity->getDocument()->getId(),
                 'translationId' => $entity->getTranslation()->getId(),

@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Bags\NodeTypes;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Widgets\NodeTreeWidget;
@@ -78,8 +79,10 @@ class AjaxNodeTreeController extends AbstractAjaxController
 
                 $nodeTree = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
-                if ($request->get('tagId') &&
-                    $request->get('tagId') > 0) {
+                if (
+                    $request->get('tagId') &&
+                    $request->get('tagId') > 0
+                ) {
                     $filterTag = $this->em()
                                         ->find(
                                             Tag::class,
@@ -105,7 +108,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
 
                 $this->assignation['mainNodeTree'] = false;
 
-                if (true === (boolean) $request->get('stackTree')) {
+                if (true === (bool) $request->get('stackTree')) {
                     $nodeTree->setStackTree(true);
                 }
                 break;
@@ -133,7 +136,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
             'linkedTypes' => array_map(function (NodeType $nodeType) {
                 return $nodeType->getName();
             }, $linkedTypes),
-            'nodeTree' => trim($this->getTwig()->render('widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
+            'nodeTree' => trim($this->getTwig()->render('@RoadizRozier/widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
         ];
 
         return new JsonResponse(

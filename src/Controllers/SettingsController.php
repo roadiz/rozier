@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
-use RZ\Roadiz\CMS\Forms\SettingType;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
-use RZ\Roadiz\Core\Entities\Setting;
-use RZ\Roadiz\Core\Entities\SettingGroup;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\Setting;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Form\SettingType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -45,7 +46,7 @@ class SettingsController extends RozierApp
             return $response->send();
         }
 
-        return $this->render('settings/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
     }
 
     /**
@@ -68,7 +69,7 @@ class SettingsController extends RozierApp
                 return $response->send();
             }
 
-            return $this->render('settings/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -108,7 +109,7 @@ class SettingsController extends RozierApp
             ]);
             $form->handleRequest($request);
             if ($form->isSubmitted()) {
-                if ($form->isSubmitted() && $form->isValid()) {
+                if ($form->isValid()) {
                     try {
                         $this->resetSettingsCache();
                         $this->em()->flush();
@@ -209,7 +210,7 @@ class SettingsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('settings/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/edit.html.twig', $this->assignation);
         }
 
         throw $this->createNotFoundException();
@@ -261,7 +262,7 @@ class SettingsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('settings/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/add.html.twig', $this->assignation);
     }
 
     /**
@@ -301,7 +302,7 @@ class SettingsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('settings/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/settings/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

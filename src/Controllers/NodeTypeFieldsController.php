@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeTypeHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
@@ -51,7 +52,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['nodeType'] = $nodeType;
             $this->assignation['fields'] = $fields;
 
-            return $this->render('node-type-fields/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -102,7 +103,7 @@ class NodeTypeFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -176,7 +177,7 @@ class NodeTypeFieldsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -240,7 +241,7 @@ class NodeTypeFieldsController extends RozierApp
             $this->assignation['field'] = $field;
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('node-type-fields/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/node-type-fields/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

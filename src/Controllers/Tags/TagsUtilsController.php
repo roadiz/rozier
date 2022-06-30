@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

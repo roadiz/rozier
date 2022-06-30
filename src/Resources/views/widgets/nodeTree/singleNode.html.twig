@@ -136,7 +136,7 @@ type|lower,
         {% endblock %}
 
         {% block nodetree_contextual_menu %}
-            {%- include 'widgets/nodeTree/contextualMenu.html.twig' with {
+            {%- include '@RoadizRozier/widgets/nodeTree/contextualMenu.html.twig' with {
                 'node': node,
                 'nodeTree': nodeTree
             } only -%}
@@ -164,7 +164,7 @@ type|lower,
              # We will have to check after OR inside drag status
              #}
                 {% for subNode in children %}
-                    {% include 'widgets/nodeTree/singleNode.html.twig' with {
+                    {% include '@RoadizRozier/widgets/nodeTree/singleNode.html.twig' with {
                         "node":subNode,
                         "parent":node,
                         "nodeTree":nodeTree,

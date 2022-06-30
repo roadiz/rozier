@@ -1,16 +1,16 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global content-nav-and-filters">
     <header class="content-header header-user header-user-list">
         <h1 class="content-title user-add-title">{% trans %}users{% endtrans %}</h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         <div class="content-header-action-menu">
             <a class="uk-button" href="{{ path('usersAddPage') }}"><i class="uk-icon-rz-plus"></i> {% trans %}add.a.user{% endtrans %}</a>
         </div>
     </header>
 
-    {% include '@Rozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
     <article class="content content-no-action-menu">
         <div class="content-table-cont">
             <table class="content-table users uk-table">
@@ -18,13 +18,13 @@
                     <tr>
                         <th class="table-actions-userpicture-row mobile-hidden uk-visible-xlarge"></th>
                         <th class="mobile-hidden">{% trans %}user.username{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'username',
                                 'filters': filters,
                             } only %}
                         </th>
                         <th>{% trans %}user.email{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'email',
                                 'filters': filters,
                             } only %}

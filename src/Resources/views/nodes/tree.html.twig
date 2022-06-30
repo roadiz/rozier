@@ -1,26 +1,26 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global stack-tree">
 
     <header class="content-header header-node header-nodes-tree">
         {% if node %}
-            {% include '@Rozier/nodes/breadcrumb.html.twig' with {"node": node} only %}
+            {% include '@RoadizRozier/nodes/breadcrumb.html.twig' with {"node": node} only %}
         {% endif %}
         <h1 class="content-title node-edit-title">
             {% if node %}
                 {{ source.title|u.truncate(25, '[…]', true) }}{% if specificNodeTree.tag %} ({{ specificNodeTree.tag.translatedTags.first.name }}){% endif %}
-                {% include '@Rozier/nodes/nodeTypeCircle.html.twig' %}
+                {% include '@RoadizRozier/nodes/nodeTypeCircle.html.twig' %}
             {% else %}
                 {{ 'tree'|trans }}
             {% endif %}
         </h1>
 
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' with {filters: specificNodeTree.filters} only %}
-        {% include 'nodes/navBack.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' with {filters: specificNodeTree.filters} only %}
+        {% include '@RoadizRozier/nodes/navBack.html.twig' %}
         {% if node %}
-            {% include 'nodes/navBar.html.twig' with {"current": 'tree'} %}
-            {% include 'nodes/translationBar.html.twig' with {
+            {% include '@RoadizRozier/nodes/navBar.html.twig' with {"current": 'tree'} %}
+            {% include '@RoadizRozier/nodes/translationBar.html.twig' with {
                 "current": translation.id,
                 'route': 'nodesTreePage'
             } %}
@@ -38,7 +38,7 @@
         {% endif %}
     </header>
 
-    {% include '@Rozier/nodes/filtersBar.html.twig' with {
+    {% include '@RoadizRozier/nodes/filtersBar.html.twig' with {
         filters: specificNodeTree.filters,
         deleteNodesForm: deleteNodesForm,
         tagNodesForm: tagNodesForm,
@@ -56,14 +56,14 @@
                 {% endfor %}
             </div>
         {% endif %}
-        {% include '@Rozier/widgets/nodeTree/nodeTree.html.twig' with {
+        {% include '@RoadizRozier/widgets/nodeTree/nodeTree.html.twig' with {
             "nodeTree":specificNodeTree,
             "node":specificNodeTree.getRootNode,
             "nodeStatuses":nodeStatuses,
         } only %}
     </article>
     {% if node %}
-        {% include 'nodes/actionsMenu.html.twig' %}
+        {% include '@RoadizRozier/nodes/actionsMenu.html.twig' %}
     {% endif %}
 </section>
 {% endblock %}

@@ -1,16 +1,16 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global content-nav-and-filters">
 
     <header class="content-header header-folder header-folder-list">
         <h1 class="content-title folder-list-title">{% trans %}folders{% endtrans %}</h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         <div class="content-header-action-menu">
             <a class="uk-button" href="{{ path('foldersAddPage') }}"><i class="uk-icon-rz-plus"></i> {% trans %}add.a.folder{% endtrans %}</a>
         </div>
     </header>
-    {% include '@Rozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
     <article class="content content-no-action-menu">
         <div class="content-table-cont">
             <table class="folders content-table uk-table">
@@ -18,7 +18,7 @@
                     <tr>
                         <th>
                             {% trans %}name{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'name',
                                 'filters': filters,
                             } only %}

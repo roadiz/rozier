@@ -1,10 +1,6 @@
-# Rozier backend theme
+# Rozier: Roadiz back-office theme
 
-## Migration to ES6 syntax and Webpack
-### Things to tests
-
-* Map markers (and images)
-* History js (back and forwards not working)
+[![Build Status](https://app.travis-ci.com/roadiz/rozier.svg?branch=main)](https://app.travis-ci.com/roadiz/rozier)
 
 ## Contribute
 
@@ -19,16 +15,3 @@ yarn build
 # working on LESS and JS files.
 yarn dev
 ```
-
-Then you will be able to switch theme to development mode
-in `RozierApp.php`:
-
-```php
-$this->assignation['head']['backDevMode'] = true;
-```
-
-This will make Rozier theme to load each Roadiz JS file and Bower
-components separately.
-
-**Do not forget to set `$this->assignation['head']['backDevMode']` to `false` and to run
-`grunt` before pushing your code!**

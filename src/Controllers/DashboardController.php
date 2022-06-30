@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Log;
+use RZ\Roadiz\CoreBundle\Entity\Log;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 
@@ -29,6 +30,6 @@ class DashboardController extends RozierApp
              ->findLatestByNodesSources(8);
 
 
-        return $this->render('dashboard/index.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/dashboard/index.html.twig', $this->assignation);
     }
 }

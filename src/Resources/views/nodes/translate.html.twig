@@ -1,25 +1,25 @@
 
 {% set currentTitle = node.nodeSources.first.title|default(node.nodeName) %}
 
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global">
     <header class="content-header header-node header-node-edit">
-        {% include '@Rozier/nodes/breadcrumb.html.twig' with {"node": node} only %}
+        {% include '@RoadizRozier/nodes/breadcrumb.html.twig' with {"node": node} only %}
         <h1 class="content-title node-edit-title">
             {{ "edit.node.%name%"|trans({'%name%': currentTitle})|u.truncate(25, '[…]', true) }}
-            {% include '@Rozier/nodes/nodeTypeCircle.html.twig' %}
+            {% include '@RoadizRozier/nodes/nodeTypeCircle.html.twig' %}
         </h1>
-        {% include 'nodes/navBack.html.twig' %}
-        {% include 'nodes/navBar.html.twig' with {"current": null} %}
-        {% include 'nodes/translationBar.html.twig' with {"current": null} %}
+        {% include '@RoadizRozier/nodes/navBack.html.twig' %}
+        {% include '@RoadizRozier/nodes/navBar.html.twig' with {"current": null} %}
+        {% include '@RoadizRozier/nodes/translationBar.html.twig' with {"current": null} %}
     </header>
 
     <article class="content content-node-edit-source">
         <div class="content-table-cont">
         {% if form %}
-            {% form_theme form '@Rozier/forms.html.twig' %}
+            {% form_theme form '@RoadizRozier/forms.html.twig' %}
             {{ form_start(form) }}
                 {{ form_widget(form) }}
                 <fieldset data-uk-margin>

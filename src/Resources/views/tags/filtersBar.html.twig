@@ -31,7 +31,7 @@
             </form>
         </div>
         {% endif %}
-        {% include '@Rozier/widgets/itemPerPage.html.twig' %}
+        {% include '@RoadizRozier/widgets/itemPerPage.html.twig' %}
 
         <nav class="bulk-actions tags-bulk-actions">
             <div class="bulk-actions-title-cont">
@@ -41,7 +41,7 @@
                 <a class="uk-button uk-button-bulk uk-button-bulk-deselect uk-button-bulk-deselect-tags" href="#" title="{% trans %}deselect.all{% endtrans %}" data-uk-tooltip="{animation:true}"><i class="uk-icon-square-o"></i></a>
                 {# Links #}
                 {% if deleteTagsForm %}
-                {% form_theme deleteTagsForm '@Rozier/horizontalForms.html.twig' %}
+                {% form_theme deleteTagsForm '@RoadizRozier/horizontalForms.html.twig' %}
                 <form class="uk-form uk-form-horizontal tag-bulk-delete-form" action="{{ path('tagsBulkDeletePage') }}" method="get">
                     {{ form_widget(deleteTagsForm) }}
                     <button type="submit"

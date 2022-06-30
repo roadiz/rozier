@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Core\Handlers\FolderHandler;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\EntityHandler\FolderHandler;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -117,15 +118,17 @@ class AjaxFoldersController extends AbstractAjaxController
      * @param array $parameters
      * @param Folder $folder
      */
-    protected function updatePosition($parameters, Folder $folder)
+    protected function updatePosition($parameters, Folder $folder): void
     {
         /*
          * First, we set the new parent
          */
         $parent = null;
 
-        if (!empty($parameters['newParent']) &&
-            $parameters['newParent'] > 0) {
+        if (
+            !empty($parameters['newParent']) &&
+            $parameters['newParent'] > 0
+        ) {
             /** @var Folder $parent */
             $parent = $this->em()->find(Folder::class, (int) $parameters['newParent']);
 
@@ -139,15 +142,19 @@ class AjaxFoldersController extends AbstractAjaxController
         /*
          * Then compute new position
          */
-        if (!empty($parameters['nextFolderId']) &&
-            $parameters['nextFolderId'] > 0) {
+        if (
+            !empty($parameters['nextFolderId']) &&
+            $parameters['nextFolderId'] > 0
+        ) {
             /** @var Folder $nextFolder */
             $nextFolder = $this->em()->find(Folder::class, (int) $parameters['nextFolderId']);
             if ($nextFolder !== null) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
             }
-        } elseif (!empty($parameters['prevFolderId']) &&
-            $parameters['prevFolderId'] > 0) {
+        } elseif (
+            !empty($parameters['prevFolderId']) &&
+            $parameters['prevFolderId'] > 0
+        ) {
             /** @var Folder $prevFolder */
             $prevFolder = $this->em()
                 ->find(Folder::class, (int) $parameters['prevFolderId']);

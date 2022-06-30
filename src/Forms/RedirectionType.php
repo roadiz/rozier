@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
-use RZ\Roadiz\Core\Entities\Redirection;
+use RZ\Roadiz\CoreBundle\Entity\Redirection;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -21,7 +22,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
  */
 class RedirectionType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('query', TextType::class, [
             'label' => (!$options['only_query']) ? 'redirection.query' : false,
@@ -56,12 +57,12 @@ class RedirectionType extends AbstractType
         }
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'redirection';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Redirection::class,

@@ -1,16 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Attribute\Form\AttributeValueTranslationType;
-use RZ\Roadiz\Attribute\Form\AttributeValueType;
-use RZ\Roadiz\Core\Entities\AttributeValue;
-use RZ\Roadiz\Core\Entities\AttributeValueTranslation;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
+use RZ\Roadiz\CoreBundle\Entity\AttributeValueTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Form\AttributeValueTranslationType;
+use RZ\Roadiz\CoreBundle\Form\AttributeValueType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -38,7 +39,7 @@ class NodesAttributesController extends RozierApp
      *
      * @return Response
      */
-    public function editAction(Request $request, int $nodeId, int $translationId)
+    public function editAction(Request $request, int $nodeId, int $translationId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
 
@@ -142,7 +143,7 @@ class NodesAttributesController extends RozierApp
         $this->assignation['available_translations'] = $availableTranslations;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -152,7 +153,7 @@ class NodesAttributesController extends RozierApp
      *
      * @return RedirectResponse|null
      */
-    protected function handleAddAttributeForm(Request $request, Node $node, Translation $translation)
+    protected function handleAddAttributeForm(Request $request, Node $node, Translation $translation): ?RedirectResponse
     {
         $attributeValue = new AttributeValue();
         $attributeValue->setAttributable($node);
@@ -184,7 +185,7 @@ class NodesAttributesController extends RozierApp
      *
      * @return RedirectResponse|Response
      */
-    public function deleteAction(Request $request, $nodeId, $translationId, $attributeValueId)
+    public function deleteAction(Request $request, $nodeId, $translationId, $attributeValueId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
 
@@ -245,16 +246,17 @@ class NodesAttributesController extends RozierApp
         $this->assignation['translation'] = $translation;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/delete.html.twig', $this->assignation);
     }
 
     /**
      * @param Request $request
-     * @param int     $nodeId
-     * @param int     $translationId
-     * @param int     $attributeValueId
+     * @param int $nodeId
+     * @param int $translationId
+     * @param int $attributeValueId
+     * @return Response
      */
-    public function resetAction(Request $request, int $nodeId, int $translationId, int $attributeValueId)
+    public function resetAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
 
@@ -320,6 +322,6 @@ class NodesAttributesController extends RozierApp
         $this->assignation['translation'] = $translation;
         $this->assignation['node'] = $node;
 
-        return $this->render('nodes/attributes/reset.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/attributes/reset.html.twig', $this->assignation);
     }
 }

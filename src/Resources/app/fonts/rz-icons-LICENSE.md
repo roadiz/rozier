@@ -1,6 +1,6 @@
 RZ-ICONS fontface is a set of vectors icon to be used in ROADIZ and derivatives works.
 
-Copyright © 2014, Julien Blanchet
+Copyright © 2022, Julien Blanchet
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

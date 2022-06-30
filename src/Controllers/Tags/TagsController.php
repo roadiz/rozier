@@ -1,20 +1,21 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\TagTranslation;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Tag\TagCreatedEvent;
-use RZ\Roadiz\Core\Events\Tag\TagDeletedEvent;
-use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
-use RZ\Roadiz\Core\Exceptions\EntityAlreadyExistsException;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\TagHandler;
-use RZ\Roadiz\Core\Repositories\TranslationRepository;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\TagTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\EntityHandler\TagHandler;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
@@ -90,7 +91,7 @@ class TagsController extends RozierApp
             $this->assignation['deleteTagsForm'] = $deleteTagsForm->createView();
         }
 
-        return $this->render('tags/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/list.html.twig', $this->assignation);
     }
 
     /**
@@ -172,9 +173,11 @@ class TagsController extends RozierApp
                  */
                 $newTagName = StringHandler::slugify($tagTranslation->getName());
                 if ($tag->getTagName() !== $newTagName) {
-                    if (!$tag->isLocked() &&
+                    if (
+                        !$tag->isLocked() &&
                         $translation->isDefaultTranslation() &&
-                        !$this->tagNameExists($newTagName)) {
+                        !$this->tagNameExists($newTagName)
+                    ) {
                         $tag->setTagName($tagTranslation->getName());
                     }
                 }
@@ -220,7 +223,7 @@ class TagsController extends RozierApp
         $this->assignation['form'] = $form->createView();
         $this->assignation['readOnly'] = $this->isReadOnly;
 
-        return $this->render('tags/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -281,7 +284,7 @@ class TagsController extends RozierApp
                     $this->assignation['referer'] = $request->get('deleteForm')['referer'];
                 }
 
-                return $this->render('tags/bulkDelete.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/tags/bulkDelete.html.twig', $this->assignation);
             }
         }
 
@@ -336,7 +339,7 @@ class TagsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('tags/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -403,7 +406,7 @@ class TagsController extends RozierApp
         $this->assignation['tag'] = $tag;
         $this->assignation['translation'] = $translation;
 
-        return $this->render('tags/settings.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/settings.html.twig', $this->assignation);
     }
 
     /**
@@ -436,7 +439,7 @@ class TagsController extends RozierApp
             $this->assignation['specificTagTree'] = $widget;
         }
 
-        return $this->render('tags/tree.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/tags/tree.html.twig', $this->assignation);
     }
 
     /**
@@ -454,16 +457,20 @@ class TagsController extends RozierApp
         /** @var Tag $tag */
         $tag = $this->em()->find(Tag::class, $tagId);
 
-        if ($tag !== null &&
-            !$tag->isLocked()) {
+        if (
+            $tag !== null &&
+            !$tag->isLocked()
+        ) {
             $this->assignation['tag'] = $tag;
 
             $form = $this->buildDeleteForm($tag);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['tagId'] == $tag->getId()) {
+                $form->getData()['tagId'] == $tag->getId()
+            ) {
                 /*
                  * Dispatch event
                  */
@@ -483,7 +490,7 @@ class TagsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('tags/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -511,8 +518,10 @@ class TagsController extends RozierApp
         $tag = new Tag();
         $tag->setParent($parentTag);
 
-        if ($translation !== null &&
-            $parentTag !== null) {
+        if (
+            $translation !== null &&
+            $parentTag !== null
+        ) {
             $form = $this->createForm(TagType::class, $tag);
             $form->handleRequest($request);
 
@@ -553,7 +562,7 @@ class TagsController extends RozierApp
             $this->assignation['form'] = $form->createView();
             $this->assignation['parentTag'] = $parentTag;
 
-            return $this->render('tags/add.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -594,7 +603,7 @@ class TagsController extends RozierApp
             $this->assignation['nodes'] = $listManager->getEntities();
             $this->assignation['translation'] = $translation;
 
-            return $this->render('tags/nodes.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/tags/nodes.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -682,7 +691,7 @@ class TagsController extends RozierApp
         return $this->getTranslator()->trans('wrong.request');
     }
 
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         if ($entity instanceof TagTranslation) {
             $this->em()->flush();
@@ -700,7 +709,7 @@ class TagsController extends RozierApp
         }
     }
 
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if ($entity instanceof TagTranslation) {
             /** @var Translation $translation */

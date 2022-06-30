@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -32,7 +33,7 @@ class TranstypeType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add(
             'nodeTypeId',
@@ -51,7 +52,7 @@ class TranstypeType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'transtype';
     }
@@ -59,7 +60,7 @@ class TranstypeType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'compound' => true,
@@ -80,7 +81,7 @@ class TranstypeType extends AbstractType
      * @param NodeType $currentType
      * @return array
      */
-    protected function getAvailableTypes(NodeType $currentType)
+    protected function getAvailableTypes(NodeType $currentType): array
     {
         $qb = $this->managerRegistry->getManager()->createQueryBuilder();
         $qb->select('n')

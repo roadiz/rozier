@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
 
 use Gedmo\Exception\UnexpectedValueException;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
-use RZ\Roadiz\Core\Entities\UserLogEntry;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\CoreBundle\Entity\UserLogEntry;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,14 +37,7 @@ trait VersionedControllerTrait
         return $this;
     }
 
-
-    /**
-     * @param Request        $request
-     * @param AbstractEntity $entity
-     *
-     * @return Response|null
-     */
-    protected function handleVersions(Request $request, AbstractEntity $entity): ?Response
+    protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
     {
         /**
          * Versioning.
@@ -53,8 +47,10 @@ trait VersionedControllerTrait
         $repo = $this->em()->getRepository(UserLogEntry::class);
         $logs = $repo->getLogEntries($entity);
 
-        if ($request->get('version', null) !== null &&
-            $request->get('version', null) > 0) {
+        if (
+            $request->get('version', null) !== null &&
+            $request->get('version', null) > 0
+        ) {
             try {
                 $versionNumber = (int) $request->get('version', null);
                 $repo->revert($entity, $versionNumber);
@@ -89,7 +85,7 @@ trait VersionedControllerTrait
         return null;
     }
 
-    abstract protected function onPostUpdate(AbstractEntity $entity, Request $request): void;
+    abstract protected function onPostUpdate(PersistableInterface $entity, Request $request): void;
 
-    abstract protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response;
+    abstract protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response;
 }

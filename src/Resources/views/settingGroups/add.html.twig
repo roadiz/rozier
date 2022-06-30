@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 
 {% block content %}
@@ -13,7 +13,7 @@
     </header>
 
     <article class="content content-settingGroup-add">
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         {{ form_start(form, { attr: { id: 'add-settingGroup-form'}}) }}
             {{ form_widget(form) }}
             <fieldset data-uk-margin>
@@ -25,6 +25,6 @@
         {{ form_end(form) }}
     </article>
 
-    {% include '@Rozier/settingGroups/actionsMenu.html.twig' %}
+    {% include '@RoadizRozier/settingGroups/actionsMenu.html.twig' %}
 </section>
 {% endblock %}

@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -54,7 +55,7 @@ final class FolderTreeWidget extends AbstractWidget
     /**
      * @return array<Folder>|Paginator<Folder>
      */
-    public function getFolders()
+    public function getFolders(): iterable
     {
         if (null === $this->folders) {
             $this->folders = $this->getManagerRegistry()

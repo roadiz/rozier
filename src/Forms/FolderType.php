@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -19,7 +20,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
  */
 class FolderType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('folderName', TextType::class, [
             'label' => 'folder.name',
@@ -37,12 +38,12 @@ class FolderType extends AbstractType
         ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'folder';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

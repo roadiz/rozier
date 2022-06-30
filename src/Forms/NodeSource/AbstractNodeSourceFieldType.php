@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
@@ -31,7 +32,7 @@ abstract class AbstractNodeSourceFieldType extends AbstractType
      * @param FormInterface $form
      * @param array $options
      */
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         parent::buildView($view, $form, $options);
 
@@ -42,7 +43,7 @@ abstract class AbstractNodeSourceFieldType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -59,7 +60,7 @@ abstract class AbstractNodeSourceFieldType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getParent()
+    public function getParent(): ?string
     {
         return HiddenType::class;
     }

@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\SettingsImporter;
-use RZ\Roadiz\Core\Entities\Setting;
-use RZ\Roadiz\Core\Entities\SettingGroup;
+use RZ\Roadiz\CoreBundle\Importer\SettingsImporter;
+use RZ\Roadiz\CoreBundle\Entity\Setting;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
@@ -93,12 +94,14 @@ class SettingsUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['setting_file'])) {
+            !empty($form['setting_file'])
+        ) {
             $file = $form['setting_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== \json_decode($serializedData)) {
@@ -121,7 +124,7 @@ class SettingsUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('settings/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/settings/import.html.twig', $this->assignation);
     }
 
     /**

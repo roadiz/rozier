@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
-use RZ\Roadiz\CMS\Forms\MarkdownType;
-use RZ\Roadiz\Core\Entities\CustomFormField;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormField;
+use RZ\Roadiz\CoreBundle\Form\MarkdownType;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -20,7 +21,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
  */
 class CustomFormFieldType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('label', TextType::class, [
                 'label' => 'label',
@@ -71,12 +72,12 @@ class CustomFormFieldType extends AbstractType
             ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'customformfield';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

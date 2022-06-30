@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueTagName;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueTagName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -12,7 +13,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class MultiTagType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('names', TextareaType::class, [
             'label' => 'tags.names',
@@ -27,7 +28,7 @@ class MultiTagType extends AbstractType
         ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'multitags';
     }

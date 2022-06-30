@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
-use RZ\Roadiz\Core\Entities\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\CustomFormModel;
 
 /**
@@ -16,6 +18,13 @@ use Themes\Rozier\Models\CustomFormModel;
  */
 class AjaxCustomFormsExplorerController extends AbstractAjaxController
 {
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator)
+    {
+        $this->urlGenerator = $urlGenerator;
+    }
+
     /**
      * @param Request $request
      *
@@ -63,13 +72,13 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
      */
     public function listAction(Request $request)
     {
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        $cleanCustomFormsIds = array_filter($request->query->get('ids'));
+        $cleanCustomFormsIds = array_filter($request->query->all('ids'));
 
         /** @var EntityManager $em */
         $em = $this->em();
@@ -104,7 +113,7 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         /** @var CustomForm $customForm */
         foreach ($customForms as $customForm) {
-            $customFormModel = new CustomFormModel($customForm, $this->get('router'), $this->getTranslator());
+            $customFormModel = new CustomFormModel($customForm, $this->urlGenerator, $this->getTranslator());
             $customFormsArray[] = $customFormModel->toArray();
         }
 

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
 
-use RZ\Roadiz\Core\Entities\CustomForm;
-use RZ\Roadiz\Core\Entities\CustomFormAnswer;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,7 +51,7 @@ class CustomFormAnswersController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['custom_form_answers'] = $listManager->getEntities();
 
-        return $this->render('custom-form-answers/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/custom-form-answers/list.html.twig', $this->assignation);
     }
 
     /**
@@ -74,9 +75,11 @@ class CustomFormAnswersController extends RozierApp
 
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() &&
+            if (
+                $form->isSubmitted() &&
                 $form->isValid() &&
-                $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()) {
+                $form->getData()['customFormAnswerId'] == $customFormAnswer->getId()
+            ) {
                 $this->em()->remove($customFormAnswer);
 
                 $msg = $this->getTranslator()->trans('customFormAnswer.%id%.deleted', ['%id%' => $customFormAnswer->getId()]);
@@ -92,7 +95,7 @@ class CustomFormAnswersController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('custom-form-answers/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/custom-form-answers/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

@@ -7,7 +7,7 @@
     </div>
 
     {# Make this block overidable from themes. #}
-    {% include 'admin/blocks/adminImage.html.twig' %}
+    {% include '@RoadizRozier/admin/blocks/adminImage.html.twig' %}
     <div class="user-actions-menu">
         {% if app.user and app.user.id %}
             <a id="user-picture" href="{{ path('usersEditPage', {'userId':app.user.id }) }}">
@@ -77,7 +77,7 @@
                class="uk-icon-button uk-icon-rz-help"
                href="{{ help_external_url }}"></a>
         {% endif %}
-        <p class="cms-version"><i class="uk-icon-rz-rezozero"></i></p>
+        <p class="cms-version"><i class="uk-icon-rz-roadiz-icon"></i></p>
         <p>{{ cms_prefix }} {{ cms_version }}</p>
     </footer>
 </div>

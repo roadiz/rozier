@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Serializers\NodeSourceXlsxSerializer;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Xlsx\NodeSourceXlsxSerializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -31,10 +32,12 @@ class ExportController extends RozierApp
      * Export all Node in a XLSX file (Excel).
      *
      * @param Request $request
-     * @param int     $translationId
-     * @param int|null     $parentNodeId
+     * @param int $translationId
+     * @param int|null $parentNodeId
      *
      * @return Response
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     public function exportAllXlsxAction(Request $request, int $translationId, ?int $parentNodeId = null)
     {

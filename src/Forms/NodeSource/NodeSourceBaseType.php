@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
 
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -18,7 +19,7 @@ final class NodeSourceBaseType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('title', TextType::class, [
             'label' => 'title',
@@ -56,7 +57,7 @@ final class NodeSourceBaseType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'nodesourcebase';
     }
@@ -64,7 +65,7 @@ final class NodeSourceBaseType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

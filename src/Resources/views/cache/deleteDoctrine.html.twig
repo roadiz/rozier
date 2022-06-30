@@ -1,5 +1,4 @@
-{% if not head.ajax %}{% set baseTemplate = 'simple.html.twig' %}{% else %}{% set baseTemplate = 'ajaxBase.html.twig' %}{% endif %}{% extends baseTemplate %}
-
+{% if not head.ajax %}{% set baseTemplate = '@RoadizRozier/simple.html.twig' %}{% else %}{% set baseTemplate = '@RoadizRozier/ajaxBase.html.twig' %}{% endif %}{% extends baseTemplate %}
 
 {% block content %}
 {% if not head.ajax %}
@@ -14,7 +13,7 @@
                 {% endif %}
             </div>
             <div id="login-credit">
-                <i class="uk-icon-rz-rezozero"></i>
+                <i class="uk-icon-rz-roadiz-icon"></i>
                 <span id="login-version">{{ cms_prefix }} {{ cms_version }}</span>
             </div>
         </div>
@@ -40,7 +39,7 @@
             </table>
         </div>
 
-        {% form_theme form '@Rozier/forms.html.twig' %}
+        {% form_theme form '@RoadizRozier/forms.html.twig' %}
         {{ form_start(form) }}
             {{ form_widget(form) }}
             <fieldset data-uk-margin>

@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueEntity;
-use RZ\Roadiz\CMS\Forms\MarkdownType;
-use RZ\Roadiz\Core\Entities\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\MarkdownType;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -20,9 +21,12 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+/**
+ * @deprecated This form will be overridden in RozierBundle
+ */
 class CustomFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('displayName', TextType::class, [
                 'label' => 'customForm.displayName',
@@ -80,12 +84,12 @@ class CustomFormType extends AbstractType
             ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'customform';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

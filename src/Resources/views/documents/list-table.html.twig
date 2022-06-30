@@ -1,4 +1,4 @@
-{% extends "@Rozier/documents/list.html.twig" %}
+{% extends "@RoadizRozier/documents/list.html.twig" %}
 
 {% macro single_document(document) %}
     <tr>
@@ -67,7 +67,7 @@
                 <th>
                     {% trans %}document.filename{% endtrans %}
                     {% if not no_sorting %}
-                        {% include 'includes/column_ordering.html.twig' with {
+                        {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                             'field': 'filename',
                             'filters': filters,
                         } only %}
@@ -76,7 +76,7 @@
                 <th class="mobile-hidden">
                     {% trans %}document.mimeType{% endtrans %}
                     {% if not no_sorting %}
-                    {% include 'includes/column_ordering.html.twig' with {
+                    {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                         'field': 'mimeType',
                         'filters': filters,
                     } only %}
@@ -85,7 +85,7 @@
                 <th>
                     {% trans %}document.filesize{% endtrans %}
                     {% if not no_sorting %}
-                    {% include 'includes/column_ordering.html.twig' with {
+                    {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                         'field': 'filesize',
                         'filters': filters,
                     } only %}
@@ -94,7 +94,7 @@
                 <th class="mobile-hidden uk-visible-xlarge">
                     {% trans %}document.width{% endtrans %}
                     {% if not no_sorting %}
-                    {% include 'includes/column_ordering.html.twig' with {
+                    {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                         'field': 'imageWidth',
                         'filters': filters,
                     } only %}
@@ -103,7 +103,7 @@
                 <th class="mobile-hidden uk-visible-xlarge">
                     {% trans %}document.height{% endtrans %}
                     {% if not no_sorting %}
-                    {% include 'includes/column_ordering.html.twig' with {
+                    {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                         'field': 'imageHeight',
                         'filters': filters,
                     } only %}

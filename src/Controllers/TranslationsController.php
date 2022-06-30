@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Translation\TranslationCreatedEvent;
-use RZ\Roadiz\Core\Events\Translation\TranslationDeletedEvent;
-use RZ\Roadiz\Core\Events\Translation\TranslationUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Translation\TranslationUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\TranslationHandler;
+use RZ\Roadiz\CoreBundle\EntityHandler\TranslationHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,7 @@ use Themes\Rozier\RozierApp;
 
 class TranslationsController extends RozierApp
 {
-    const ITEM_PER_PAGE = 5;
+    public const ITEM_PER_PAGE = 5;
 
     private HandlerFactoryInterface $handlerFactory;
 
@@ -77,7 +78,7 @@ class TranslationsController extends RozierApp
             ];
         }
 
-        return $this->render('translations/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/translations/list.html.twig', $this->assignation);
     }
 
     /**
@@ -116,7 +117,7 @@ class TranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('translations/edit.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/translations/edit.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -153,7 +154,7 @@ class TranslationsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('translations/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/translations/add.html.twig', $this->assignation);
     }
 
     /**
@@ -191,7 +192,7 @@ class TranslationsController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('translations/delete.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/translations/delete.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

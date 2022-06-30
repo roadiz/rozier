@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\Constraints\ValidYaml;
+use RZ\Roadiz\CoreBundle\Form\Constraint\ValidYaml;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,14 +19,14 @@ class DynamicType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getParent()
+    public function getParent(): ?string
     {
         return TextareaType::class;
     }
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'dynamic';
     }
@@ -33,7 +34,7 @@ class DynamicType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'required' => false,

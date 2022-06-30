@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
-use RZ\Roadiz\Core\Entities\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
 
 /**
  * @package Themes\Rozier\Models

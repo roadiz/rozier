@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\GroupsImporter;
-use RZ\Roadiz\Core\Entities\Group;
+use RZ\Roadiz\CoreBundle\Entity\Group;
+use RZ\Roadiz\CoreBundle\Importer\GroupsImporter;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -110,13 +111,15 @@ class GroupsUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['group_file'])) {
+            !empty($form['group_file'])
+        ) {
             /** @var UploadedFile $file */
             $file = $form['group_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== \json_decode($serializedData)) {
@@ -139,7 +142,7 @@ class GroupsUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('groups/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/groups/import.html.twig', $this->assignation);
     }
 
     /**

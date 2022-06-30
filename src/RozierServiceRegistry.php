@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\Core\Bags\Settings;
-use RZ\Roadiz\Core\Entities\SettingGroup;
 use RZ\Roadiz\Core\Models\DocumentInterface;
+use RZ\Roadiz\CoreBundle\Bag\Settings;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\NodeTreeWidget;
@@ -49,31 +50,9 @@ final class RozierServiceRegistry
     }
 
     /**
-     * @param string $amount
-     * @return int Always return value in Megas
+     * @return int|float
      */
-    private function parseSuffixedAmount(string $amount)
-    {
-        $intValue = intval(preg_replace('#([0-9]+)[s|k|m|g|t]#i', '$1', $amount));
-
-        /*
-         * If actual is in Gigas
-         */
-        if (preg_match('#([0-9]+)g#i', $amount) > 0) {
-            return $intValue * 1024;
-        } elseif (preg_match('#([0-9]+)t#i', $amount) > 0) {
-            return $intValue * 1024 * 1024;
-        } elseif (preg_match('#([0-9]+)k#i', $amount) > 0) {
-            return $intValue / 1024;
-        } else {
-            return $intValue;
-        }
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxFilesize(): int
+    public function getMaxFilesize()
     {
         return UploadedFile::getMaxFilesize();
     }

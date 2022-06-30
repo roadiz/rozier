@@ -5,15 +5,10 @@
       <trans-unit xml:space="preserve" id="2">
         <source>node.%name%.updated</source>
         <target state="translated">节点.%name%.已更新</target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3">
         <source>node.%nodeId%.not_exists</source>
         <target state="translated">节点.%nodeId%. 不存在</target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4">
         <source>node.%name%.status.%field%.updated</source>

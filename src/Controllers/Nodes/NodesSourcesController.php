@@ -1,16 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesDeletedEvent;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesPreUpdatedEvent;
-use RZ\Roadiz\Core\Events\NodesSources\NodesSourcesUpdatedEvent;
-use RZ\Roadiz\Core\Routing\NodeRouter;
+use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -164,7 +165,7 @@ class NodesSourcesController extends RozierApp
                 $this->assignation['form'] = $form->createView();
                 $this->assignation['readOnly'] = $this->isReadOnly;
 
-                return $this->render('nodes/editSource.html.twig', $this->assignation);
+                return $this->render('@RoadizRozier/nodes/editSource.html.twig', $this->assignation);
             }
         }
 
@@ -246,10 +247,10 @@ class NodesSourcesController extends RozierApp
         $this->assignation["nodeSource"] = $ns;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('nodes/deleteSource.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', $this->assignation);
     }
 
-    protected function onPostUpdate(AbstractEntity $entity, Request $request): void
+    protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
         /*
          * Dispatch pre-flush event
@@ -268,7 +269,7 @@ class NodesSourcesController extends RozierApp
         }
     }
 
-    protected function getPostUpdateRedirection(AbstractEntity $entity): ?Response
+    protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if ($entity instanceof NodesSources) {
             /** @var Translation $translation */

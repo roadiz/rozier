@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\DataTransformer;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ObjectManager;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 
@@ -25,12 +26,12 @@ class TagTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param ArrayCollection|null $tags
+     * @param Collection|\iterable|null $tags
      * @return array|string
      */
     public function transform($tags)
     {
-        if (null === $tags || empty($tags)) {
+        if (empty($tags)) {
             return '';
         }
         $ids = [];

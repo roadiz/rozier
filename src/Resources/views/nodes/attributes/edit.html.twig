@@ -1,20 +1,20 @@
 {% set currentTitle = source.title|default(node.nodeName) %}
 
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
     <section class="content-global">
         <header class="content-header header-node header-node-edit-source">
-            {% include '@Rozier/nodes/breadcrumb.html.twig' with {
+            {% include '@RoadizRozier/nodes/breadcrumb.html.twig' with {
                 "node": node,
                 "source": source,
             } only %}
             <h1 class="content-title node-edit-source-title"{% if source.translation.locale is rtl %} dir="rtl"{% endif %}>
                 {{ ("edit.nodeSource.%name%"|trans({'%name%': currentTitle}))|u.truncate(30, '[…]', false) }}
-                {% include '@Rozier/nodes/nodeTypeCircle.html.twig' %}
+                {% include '@RoadizRozier/nodes/nodeTypeCircle.html.twig' %}
             </h1>
-            {% include 'nodes/navBar.html.twig' with {"current": 'attributes'} %}
-            {% include 'nodes/attributes/translationBar.html.twig' with {"current": translation.id} %}
+            {% include '@RoadizRozier/nodes/navBar.html.twig' with {"current": 'attributes'} %}
+            {% include '@RoadizRozier/nodes/attributes/translationBar.html.twig' with {"current": translation.id} %}
         </header>
 
         <article class="content content-settings-list">
@@ -40,7 +40,7 @@
                                         {{- attributeValue.attribute.group|attribute_group_label -}}
                                     {% endif -%}</td>
                                 <td>
-                                    {% form_theme attribute_value_translation_form '@Rozier/horizontalForms.html.twig' %}
+                                    {% form_theme attribute_value_translation_form '@RoadizRozier/horizontalForms.html.twig' %}
                                     {{ form_start(attribute_value_translation_form, {
                                         'attr': {
                                             'class': 'uk-form uk-form-horizontal'
@@ -93,7 +93,7 @@
                 <table>
                     <tr>
                         <td>
-                            {% form_theme addAttributeForm '@Rozier/horizontalForms.html.twig' %}
+                            {% form_theme addAttributeForm '@RoadizRozier/horizontalForms.html.twig' %}
                             {{ form_start(addAttributeForm, {
                                 'attr': {
                                     'id': 'add-node-attribute-form',
@@ -127,6 +127,6 @@
             </div>
         </article>
 
-        {% include '@Rozier/nodes/actionsMenu.html.twig' %}
+        {% include '@RoadizRozier/nodes/actionsMenu.html.twig' %}
     </section>
 {% endblock %}

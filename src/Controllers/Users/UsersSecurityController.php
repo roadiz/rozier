@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\UserSecurityType;
@@ -55,7 +56,7 @@ class UsersSecurityController extends RozierApp
 
             $this->assignation['form'] = $form->createView();
 
-            return $this->render('users/security.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/users/security.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

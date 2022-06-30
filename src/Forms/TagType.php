@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\ColorType;
-use RZ\Roadiz\CMS\Forms\Constraints\UniqueTagName;
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueTagName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,7 +19,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class TagType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('tagName', TextType::class, [
                 'label' => 'tagName',
@@ -66,12 +67,12 @@ class TagType extends AbstractType
             ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'tag';
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => false,

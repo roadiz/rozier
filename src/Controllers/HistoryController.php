@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\Core\Entities\Log;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Log;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -16,7 +17,7 @@ use Themes\Rozier\RozierApp;
  */
 class HistoryController extends RozierApp
 {
-    public static $levelToHuman = [
+    public static array $levelToHuman = [
         Log::EMERGENCY => "emergency",
         Log::CRITICAL => "critical",
         Log::ALERT => "alert",
@@ -54,7 +55,7 @@ class HistoryController extends RozierApp
         $this->assignation['logs'] = $listManager->getEntities();
         $this->assignation['levels'] = static::$levelToHuman;
 
-        return $this->render('history/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
     }
 
     /**
@@ -72,8 +73,10 @@ class HistoryController extends RozierApp
     {
         $this->denyAccessUnlessGranted(['ROLE_BACKEND_USER', 'ROLE_ACCESS_LOGS']);
 
-        if (!($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
-            || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))) {
+        if (
+            !($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
+            || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))
+        ) {
             throw new AccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
 
@@ -99,7 +102,7 @@ class HistoryController extends RozierApp
             $this->assignation['levels'] = static::$levelToHuman;
             $this->assignation['user'] = $user;
 
-            return $this->render('history/list.html.twig', $this->assignation);
+            return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();

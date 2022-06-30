@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global content-nav-and-filters">
@@ -8,7 +8,7 @@
             {% set mainTitle = mainFilter ~ '.nodes' %}
             {{ mainTitle|trans()|u.truncate(25, '[…]', true) }}
         </h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         {# Add node control #}
         {% if nodeTypes|length %}
         <div class="content-header-action-menu">
@@ -21,7 +21,6 @@
                 </button>
                 <div class="uk-dropdown uk-dropdown-flip uk-dropdown-small">
                     <ul class="uk-nav uk-nav-dropdown">
-                        <li><a class="rz-no-ajax-link" href="{{ path('nodesExportAllPage') }}"><i class="uk-icon-file-code-o"></i> {% trans %}export_format.rzn{% endtrans %}</a></li>
                         {% for translationItem in availableTranslations %}
                             <li><a class="rz-no-ajax-link" href="{{ path('nodesExportAllXlsxPage', {translationId:translationItem.id}) }}"><i class="uk-icon-file-excel-o"></i> {{ 'export_format.excel.%language%'|trans({'%language%':translationItem.name }) }}</a></li>
                         {% endfor %}
@@ -44,19 +43,19 @@
         {% endif %}
     </header>
 
-    {% include '@Rozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
 
     <article class="content content-no-action-menu">
         <div class="content-table-cont">
             <table class="nodes content-table uk-table">
                 <thead>
-                {% include 'nodes/widgets/node-header.html.twig' with {
+                {% include '@RoadizRozier/nodes/widgets/node-header.html.twig' with {
                     'filters': filters
                 } only %}
                 </thead>
                 <tbody>
                     {% for node in nodes %}
-                        {% include 'nodes/widgets/node-row.html.twig' with {
+                        {% include '@RoadizRozier/nodes/widgets/node-row.html.twig' with {
                             'node': node
                         } only %}
                     {% endfor %}

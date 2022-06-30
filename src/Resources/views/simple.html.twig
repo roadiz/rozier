@@ -7,9 +7,9 @@
         <title>{% block title %}{% trans %}back_office{% endtrans %}{% endblock %}</title>
         <meta name="description" content="{% block description %}{% trans %}back_office{% endtrans %}{% endblock %}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        {% include 'admin/meta-icon.html.twig' %}
+        {% include '@RoadizRozier/admin/meta-icon.html.twig' %}
         {# CSS scripts inclusions / Using webpack #}
-        {% include '@Rozier/partials/css-inject.html.twig' %}
+        {% include '@RoadizRozier/partials/css-inject.html.twig' %}
         <style>
             /* Login */
             #login #login-infos #login-logo{
@@ -19,7 +19,7 @@
         <script src="{{ asset('vendor/modernizr.custom.50380.js', 'Rozier') }}"></script>
     </head>
     <body id="simple-body">
-        {% include '@Rozier/includes/messages.html.twig' %}
+        {% include '@RoadizRozier/includes/messages.html.twig' %}
         <div id="main-container">
             <!-- Add your site or application content here -->
             <div id="splash-container"></div>
@@ -44,7 +44,7 @@
             <script src="{{ asset('vendor/jquery.min.js', 'Rozier') }}"></script>
         {% endif %}
         {# JS scripts inclusions / Using webpack #}
-        {% include '@Rozier/partials/simple-js-inject.html.twig' %}
+        {% include '@RoadizRozier/partials/simple-js-inject.html.twig' %}
         {% block customScripts %}{% endblock %}
     </body>
 </html>

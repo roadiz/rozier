@@ -1,22 +1,23 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use DateTime;
 use IteratorAggregate;
-use RZ\Roadiz\CMS\Forms\CompareDatetimeType;
-use RZ\Roadiz\CMS\Forms\CompareDateType;
-use RZ\Roadiz\CMS\Forms\ExtendedBooleanType;
-use RZ\Roadiz\CMS\Forms\NodeStatesType;
-use RZ\Roadiz\CMS\Forms\NodeTypesType;
-use RZ\Roadiz\CMS\Forms\SeparatorType;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodeType;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Utils\XlsxExporter;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Form\CompareDatetimeType;
+use RZ\Roadiz\CoreBundle\Form\CompareDateType;
+use RZ\Roadiz\CoreBundle\Form\ExtendedBooleanType;
+use RZ\Roadiz\CoreBundle\Form\NodeStatesType;
+use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
+use RZ\Roadiz\CoreBundle\Form\SeparatorType;
+use RZ\Roadiz\CoreBundle\Xlsx\XlsxExporter;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -160,13 +161,15 @@ class SearchController extends RozierApp
                 /** @var NodeTypeField $field */
                 foreach ($fields as $field) {
                     if ($key == $field->getName()) {
-                        if ($field->getType() === AbstractField::MARKDOWN_T
+                        if (
+                            $field->getType() === AbstractField::MARKDOWN_T
                             || $field->getType() === AbstractField::STRING_T
                             || $field->getType() === AbstractField::YAML_T
                             || $field->getType() === AbstractField::JSON_T
                             || $field->getType() === AbstractField::TEXT_T
                             || $field->getType() === AbstractField::EMAIL_T
-                            || $field->getType() === AbstractField::CSS_T) {
+                            || $field->getType() === AbstractField::CSS_T
+                        ) {
                             $data[$field->getVarName()] = ["LIKE", "%" . $value . "%"];
                             if (isset($data[$key . '_exact']) && $data[$key . '_exact'] === true) {
                                 $data[$field->getVarName()] = $value;
@@ -214,8 +217,10 @@ class SearchController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             $data = [];
             foreach ($form->getData() as $key => $value) {
-                if ((!is_array($value) && $this->notBlank($value)) ||
-                    (is_array($value) && isset($value["compareDatetime"]))) {
+                if (
+                    (!is_array($value) && $this->notBlank($value)) ||
+                    (is_array($value) && isset($value["compareDatetime"]))
+                ) {
                     $data[$key] = $value;
                 }
             }
@@ -241,7 +246,7 @@ class SearchController extends RozierApp
         $this->assignation['nodeTypeForm'] = $nodeTypeForm->createView();
         $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('search/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**
@@ -279,7 +284,7 @@ class SearchController extends RozierApp
         $this->assignation['nodeType'] = $nodetype;
         $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('search/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**
@@ -367,10 +372,12 @@ class SearchController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             $data = [];
             foreach ($form->getData() as $key => $value) {
-                if ((!is_array($value) && $this->notBlank($value))
+                if (
+                    (!is_array($value) && $this->notBlank($value))
                     || (is_array($value) && isset($value["compareDatetime"]))
                     || (is_array($value) && isset($value["compareDate"]))
-                    || (is_array($value) && $value != [] && !isset($value["compareOp"]))) {
+                    || (is_array($value) && $value != [] && !isset($value["compareOp"]))
+                ) {
                     if (strstr($key, "__node__") == 0) {
                         $data[str_replace("__node__", "node.", $key)] = $value;
                     } else {
@@ -612,11 +619,13 @@ class SearchController extends RozierApp
             /*
              * Prevent searching on complex fields
              */
-            if ($field->isMultipleProvider() ||
+            if (
+                $field->isMultipleProvider() ||
                 $field->isSingleProvider() ||
                 $field->isCollection() ||
                 $field->isManyToMany() ||
-                $field->isManyToOne()) {
+                $field->isManyToOne()
+            ) {
                 continue;
             }
 
@@ -653,7 +662,8 @@ class SearchController extends RozierApp
                 $type = NodeSourceType::getFormTypeFromFieldType($field);
             }
 
-            if ($field->getType() === AbstractField::MARKDOWN_T ||
+            if (
+                $field->getType() === AbstractField::MARKDOWN_T ||
                 $field->getType() === AbstractField::STRING_T ||
                 $field->getType() === AbstractField::TEXT_T ||
                 $field->getType() === AbstractField::EMAIL_T ||

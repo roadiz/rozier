@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Attributes;
 
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\Attribute\Form\AttributeImportType;
-use RZ\Roadiz\Attribute\Form\AttributeType;
-use RZ\Roadiz\Attribute\Importer\AttributeImporter;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Attribute;
+use RZ\Roadiz\CoreBundle\Entity\Attribute;
+use RZ\Roadiz\CoreBundle\Form\AttributeImportType;
+use RZ\Roadiz\CoreBundle\Form\AttributeType;
+use RZ\Roadiz\CoreBundle\Importer\AttributeImporter;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +62,7 @@ class AttributeController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'attributes';
+        return '@RoadizRozier/attributes';
     }
 
     /**
@@ -100,7 +101,7 @@ class AttributeController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['code' => 'ASC'];
     }
@@ -129,12 +130,11 @@ class AttributeController extends AbstractAdminController
         if ($item instanceof Attribute) {
             return $item->getCode();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
      * @param Request $request
-     *
      * @return Response
      */
     public function importAction(Request $request)
@@ -160,6 +160,6 @@ class AttributeController extends AbstractAdminController
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('attributes/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/attributes/import.html.twig', $this->assignation);
     }
 }

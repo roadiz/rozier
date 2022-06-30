@@ -1,17 +1,19 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Webhook\Entity\Webhook;
-use RZ\Roadiz\Webhook\Exception\TooManyWebhookTriggeredException;
-use RZ\Roadiz\Webhook\Form\WebhookType;
-use RZ\Roadiz\Webhook\WebhookDispatcher;
+use RZ\Roadiz\CoreBundle\Entity\Webhook;
+use RZ\Roadiz\CoreBundle\Form\WebhookType;
+use RZ\Roadiz\CoreBundle\Webhook\Exception\TooManyWebhookTriggeredException;
+use RZ\Roadiz\CoreBundle\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class WebhookController extends AbstractAdminController
@@ -28,7 +30,7 @@ final class WebhookController extends AbstractAdminController
     }
 
 
-    public function triggerAction(Request $request, string $id)
+    public function triggerAction(Request $request, string $id): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
@@ -94,7 +96,7 @@ final class WebhookController extends AbstractAdminController
 
     protected function getTemplateFolder(): string
     {
-        return 'admin/webhooks';
+        return '@RoadizRozier/admin/webhooks';
     }
 
     protected function getRequiredRole(): string

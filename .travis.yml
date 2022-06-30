@@ -1,11 +1,9 @@
 node_js:
-    - "lts/*"
     - "14"
-    - "12"
-    - "10"
 php:
     - 7.4
     - 8.0
+    - 8.1
     - nightly
 dist: bionic
 stages:
@@ -22,15 +20,7 @@ jobs:
     include:
         -   stage: "Backoffice assets tests"
             language: node_js
-            node_js: "lts/*"
-            script: sh .travis/backoffice_assets.sh
-        -   stage: "Backoffice assets tests"
-            language: node_js
-            node_js: "12"
-            script: sh .travis/backoffice_assets.sh
-        -   stage: "Backoffice assets tests"
-            language: node_js
-            node_js: "10"
+            node_js: "14"
             script: sh .travis/backoffice_assets.sh
 
         -   stage: "PHP lint tests"
@@ -55,6 +45,18 @@ jobs:
                 - MYSQL_VERSION=5.7
                 - MYSQL_PASSWORD=
             php: 8.0
+            install: sh .travis/composer_install.sh
+            script: sh .travis/php_lint.sh
+        -   stage: "PHP lint tests"
+            language: php
+            sudo: required
+            services:
+                - mysql
+            env:
+                - DB=mysql
+                - MYSQL_VERSION=5.7
+                - MYSQL_PASSWORD=
+            php: 8.1
             install: sh .travis/composer_install.sh
             script: sh .travis/php_lint.sh
         -   stage: "PHP lint tests"

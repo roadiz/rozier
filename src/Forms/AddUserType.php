@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CMS\Forms\GroupsType;
+use RZ\Roadiz\CoreBundle\Form\GroupsType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -11,7 +12,7 @@ use Symfony\Component\Form\FormBuilderInterface;
  */
 class AddUserType extends UserType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -24,7 +25,7 @@ class AddUserType extends UserType
         ;
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'add_user';
     }

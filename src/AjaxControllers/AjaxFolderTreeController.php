@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Folder;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Widgets\FolderTreeWidget;
@@ -71,7 +72,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
         $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
-            'folderTree' => $this->getTwig()->render('widgets/folderTree/folderTree.html.twig', $this->assignation),
+            'folderTree' => $this->getTwig()->render('@RoadizRozier/widgets/folderTree/folderTree.html.twig', $this->assignation),
         ];
 
         return new JsonResponse(

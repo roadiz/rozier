@@ -1,10 +1,10 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
 <section class="content-global  content-nav-and-filters">
     <header class="content-header header-redirection header-redirection-list">
         <h1 class="content-title redirection-title">{% trans %}manage.redirections{% endtrans %}</h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         <div class="content-header-action-menu">
             <nav>
                 <a class="uk-button"
@@ -15,7 +15,7 @@
         </div>
     </header>
 
-    {% include '@Rozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
     <article class="content content-no-action-menu content-node-types-list">
         <div class="content-table-cont">
             <table class="content-table redirections uk-table">
@@ -23,14 +23,14 @@
                     <tr>
                         <th>
                             {% trans %}redirection.query{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'query',
                                 'filters': filters,
                             } only %}
                         </th>
                         <th>
                             {% trans %}redirection.redirect_uri{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'redirectUri',
                                 'filters': filters,
                             } only %}

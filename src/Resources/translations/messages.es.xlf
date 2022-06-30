@@ -5,15 +5,10 @@
       <trans-unit xml:space="preserve" id="2" approved="yes">
         <source>node.%name%.updated</source>
         <target state="final">El nodo %name% ha sido actualizado.</target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3">
         <source>node.%nodeId%.not_exists</source>
         <target state="translated">El nodo %nodeId% no existe.</target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4">
         <source>node.%name%.status.%field%.updated</source>

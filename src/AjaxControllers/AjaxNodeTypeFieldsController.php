@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

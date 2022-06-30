@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
@@ -6,8 +7,8 @@ namespace Themes\Rozier\Controllers;
 use Doctrine\Common\Cache\CacheProvider;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Importers\RolesImporter;
-use RZ\Roadiz\Core\Entities\Role;
+use RZ\Roadiz\CoreBundle\Importer\RolesImporter;
+use RZ\Roadiz\CoreBundle\Entity\Role;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -82,12 +83,14 @@ class RolesUtilsController extends RozierApp
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() &&
+        if (
+            $form->isSubmitted() &&
             $form->isValid() &&
-            !empty($form['role_file'])) {
+            !empty($form['role_file'])
+        ) {
             $file = $form['role_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== \json_decode($serializedData)) {
@@ -117,7 +120,7 @@ class RolesUtilsController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('roles/import.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/roles/import.html.twig', $this->assignation);
     }
 
     /**

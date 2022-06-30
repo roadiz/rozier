@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 {% block content %}
     <section class="content-global content-nav-and-filters">
@@ -8,12 +8,12 @@
             {% else %}
                 <h1 class="content-title">{% trans %}search{% endtrans %}</h1>
             {% endif %}
-            {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+            {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         </header>
 
         <article class="content content-no-action-menu">
             {% if nodeTypeForm %}
-                {% form_theme nodeTypeForm '@Rozier/forms.html.twig' %}
+                {% form_theme nodeTypeForm '@RoadizRozier/forms.html.twig' %}
                 <form class="uk-form uk-form-stacked"
                       id="search-node-type-form"
                       action="#"
@@ -26,7 +26,7 @@
             {% endif %}
 
             {% if form %}
-                {% form_theme form '@Rozier/forms.html.twig' %}
+                {% form_theme form '@RoadizRozier/forms.html.twig' %}
                 <form class="uk-form uk-form-stacked"
                       id="search-node-form"
                       action="#"
@@ -36,18 +36,18 @@
             {% endif %}
 
             {% if filters.itemCount > filters.itemPerPage %}
-                {% include '@Rozier/widgets/filtersBar.html.twig' %}
+                {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
             {% else %}
                 <hr>
             {% endif %}
             <div class="data-uk-margin content-table-cont">
                 <table class="nodes content-table uk-table">
                     <thead>
-                        {% include 'nodes/widgets/node-header.html.twig' %}
+                        {% include '@RoadizRozier/nodes/widgets/node-header.html.twig' %}
                     </thead>
                     <tbody>
                     {% for node in nodes %}
-                        {% include 'nodes/widgets/node-row.html.twig' with {
+                        {% include '@RoadizRozier/nodes/widgets/node-row.html.twig' with {
                             'node': node
                         } only %}
                     {% endfor %}
@@ -55,7 +55,7 @@
                 </table>
             </div>
             {% if filters.itemCount > filters.itemPerPage %}
-                {% include '@Rozier/widgets/filtersBar.html.twig' %}
+                {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
             {% endif %}
         </article>
     </section>

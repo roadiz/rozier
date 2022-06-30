@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Redirection;
+use RZ\Roadiz\CoreBundle\Entity\Redirection;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Forms\RedirectionType;
 
@@ -42,7 +43,7 @@ class RedirectionsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'redirections';
+        return '@RoadizRozier/redirections';
     }
 
     /**
@@ -93,13 +94,13 @@ class RedirectionsController extends AbstractAdminController
         if ($item instanceof Redirection) {
             return (string) $item->getQuery();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['query' => 'ASC'];
     }

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\SettingGroup;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Forms\SettingGroupType;
 
@@ -39,7 +40,7 @@ class SettingGroupsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'settingGroups';
+        return '@RoadizRozier/settingGroups';
     }
 
     /**
@@ -90,13 +91,13 @@ class SettingGroupsController extends AbstractAdminController
         if ($item instanceof SettingGroup) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['name' => 'ASC'];
     }

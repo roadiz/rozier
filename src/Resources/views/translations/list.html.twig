@@ -1,4 +1,4 @@
-{% extends '@Rozier/layout.html.twig' %}
+{% extends '@RoadizRozier/layout.html.twig' %}
 
 
 {% block content %}
@@ -6,13 +6,13 @@
 
     <header class="content-header header-translation header-translation-list">
         <h1 class="content-title translation-add-title">{% trans %}translations{% endtrans %}</h1>
-        {% include '@Rozier/widgets/countFiltersBar.html.twig' %}
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
         <div class="content-header-action-menu">
             <a class="uk-button" href="{{ path('translationsAddPage') }}"><i class="uk-icon-rz-plus"></i> {% trans %}add.a.translation{% endtrans %}</a>
         </div>
     </header>
 
-    {% include '@Rozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
 
     <article class="content content-no-action-menu">
         <div class="content-table-cont">
@@ -20,19 +20,19 @@
                 <thead>
                     <tr>
                         <th>{% trans %}name{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'name',
                                 'filters': filters,
                             } only %}
                         </th>
                         <th>{% trans %}translation.locale{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'locale',
                                 'filters': filters,
                             } only %}
                         </th>
                         <th>{% trans %}overrideLocale{% endtrans %}
-                            {% include 'includes/column_ordering.html.twig' with {
+                            {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
                                 'field': 'overrideLocale',
                                 'filters': filters,
                             } only %}
@@ -57,7 +57,7 @@
                         {% apply spaceless %}
                             <a class="uk-button uk-button-content uk-button-small" title="{% trans %}edit{% endtrans %}" href="{{ path('translationsEditPage', { translationId: t.translation.getId }) }}" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-pencil"></i></a>
                             {% if t.translation.isDefaultTranslation == false %}
-                                {% form_theme t.defaultForm 'forms.html.twig' %}
+                                {% form_theme t.defaultForm '@RoadizRozier/forms.html.twig' %}
                                 <form class="uk-form-translation-default" action="#" method="post">
                                     {{ form_widget(t.defaultForm) }}
                                     <button class="uk-button uk-button-content uk-button-small" title="{% trans %}set.default{% endtrans %}" type="submit" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-star"></i></button>

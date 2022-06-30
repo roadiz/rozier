@@ -5,15 +5,10 @@
       <trans-unit xml:space="preserve" id="2" approved="yes">
         <source>node.%name%.updated</source>
         <target state="final">Node "%name%" has been updated.</target>
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="3" approved="yes">
         <source>node.%nodeId%.not_exists</source>
         <target state="final">Node %nodeId% does not exists.</target>
-
-
-
       </trans-unit>
       <trans-unit xml:space="preserve" id="4" approved="yes">
         <source>node.%name%.status.%field%.updated</source>
@@ -1834,7 +1829,7 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="335" approved="yes">
         <source>manage.surveys</source>
-        <target state="final">Manage surveys</target>
+        <target state="final">Surveys</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="336" approved="yes">
@@ -1854,12 +1849,12 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="339" approved="yes">
         <source>manage.tags</source>
-        <target state="final">Manage tags</target>
+        <target state="final">Tags</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="340" approved="yes">
         <source>manage.documents</source>
-        <target state="final">Manage documents</target>
+        <target state="final">Documents</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="341" approved="yes">
@@ -1869,27 +1864,27 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="342" approved="yes">
         <source>manage.nodes</source>
-        <target state="final">Manage nodes</target>
+        <target state="final">Nodes</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="343" approved="yes">
         <source>manage.nodeTypes</source>
-        <target state="final">Manage node-types</target>
+        <target state="final">Node-types</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="344" approved="yes">
         <source>manage.translations</source>
-        <target state="final">Manage translations</target>
+        <target state="final">Translations</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="345" approved="yes">
         <source>manage.themes</source>
-        <target state="final">Manage themes</target>
+        <target state="final">Themes</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="346" approved="yes">
         <source>manage.fonts</source>
-        <target state="final">Manage fonts</target>
+        <target state="final">Fonts</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="347" approved="yes">
@@ -1899,17 +1894,17 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="348" approved="yes">
         <source>manage.users</source>
-        <target state="final">Manage users</target>
+        <target state="final">Users</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="349" approved="yes">
         <source>manage.roles</source>
-        <target state="final">Manage roles</target>
+        <target state="final">Users roles</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="350" approved="yes">
         <source>manage.groups</source>
-        <target state="final">Manage groups</target>
+        <target state="final">Users groups</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="351" approved="yes">
@@ -2004,7 +1999,7 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="368" approved="yes">
         <source>manage.nodeTypeFields</source>
-        <target state="final">Manage node-type fields</target>
+        <target state="final">Node-type fields</target>
 
       </trans-unit>
       <trans-unit xml:space="preserve" id="369" approved="yes">
@@ -2802,6 +2797,10 @@
         <source>document.translation.%name%.cannot_delete</source>
         <target state="final">Document “%name%” translation cannot be deleted.</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="folder" approved="yes">
+        <source>folder</source>
+        <target state="final">Folder</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree" approved="yes">
         <source>folderTree</source>
         <target state="final">Document folders</target>
@@ -3090,7 +3089,7 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="manage.customFormFields" approved="yes">
           <source>manage.customFormFields</source>
-          <target state="final">Manage fields</target>
+          <target state="final">Custom form fields</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="customForm.answers" approved="yes">
           <source>customForm.answers</source>

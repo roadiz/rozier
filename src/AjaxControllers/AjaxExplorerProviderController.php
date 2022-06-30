@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
 use Psr\Container\ContainerInterface;
-use RZ\Roadiz\Explorer\AbstractExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerItemInterface;
-use RZ\Roadiz\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,8 +27,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
 
     /**
      * @param class-string $providerClass
-     *
      * @return ExplorerProviderInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     protected function getProvider(string $providerClass): ExplorerProviderInterface
     {
@@ -62,9 +64,11 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             'itemPerPage' => $request->query->get('itemPerPage') ?: 30,
             'search' => $request->query->get('search') ?: null,
         ];
-        if ($request->query->has('options') &&
-            is_array($request->query->get('options'))) {
-            $options = array_merge($request->query->get('options'), $options);
+        if (
+            $request->query->has('options') &&
+            is_array($request->query->all('options'))
+        ) {
+            $options = array_merge($request->query->all('options'), $options);
         }
         $entities = $provider->getItems($options);
 
@@ -105,7 +109,7 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             throw new InvalidParameterException('providerClass is not a valid class.');
         }
 
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
@@ -116,7 +120,7 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             $provider->setContainer($this->psrContainer);
         }
         $entitiesArray = [];
-        $cleanNodeIds = array_filter($request->query->get('ids'));
+        $cleanNodeIds = array_filter($request->query->all('ids'));
         $cleanNodeIds = array_filter($cleanNodeIds, function ($value) {
             $nullValues = ['null', null, 0, '0', false, 'false'];
             return !in_array($value, $nullValues, true);

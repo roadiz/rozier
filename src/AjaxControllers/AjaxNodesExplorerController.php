@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
@@ -6,15 +7,16 @@ namespace Themes\Rozier\AjaxControllers;
 use Doctrine\ORM\EntityManager;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CMS\Utils\NodeTypeApi;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\SearchEngine\NodeSourceSearchHandlerInterface;
+use RZ\Roadiz\CoreBundle\EntityApi\NodeTypeApi;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\SearchEngine\NodeSourceSearchHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\NodeModel;
 use Themes\Rozier\Models\NodeSourceModel;
 
@@ -26,18 +28,21 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     private SerializerInterface $serializer;
     private ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler;
     private NodeTypeApi $nodeTypeApi;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         SerializerInterface $serializer,
         ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
-        NodeTypeApi $nodeTypeApi
+        NodeTypeApi $nodeTypeApi,
+        UrlGeneratorInterface $urlGenerator
     ) {
         $this->nodeSourceSearchHandler = $nodeSourceSearchHandler;
         $this->nodeTypeApi = $nodeTypeApi;
         $this->serializer = $serializer;
+        $this->urlGenerator = $urlGenerator;
     }
 
-    protected function getItemPerPage()
+    protected function getItemPerPage(): int
     {
         return 30;
     }
@@ -171,7 +176,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             10000000,
             $currentPage
         );
-        $pageCount = ceil($results->getResultCount()/$this->getItemPerPage());
+        $pageCount = ceil($results->getResultCount() / $this->getItemPerPage());
         $nodesArray = $this->normalizeNodes($results);
 
         return [
@@ -199,11 +204,11 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanNodeIds = array_filter($request->query->get('ids'));
+        $cleanNodeIds = array_filter($request->query->all('ids'));
 
         /** @var EntityManager $em */
         $em = $this->em();
@@ -238,12 +243,12 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             if (null !== $node) {
                 if ($node instanceof NodesSources) {
                     if (!key_exists($node->getNode()->getId(), $nodesArray)) {
-                        $nodeModel = new NodeSourceModel($node, $this->get('router'));
+                        $nodeModel = new NodeSourceModel($node, $this->urlGenerator);
                         $nodesArray[$node->getNode()->getId()] = $nodeModel->toArray();
                     }
                 } else {
                     if (!key_exists($node->getId(), $nodesArray)) {
-                        $nodeModel = new NodeModel($node, $this->get('router'));
+                        $nodeModel = new NodeModel($node, $this->urlGenerator);
                         $nodesArray[$node->getId()] = $nodeModel->toArray();
                     }
                 }

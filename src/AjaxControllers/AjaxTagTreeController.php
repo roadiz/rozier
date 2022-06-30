@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Widgets\TagTreeWidget;
@@ -71,7 +72,7 @@ class AjaxTagTreeController extends AbstractAjaxController
         $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
-            'tagTree' => $this->getTwig()->render('widgets/tagTree/tagTree.html.twig', $this->assignation),
+            'tagTree' => $this->getTwig()->render('@RoadizRozier/widgets/tagTree/tagTree.html.twig', $this->assignation),
         ];
 
         return new JsonResponse(

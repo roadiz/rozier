@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
 use JMS\Serializer\Annotation as Serializer;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
-use RZ\Roadiz\Core\Entities\Translation;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodesSourcesDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**

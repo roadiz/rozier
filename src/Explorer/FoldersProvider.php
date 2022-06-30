@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Explorer;
 
-use RZ\Roadiz\Core\Entities\Folder;
-use RZ\Roadiz\Explorer\AbstractDoctrineExplorerProvider;
-use RZ\Roadiz\Explorer\ExplorerItemInterface;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Explorer\AbstractDoctrineExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 
 final class FoldersProvider extends AbstractDoctrineExplorerProvider
 {
@@ -21,7 +22,7 @@ final class FoldersProvider extends AbstractDoctrineExplorerProvider
 
     protected function getDefaultOrdering(): array
     {
-        return ['folderName' =>'ASC'];
+        return ['folderName' => 'ASC'];
     }
 
     /**

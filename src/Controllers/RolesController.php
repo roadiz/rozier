@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Events\Role\PreCreatedRoleEvent;
-use RZ\Roadiz\Core\Events\Role\PreDeletedRoleEvent;
-use RZ\Roadiz\Core\Events\Role\PreUpdatedRoleEvent;
+use RZ\Roadiz\CoreBundle\Entity\Role;
+use RZ\Roadiz\CoreBundle\Event\Role\PreCreatedRoleEvent;
+use RZ\Roadiz\CoreBundle\Event\Role\PreDeletedRoleEvent;
+use RZ\Roadiz\CoreBundle\Event\Role\PreUpdatedRoleEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\Forms\RoleType;
@@ -46,7 +47,7 @@ class RolesController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'roles';
+        return '@RoadizRozier/roles';
     }
 
     /**
@@ -97,13 +98,13 @@ class RolesController extends AbstractAdminController
         if ($item instanceof Role) {
             return $item->getRole();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['name' => 'ASC'];
     }

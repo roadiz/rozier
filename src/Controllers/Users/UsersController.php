@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use RZ\Roadiz\Core\Entities\Role;
-use RZ\Roadiz\Core\Entities\User;
+use RZ\Roadiz\CoreBundle\Entity\Role;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,7 +49,7 @@ class UsersController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $this->assignation['users'] = $listManager->getEntities();
 
-        return $this->render('users/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/users/list.html.twig', $this->assignation);
     }
 
     /**
@@ -61,10 +62,12 @@ class UsersController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!(
+        if (
+            !(
             $this->isGranted('ROLE_ACCESS_USERS') ||
             ($this->getUser() instanceof User && $this->getUser()->getId() == $userId)
-        )) {
+            )
+        ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
         $user = $this->em()->find(User::class, $userId);
@@ -97,7 +100,7 @@ class UsersController extends RozierApp
         $this->assignation['user'] = $user;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('users/edit.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/users/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -110,10 +113,12 @@ class UsersController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!(
+        if (
+            !(
             $this->isGranted('ROLE_ACCESS_USERS') ||
             ($this->getUser() instanceof User && $this->getUser()->getId() == $userId)
-        )) {
+            )
+        ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
         $user = $this->em()->find(User::class, $userId);
@@ -156,7 +161,7 @@ class UsersController extends RozierApp
         $this->assignation['user'] = $user;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('users/editDetails.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/users/editDetails.html.twig', $this->assignation);
     }
 
     /**
@@ -187,7 +192,7 @@ class UsersController extends RozierApp
 
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('users/add.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/users/add.html.twig', $this->assignation);
     }
 
     /**
@@ -229,6 +234,6 @@ class UsersController extends RozierApp
         $this->assignation['user'] = $user;
         $this->assignation['form'] = $form->createView();
 
-        return $this->render('users/delete.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/users/delete.html.twig', $this->assignation);
     }
 }

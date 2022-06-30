@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\Entities\Node;
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodeTypeField;
-use RZ\Roadiz\Core\Handlers\NodeHandler;
-use RZ\Roadiz\Core\Repositories\NodeRepository;
+use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
+use RZ\Roadiz\CoreBundle\Repository\NodeRepository;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -35,7 +36,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
      * @param FormBuilderInterface $builder
      * @param array $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
@@ -51,7 +52,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -67,7 +68,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'nodes';
     }
@@ -75,7 +76,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
     /**
      * @param FormEvent $event
      */
-    public function onPreSetData(FormEvent $event)
+    public function onPreSetData(FormEvent $event): void
     {
         /** @var NodesSources $nodeSource */
         $nodeSource = $event->getForm()->getConfig()->getOption('nodeSource');
@@ -96,7 +97,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
     /**
      * @param FormEvent $event
      */
-    public function onPostSubmit(FormEvent $event)
+    public function onPostSubmit(FormEvent $event): void
     {
         /** @var NodesSources $nodeSource */
         $nodeSource = $event->getForm()->getConfig()->getOption('nodeSource');
@@ -108,7 +109,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
         $this->nodeHandler->cleanNodesFromField($nodeTypeField, false);
 
         if (is_array($event->getData())) {
-            $position = 0;
+            $position = 0.0;
             $manager = $this->managerRegistry->getManager();
             foreach ($event->getData() as $nodeId) {
                 /** @var Node|null $tempNode */
@@ -118,7 +119,7 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
                     $this->nodeHandler->addNodeForField($tempNode, $nodeTypeField, false, $position);
                     $position++;
                 } else {
-                    throw new \RuntimeException('Node #'.$nodeId.' was not found during relationship creation.');
+                    throw new \RuntimeException('Node #' . $nodeId . ' was not found during relationship creation.');
                 }
             }
         }

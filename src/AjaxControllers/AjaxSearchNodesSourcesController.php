@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\NodesSources;
-use RZ\Roadiz\Core\Entities\NodesSourcesDocuments;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\SearchEngine\GlobalNodeSourceSearchHandler;
+use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodesSourcesDocuments;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\SearchEngine\GlobalNodeSourceSearchHandler;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class AjaxSearchNodesSourcesController extends AbstractAjaxController
 {
-    const RESULT_COUNT = 8;
+    public const RESULT_COUNT = 8;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
 
     public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator)
@@ -45,7 +46,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
         $searchHandler = new GlobalNodeSourceSearchHandler($this->em());
         $searchHandler->setDisplayNonPublishedNodes(true);
 
-        /** @var array $nodesSources */
+        /** @var array<mixed> $nodesSources */
         $nodesSources = $searchHandler->getNodeSourcesBySearchTerm(
             $request->get('searchTerms'),
             static::RESULT_COUNT
@@ -60,9 +61,10 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             ];
 
             foreach ($nodesSources as $source) {
-                if (!key_exists($source->getNode()->getId(), $responseArray['data']) &&
-                    null !== $source &&
-                    $source instanceof NodesSources) {
+                if (
+                    $source instanceof NodesSources &&
+                    !key_exists($source->getNode()->getId(), $responseArray['data'])
+                ) {
                     $responseArray['data'][$source->getNode()->getId()] = $this->getNodeSourceData($source);
                 }
             }
@@ -108,7 +110,7 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             'thumbnail' => $thumbnail ? $this->documentUrlGenerator->getUrl() : null,
             'nodeId' => $source->getNode()->getId(),
             'translationId' => $translation->getId(),
-            'typeName' => $source->getNode()->getNodeType()->getDisplayName(),
+            'typeName' => $source->getNode()->getNodeType()->getLabel(),
             'typeColor' => $source->getNode()->getNodeType()->getColor(),
             'url' => $this->generateUrl(
                 'nodesEditSourcePage',

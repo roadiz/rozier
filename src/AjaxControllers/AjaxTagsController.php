@@ -1,20 +1,22 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
-use RZ\Roadiz\Core\Events\Tag\TagUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Event\Tag\TagUpdatedEvent;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\Core\Handlers\TagHandler;
-use RZ\Roadiz\Core\Repositories\TagRepository;
+use RZ\Roadiz\CoreBundle\EntityHandler\TagHandler;
+use RZ\Roadiz\CoreBundle\Repository\TagRepository;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\TagModel;
 
 /**
@@ -23,10 +25,12 @@ use Themes\Rozier\Models\TagModel;
 class AjaxTagsController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
+    private UrlGeneratorInterface $urlGenerator;
 
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(HandlerFactoryInterface $handlerFactory, UrlGeneratorInterface $urlGenerator)
     {
         $this->handlerFactory = $handlerFactory;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -42,13 +46,15 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
         $onlyParents = false;
 
-        if ($request->query->has('onlyParents') &&
-            $request->query->get('onlyParents') == true) {
+        if (
+            $request->query->has('onlyParents') &&
+            $request->query->get('onlyParents')
+        ) {
             $onlyParents = true;
         }
 
@@ -75,15 +81,15 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function listArrayAction(Request $request)
+    public function listArrayAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        if (!$request->query->has('ids') || !is_array($request->query->get('ids'))) {
+        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanTagIds = array_filter($request->query->get('ids'));
+        $cleanTagIds = array_filter($request->query->all('ids'));
         $tags = $this->getRepository()->findBy([
             'id' => $cleanTagIds,
         ]);
@@ -107,7 +113,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function explorerListAction(Request $request)
+    public function explorerListAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -160,14 +166,14 @@ class AjaxTagsController extends AbstractAjaxController
 
     /**
      * @param array<Tag>|\Traversable<Tag>|null $tags
-     * @return array
+     * @return array<int, array>
      */
-    protected function normalizeTags($tags)
+    protected function normalizeTags($tags): array
     {
         $tagsArray = [];
         if ($tags !== null) {
             foreach ($tags as $tag) {
-                $tagModel = new TagModel($tag, $this->get('router'));
+                $tagModel = new TagModel($tag, $this->urlGenerator);
                 $tagsArray[] = $tagModel->toArray();
             }
         }
@@ -181,7 +187,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return array
      */
-    protected function recurseTags(array $tags = null, bool $onlyParents = false)
+    protected function recurseTags(array $tags = null, bool $onlyParents = false): array
     {
         $tagsArray = [];
         if ($tags !== null) {
@@ -210,9 +216,9 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @param int     $tagId
      *
-     * @return Response JSON response
+     * @return JsonResponse
      */
-    public function editAction(Request $request, int $tagId)
+    public function editAction(Request $request, int $tagId): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -246,7 +252,7 @@ class AjaxTagsController extends AbstractAjaxController
      *
      * @return JsonResponse
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -288,15 +294,17 @@ class AjaxTagsController extends AbstractAjaxController
      * @param array $parameters
      * @param Tag   $tag
      */
-    protected function updatePosition($parameters, Tag $tag)
+    protected function updatePosition($parameters, Tag $tag): void
     {
         /*
          * First, we set the new parent
          */
         $parent = null;
 
-        if (!empty($parameters['newParent']) &&
-            $parameters['newParent'] > 0) {
+        if (
+            !empty($parameters['newParent']) &&
+            $parameters['newParent'] > 0
+        ) {
             $parent = $this->em()
                            ->find(Tag::class, (int) $parameters['newParent']);
 
@@ -310,14 +318,18 @@ class AjaxTagsController extends AbstractAjaxController
         /*
          * Then compute new position
          */
-        if (!empty($parameters['nextTagId']) &&
-            $parameters['nextTagId'] > 0) {
+        if (
+            !empty($parameters['nextTagId']) &&
+            $parameters['nextTagId'] > 0
+        ) {
             $nextTag = $this->em()->find(Tag::class, (int) $parameters['nextTagId']);
             if ($nextTag !== null) {
                 $tag->setPosition($nextTag->getPosition() - 0.5);
             }
-        } elseif (!empty($parameters['prevTagId']) &&
-            $parameters['prevTagId'] > 0) {
+        } elseif (
+            !empty($parameters['prevTagId']) &&
+            $parameters['prevTagId'] > 0
+        ) {
             $prevTag = $this->em()->find(Tag::class, (int) $parameters['prevTagId']);
             if ($prevTag !== null) {
                 $tag->setPosition($prevTag->getPosition() + 0.5);
@@ -344,7 +356,7 @@ class AjaxTagsController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function createAction(Request $request)
+    public function createAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -358,7 +370,7 @@ class AjaxTagsController extends AbstractAjaxController
 
         /** @var Tag $tag */
         $tag = $this->getRepository()->findOrCreateByPath($request->get('tagName'));
-        $tagModel = new TagModel($tag, $this->get('router'));
+        $tagModel = new TagModel($tag, $this->urlGenerator);
 
         return new JsonResponse(
             [

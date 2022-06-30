@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Entities\CustomForm;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 use Themes\Rozier\Forms\CustomFormType;
@@ -43,7 +44,7 @@ class CustomFormsController extends AbstractAdminController
      */
     protected function getTemplateFolder(): string
     {
-        return 'custom-forms';
+        return '@RoadizRozier/custom-forms';
     }
 
     /**
@@ -73,7 +74,7 @@ class CustomFormsController extends AbstractAdminController
     /**
      * @inheritDoc
      */
-    protected function getDefaultOrder(): array
+    protected function getDefaultOrder(Request $request): array
     {
         return ['createdAt' => 'DESC'];
     }
@@ -102,6 +103,6 @@ class CustomFormsController extends AbstractAdminController
         if ($item instanceof CustomForm) {
             return $item->getName();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 }

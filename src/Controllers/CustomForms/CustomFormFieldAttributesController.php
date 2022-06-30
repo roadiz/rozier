@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
 
 use Doctrine\Common\Collections\Collection;
-use RZ\Roadiz\Core\Entities\CustomFormAnswer;
-use RZ\Roadiz\Core\Entities\CustomFormFieldAttribute;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
+use RZ\Roadiz\CoreBundle\Entity\CustomFormFieldAttribute;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\RozierApp;
 
@@ -37,7 +38,7 @@ class CustomFormFieldAttributesController extends RozierApp
         $this->assignation['answer'] = $customFormAnswer;
         $this->assignation['customFormId'] = $customFormAnswer->getCustomForm()->getId();
 
-        return $this->render('custom-form-field-attributes/list.html.twig', $this->assignation);
+        return $this->render('@RoadizRozier/custom-form-field-attributes/list.html.twig', $this->assignation);
     }
 
     /**
