@@ -1,3 +1,30 @@
+## 2.0.0 (2022-06-30)
+
+### ⚠ BREAKING CHANGES
+
+* Theme requires Roadiz v2
+* Changed `Rozier` twig namespace to `RoadizRozier`
+
+### Features
+
+* Added post flush event dispatches in AbstractAdminController ([97934f7](https://github.com/roadiz/rozier/commit/97934f73b5f8fb47ad8dc88f5ec7e3e1192756a1))
+* Allow multiple events to be dispatched from AbstractAdminController ([6fa425e](https://github.com/roadiz/rozier/commit/6fa425e2bb2c25928b4f30c3534af1be314f9b20))
+* Prefix all abstractAdminController template folder ([516e4db](https://github.com/roadiz/rozier/commit/516e4db56631e616c0b74bfe48e031695adb6815))
+* Prefix all form themes templates ([16b8960](https://github.com/roadiz/rozier/commit/16b89602b639831bfc00a4e0246d38593172a9da))
+* Prefix all templates to be overrideable ([c6fcfeb](https://github.com/roadiz/rozier/commit/c6fcfeb0b640d39ad82d7ff8f92bf5ad1d160b57))
+* Remove dead code for Roadiz v2: routings, overriden classes and Pimple services ([d23eb52](https://github.com/roadiz/rozier/commit/d23eb527300643ead9c7d75e118733f0512e2f99))
+* Template namespace ([0372aa9](https://github.com/roadiz/rozier/commit/0372aa97a8d736408e0f5b27f9f65f23f2a9e59b))
+* Use PersistableInterface instead of AbstractEntity ([568f387](https://github.com/roadiz/rozier/commit/568f3874ea18bdd62a14cb38546618fd8b787666))
+
+### Bug Fixes
+
+* Check if search result is NodesSources ([99e1fe2](https://github.com/roadiz/rozier/commit/99e1fe2161e97a5c8c7822c4d7cea8554a21fc6c))
+* Export document with their folder to avoid overriding same filename documents ([97ce14c](https://github.com/roadiz/rozier/commit/97ce14c7b699323129b95acb6c4fcc27c11446f6))
+* Missing template namespace ([ba27c5f](https://github.com/roadiz/rozier/commit/ba27c5f2321514612fae972e414003927c5ae5fe))
+* Missing translations ([d53d60b](https://github.com/roadiz/rozier/commit/d53d60b6f10e0d386bf24d0be14f525f507c959d))
+* NodeSourceJoinType MUST always be multiple as data is submitted as array ([bc5282b](https://github.com/roadiz/rozier/commit/bc5282bb6f78fc6a71116b6038e8f010f78fd4c2))
+* Use Request Query all method instead of get for arrays ([2414911](https://github.com/roadiz/rozier/commit/24149116d6fdfecf97046b76a9767d34d499d14a))
+
 ## 1.7.16 (2022-06-22)
 
 ### Bug Fixes
