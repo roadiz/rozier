@@ -67,6 +67,18 @@ jobs:
                 - DB=mysql
                 - MYSQL_VERSION=5.7
                 - MYSQL_PASSWORD=
+            php: 8.1
+            install: sh .travis/composer_install.sh
+            script: sh .travis/php_lint.sh
+        -   stage: "PHP lint tests"
+            language: php
+            sudo: required
+            services:
+                - mysql
+            env:
+                - DB=mysql
+                - MYSQL_VERSION=5.7
+                - MYSQL_PASSWORD=
             php: nightly
             install: sh .travis/composer_install.sh
             script: sh .travis/php_lint.sh
