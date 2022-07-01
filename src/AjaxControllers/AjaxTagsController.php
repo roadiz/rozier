@@ -89,7 +89,9 @@ class AjaxTagsController extends AbstractAjaxController
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanTagIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanTagIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $normalizedTags = [];
 
         if (count($cleanTagIds)) {

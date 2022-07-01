@@ -66,7 +66,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
         ];
         if ($request->query->has('options')) {
             $options = array_merge(
-                array_filter($request->query->filter('options', [], FILTER_FORCE_ARRAY)),
+                array_filter($request->query->filter('options', [], \FILTER_DEFAULT, [
+                    'flags' => \FILTER_FORCE_ARRAY
+                ])),
                 $options
             );
         }
@@ -120,7 +122,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             $provider->setContainer($this->psrContainer);
         }
         $entitiesArray = [];
-        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $cleanNodeIds = array_filter($cleanNodeIds, function ($value) {
             $nullValues = ['null', null, 0, '0', false, 'false'];
             return !in_array($value, $nullValues, true);

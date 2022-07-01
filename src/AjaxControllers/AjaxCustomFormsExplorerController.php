@@ -78,7 +78,9 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        $cleanCustomFormsIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanCustomFormsIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $customFormsArray = [];
 
         if (count($cleanCustomFormsIds)) {
