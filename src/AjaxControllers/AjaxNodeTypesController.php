@@ -68,7 +68,9 @@ class AjaxNodeTypesController extends AjaxAbstractFieldsController
             throw new InvalidParameterException('Names array should be provided within an array');
         }
 
-        $cleanNodeTypesName = array_filter($request->query->filter('names', [], FILTER_FORCE_ARRAY));
+        $cleanNodeTypesName = array_filter($request->query->filter('names', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $nodesArray = [];
 
         if (count($cleanNodeTypesName)) {

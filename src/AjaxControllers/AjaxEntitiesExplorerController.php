@@ -143,7 +143,9 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
 
-        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $entitiesArray = [];
 
         if (count($cleanNodeIds)) {
