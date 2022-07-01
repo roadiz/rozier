@@ -85,22 +85,27 @@ class AjaxTagsController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
+        if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanTagIds = array_filter($request->query->all('ids'));
-        $tags = $this->getRepository()->findBy([
-            'id' => $cleanTagIds,
-        ]);
+        $cleanTagIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $normalizedTags = [];
 
-        // Sort array by ids given in request
-        $tags = $this->sortIsh($tags, $cleanTagIds);
+        if (count($cleanTagIds)) {
+            $tags = $this->getRepository()->findBy([
+                'id' => $cleanTagIds,
+            ]);
+
+            // Sort array by ids given in request
+            $tags = $this->sortIsh($tags, $cleanTagIds);
+            $normalizedTags = $this->normalizeTags($tags);
+        }
 
         $responseArray = [
             'status' => 'confirm',
             'statusCode' => 200,
-            'tags' => $this->normalizeTags($tags)
+            'tags' => $normalizedTags
         ];
 
         return new JsonResponse(

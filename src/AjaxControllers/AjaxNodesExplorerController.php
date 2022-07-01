@@ -204,23 +204,26 @@ class AjaxNodesExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
+        if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanNodeIds = array_filter($request->query->all('ids'));
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $nodesArray = [];
 
-        /** @var EntityManager $em */
-        $em = $this->em();
-        $nodes = $em->getRepository(Node::class)
-            ->setDisplayingNotPublishedNodes(true)
-            ->findBy([
-                'id' => $cleanNodeIds,
-            ]);
+        if (count($cleanNodeIds)) {
+            /** @var EntityManager $em */
+            $em = $this->em();
+            $nodes = $em->getRepository(Node::class)
+                ->setDisplayingNotPublishedNodes(true)
+                ->findBy([
+                    'id' => $cleanNodeIds,
+                ]);
 
-        // Sort array by ids given in request
-        $nodes = $this->sortIsh($nodes, $cleanNodeIds);
-        $nodesArray = $this->normalizeNodes($nodes);
+            // Sort array by ids given in request
+            $nodes = $this->sortIsh($nodes, $cleanNodeIds);
+            $nodesArray = $this->normalizeNodes($nodes);
+        }
 
         return $this->createSerializedResponse([
             'status' => 'confirm',
