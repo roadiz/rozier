@@ -208,7 +208,9 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $nodesArray = [];
 
         if (count($cleanNodeIds)) {

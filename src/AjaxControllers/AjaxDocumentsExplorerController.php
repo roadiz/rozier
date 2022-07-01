@@ -114,7 +114,9 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
-        $cleanDocumentIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $cleanDocumentIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
+            'flags' => \FILTER_FORCE_ARRAY
+        ]));
         $documentsArray = [];
 
         if (count($cleanDocumentIds)) {
