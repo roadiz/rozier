@@ -1,3 +1,9 @@
+## 2.0.2 (2022-07-01)
+
+### Bug Fixes
+
+* Misuse of InputBag filter args ([73469a1](https://github.com/roadiz/rozier/commit/73469a1290d97f7791ecad3d16b2b0faf6156d19))
+
 ## 2.0.1 (2022-07-01)
 
 ### Bug Fixes
