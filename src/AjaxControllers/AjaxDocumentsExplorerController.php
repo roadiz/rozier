@@ -111,21 +111,22 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
+        if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
+        $cleanDocumentIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $documentsArray = [];
 
-        $cleanDocumentIds = array_filter($request->query->all('ids'));
-
-        $em = $this->em();
-        $documents = $em->getRepository(Document::class)->findBy([
-            'id' => $cleanDocumentIds,
-            'raw' => false,
-        ]);
-
-        // Sort array by ids given in request
-        $documents = $this->sortIsh($documents, $cleanDocumentIds);
-        $documentsArray = $this->normalizeDocuments($documents);
+        if (count($cleanDocumentIds)) {
+            $em = $this->em();
+            $documents = $em->getRepository(Document::class)->findBy([
+                'id' => $cleanDocumentIds,
+                'raw' => false,
+            ]);
+            // Sort array by ids given in request
+            $documents = $this->sortIsh($documents, $cleanDocumentIds);
+            $documentsArray = $this->normalizeDocuments($documents);
+        }
 
         $responseArray = [
             'status' => 'confirm',

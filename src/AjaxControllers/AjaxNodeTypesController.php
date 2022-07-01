@@ -64,20 +64,23 @@ class AjaxNodeTypesController extends AjaxAbstractFieldsController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
-        if (!$request->query->has('names') || !is_array($request->query->all('names'))) {
+        if (!$request->query->has('names')) {
             throw new InvalidParameterException('Names array should be provided within an array');
         }
 
-        $cleanNodeTypesName = array_filter($request->query->all('names'));
+        $cleanNodeTypesName = array_filter($request->query->filter('names', [], FILTER_FORCE_ARRAY));
+        $nodesArray = [];
 
-        /** @var EntityManager $em */
-        $em = $this->em();
-        $nodeTypes = $em->getRepository(NodeType::class)->findBy([
-            'name' => $cleanNodeTypesName
-        ]);
+        if (count($cleanNodeTypesName)) {
+            /** @var EntityManager $em */
+            $em = $this->em();
+            $nodeTypes = $em->getRepository(NodeType::class)->findBy([
+                'name' => $cleanNodeTypesName
+            ]);
 
-        // Sort array by ids given in request
-        $nodesArray = $this->normalizeNodeType($nodeTypes);
+            // Sort array by ids given in request
+            $nodesArray = $this->normalizeNodeType($nodeTypes);
+        }
 
         $responseArray = [
             'status' => 'confirm',
