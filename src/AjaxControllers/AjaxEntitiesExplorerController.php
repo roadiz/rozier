@@ -130,7 +130,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
             throw new InvalidParameterException('nodeTypeFieldId parameter is missing.');
         }
 
-        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
+        if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
@@ -142,15 +142,19 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         /** @var NodeTypeField $nodeTypeField */
         $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
-        $cleanNodeIds = array_filter($request->query->all('ids'));
 
-        $entities = $em->getRepository($configuration['classname'])->findBy([
-            'id' => $cleanNodeIds,
-        ]);
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
+        $entitiesArray = [];
 
-        // Sort array by ids given in request
-        $entities = $this->sortIsh($entities, $cleanNodeIds);
-        $entitiesArray = $this->normalizeEntities($entities, $configuration);
+        if (count($cleanNodeIds)) {
+            $entities = $em->getRepository($configuration['classname'])->findBy([
+                'id' => $cleanNodeIds,
+            ]);
+
+            // Sort array by ids given in request
+            $entities = $this->sortIsh($entities, $cleanNodeIds);
+            $entitiesArray = $this->normalizeEntities($entities, $configuration);
+        }
 
         $responseArray = [
             'status' => 'confirm',

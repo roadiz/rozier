@@ -64,11 +64,11 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             'itemPerPage' => $request->query->get('itemPerPage') ?: 30,
             'search' => $request->query->get('search') ?: null,
         ];
-        if (
-            $request->query->has('options') &&
-            is_array($request->query->all('options'))
-        ) {
-            $options = array_merge($request->query->all('options'), $options);
+        if ($request->query->has('options')) {
+            $options = array_merge(
+                array_filter($request->query->filter('options', [], FILTER_FORCE_ARRAY)),
+                $options
+            );
         }
         $entities = $provider->getItems($options);
 
@@ -109,7 +109,7 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             throw new InvalidParameterException('providerClass is not a valid class.');
         }
 
-        if (!$request->query->has('ids') || !is_array($request->query->all('ids'))) {
+        if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
@@ -120,7 +120,7 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             $provider->setContainer($this->psrContainer);
         }
         $entitiesArray = [];
-        $cleanNodeIds = array_filter($request->query->all('ids'));
+        $cleanNodeIds = array_filter($request->query->filter('ids', [], FILTER_FORCE_ARRAY));
         $cleanNodeIds = array_filter($cleanNodeIds, function ($value) {
             $nullValues = ['null', null, 0, '0', false, 'false'];
             return !in_array($value, $nullValues, true);

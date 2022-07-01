@@ -1,3 +1,9 @@
+## 2.0.1 (2022-07-01)
+
+### Bug Fixes
+
+* InputBag query all and filter on array ([e7a3ece](https://github.com/roadiz/rozier/commit/e7a3ece33db836b630c8a1bfbd517e57cf3e4c55))
+
 ## 2.0.0 (2022-06-30)
 
 ### ⚠ BREAKING CHANGES
