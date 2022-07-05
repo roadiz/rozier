@@ -1,3 +1,9 @@
+## 2.0.3 (2022-07-05)
+
+### Bug Fixes
+
+* Allow dev-develop versions for Roadiz bundles ([0badd5e](https://github.com/roadiz/rozier/commit/0badd5ef502aaa20ecdc88227be3a50a95571ad1))
+
 ## 2.0.2 (2022-07-01)
 
 ### Bug Fixes
