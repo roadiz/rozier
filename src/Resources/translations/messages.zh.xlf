@@ -2797,6 +2797,10 @@
         <source>document.translation.%name%.cannot_delete</source>
         <target state="translated">文档 “%name%” 翻译无法删除。</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="folder">
+        <source>folder</source>
+        <target state="translated">文件夹</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree">
         <source>folderTree</source>
         <target state="translated">文件夹</target>

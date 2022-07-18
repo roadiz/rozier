@@ -2769,6 +2769,10 @@
         <source>document.translation.%name%.cannot_delete</source>
         <target state="translated">La traducción de documento "%name%" no puede ser eliminada.</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="folder">
+        <source>folder</source>
+        <target state="translated">carpeta</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree">
         <source>folderTree</source>
         <target state="translated">Carpetas de documentos</target>
@@ -4887,6 +4891,26 @@
             <target state="translated">-- Usar el idioma predeterminado del sitio web --</target>
             <note>User detail form field choice for using website default language.</note>
         </trans-unit>
+      <trans-unit xml:space="preserve" id="preview">
+            <source>preview</source>
+            <target state="translated">vista previa</target>
+            <note>Preview mode label on warning sign.</note>
+        </trans-unit>
+      <trans-unit xml:space="preserve" id="versions">
+            <source>versions</source>
+            <target state="translated">versiones</target>
+            <note>Version management</note>
+        </trans-unit>
+      <trans-unit xml:space="preserve" id="encrypted">
+            <source>encrypted</source>
+            <target state="translated">encriptado</target>
+            <note>Settings : defines if setting value will be encrypted in database.</note>
+        </trans-unit>
+      <trans-unit id="filter">
+        <source>filter</source>
+        <target state="translated">filtro</target>
+        <note>Button label for a generic filtering action.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
