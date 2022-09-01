@@ -4,7 +4,7 @@
 {% set subFolders = folderTree.childrenFolders(folder) %}
 <li data-folder-id="{{ folder.id }}"
     class="uk-nestable-item uk-nestable-list-item-folder foldertree-element{% if subFolders|length > 0 %} has-children{% endif %}">
-    <div class="tree-element-inner uk-nestable-panel uk-nestable-item-folder">
+    <div class="tree-element-inner uk-nestable-panel uk-nestable-item-folder{% if not folder.isVisible %} hidden-folder{% endif %}{% if folder.isLocked %} locked-folder{% endif %}">
         <div class="uk-nestable-handle uk-nestable-handle-folder">
             <i class="{% if subFolders|length > 0 %}uk-icon-rz-folder-tree-mini{% else %}uk-icon-rz-folder-tree-mini{% endif %}"></i>
         </div>

@@ -33,6 +33,7 @@ use Themes\Rozier\Forms\TagType;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\VersionedControllerTrait;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers\Tags
@@ -102,6 +103,7 @@ class TagsController extends RozierApp
      * @param int|null $translationId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function editTranslatedAction(Request $request, int $tagId, ?int $translationId = null)
     {
@@ -242,6 +244,7 @@ class TagsController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function bulkDeleteAction(Request $request)
     {
@@ -572,9 +575,10 @@ class TagsController extends RozierApp
      * Handle tag nodes page.
      *
      * @param Request $request
-     * @param int     $tagId
+     * @param int $tagId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function editNodesAction(Request $request, int $tagId)
     {
@@ -674,6 +678,8 @@ class TagsController extends RozierApp
                 ->getRepository(Tag::class)
                 ->findBy([
                     'id' => $tagsIds,
+                    // Removed locked tags from bulk deletion
+                    'locked' => false,
                 ]);
 
             /** @var Tag $tag */

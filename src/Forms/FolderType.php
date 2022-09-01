@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\CoreBundle\Form\ColorType;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -34,6 +35,15 @@ class FolderType extends AbstractType
         ])
         ->add('visible', CheckboxType::class, [
             'label' => 'visible',
+            'required' => false,
+        ])
+        ->add('locked', CheckboxType::class, [
+            'label' => 'locked',
+            'help' => 'folder.locked.help',
+            'required' => false,
+        ])
+        ->add('color', ColorType::class, [
+            'label' => 'folder.color',
             'required' => false,
         ]);
     }
