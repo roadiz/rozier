@@ -2031,6 +2031,10 @@
         <source>tag.color</source>
         <target state="final">Color</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="folder.color">
+        <source>folder.color</source>
+        <target state="translated">Color</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="374" approved="yes">
         <source>tag.tree</source>
         <target state="final">Tag tree</target>
@@ -2797,9 +2801,9 @@
         <source>document.translation.%name%.cannot_delete</source>
         <target state="final">Document “%name%” translation cannot be deleted.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="folder" approved="yes">
+      <trans-unit xml:space="preserve" id="folder">
         <source>folder</source>
-        <target state="final">Folder</target>
+        <target state="translated">Folder</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree" approved="yes">
         <source>folderTree</source>
@@ -2812,6 +2816,10 @@
       <trans-unit xml:space="preserve" id="add.child.folder" approved="yes">
         <source>add.child.folder</source>
         <target state="final">Add sub-folder</target>
+      </trans-unit>
+      <trans-unit xml:space="preserve" id="add.folder.%name%.child">
+        <source>add.folder.%name%.child</source>
+        <target state="translated">Add a sub-folder in «%name%»</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="edit.folder" approved="yes">
         <source>edit.folder</source>
