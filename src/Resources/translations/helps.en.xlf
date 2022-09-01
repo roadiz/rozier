@@ -22,6 +22,10 @@
                 <source>tag.locked.help</source>
                 <target state="translated">A locked tag is not renamed after updating its translated title. It prevents deletion too.</target>
             </trans-unit>
+      <trans-unit xml:space="preserve" id="folder.locked.help">
+                <source>folder.locked.help</source>
+                <target state="translated">A locked folder is not renamed after updating its translated title. It prevents deletion too.</target>
+            </trans-unit>
       <trans-unit xml:space="preserve" id="nodeSource.metaTitle.help">
                 <source>nodeSource.metaTitle.help</source>
                 <target state="translated">SEO title allows you to write the entire title of your page. For optimal display in search engines, the title should not exceed 55 to 65 characters on average.</target>
