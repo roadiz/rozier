@@ -1,3 +1,11 @@
+## 2.0.5 (2022-09-01)
+
+* Translations updates
+
+### Bug Fixes
+
+* Fixed cssAction queries for tags and folders ([49679bf](https://github.com/roadiz/rozier/commit/49679bf70fbc8514eaad6a21ce6ff098da602bd7))
+
 ## 2.0.4 (2022-09-01)
 
 ### Features
