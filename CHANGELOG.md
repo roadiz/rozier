@@ -1,3 +1,9 @@
+## 2.0.7 (2022-09-01)
+
+### Bug Fixes
+
+* Trans-typing SHOULD be executed in one single SQL transaction ([9901f6b](https://github.com/roadiz/rozier/commit/9901f6b38a470c574ff0c6efd7dfca0899e95e51))
+
 ## 2.0.6 (2022-09-01)
 
 ### Bug Fixes
