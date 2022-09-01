@@ -117,12 +117,18 @@ class RozierApp extends BackendController
     {
         $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
         $this->assignation['nodeTypes'] = $this->get('nodeTypesBag')->all();
-        $this->assignation['tags'] = $this->em()->getRepository(Tag::class)->findBy([
-            'color' => ['!=', '#000000'],
-        ]);
-        $this->assignation['folders'] = $this->em()->getRepository(Folder::class)->findBy([
-            'color' => ['!=', '#000000'],
-        ]);
+
+        $folderQb = $this->em()->getRepository(Folder::class)->createQueryBuilder('f');
+        $this->assignation['folders'] = $folderQb->andWhere($folderQb->expr()->neq('f.color', ':defaultColor'))
+            ->setParameter('defaultColor', '#000000')
+            ->getQuery()
+            ->getResult();
+
+        $tagQb = $this->em()->getRepository(Tag::class)->createQueryBuilder('t');
+        $this->assignation['tags'] = $tagQb->andWhere($tagQb->expr()->neq('t.color', ':defaultColor'))
+            ->setParameter('defaultColor', '#000000')
+            ->getQuery()
+            ->getResult();
 
         $response = new Response(
             $this->getTwig()->render('@RoadizRozier/css/mainColor.css.twig', $this->assignation),
