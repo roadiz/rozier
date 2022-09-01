@@ -322,6 +322,21 @@
             }
         }
     }
+    &.hidden-folder {
+        & > .foldertree-element-name {
+            a {
+                text-decoration: line-through;
+                .opacity(0.8);
+            }
+        }
+        &:hover {
+            & > .foldertree-element-name {
+                a {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
     &.unpublished-node {
         & > .non-nestable-handle:before,
         & > .uk-nestable-handle:before {

@@ -1,3 +1,10 @@
+## 2.0.4 (2022-09-01)
+
+### Features
+
+* Added Folder `locked` and `color` form type fields and tree layout changes ([27beea1](https://github.com/roadiz/rozier/commit/27beea19d79eeaa2383dd12ca27651f806049352))
+* New `ConfigurableExplorerItem` to refactor entity explorer with custom doctrine entities ([64ef927](https://github.com/roadiz/rozier/commit/64ef927dbcdbfbf7fa331fd2889621358aa19f50))
+
 ## 2.0.3 (2022-07-05)
 
 ### Bug Fixes

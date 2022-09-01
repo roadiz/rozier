@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier;
 
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\RozierBundle\Controller\BackendController;
@@ -97,6 +98,7 @@ class RozierApp extends BackendController
      * @param Request $request
      *
      * @return Response $response
+     * @throws RuntimeError
      */
     public function indexAction(Request $request)
     {
@@ -111,11 +113,14 @@ class RozierApp extends BackendController
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function cssAction(Request $request)
+    public function cssAction(Request $request): Response
     {
         $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
         $this->assignation['nodeTypes'] = $this->get('nodeTypesBag')->all();
         $this->assignation['tags'] = $this->em()->getRepository(Tag::class)->findBy([
+            'color' => ['!=', '#000000'],
+        ]);
+        $this->assignation['folders'] = $this->em()->getRepository(Folder::class)->findBy([
             'color' => ['!=', '#000000'],
         ]);
 

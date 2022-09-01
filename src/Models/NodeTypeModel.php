@@ -21,7 +21,7 @@ final class NodeTypeModel implements ModelInterface
         $this->nodeType = $nodeType;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'id' => $this->nodeType->getId(),

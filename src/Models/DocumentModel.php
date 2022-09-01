@@ -62,7 +62,7 @@ final class DocumentModel implements ModelInterface
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $name = (string) $this->document;
         $thumbnail80Url = null;

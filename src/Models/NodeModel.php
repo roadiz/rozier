@@ -30,7 +30,7 @@ final class NodeModel implements ModelInterface
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         /** @var NodesSources|false $nodeSource */
         $nodeSource = $this->node->getNodeSources()->first();

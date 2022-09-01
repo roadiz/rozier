@@ -7,6 +7,7 @@ namespace Themes\Rozier\Controllers;
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\FolderTranslation;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderDeletedEvent;
@@ -21,6 +22,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\FolderTranslationType;
 use Themes\Rozier\Forms\FolderType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers
@@ -119,9 +121,10 @@ class FoldersController extends RozierApp
      * Return a deletion form for requested folder.
      *
      * @param Request $request
-     * @param int     $folderId
+     * @param int $folderId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $folderId)
     {
@@ -130,7 +133,7 @@ class FoldersController extends RozierApp
         /** @var Folder|null $folder */
         $folder = $this->em()->find(Folder::class, $folderId);
 
-        if (null !== $folder) {
+        if (null !== $folder && !$folder->isLocked()) {
             $form = $this->createForm(FormType::class, $folder);
             $form->handleRequest($request);
 
@@ -223,10 +226,11 @@ class FoldersController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $folderId
-     * @param int     $translationId
+     * @param int $folderId
+     * @param int $translationId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function editTranslationAction(Request $request, int $folderId, int $translationId)
     {
@@ -260,6 +264,21 @@ class FoldersController extends RozierApp
 
             if ($form->isSubmitted() && $form->isValid()) {
                 try {
+                    /*
+                     * Update folder slug if not locked
+                     * only from default translation.
+                     */
+                    $newFolderName = StringHandler::slugify($folderTranslation->getName());
+                    if ($folder->getFolderName() !== $newFolderName) {
+                        if (
+                            !$folder->isLocked() &&
+                            $translation->isDefaultTranslation() &&
+                            !$this->folderNameExists($newFolderName)
+                        ) {
+                            $folder->setFolderName($folderTranslation->getName());
+                        }
+                    }
+
                     $this->em()->flush();
                     $msg = $this->getTranslator()->trans(
                         'folder.%name%.updated',
@@ -292,6 +311,17 @@ class FoldersController extends RozierApp
         }
 
         throw new ResourceNotFoundException();
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    protected function folderNameExists(string $name): bool
+    {
+        $entity = $this->em()->getRepository(Folder::class)->findOneByFolderName($name);
+        return (null !== $entity);
     }
 
     /**

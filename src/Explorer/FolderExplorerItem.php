@@ -6,17 +6,17 @@ namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class FolderExplorerItem extends AbstractExplorerItem
 {
     private Folder $folder;
+    private UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * @param Folder $folder
-     */
-    public function __construct(Folder $folder)
+    public function __construct(Folder $folder, UrlGeneratorInterface $urlGenerator)
     {
         $this->folder = $folder;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -54,5 +54,12 @@ final class FolderExplorerItem extends AbstractExplorerItem
     public function getOriginal()
     {
         return $this->folder;
+    }
+
+    protected function getEditItemPath(): ?string
+    {
+        return $this->urlGenerator->generate('foldersEditPage', [
+            'folderId' => $this->folder->getId()
+        ]);
     }
 }

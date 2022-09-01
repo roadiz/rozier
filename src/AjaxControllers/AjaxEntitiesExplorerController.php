@@ -9,8 +9,11 @@ use Doctrine\ORM\EntityManager;
 use RZ\Roadiz\CoreBundle\Configuration\JoinNodeTypeFieldConfiguration;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\Core\Models\DocumentInterface;
+use RZ\Roadiz\CoreBundle\Entity\Setting;
+use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Config\Definition\Processor;
@@ -21,6 +24,10 @@ use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Yaml\Yaml;
+use Themes\Rozier\Explorer\ConfigurableExplorerItem;
+use Themes\Rozier\Explorer\FolderExplorerItem;
+use Themes\Rozier\Explorer\SettingExplorerItem;
+use Themes\Rozier\Explorer\UserExplorerItem;
 use Themes\Rozier\Models\DocumentModel;
 
 /**
@@ -174,54 +181,33 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
      *
      * @param array|\Traversable $entities
      * @param array $configuration
-     * @return array
+     * @return array<array>
      */
-    private function normalizeEntities($entities, array &$configuration)
+    private function normalizeEntities($entities, array &$configuration): array
     {
         $entitiesArray = [];
 
         /** @var PersistableInterface $entity */
         foreach ($entities as $entity) {
-            $alt = $configuration['classname'];
-            /** @var DocumentInterface|null $thumbnail */
-            $thumbnail = null;
-            if (!empty($configuration['alt_displayable'])) {
-                $alt = call_user_func([$entity, $configuration['alt_displayable']]);
-                if ($alt instanceof \DateTimeInterface) {
-                    $alt = $alt->format('c');
-                }
-            }
-            if (!empty($configuration['thumbnail'])) {
-                $thumbnail = call_user_func([$entity, $configuration['thumbnail']]);
-                if ($thumbnail instanceof Collection && $thumbnail->count() > 0 && $thumbnail->first() instanceof DocumentInterface) {
-                    $thumbnail = $thumbnail->first();
-                } elseif (is_array($thumbnail) && count($thumbnail) > 0 && $thumbnail[0] instanceof DocumentInterface) {
-                    $thumbnail = $thumbnail[0];
-                }
-            }
-            $displayable = call_user_func([$entity, $configuration['displayable']]);
-            if ($displayable instanceof \DateTimeInterface) {
-                $displayable = $displayable->format('c');
-            }
-
-            if ($thumbnail instanceof DocumentInterface) {
-                $thumbnailModel = new DocumentModel(
-                    $thumbnail,
+            if ($entity instanceof Folder) {
+                $explorerItem = new FolderExplorerItem($entity, $this->urlGenerator);
+                $entitiesArray[] = $explorerItem->toArray();
+            } elseif ($entity instanceof Setting) {
+                $explorerItem = new SettingExplorerItem($entity, $this->urlGenerator);
+                $entitiesArray[] = $explorerItem->toArray();
+            } elseif ($entity instanceof User) {
+                $explorerItem = new UserExplorerItem($entity, $this->urlGenerator);
+                $entitiesArray[] = $explorerItem->toArray();
+            } else {
+                $explorerItem = new ConfigurableExplorerItem(
+                    $entity,
+                    $configuration,
                     $this->renderer,
                     $this->documentUrlGenerator,
                     $this->urlGenerator
                 );
-                $thumbnail = $thumbnailModel->toArray();
-            } else {
-                $thumbnail = null;
+                $entitiesArray[] = $explorerItem->toArray();
             }
-
-            $entitiesArray[] = [
-                'id' => $entity->getId(),
-                'thumbnail' => $thumbnail,
-                'classname' => (new UnicodeString($alt ?? ''))->truncate(30, '…')->toString(),
-                'displayable' => (new UnicodeString($displayable ?? ''))->truncate(30, '…')->toString(),
-            ];
         }
 
         return $entitiesArray;

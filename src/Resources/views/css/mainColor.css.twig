@@ -54,3 +54,13 @@
     color: {{ tag.color|raw }};
 }
 {% endfor %}
+{% for folder in folders %}
+/*
+ * Custom color on folder
+ * for {{ folder.folderName }}
+ */
+.folder-item[data-folder-id="{{ folder.id }}"] i,
+.foldertree-element[data-folder-id="{{ folder.id }}"] > .uk-nestable-panel .uk-nestable-handle i {
+    color: {{ folder.color|raw }};
+}
+{% endfor %}
