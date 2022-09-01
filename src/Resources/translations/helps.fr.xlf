@@ -22,6 +22,10 @@
                 <source>tag.locked.help</source>
                 <target state="translated">Une étiquette verrouillée n’est pas renommée lorsque vous modifiez son titre dans la traduction principale. Cela empêche aussi sa suppression.</target>
             </trans-unit>
+      <trans-unit xml:space="preserve" id="folder.locked.help">
+                <source>folder.locked.help</source>
+                <target state="translated">Un dossier verrouillée n’est pas renommée lorsque vous modifiez son titre dans la traduction principale. Cela empêche aussi sa suppression.</target>
+            </trans-unit>
       <trans-unit xml:space="preserve" id="nodeSource.metaTitle.help">
                 <source>nodeSource.metaTitle.help</source>
                 <target state="translated">Le titre de référencement permet de rédiger entièrement le titre de votre page. Pour un affichage optimal dans les moteurs de recherche, le titre ne doit pas dépasser 55 à 65 caractères en moyenne.</target>
