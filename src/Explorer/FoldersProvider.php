@@ -43,7 +43,7 @@ final class FoldersProvider extends AbstractDoctrineExplorerProvider
     public function toExplorerItem($item): ?ExplorerItemInterface
     {
         if ($item instanceof Folder) {
-            return new FolderExplorerItem($item);
+            return new FolderExplorerItem($item, $this->urlGenerator);
         }
         throw new \InvalidArgumentException('Explorer item must be instance of ' . Folder::class);
     }

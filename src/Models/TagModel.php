@@ -15,16 +15,13 @@ final class TagModel implements ModelInterface
     private Tag $tag;
     private UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * @param Tag $tag
-     */
     public function __construct(Tag $tag, UrlGeneratorInterface $urlGenerator)
     {
         $this->tag = $tag;
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $firstTrans = $this->tag->getTranslatedTags()->first();
         $name = $this->tag->getTagName();

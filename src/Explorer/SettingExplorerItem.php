@@ -6,17 +6,17 @@ namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class SettingExplorerItem extends AbstractExplorerItem
 {
     private Setting $setting;
+    private UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * @param Setting $setting
-     */
-    public function __construct(Setting $setting)
+    public function __construct(Setting $setting, UrlGeneratorInterface $urlGenerator)
     {
         $this->setting = $setting;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -52,5 +52,12 @@ final class SettingExplorerItem extends AbstractExplorerItem
     public function getOriginal()
     {
         return $this->setting;
+    }
+
+    protected function getEditItemPath(): ?string
+    {
+        return $this->urlGenerator->generate('settingsEditPage', [
+            'settingId' => $this->setting->getId()
+        ]);
     }
 }

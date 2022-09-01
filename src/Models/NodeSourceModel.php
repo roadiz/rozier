@@ -24,7 +24,7 @@ final class NodeSourceModel implements ModelInterface
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $node = $this->nodeSource->getNode();
         if (null === $node) {

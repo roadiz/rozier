@@ -6,17 +6,17 @@ namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class UserExplorerItem extends AbstractExplorerItem
 {
     private User $user;
+    private UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * @param User $user
-     */
-    public function __construct(User $user)
+    public function __construct(User $user, UrlGeneratorInterface $urlGenerator)
     {
         $this->user = $user;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -57,5 +57,12 @@ final class UserExplorerItem extends AbstractExplorerItem
     public function getOriginal()
     {
         return $this->user;
+    }
+
+    protected function getEditItemPath(): ?string
+    {
+        return $this->urlGenerator->generate('usersEditPage', [
+            'userId' => $this->user->getId()
+        ]);
     }
 }

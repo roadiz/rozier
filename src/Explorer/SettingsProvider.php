@@ -43,7 +43,7 @@ final class SettingsProvider extends AbstractDoctrineExplorerProvider
     public function toExplorerItem($item): ?ExplorerItemInterface
     {
         if ($item instanceof Setting) {
-            return new SettingExplorerItem($item);
+            return new SettingExplorerItem($item, $this->urlGenerator);
         }
         throw new \InvalidArgumentException('Explorer item must be instance of ' . Setting::class);
     }

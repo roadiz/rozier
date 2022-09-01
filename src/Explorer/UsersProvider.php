@@ -43,7 +43,7 @@ final class UsersProvider extends AbstractDoctrineExplorerProvider
     public function toExplorerItem($item): ?ExplorerItemInterface
     {
         if ($item instanceof User) {
-            return new UserExplorerItem($item);
+            return new UserExplorerItem($item, $this->urlGenerator);
         }
         throw new \InvalidArgumentException('Explorer item must be instance of ' . User::class);
     }
