@@ -2031,6 +2031,10 @@
         <source>tag.color</source>
         <target state="final">Couleur</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="folder.color">
+        <source>folder.color</source>
+        <target state="translated">Couleur</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="374" approved="yes">
         <source>tag.tree</source>
         <target state="final">Arborescence</target>
