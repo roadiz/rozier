@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\TranstypeType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers\Nodes
@@ -36,6 +37,8 @@ class TranstypeController extends RozierApp
      * @param int $nodeId
      *
      * @return RedirectResponse|Response
+     * @throws RuntimeError
+     * @throws \Exception
      */
     public function transtypeAction(Request $request, int $nodeId)
     {
@@ -59,8 +62,21 @@ class TranstypeController extends RozierApp
 
             /** @var NodeType $newNodeType */
             $newNodeType = $this->em()->find(NodeType::class, (int) $data['nodeTypeId']);
-            $this->nodeTranstyper->transtype($node, $newNodeType);
-            $this->em()->flush();
+
+            /*
+             * Trans-typing SHOULD be executed in one single transaction
+             * @see https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html
+             */
+            $this->em()->getConnection()->beginTransaction(); // suspend auto-commit
+            try {
+                $this->nodeTranstyper->transtype($node, $newNodeType);
+                $this->em()->flush();
+                $this->em()->getConnection()->commit();
+            } catch (\Exception $e) {
+                $this->em()->getConnection()->rollBack();
+                throw $e;
+            }
+
             $this->em()->refresh($node);
             /*
              * Dispatch event
