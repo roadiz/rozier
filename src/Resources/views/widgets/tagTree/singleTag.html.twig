@@ -34,11 +34,13 @@
                             <i class="uk-icon-rz-plus"></i> {% trans %}add.a.child.tag{% endtrans %}
                         </a>
                     </p>
-                    <p>
-                        <a title="{{ "delete.tag.%name%"|trans({'%name%': tag.getTagName}) }}" href="{{ path('tagsDeletePage', { tagId:tag.getId }) }}">
-                            <i class="uk-icon-trash-o"></i> {% trans %}delete.tag{% endtrans %}
-                        </a>
-                    </p>
+                    {% if is_granted('ROLE_ACCESS_TAGS_DELETE') and not tag.Locked %}
+                        <p>
+                            <a title="{{ "delete.tag.%name%"|trans({'%name%': tag.getTagName}) }}" href="{{ path('tagsDeletePage', { tagId:tag.getId }) }}">
+                                <i class="uk-icon-trash-o"></i> {% trans %}delete.tag{% endtrans %}
+                            </a>
+                        </p>
+                    {% endif %}
                 </div>
             </nav>
         </div>

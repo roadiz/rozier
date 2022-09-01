@@ -1,3 +1,9 @@
+## 2.0.6 (2022-09-01)
+
+### Bug Fixes
+
+* Deletions buttons must be hidden for locked tags and folders ([5702bd1](https://github.com/roadiz/rozier/commit/5702bd1fac93cc119938f1085d7e4c16facef60c))
+
 ## 2.0.5 (2022-09-01)
 
 * Translations updates
