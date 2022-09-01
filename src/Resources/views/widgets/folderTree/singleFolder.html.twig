@@ -31,12 +31,14 @@
                             <i class="uk-icon-rz-plus"></i> {% trans %}add.child.folder{% endtrans %}
                         </a>
                     </p>
-                    <p>
-                        <a title="{{ "delete.folder.%name%"|trans({'%name%': folderName}) }}"
-                           href="{{ path('foldersDeletePage', { folderId:folder.id }) }}">
-                            <i class="uk-icon-trash-o"></i> {% trans %}delete.folder{% endtrans %}
-                        </a>
-                    </p>
+                    {% if not folder.Locked %}
+                        <p>
+                            <a title="{{ "delete.folder.%name%"|trans({'%name%': folderName}) }}"
+                               href="{{ path('foldersDeletePage', { folderId:folder.id }) }}">
+                                <i class="uk-icon-trash-o"></i> {% trans %}delete.folder{% endtrans %}
+                            </a>
+                        </p>
+                    {% endif %}
                 </div>
             </nav>
         </div>
