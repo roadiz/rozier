@@ -22,6 +22,7 @@ class TranslationType extends AbstractType
     {
         $builder->add('name', TextType::class, [
             'label' => 'name',
+            'empty_data' => '',
             'constraints' => [
                 new NotNull(),
                 new NotBlank(),

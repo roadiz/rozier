@@ -29,6 +29,7 @@ class NodeTypeFieldType extends AbstractType
     {
         $builder->add('name', TextType::class, [
             'label' => 'name',
+            'empty_data' => '',
             'help' => 'technical_name_for_database_and_templating',
             'constraints' => [
                 new NotNull(),

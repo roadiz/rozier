@@ -23,6 +23,7 @@ final class NodeSourceBaseType extends AbstractType
     {
         $builder->add('title', TextType::class, [
             'label' => 'title',
+            'empty_data' => '',
             'required' => false,
             'attr' => [
                 'data-dev-name' => '{{ nodeSource.' . StringHandler::camelCase('title') . ' }}',

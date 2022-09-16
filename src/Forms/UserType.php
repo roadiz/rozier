@@ -26,6 +26,7 @@ class UserType extends AbstractType
     {
         $builder->add('email', EmailType::class, [
                 'label' => 'email',
+                'empty_data' => '',
                 'constraints' => [
                     new NotNull(),
                     new Email(),
@@ -37,6 +38,7 @@ class UserType extends AbstractType
             ])
             ->add('username', TextType::class, [
                 'label' => 'username',
+                'empty_data' => '',
                 'constraints' => [
                     new NotNull(),
                     new NotBlank(),

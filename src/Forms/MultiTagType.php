@@ -17,6 +17,7 @@ class MultiTagType extends AbstractType
     {
         $builder->add('names', TextareaType::class, [
             'label' => 'tags.names',
+            'empty_data' => '',
             'attr' => [
                 'placeholder' => 'write.every.tags.names.comma.separated',
             ],

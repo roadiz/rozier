@@ -9,6 +9,8 @@ use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\NodeTypeTransformer;
 use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Event\PostSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -17,6 +19,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\Event\SubmitEvent;
 
 /**
  * @package Themes\Rozier\Forms\Node
@@ -90,8 +94,27 @@ class AddNodeType extends AbstractType
                 Node::getStatusLabel(Node::PUBLISHED) => Node::PUBLISHED,
                 Node::getStatusLabel(Node::ARCHIVED) => Node::ARCHIVED,
             ],
-        ])
-        ;
+        ]);
+
+        $builder->addEventListener(FormEvents::SUBMIT, function (SubmitEvent $event) {
+            $node = $event->getData();
+            $form = $event->getForm();
+
+            if (!isset($form['title'])) {
+                throw new \RuntimeException('title is not submitted');
+            }
+
+            if (!$node instanceof Node) {
+                dump($node);
+                throw new \RuntimeException('Data is not a Node');
+            }
+
+            /*
+             * Already set Node name before data validation stage.
+             */
+            $node->setNodeName($form['title']->getData());
+            $event->setData($node);
+        });
     }
 
     /**
@@ -108,6 +131,7 @@ class AddNodeType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
+            'data_class' => Node::class,
             'label' => false,
             'nodeName' => '',
             'showNodeType' => true,

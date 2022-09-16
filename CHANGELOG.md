@@ -1,3 +1,9 @@
+## 2.0.8 (2022-09-16)
+
+### Bug Fixes
+
+* Added empty_data on non-nullable string fields, set nodeName on AddNodeType ([bb027df](https://github.com/roadiz/rozier/commit/bb027dfe934a3ad3711eb17ccbae34aaa07fab4a))
+
 ## 2.0.7 (2022-09-01)
 
 ### Bug Fixes
