@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Redirection;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -13,9 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * @package Themes\Rozier\Forms
@@ -30,23 +26,11 @@ class RedirectionType extends AbstractType
                 'placeholder' => $options['placeholder']
             ],
             'empty_data' => '',
-            'constraints' => [
-                new NotNull(),
-                new NotBlank(),
-                new Length([
-                    'max' => 255
-                ])
-            ],
         ]);
         if ($options['only_query'] === false) {
             $builder->add('redirectUri', TextareaType::class, [
                 'label' => 'redirection.redirect_uri',
                 'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 2048
-                    ])
-                ]
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'redirection.type',
@@ -71,11 +55,6 @@ class RedirectionType extends AbstractType
             'placeholder' => null,
             'attr' => [
                 'class' => 'uk-form redirection-form',
-            ],
-            'constraints' => [
-                new UniqueEntity([
-                    'fields' => 'query',
-                ])
             ]
         ]);
     }

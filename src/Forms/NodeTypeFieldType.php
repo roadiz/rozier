@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\CoreBundle\Form\Constraint\NodeTypeField as NodeTypeFieldConstraint;
 use RZ\Roadiz\CoreBundle\Form\Constraint\NonSqlReservedWord;
 use RZ\Roadiz\CoreBundle\Form\Constraint\SimpleLatinString;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -135,15 +133,6 @@ class NodeTypeFieldType extends AbstractType
             'data_class' => NodeTypeField::class,
             'attr' => [
                 'class' => 'uk-form node-type-field-form',
-            ],
-            'constraints' => [
-                new NodeTypeFieldConstraint(),
-                new UniqueEntity([
-                    'fields' => [
-                        'name',
-                        'nodeType'
-                    ]
-                ])
             ]
         ]);
     }

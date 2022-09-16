@@ -6,7 +6,6 @@ namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\CustomFormField;
 use RZ\Roadiz\CoreBundle\Form\MarkdownType;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -25,6 +24,7 @@ class CustomFormFieldType extends AbstractType
     {
         $builder->add('label', TextType::class, [
                 'label' => 'label',
+                'empty_data' => '',
                 'constraints' => [
                     new NotNull(),
                     new NotBlank(),
@@ -87,14 +87,6 @@ class CustomFormFieldType extends AbstractType
             'attr' => [
                 'class' => 'uk-form custom-form-field-form',
             ],
-            'constraints' => [
-                new UniqueEntity([
-                    'fields' => [
-                        'label',
-                        'customForm'
-                    ]
-                ])
-            ]
         ]);
     }
 }

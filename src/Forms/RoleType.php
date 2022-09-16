@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Role;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Component\Validator\Constraints\Regex;
 
 class RoleType extends AbstractType
 {
@@ -24,14 +20,6 @@ class RoleType extends AbstractType
         $builder->add('name', TextType::class, [
             'label' => 'name',
             'empty_data' => '',
-            'constraints' => [
-                new NotNull(),
-                new NotBlank(),
-                new Regex([
-                    'pattern' => '#^ROLE_([A-Z0-9\_]+)$#',
-                    'message' => 'role.name.must_comply_with_standard',
-                ]),
-            ],
         ]);
     }
 
@@ -41,13 +29,6 @@ class RoleType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', Role::class);
-        $resolver->setDefault('constraints', [
-            new UniqueEntity([
-                'fields' => [
-                    'name'
-                ]
-            ])
-        ]);
     }
 
     /**
