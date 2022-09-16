@@ -29,6 +29,7 @@ class RedirectionType extends AbstractType
             'attr' => [
                 'placeholder' => $options['placeholder']
             ],
+            'empty_data' => '',
             'constraints' => [
                 new NotNull(),
                 new NotBlank(),

@@ -25,6 +25,7 @@ class SettingGroupType extends AbstractType
             TextType::class,
             [
                 'label' => 'name',
+                'empty_data' => '',
                 'constraints' => [
                     new NotNull(),
                     new NotBlank()

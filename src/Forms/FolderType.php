@@ -25,9 +25,9 @@ class FolderType extends AbstractType
     {
         $builder->add('folderName', TextType::class, [
             'label' => 'folder.name',
+            'empty_data' => '',
             'constraints' => [
                 new NotNull(),
-                new NotBlank(),
                 new Length([
                     'max' => 255,
                 ])
