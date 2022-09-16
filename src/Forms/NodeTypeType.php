@@ -26,6 +26,7 @@ class NodeTypeType extends AbstractType
         if (empty($options['name'])) {
             $builder->add('name', TextType::class, [
                 'label' => 'name',
+                'empty_data' => '',
                 'constraints' => [
                     new NotNull(),
                     new NotBlank(),

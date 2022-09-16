@@ -14,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 class TagType extends AbstractType
@@ -22,49 +21,49 @@ class TagType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('tagName', TextType::class, [
-                'label' => 'tagName',
-                'help' => 'tag.tagName.help',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                    new UniqueTagName([
-                        'currentValue' => $options['tagName'],
-                    ]),
-                    new Length([
-                        'max' => 255,
-                    ])
-                ],
-            ])
+            'label' => 'tagName',
+            'empty_data' => '',
+            'help' => 'tag.tagName.help',
+            'constraints' => [
+                new NotNull(),
+                new UniqueTagName([
+                    'currentValue' => $options['tagName'],
+                ]),
+                new Length([
+                    'max' => 255,
+                ])
+            ],
+        ])
 
-            ->add('locked', CheckboxType::class, [
-                'label' => 'locked',
-                'help' => 'tag.locked.help',
-                'required' => false,
-            ])
-            ->add('visible', CheckboxType::class, [
-                'label' => 'visible',
-                'required' => false,
-            ])
-            ->add('color', ColorType::class, [
-                'label' => 'tag.color',
-                'required' => false,
-            ])
-            ->add('childrenOrder', ChoiceType::class, [
-                'label' => 'tag.childrenOrder',
-                'choices' => [
-                    'position' => 'position',
-                    'tagName' => 'tagName',
-                    'createdAt' => 'createdAt',
-                    'updatedAt' => 'updatedAt',
-                ],
-            ])
-            ->add('childrenOrderDirection', ChoiceType::class, [
-                'label' => 'tag.childrenOrderDirection',
-                'choices' => [
-                     'ascendant' => 'ASC',
-                     'descendant' => 'DESC',
-                ],
-            ]);
+        ->add('locked', CheckboxType::class, [
+            'label' => 'locked',
+            'help' => 'tag.locked.help',
+            'required' => false,
+        ])
+        ->add('visible', CheckboxType::class, [
+            'label' => 'visible',
+            'required' => false,
+        ])
+        ->add('color', ColorType::class, [
+            'label' => 'tag.color',
+            'required' => false,
+        ])
+        ->add('childrenOrder', ChoiceType::class, [
+            'label' => 'tag.childrenOrder',
+            'choices' => [
+                'position' => 'position',
+                'tagName' => 'tagName',
+                'createdAt' => 'createdAt',
+                'updatedAt' => 'updatedAt',
+            ],
+        ])
+        ->add('childrenOrderDirection', ChoiceType::class, [
+            'label' => 'tag.childrenOrderDirection',
+            'choices' => [
+                 'ascendant' => 'ASC',
+                 'descendant' => 'DESC',
+            ],
+        ]);
     }
 
     public function getBlockPrefix(): string

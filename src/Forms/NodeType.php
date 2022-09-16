@@ -24,10 +24,10 @@ class NodeType extends AbstractType
     {
         $builder->add('nodeName', TextType::class, [
                 'label' => 'nodeName',
+                'empty_data' => '',
                 'help' => 'node.nodeName.help',
                 'constraints' => [
                     new NotNull(),
-                    new NotBlank(),
                     new UniqueNodeName([
                         'currentValue' => $options['nodeName'],
                     ]),

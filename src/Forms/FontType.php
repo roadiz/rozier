@@ -30,6 +30,7 @@ class FontType extends AbstractType
     {
         $builder->add('name', TextType::class, [
                 'label' => 'font.name',
+                'empty_data' => '',
                 'help' => 'font_name_should_be_the_same_for_all_variants',
                 'constraints' => [
                     new NotNull(),
