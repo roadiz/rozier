@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 class SettingGroupType extends AbstractType
 {
@@ -26,10 +24,6 @@ class SettingGroupType extends AbstractType
             [
                 'label' => 'name',
                 'empty_data' => '',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank()
-                ],
             ]
         )
         ->add(
@@ -47,12 +41,6 @@ class SettingGroupType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefault('constraints', [
-            new UniqueEntity([
-                'fields' => [
-                    'name'
-                ]
-            ])
-        ]);
+        $resolver->setDefault('data_class', SettingGroup::class);
     }
 }

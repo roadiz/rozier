@@ -45,6 +45,7 @@ class AddNodeType extends AbstractType
     {
         $builder->add('title', TextType::class, [
             'label' => 'title',
+            'empty_data' => '',
             'mapped' => false,
             'constraints' => [
                 new NotNull(),
@@ -105,14 +106,13 @@ class AddNodeType extends AbstractType
             }
 
             if (!$node instanceof Node) {
-                dump($node);
                 throw new \RuntimeException('Data is not a Node');
             }
 
             /*
              * Already set Node name before data validation stage.
              */
-            $node->setNodeName($form['title']->getData());
+            $node->setNodeName($form['title']->getData() ?? '');
             $event->setData($node);
         });
     }

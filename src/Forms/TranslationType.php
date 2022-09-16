@@ -12,8 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 class TranslationType extends AbstractType
@@ -23,13 +21,6 @@ class TranslationType extends AbstractType
         $builder->add('name', TextType::class, [
             'label' => 'name',
             'empty_data' => '',
-            'constraints' => [
-                new NotNull(),
-                new NotBlank(),
-                new Length([
-                    'max' => 255,
-                ])
-            ],
         ])
         ->add('locale', ChoiceType::class, [
             'label' => 'locale',
@@ -42,12 +33,7 @@ class TranslationType extends AbstractType
         ])
         ->add('overrideLocale', TextType::class, [
             'label' => 'overrideLocale',
-            'required' => false,
-            'constraints' => [
-                new Length([
-                    'max' => 7,
-                ])
-            ],
+            'required' => false
         ]);
     }
 
@@ -66,14 +52,6 @@ class TranslationType extends AbstractType
             'attr' => [
                 'class' => 'uk-form translation-form',
             ],
-            'constraints' => [
-                new UniqueEntity([
-                    'fields' => ['locale']
-                ]),
-                new UniqueEntity([
-                    'fields' => ['overrideLocale']
-                ])
-            ]
         ]);
     }
 }

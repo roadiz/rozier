@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use RZ\Roadiz\CoreBundle\Entity\Group;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 class GroupType extends AbstractType
 {
@@ -21,9 +20,6 @@ class GroupType extends AbstractType
         $builder->add('name', TextType::class, [
             'label' => 'group.name',
             'empty_data' => '',
-            'constraints' => [
-                new NotNull(),
-            ],
         ]);
     }
 
@@ -32,12 +28,11 @@ class GroupType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefault('constraints', [
-            new UniqueEntity([
-                'fields' => [
-                    'name'
-                ]
-            ])
+        $resolver->setDefaults([
+            'data_class' => Group::class,
+            'attr' => [
+                'class' => 'uk-form group-form',
+            ],
         ]);
     }
 }

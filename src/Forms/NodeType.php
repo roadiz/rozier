@@ -13,10 +13,6 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 class NodeType extends AbstractType
 {
@@ -27,14 +23,10 @@ class NodeType extends AbstractType
                 'empty_data' => '',
                 'help' => 'node.nodeName.help',
                 'constraints' => [
-                    new NotNull(),
                     new UniqueNodeName([
                         'currentValue' => $options['nodeName'],
                     ]),
-                    new Length([
-                        'max' => 255,
-                    ])
-                ],
+                ]
             ])
             ->add('dynamicNodeName', CheckboxType::class, [
                 'label' => 'node.dynamicNodeName',
@@ -68,11 +60,6 @@ class NodeType extends AbstractType
             $builder->add('ttl', IntegerType::class, [
                 'label' => 'node.ttl',
                 'help' => 'node_time_to_live_cache_on_front_controller',
-                'constraints' => [
-                    new GreaterThanOrEqual([
-                        'value' => 0
-                    ])
-                ]
             ]);
         }
     }

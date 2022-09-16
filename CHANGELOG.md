@@ -1,3 +1,9 @@
+## 2.0.9 (2022-09-16)
+
+### Bug Fixes
+
+* Remove dead-code and moved most of the constraints out of Forms in favor of Entity annotations (CoreBundle) ([fa49e53](https://github.com/roadiz/rozier/commit/fa49e5349524cc22e2d5db78ca2e419e71e1ab95))
+
 ## 2.0.8 (2022-09-16)
 
 ### Bug Fixes
