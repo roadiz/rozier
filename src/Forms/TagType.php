@@ -6,15 +6,12 @@ namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Form\ColorType;
-use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueTagName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 class TagType extends AbstractType
 {
@@ -24,15 +21,6 @@ class TagType extends AbstractType
             'label' => 'tagName',
             'empty_data' => '',
             'help' => 'tag.tagName.help',
-            'constraints' => [
-                new NotNull(),
-                new UniqueTagName([
-                    'currentValue' => $options['tagName'],
-                ]),
-                new Length([
-                    'max' => 255,
-                ])
-            ],
         ])
 
         ->add('locked', CheckboxType::class, [

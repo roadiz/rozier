@@ -6,16 +6,12 @@ namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Font;
 use RZ\Roadiz\CoreBundle\Form\FontVariantsType;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * FontType.
@@ -32,13 +28,6 @@ class FontType extends AbstractType
                 'label' => 'font.name',
                 'empty_data' => '',
                 'help' => 'font_name_should_be_the_same_for_all_variants',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                    new Length([
-                        'max' => 100,
-                    ])
-                ],
             ])
             ->add('hash', TextType::class, [
                 'label' => 'font.cssfamily',
@@ -94,14 +83,6 @@ class FontType extends AbstractType
             'attr' => [
                 'class' => 'uk-form font-form',
             ],
-            'constraints' => [
-                new UniqueEntity([
-                    'fields' => [
-                        'name',
-                        'variant'
-                    ]
-                ])
-            ]
         ]);
 
         $resolver->setAllowedTypes('name', 'string');

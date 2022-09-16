@@ -6,8 +6,6 @@ namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Form\ColorType;
-use RZ\Roadiz\CoreBundle\Form\Constraint\NonSqlReservedWord;
-use RZ\Roadiz\CoreBundle\Form\Constraint\SimpleLatinString;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -15,9 +13,6 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 class NodeTypeType extends AbstractType
 {
@@ -27,21 +22,11 @@ class NodeTypeType extends AbstractType
             $builder->add('name', TextType::class, [
                 'label' => 'name',
                 'empty_data' => '',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                    new NonSqlReservedWord(),
-                    new SimpleLatinString(),
-                ],
             ]);
         }
         $builder
             ->add('displayName', TextType::class, [
                 'label' => 'nodeType.displayName',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                ],
             ])
             ->add('description', TextType::class, [
                 'label' => 'description',
@@ -85,11 +70,6 @@ class NodeTypeType extends AbstractType
                 'label' => 'nodeType.defaultTtl',
                 'required' => false,
                 'help' => 'nodeType_default_ttl_when_creating_nodes',
-                'constraints' => [
-                    new GreaterThanOrEqual([
-                        'value' => 0
-                    ]),
-                ],
             ])
         ;
     }
@@ -108,14 +88,6 @@ class NodeTypeType extends AbstractType
             'attr' => [
                 'class' => 'uk-form node-type-form',
             ],
-            'constraints' => [
-                new UniqueEntity([
-                    'fields' => ['name']
-                ]),
-                new UniqueEntity([
-                    'fields' => ['displayName']
-                ])
-            ]
         ]);
     }
 }
