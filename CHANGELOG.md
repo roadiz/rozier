@@ -1,3 +1,9 @@
+## 2.0.10 (2022-09-28)
+
+### Bug Fixes
+
+* **Drawer:** Fixed drawer description not included in NodeSource edition tabs ([9f0a563](https://github.com/roadiz/rozier/commit/9f0a5631860f26c42984915ef0cbbbd87ad36376))
+
 ## 2.0.9 (2022-09-16)
 
 ### Bug Fixes
