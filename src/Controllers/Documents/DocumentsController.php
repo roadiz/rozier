@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Core\Events\DocumentDeletedEvent;
+use RZ\Roadiz\Core\Events\DocumentFileUpdatedEvent;
 use RZ\Roadiz\Core\Events\DocumentInFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentOutFolderEvent;
 use RZ\Roadiz\Core\Events\DocumentUpdatedEvent;
@@ -29,6 +30,7 @@ use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\MediaFinders\AbstractEmbedFinder;
+use RZ\Roadiz\Utils\MediaFinders\EmbedFinderInterface;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -46,7 +48,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\File;
@@ -57,6 +58,7 @@ use Themes\Rozier\Forms\DocumentEmbedType;
 use Themes\Rozier\Models\DocumentModel;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Utils\SessionListFilters;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers\Documents
@@ -109,11 +111,11 @@ class DocumentsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int|null    $folderId
-     *
+     * @param int|null $folderId
      * @return RedirectResponse|Response
+     * @throws RuntimeError
      */
-    public function indexAction(Request $request, ?int $folderId = null)
+    public function indexAction(Request $request, ?int $folderId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -211,8 +213,9 @@ class DocumentsController extends RozierApp
      * @param Request $request
      * @param int $documentId
      * @return JsonResponse|Response
+     * @throws RuntimeError
      */
-    public function adjustAction(Request $request, int $documentId)
+    public function adjustAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -246,9 +249,10 @@ class DocumentsController extends RozierApp
                     $fs = new Filesystem();
 
                     /*
-                     * Prefix document filename
+                     * Prefix document filename with unique id to avoid overriding original
+                     * if already existing.
                      */
-                    $cloneDocument->setFilename('original_' . $cloneDocument);
+                    $cloneDocument->setFilename('original_' . uniqid() . '_' . $cloneDocument);
                     $newPath = $this->packages->getDocumentFilePath($cloneDocument);
                     $fs->rename(
                         $oldPath,
@@ -265,6 +269,15 @@ class DocumentsController extends RozierApp
                 $this->documentFactory->updateDocument($document);
                 $em->flush();
 
+                // Event must be dispatched AFTER flush for async concurrency matters
+                $this->dispatchEvent(
+                    new DocumentFileUpdatedEvent($document)
+                );
+                // Event must be dispatched AFTER flush for async concurrency matters
+                $this->dispatchEvent(
+                    new DocumentUpdatedEvent($document)
+                );
+
                 $translator = $this->getTranslator();
                 $msg = $translator->trans('document.%name%.updated', [
                     '%name%' => (string) $document,
@@ -272,7 +285,7 @@ class DocumentsController extends RozierApp
 
                 return new JsonResponse([
                     'message' => $msg,
-                    'path' => $this->packages->getUrl($document->getRelativePath(), Packages::DOCUMENTS) . '?' . random_int(10, 999),
+                    'path' => $this->packages->getUrl($document->getRelativePath(), Packages::DOCUMENTS) . '?' . \random_int(10, 999),
                 ]);
             }
 
@@ -287,11 +300,11 @@ class DocumentsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $documentId
-     *
+     * @param int $documentId
      * @return Response
+     * @throws RuntimeError
      */
-    public function editAction(Request $request, int $documentId)
+    public function editAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -322,6 +335,10 @@ class DocumentsController extends RozierApp
                             '%name%' => (string) $document,
                         ]);
                         $this->em()->flush();
+                        // Event must be dispatched AFTER flush for async concurrency matters
+                        $this->dispatchEvent(
+                            new DocumentFileUpdatedEvent($document)
+                        );
                         $this->publishConfirmMessage($request, $msg);
                     }
 
@@ -329,6 +346,8 @@ class DocumentsController extends RozierApp
                        '%name%' => (string) $document,
                     ]);
                     $this->publishConfirmMessage($request, $msg);
+                    $this->em()->flush();
+                    // Event must be dispatched AFTER flush for async concurrency matters
                     $this->dispatchEvent(
                         new DocumentUpdatedEvent($document)
                     );
@@ -365,11 +384,11 @@ class DocumentsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $documentId
-     *
+     * @param int $documentId
      * @return Response
+     * @throws RuntimeError
      */
-    public function previewAction(Request $request, int $documentId)
+    public function previewAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -434,11 +453,11 @@ class DocumentsController extends RozierApp
      * Return an deletion form for requested document.
      *
      * @param Request $request
-     * @param int     $documentId
-     *
+     * @param int $documentId
      * @return Response
+     * @throws RuntimeError
      */
-    public function deleteAction(Request $request, int $documentId)
+    public function deleteAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS_DELETE');
 
@@ -490,10 +509,10 @@ class DocumentsController extends RozierApp
      * Return an deletion form for multiple docs.
      *
      * @param Request $request
-     *
      * @return Response
+     * @throws RuntimeError
      */
-    public function bulkDeleteAction(Request $request)
+    public function bulkDeleteAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS_DELETE');
 
@@ -542,10 +561,10 @@ class DocumentsController extends RozierApp
      * Return an deletion form for multiple docs.
      *
      * @param Request $request
-     *
      * @return Response
+     * @throws RuntimeError
      */
-    public function bulkDownloadAction(Request $request)
+    public function bulkDownloadAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -592,10 +611,10 @@ class DocumentsController extends RozierApp
      *
      * @param Request $request
      * @param int|null $folderId
-     *
      * @return Response
+     * @throws RuntimeError
      */
-    public function embedAction(Request $request, ?int $folderId = null)
+    public function embedAction(Request $request, ?int $folderId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -649,11 +668,11 @@ class DocumentsController extends RozierApp
                 } else {
                     $form->addError(new FormError($this->getTranslator()->trans($e->getMessage())));
                 }
+            } catch (APINeedsAuthentificationException $e) {
+                $form->addError(new FormError($this->getTranslator()->trans($e->getMessage())));
             } catch (\RuntimeException $e) {
                 $form->addError(new FormError($this->getTranslator()->trans($e->getMessage())));
             } catch (\InvalidArgumentException $e) {
-                $form->addError(new FormError($this->getTranslator()->trans($e->getMessage())));
-            } catch (APINeedsAuthentificationException $e) {
                 $form->addError(new FormError($this->getTranslator()->trans($e->getMessage())));
             }
         }
@@ -668,10 +687,9 @@ class DocumentsController extends RozierApp
      *
      * @param Request $request
      * @param int|null $folderId
-     *
      * @return Response
      */
-    public function randomAction(Request $request, ?int $folderId = null)
+    public function randomAction(Request $request, ?int $folderId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -702,11 +720,10 @@ class DocumentsController extends RozierApp
      * Download document file.
      *
      * @param Request $request
-     * @param int     $documentId
-     *
+     * @param int $documentId
      * @return Response
      */
-    public function downloadAction(Request $request, int $documentId)
+    public function downloadAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -728,8 +745,9 @@ class DocumentsController extends RozierApp
      * @param int|null $folderId
      * @param string $_format
      * @return Response
+     * @throws RuntimeError
      */
-    public function uploadAction(Request $request, ?int $folderId = null, string $_format = 'html')
+    public function uploadAction(Request $request, ?int $folderId = null, string $_format = 'html'): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -749,12 +767,13 @@ class DocumentsController extends RozierApp
             if ($form->isValid()) {
                 $document = $this->uploadDocument($form, $folderId);
 
-                if (false !== $document) {
+                if (null !== $document) {
                     $msg = $this->getTranslator()->trans('document.%name%.uploaded', [
                         '%name%' => (string) $document,
                     ]);
                     $this->publishConfirmMessage($request, $msg);
 
+                    // Event must be dispatched AFTER flush for async concurrency matters
                     $this->dispatchEvent(
                         new DocumentCreatedEvent($document)
                     );
@@ -814,11 +833,11 @@ class DocumentsController extends RozierApp
      * Return a node list using this document.
      *
      * @param Request $request
-     * @param int     $documentId
-     *
+     * @param int $documentId
      * @return Response
+     * @throws RuntimeError
      */
-    public function usageAction(Request $request, int $documentId)
+    public function usageAction(Request $request, int $documentId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
         /** @var Document|null $document */
@@ -845,10 +864,11 @@ class DocumentsController extends RozierApp
     /**
      * See unused documents.
      *
-     * @param  Request $request
+     * @param Request $request
      * @return Response
+     * @throws RuntimeError
      */
-    public function unusedAction(Request $request)
+    public function unusedAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -882,10 +902,9 @@ class DocumentsController extends RozierApp
 
     /**
      * @param Document $doc
-     *
      * @return FormInterface
      */
-    private function buildDeleteForm(Document $doc)
+    private function buildDeleteForm(Document $doc): FormInterface
     {
         $defaults = [
             'documentId' => $doc->getId(),
@@ -903,10 +922,9 @@ class DocumentsController extends RozierApp
     }
     /**
      * @param array $documentsIds
-     *
      * @return FormInterface
      */
-    private function buildBulkDeleteForm($documentsIds)
+    private function buildBulkDeleteForm($documentsIds): FormInterface
     {
         $defaults = [
             'checksum' => md5(serialize($documentsIds)),
@@ -926,10 +944,9 @@ class DocumentsController extends RozierApp
 
     /**
      * @param array $documentsIds
-     *
      * @return FormInterface
      */
-    private function buildBulkDownloadForm($documentsIds)
+    private function buildBulkDownloadForm($documentsIds): FormInterface
     {
         $defaults = [
             'checksum' => md5(serialize($documentsIds)),
@@ -950,7 +967,7 @@ class DocumentsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildFileForm()
+    private function buildFileForm(): FormInterface
     {
         $defaults = [
             'editDocument' => null,
@@ -969,11 +986,10 @@ class DocumentsController extends RozierApp
     }
 
     /**
-     * @param int $folderId
-     *
+     * @param int|null $folderId
      * @return FormInterface
      */
-    private function buildUploadForm($folderId = null)
+    private function buildUploadForm(?int $folderId = null): FormInterface
     {
         $builder = $this->createFormBuilder([], [
                 'csrf_protection' => false,
@@ -1000,7 +1016,7 @@ class DocumentsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildLinkFoldersForm()
+    private function buildLinkFoldersForm(): FormInterface
     {
         $builder = $this->createNamedFormBuilder('folderForm')
             ->add('documentsId', HiddenType::class, [
@@ -1043,10 +1059,9 @@ class DocumentsController extends RozierApp
 
     /**
      * @param array $data
-     *
-     * @return string
+     * @return string Status message
      */
-    private function joinFolder($data)
+    private function joinFolder($data): string
     {
         $msg = $this->getTranslator()->trans('no_documents.linked_to.folders');
 
@@ -1097,10 +1112,9 @@ class DocumentsController extends RozierApp
 
     /**
      * @param array $data
-     *
-     * @return string
+     * @return string Status message
      */
-    private function leaveFolder($data)
+    private function leaveFolder($data): string
     {
         $msg = $this->getTranslator()->trans('no_documents.removed_from.folders');
 
@@ -1151,10 +1165,9 @@ class DocumentsController extends RozierApp
     }
     /**
      * @param array $documents
-     *
      * @return Response
      */
-    private function downloadDocuments($documents)
+    private function downloadDocuments($documents): Response
     {
         if (count($documents) > 0) {
             $tmpFileName = tempnam(sys_get_temp_dir(), "rzdocs_");
@@ -1263,8 +1276,7 @@ class DocumentsController extends RozierApp
 
     /**
      * @param AbstractEmbedFinder $finder
-     * @param int|null            $folderId
-     *
+     * @param int|null $folderId
      * @return DocumentInterface|array<DocumentInterface>
      */
     private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null)
@@ -1296,10 +1308,9 @@ class DocumentsController extends RozierApp
      *
      * @param FormInterface $data
      * @param int|null      $folderId
-     *
-     * @return false|DocumentInterface
+     * @return DocumentInterface|null
      */
-    private function uploadDocument($data, ?int $folderId = null)
+    private function uploadDocument($data, ?int $folderId = null): ?DocumentInterface
     {
         $folder = null;
         if (null !== $folderId && $folderId > 0) {
@@ -1319,7 +1330,7 @@ class DocumentsController extends RozierApp
             }
         }
 
-        return false;
+        return null;
     }
 
     private function getListingTemplate(Request $request): string

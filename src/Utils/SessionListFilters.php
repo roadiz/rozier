@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Utils;
 
-use RZ\Roadiz\Core\ListManagers\EntityListManagerInterface;
+use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -48,8 +48,8 @@ class SessionListFilters
             /*
              * Item count is in session
              */
-            $request->query->set('item_per_page', (int) $request->getSession()->get($this->sessionIdentifier));
-            $listManager->setItemPerPage((int) $request->getSession()->get($this->sessionIdentifier));
+            $request->query->set('item_per_page', intval($request->getSession()->get($this->sessionIdentifier)));
+            $listManager->setItemPerPage(intval($request->getSession()->get($this->sessionIdentifier)));
         } elseif (
             $request->query->has('item_per_page') &&
             $request->query->get('item_per_page') > 0
@@ -57,10 +57,10 @@ class SessionListFilters
             /*
              * Item count is in query, save it in session
              */
-            $request->getSession()->set($this->sessionIdentifier, (int) $request->query->get('item_per_page'));
-            $listManager->setItemPerPage((int) $request->query->get('item_per_page'));
+            $request->getSession()->set($this->sessionIdentifier, intval($request->query->get('item_per_page')));
+            $listManager->setItemPerPage(intval($request->query->get('item_per_page')));
         } else {
-            $listManager->setItemPerPage((int) $this->defaultItemsParPage);
+            $listManager->setItemPerPage($this->defaultItemsParPage);
         }
     }
 }
