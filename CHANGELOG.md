@@ -1,3 +1,9 @@
+## 2.0.11 (2022-09-28)
+
+### Features
+
+* **Documents:** Dispatch DocumentFileUpdated event after DB flush ([92a341f](https://github.com/roadiz/rozier/commit/92a341f4fdfb2528ec3b3ce9ddfd6d958f337d6b))
+
 ## 2.0.10 (2022-09-28)
 
 ### Bug Fixes
