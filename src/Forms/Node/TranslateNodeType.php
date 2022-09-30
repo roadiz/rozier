@@ -35,25 +35,36 @@ class TranslateNodeType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $translations = $this->managerRegistry->getRepository(Translation::class)
-                           ->findUnavailableTranslationsForNode($options['node']);
-        $choices = [];
+        $translations = $this->managerRegistry
+            ->getRepository(Translation::class)
+            ->findUnavailableTranslationsForNode($options['node']);
+        $availableTranslations = $this->managerRegistry
+            ->getRepository(Translation::class)
+            ->findAvailableTranslationsForNode($options['node']);
 
-        /** @var Translation $translation */
-        foreach ($translations as $translation) {
-            $choices[$translation->getName()] = $translation->getId();
-        }
-
-        $builder->add('translation', ChoiceType::class, [
-            'label' => 'translation',
-            'choices' => $choices,
-            'required' => true,
-            'multiple' => false,
-        ])
-        ->add('translate_offspring', CheckboxType::class, [
-            'label' => 'translate_offspring',
-            'required' => false,
-        ]);
+        $builder
+            ->add('sourceTranslation', ChoiceType::class, [
+                'label' => 'source_translation',
+                'help' => 'source_translation.help',
+                'choices' => $availableTranslations,
+                'required' => true,
+                'multiple' => false,
+                'choice_value' => 'id',
+                'choice_label' => 'name',
+            ])
+            ->add('translation', ChoiceType::class, [
+                'label' => 'destination_translation',
+                'choices' => $translations,
+                'required' => true,
+                'multiple' => false,
+                'choice_value' => 'id',
+                'choice_label' => 'name',
+            ])
+            ->add('translate_offspring', CheckboxType::class, [
+                'label' => 'translate_offspring',
+                'help' => 'translate_offspring.help',
+                'required' => false,
+            ]);
 
         $builder->get('translation')
             ->addModelTransformer(new TranslationTransformer($this->managerRegistry));
@@ -82,7 +93,6 @@ class TranslateNodeType extends AbstractType
         $resolver->setRequired([
             'node',
         ]);
-
         $resolver->setAllowedTypes('node', Node::class);
     }
 }
