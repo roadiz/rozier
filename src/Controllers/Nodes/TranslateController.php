@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -14,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\Node\TranslateNodeType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers\Nodes
@@ -22,9 +26,12 @@ class TranslateController extends RozierApp
 {
     /**
      * @param Request $request
-     * @param int     $nodeId
-     *
+     * @param int $nodeId
      * @return Response
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
+     * @throws RuntimeError
      */
     public function translateAction(Request $request, int $nodeId)
     {
@@ -45,19 +52,21 @@ class TranslateController extends RozierApp
                 $form->handleRequest($request);
 
                 if ($form->isSubmitted() && $form->isValid()) {
-                    /** @var Translation $translation */
-                    $translation = $form->get('translation')->getData();
+                    /** @var Translation $destinationTranslation */
+                    $destinationTranslation = $form->get('translation')->getData();
+                    /** @var Translation $sourceTranslation */
+                    $sourceTranslation = $form->get('sourceTranslation')->getData();
                     $translateOffspring = (bool) $form->get('translate_offspring')->getData();
 
                     try {
-                        $this->doTranslate($translation, $node, $translateOffspring);
+                        $this->doTranslate($sourceTranslation, $destinationTranslation, $node, $translateOffspring);
                         $msg = $this->getTranslator()->trans('node.%name%.translated', [
                             '%name%' => $node->getNodeName(),
                         ]);
                         $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
                         return $this->redirectToRoute(
                             'nodesEditSourcePage',
-                            ['nodeId' => $node->getId(), 'translationId' => $translation->getId()]
+                            ['nodeId' => $node->getId(), 'translationId' => $destinationTranslation->getId()]
                         );
                     } catch (EntityAlreadyExistsException $e) {
                         $form->addError(new FormError($e->getMessage()));
@@ -83,50 +92,70 @@ class TranslateController extends RozierApp
     /**
      * Create a new node-source for given translation.
      *
-     * @param Translation $translation
+     * @param Translation $sourceTranslation
+     * @param Translation $destinationTranslation
      * @param Node $node
+     * @throws ORMException
      */
-    protected function translateNode(Translation $translation, Node $node)
-    {
+    protected function translateNode(
+        Translation $sourceTranslation,
+        Translation $destinationTranslation,
+        Node $node
+    ) {
         $existing = $this->em()
                          ->getRepository(NodesSources::class)
                          ->setDisplayingAllNodesStatuses(true)
                          ->setDisplayingNotPublishedNodes(true)
-                         ->findOneByNodeAndTranslation($node, $translation);
+                         ->findOneByNodeAndTranslation($node, $destinationTranslation);
         if (null === $existing) {
-            $baseSource = $node->getNodeSources()->first();
-            if ($baseSource instanceof NodesSources) {
-                $source = clone $baseSource;
+            /** @var NodesSources|false $baseSource */
+            $baseSource =
+                $node->getNodeSourcesByTranslation($sourceTranslation)->first() ?:
+                    $node->getNodeSources()->filter(function (NodesSources $nodesSources) {
+                        return $nodesSources->getTranslation()->isDefaultTranslation();
+                    })->first() ?:
+                        $node->getNodeSources()->first();
 
-                foreach ($source->getDocumentsByFields() as $document) {
-                    $this->em()->persist($document);
-                }
-                $source->setTranslation($translation);
-                $source->setNode($node);
-
-                $this->em()->persist($source);
-
-                /*
-                 * Dispatch event
-                 */
-                $this->dispatchEvent(new NodesSourcesCreatedEvent($source));
+            if (!($baseSource instanceof NodesSources)) {
+                throw new \RuntimeException('Cannot translate a Node without any NodesSources');
             }
+
+            $source = clone $baseSource;
+
+            foreach ($source->getDocumentsByFields() as $document) {
+                $this->em()->persist($document);
+            }
+            $source->setTranslation($destinationTranslation);
+            $source->setNode($node);
+
+            $this->em()->persist($source);
+            /*
+             * Dispatch event
+             */
+            $this->dispatchEvent(new NodesSourcesCreatedEvent($source));
         }
     }
 
     /**
-     * @param Translation $translation
+     * @param Translation $sourceTranslation
+     * @param Translation $destinationTranslation
      * @param Node $node
      * @param bool $translateChildren
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    protected function doTranslate(Translation $translation, Node $node, bool $translateChildren = false)
-    {
-        $this->translateNode($translation, $node);
+    protected function doTranslate(
+        Translation $sourceTranslation,
+        Translation $destinationTranslation,
+        Node $node,
+        bool $translateChildren = false
+    ) {
+        $this->translateNode($sourceTranslation, $destinationTranslation, $node);
 
         if ($translateChildren) {
             /** @var Node $child */
             foreach ($node->getChildren() as $child) {
-                $this->doTranslate($translation, $child, $translateChildren);
+                $this->doTranslate($sourceTranslation, $destinationTranslation, $child, $translateChildren);
             }
         }
 
