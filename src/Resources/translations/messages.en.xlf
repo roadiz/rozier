@@ -342,6 +342,14 @@
         <source>translation</source>
         <target state="final">Translation</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="source_translation">
+        <source>source_translation</source>
+        <target state="translated">Source translation</target>
+      </trans-unit>
+      <trans-unit xml:space="preserve" id="destination_translation">
+        <source>destination_translation</source>
+        <target state="translated">Destination translation</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="91" approved="yes">
         <source>metaTitle</source>
         <target state="final">Meta-title</target>
