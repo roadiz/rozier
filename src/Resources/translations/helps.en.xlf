@@ -54,6 +54,14 @@
                 <source>exclude_this_field_from_fulltext_search_engine</source>
 
             <target state="translated">Exclude this field value from full-text search engine.</target></trans-unit>
+      <trans-unit xml:space="preserve" id="source_translation.help">
+                <source>source_translation.help</source>
+
+            <target state="translated">This will copy node contents from this translation.</target></trans-unit>
+      <trans-unit xml:space="preserve" id="translate_offspring.help">
+                <source>translate_offspring.help</source>
+
+            <target state="translated">This will propagate translation to every node children when they are not translated yet in destinaiton language.</target></trans-unit>
     </body>
   </file>
 </xliff>
