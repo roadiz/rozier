@@ -342,6 +342,14 @@
         <source>translation</source>
         <target state="final">Traduction</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="source_translation">
+        <source>source_translation</source>
+        <target state="translated">Traduction source</target>
+      </trans-unit>
+      <trans-unit xml:space="preserve" id="destination_translation">
+        <source>destination_translation</source>
+        <target state="translated">Traduction de destination</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="91" approved="yes">
         <source>metaTitle</source>
         <target state="final">Titre « méta »</target>
@@ -460,7 +468,7 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="nodeType.hidingNonReachableNodes">
         <source>nodeType.hidingNonReachableNodes</source>
-        <target state="translated">Cache ses nœuds non-accessibles ?</target>
+        <target state="translated">Cache ses nœuds non accessibles ?</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="125" approved="yes">
         <source>role.imported</source>
