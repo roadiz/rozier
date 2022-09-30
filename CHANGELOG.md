@@ -1,3 +1,9 @@
+## 2.0.12 (2022-09-30)
+
+### Features
+
+* **Translation:** Let the user choose source and destination translations ([9ceacf5](https://github.com/roadiz/rozier/commit/9ceacf5799ef34da4a15cc70d81d9438c3c8ef57))
+
 ## 2.0.11 (2022-09-28)
 
 ### Features
