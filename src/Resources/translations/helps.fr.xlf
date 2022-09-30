@@ -54,6 +54,14 @@
                 <source>exclude_this_field_from_fulltext_search_engine</source>
 
             <target state="translated">Exclut la valeur de ce champ du moteur de recherche plein-texte.</target></trans-unit>
+      <trans-unit xml:space="preserve" id="source_translation.help">
+                <source>source_translation.help</source>
+
+            <target state="translated">Traduction à partir de laquelle tous les contenus seront dupliqués.</target></trans-unit>
+      <trans-unit xml:space="preserve" id="translate_offspring.help">
+                <source>translate_offspring.help</source>
+
+            <target state="translated">Effectue la traduction sur tous les nœuds enfants en cascade lorsque ceux-ci ne sont pas traduits dans la langue de destination.</target></trans-unit>
     </body>
   </file>
 </xliff>
