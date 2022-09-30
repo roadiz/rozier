@@ -5,14 +5,14 @@
       <!-- Setting groups names -->
       <trans-unit xml:space="preserve" id="Development">
                 <source>Development</source>
-                <target state="translated">Desarrollo</target>
-                <note>Setting group name</note>
-            </trans-unit>
+
+                
+            <target state="translated">Desarrollo</target><note>Setting group name</note></trans-unit>
       <trans-unit xml:space="preserve" id="Social networks">
                 <source>Social networks</source>
-                <target state="translated">Redes sociales</target>
-                <note>Setting group name</note>
-            </trans-unit>
+
+                
+            <target state="translated">Redes sociales</target><note>Setting group name</note></trans-unit>
     </body>
   </file>
 </xliff>
