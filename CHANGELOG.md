@@ -1,3 +1,9 @@
+## 1.7.17 (2022-09-30)
+
+### Features
+
+* **Translations:** Let user chose source and destination translations for nodes-sources ([e831f3b](https://github.com/roadiz/rozier/commit/e831f3b8cd1e6ebf46015d8cae81842c518c22bb))
+
 ## 1.7.16 (2022-06-22)
 
 ### Bug Fixes
