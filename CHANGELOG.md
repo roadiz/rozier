@@ -1,3 +1,10 @@
+## 2.0.13 (2022-10-03)
+
+### Features
+
+* Rebuilt all styles ([0b7a97c](https://github.com/roadiz/rozier/commit/0b7a97c5ef0f3b29710ee7b6580ccd5ce31eca9e))
+* Switched to CSS grid layout for each admin panels ([66aad20](https://github.com/roadiz/rozier/commit/66aad20d3904de756f0d56b689164b00079ba845))
+
 ## 2.0.12 (2022-09-30)
 
 ### Features
