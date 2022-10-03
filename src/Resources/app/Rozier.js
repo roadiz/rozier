@@ -526,7 +526,7 @@ export default class Rozier {
      * @return {[type]}       [description]
      */
     toggleTreesPanel () {
-        $('#main-trees').toggleClass('minified')
+        $('#main-container-inner').toggleClass('trees-panel--minified')
         $('#main-content').toggleClass('maximized')
         $('#minify-tree-panel-button').find('i').toggleClass('uk-icon-rz-panel-tree-open')
         $('#minify-tree-panel-area').toggleClass('tree-panel-hidden')
@@ -535,7 +535,7 @@ export default class Rozier {
     }
 
     openTreesPanel () {
-        if ($('#main-trees').hasClass('minified')) {
+        if ($('#main-container-inner').hasClass('trees-panel--minified')) {
             this.toggleTreesPanel(null)
         }
 
