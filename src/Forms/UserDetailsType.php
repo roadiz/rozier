@@ -20,6 +20,16 @@ class UserDetailsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('publicName', TextType::class, [
+                'label' => 'publicName',
+                'help' => 'user.publicName.help',
+                'required' => false,
+                'constraints' => [
+                    new Length([
+                        'max' => 255
+                    ])
+                ]
+            ])
             ->add('firstName', TextType::class, [
                 'label' => 'firstName',
                 'required' => false,
