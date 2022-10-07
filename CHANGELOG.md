@@ -1,3 +1,9 @@
+## 2.0.14 (2022-10-07)
+
+### Bug Fixes
+
+* Allow dev-develop dependencies ([7ccf628](https://github.com/roadiz/rozier/commit/7ccf628afb6af792eb4b4943cbbbdc78d7e833e9))
+
 ## 2.0.13 (2022-10-03)
 
 ### Features
