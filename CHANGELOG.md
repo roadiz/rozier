@@ -1,3 +1,9 @@
+## 2.0.15 (2022-10-17)
+
+### Features
+
+* Allow document creation date edition if security allows it (Role: `ROLE_ACCESS_DOCUMENTS_CREATION_DATE`) ([8b056d7](https://github.com/roadiz/rozier/commit/8b056d767c5d92ef6bcfd3bd27c16d57dc8dd1d5))
+
 ## 2.0.14 (2022-10-07)
 
 ### Bug Fixes
