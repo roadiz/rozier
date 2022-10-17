@@ -10,19 +10,29 @@ use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueFilename;
 use RZ\Roadiz\CoreBundle\Form\DocumentCollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Regex;
 
 class DocumentEditType extends AbstractType
 {
+    private Security $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     /**
      * @inheritDoc
      */
@@ -124,6 +134,27 @@ class DocumentEditType extends AbstractType
             'multiple' => true,
             'required' => false
         ]);
+
+        if ($this->security->isGranted('ROLE_ACCESS_DOCUMENTS_CREATION_DATE')) {
+            $builder->add('createdAt', DateTimeType::class, [
+                'label' => 'createdAt',
+                'help' => 'document.createdAt.help',
+                'required' => false,
+                'attr' => [
+                    'class' => 'rz-datetime-field',
+                ],
+                'date_widget' => 'single_text',
+                'date_format' => 'yyyy-MM-dd',
+                'placeholder' => [
+                    'hour' => 'hour',
+                    'minute' => 'minute',
+                ],
+                'constraints' => [
+                    new LessThanOrEqual($builder->getData()->getUpdatedAt()),
+                    new LessThanOrEqual('now'),
+                ]
+            ]);
+        }
     }
 
     /**
