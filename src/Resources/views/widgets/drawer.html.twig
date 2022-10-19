@@ -1,6 +1,6 @@
 {% set entityIds = [] %}
 {% set isSortable = isSortable|default('true') %}
-{% for entity in data %}
+{% for entity in value %}
     {% if entity.id is defined %}
         {% set entityIds = entityIds|merge([entity.id]) %}
     {% else %}

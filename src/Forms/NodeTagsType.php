@@ -14,6 +14,7 @@ use Themes\Rozier\Forms\DataTransformer\TagTransformer;
 
 /**
  * @package Themes\Rozier\Forms
+ * @deprecated
  */
 class NodeTagsType extends AbstractType
 {
@@ -35,7 +36,9 @@ class NodeTagsType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('tags', TagsType::class);
+        $builder->add('tags', TagsType::class, [
+            'by_reference' => false
+        ]);
         $builder->get('tags')
             ->addModelTransformer(new TagTransformer($this->managerRegistry->getManager()));
     }

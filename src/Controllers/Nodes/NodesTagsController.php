@@ -9,6 +9,7 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeTaggedEvent;
 use RZ\Roadiz\CoreBundle\Node\NodeFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\NodeTagsType;
 use Themes\Rozier\RozierApp;
@@ -16,6 +17,7 @@ use Themes\Rozier\Traits\NodesTrait;
 
 /**
  * @package Themes\Rozier\Controllers\Nodes
+ * @deprecated
  */
 class NodesTagsController extends RozierApp
 {
@@ -39,10 +41,10 @@ class NodesTagsController extends RozierApp
      * @param Request $request
      * @param int $nodeId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      * @throws \Twig\Error\RuntimeError
      */
-    public function editTagsAction(Request $request, int $nodeId)
+    public function editTagsAction(Request $request, int $nodeId): Response
     {
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
