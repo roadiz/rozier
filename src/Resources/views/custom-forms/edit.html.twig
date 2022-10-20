@@ -1,5 +1,7 @@
 {% extends "@RoadizRozier/custom-forms/add.html.twig" %}
 
+{% block title %}{{ item.displayName|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {%- block content_title -%}{{ item.displayName|u.truncate(25, '[…]', true) }}{%- endblock -%}
 
 {%- block content_header_nav -%}

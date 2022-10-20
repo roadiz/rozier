@@ -257,9 +257,10 @@ export default class Lazyload {
     }
 
     /**
-     * Apply content to main content
-     * @param {[type]} data [description]
-     * @return {[type]}      [description]
+     * Apply content to main content.
+     *
+     * @param {string} data
+     * @return {void}
      */
     applyContent (data) {
         let $container = $('#main-content-scrollable')
@@ -269,13 +270,24 @@ export default class Lazyload {
         /*
          * If AJAX request data is an entire HTML page.
          */
+        /** @var {jQuery} $ajaxRoot */
         const $ajaxRoot = $tempData.find('[data-ajax-root]')
         if ($ajaxRoot.length) {
             $tempData = $($ajaxRoot.html())
         }
 
         $tempData.addClass('new-content-global')
+        // Removed previous ajax meta[title] tags
+        $container.find('meta[name="title"]').remove()
+        // Append Ajax loaded data to DOM
         $container.append($tempData)
+
+        /** @var {jQuery} $metaTitle */
+        const $metaTitle = $container.find('meta[name="title"]')
+        if ($metaTitle.length) {
+            document.title = $metaTitle[0].getAttribute('content')
+        }
+
         $tempData = $container.find('.new-content-global')
 
         $old.fadeOut(100, () => {

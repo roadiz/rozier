@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "edit.nodeTypeField.%name%"|trans({'%name%': field.getName})|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global manage-node-type-field">
     <header class="content-header header-node-type-fields header-node-type-field-edit">

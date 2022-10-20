@@ -1,5 +1,6 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "edit.document.%name%"|trans({'%name%': document})|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
 
 {% block content %}
 <section class="content-global manage-document">

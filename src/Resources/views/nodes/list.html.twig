@@ -1,11 +1,14 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% set mainTitle = mainFilter ~ '.nodes' %}
+
+{% block title %}{{ mainTitle|trans()|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global content-nav-and-filters">
 
     <header class="content-header header-node header-nodes-list">
         <h1 class="content-title">
-            {% set mainTitle = mainFilter ~ '.nodes' %}
             {{ mainTitle|trans()|u.truncate(25, '[…]', true) }}
         </h1>
         {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}

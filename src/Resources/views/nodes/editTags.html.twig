@@ -3,9 +3,7 @@
 
 {% extends '@RoadizRozier/layout.html.twig' %}
 
-{% block title %}
-    {{ pageTitle }} – {% trans %}back_office{% endtrans %}
-{% endblock %}
+{% block title %}{{ pageTitle }} | {{ parent() }}{% endblock %}
 
 {% block content %}
 <section class="content-global" data-page-title="{{ pageTitle }} – {% trans %}back_office{% endtrans %}">

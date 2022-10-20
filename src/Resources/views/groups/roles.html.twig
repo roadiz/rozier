@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{- "edit.group.%name%.roles"|trans({'%name%': item.getName})|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global edit-group">
     <header class="content-header header-group header-group-roles">

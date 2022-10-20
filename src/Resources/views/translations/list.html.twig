@@ -1,5 +1,10 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {% trans %}translations{% endtrans %}
+    |
+    {{ parent() -}}
+{%- endblock -%}
 
 {% block content %}
 <section class="content-global edit-translation content-nav-and-filters">

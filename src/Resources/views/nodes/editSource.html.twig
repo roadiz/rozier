@@ -2,6 +2,8 @@
 
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ ("edit.nodeSource.%name%"|trans({'%name%': currentTitle}))|u.truncate(30, '[…]', false) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global">
     <header class="content-header header-node header-node-edit-source">

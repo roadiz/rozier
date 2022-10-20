@@ -1,4 +1,11 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
+
+{%- block title -%}
+    {{ "delete.user.%name%"|trans({'%name%': user.username })|u.truncate(25, '[…]', true) }}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global delete-user">
 

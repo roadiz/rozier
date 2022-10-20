@@ -1,5 +1,15 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {% if nodeType %}
+        {% trans %}search{% endtrans %} - {{ nodeType.displayName }}
+    {% else %}
+        {% trans %}search{% endtrans %}
+    {% endif %}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
     <section class="content-global content-nav-and-filters">
         <header class="content-header header-node header-nodes-list">

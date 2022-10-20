@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "delete.nodeTypeField.%name%"|trans({'%name%': field.getLabel})|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global">
     <header class="content-header header-node-types header-node-type-fields-delete">

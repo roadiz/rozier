@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "edit.webhook.%name%"|trans({'%name%': item}) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global edit-item">
 

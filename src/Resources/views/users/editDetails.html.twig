@@ -1,5 +1,10 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {{ "edit.user_details.%name%"|trans({'%name%': user.username })|u.truncate(25, '[…]', true) }}
+    |
+    {{ parent() -}}
+{%- endblock -%}
 
 {% block content %}
 <section class="content-global edit-user">

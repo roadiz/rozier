@@ -1,5 +1,15 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {% if node %}
+        {{ source.title|u.truncate(25, '[…]', true) }}{% if specificNodeTree.tag %} ({{ specificNodeTree.tag.translatedTags.first.name }}){% endif %}
+    {% else %}
+        {{ 'tree'|trans }}
+    {% endif %}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global stack-tree">
 

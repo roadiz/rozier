@@ -1,5 +1,11 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {% trans %}manage.redirections{% endtrans %}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global  content-nav-and-filters">
     <header class="content-header header-redirection header-redirection-list">

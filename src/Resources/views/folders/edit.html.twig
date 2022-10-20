@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
+
 {% set folderName = folder.translatedFolders.first.name|default(folder.folderName) %}
+{% block title %}{{ "edit.folder.%name%"|trans({'%name%': folderName})|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
 
 {% block content %}
 <section class="content-global edit-folder">
