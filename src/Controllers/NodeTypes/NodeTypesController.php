@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\NodeTypes;
 
-use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
-use RZ\Roadiz\CoreBundle\EntityHandler\NodeTypeHandler;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Message\DeleteNodeTypeMessage;
+use RZ\Roadiz\CoreBundle\Message\UpdateNodeTypeSchemaMessage;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Themes\Rozier\Forms\NodeTypeType;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Utils\SessionListFilters;
@@ -21,14 +23,11 @@ use Themes\Rozier\Utils\SessionListFilters;
  */
 class NodeTypesController extends RozierApp
 {
-    private HandlerFactoryInterface $handlerFactory;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param HandlerFactoryInterface $handlerFactory
-     */
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(MessageBusInterface $messageBus)
     {
-        $this->handlerFactory = $handlerFactory;
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -90,16 +89,15 @@ class NodeTypesController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->em()->flush();
-                /** @var NodeTypeHandler $handler */
-                $handler = $this->handlerFactory->getHandler($nodeType);
-                $handler->updateSchema();
+
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
                 $msg = $this->getTranslator()->trans('nodeType.%name%.updated', ['%name%' => $nodeType->getName()]);
                 $this->publishConfirmMessage($request, $msg);
-                /*
-                 * Redirect to update schema page
-                 */
-                return $this->redirectToRoute('nodeTypesSchemaUpdate');
+
+                return $this->redirectToRoute('nodeTypesEditPage', [
+                    'nodeTypeId' => $nodeTypeId
+                ]);
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
@@ -131,17 +129,15 @@ class NodeTypesController extends RozierApp
             try {
                 $this->em()->persist($nodeType);
                 $this->em()->flush();
-                /** @var NodeTypeHandler $handler */
-                $handler = $this->handlerFactory->getHandler($nodeType);
-                $handler->updateSchema();
+
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
                 $msg = $this->getTranslator()->trans('nodeType.%name%.created', ['%name%' => $nodeType->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
-                /*
-                 * Redirect to update schema page
-                 */
-                return $this->redirectToRoute('nodeTypesSchemaUpdate');
+                return $this->redirectToRoute('nodeTypesEditPage', [
+                    'nodeTypeId' => $nodeType->getId()
+                ]);
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
@@ -174,19 +170,12 @@ class NodeTypesController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /*
-             * Delete All node-type association and schema
-             */
-            /** @var NodeTypeHandler $handler */
-            $handler = $this->handlerFactory->getHandler($nodeType);
-            $handler->deleteWithAssociations();
+            $this->messageBus->dispatch(new Envelope(new DeleteNodeTypeMessage($nodeType->getId())));
 
             $msg = $this->getTranslator()->trans('nodeType.%name%.deleted', ['%name%' => $nodeType->getName()]);
             $this->publishConfirmMessage($request, $msg);
-            /*
-             * Redirect to update schema page
-             */
-            return $this->redirectToRoute('nodeTypesSchemaUpdate');
+
+            return $this->redirectToRoute('nodeTypesHomePage');
         }
 
         $this->assignation['form'] = $form->createView();

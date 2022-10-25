@@ -4,40 +4,40 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Doctrine\DBAL\DBALException;
+use Exception;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\CoreBundle\EntityHandler\NodeTypeHandler;
+use RZ\Roadiz\CoreBundle\Message\UpdateNodeTypeSchemaMessage;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\NodeTypeFieldType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers
  */
 class NodeTypeFieldsController extends RozierApp
 {
-    private HandlerFactoryInterface $handlerFactory;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param HandlerFactoryInterface $handlerFactory
-     */
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(MessageBusInterface $messageBus)
     {
-        $this->handlerFactory = $handlerFactory;
+        $this->messageBus = $messageBus;
     }
 
     /**
      * @param Request $request
      * @param int $nodeTypeId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
     public function listAction(Request $request, int $nodeTypeId)
     {
@@ -60,9 +60,11 @@ class NodeTypeFieldsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $nodeTypeFieldId
+     * @param int $nodeTypeFieldId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
+     * @throws DBALException
      */
     public function editAction(Request $request, int $nodeTypeFieldId)
     {
@@ -83,20 +85,15 @@ class NodeTypeFieldsController extends RozierApp
 
                 /** @var NodeType $nodeType */
                 $nodeType = $field->getNodeType();
-                /** @var NodeTypeHandler $handler */
-                $handler = $this->handlerFactory->getHandler($nodeType);
-                $handler->updateSchema();
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
                 $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
                 $this->publishConfirmMessage($request, $msg);
 
-                /*
-                 * Redirect to update schema page
-                 */
                 return $this->redirectToRoute(
-                    'nodeTypesFieldSchemaUpdate',
+                    'nodeTypeFieldsEditPage',
                     [
-                        'nodeTypeId' => $nodeType->getId(),
+                        'nodeTypeFieldId' => $nodeTypeFieldId,
                     ]
                 );
             }
@@ -111,9 +108,10 @@ class NodeTypeFieldsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $nodeTypeId
+     * @param int $nodeTypeId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
     public function addAction(Request $request, int $nodeTypeId)
     {
@@ -143,9 +141,7 @@ class NodeTypeFieldsController extends RozierApp
                     $this->em()->flush();
                     $this->em()->refresh($nodeType);
 
-                    /** @var NodeTypeHandler $handler */
-                    $handler = $this->handlerFactory->getHandler($nodeType);
-                    $handler->updateSchema();
+                    $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
                     $msg = $this->getTranslator()->trans(
                         'nodeTypeField.%name%.created',
@@ -153,25 +149,14 @@ class NodeTypeFieldsController extends RozierApp
                     );
                     $this->publishConfirmMessage($request, $msg);
 
-                    /*
-                     * Redirect to update schema page
-                     */
                     return $this->redirectToRoute(
-                        'nodeTypesFieldSchemaUpdate',
+                        'nodeTypeFieldsListPage',
                         [
                             'nodeTypeId' => $nodeTypeId,
                         ]
                     );
-                } catch (\Exception $e) {
-                    $msg = $e->getMessage();
-                    $this->publishErrorMessage($request, $msg);
-                    /*
-                     * Redirect to add page
-                     */
-                    return $this->redirectToRoute(
-                        'nodeTypeFieldsAddPage',
-                        ['nodeTypeId' => $nodeTypeId]
-                    );
+                } catch (Exception $e) {
+                    $form->addError(new FormError($e->getMessage()));
                 }
             }
 
@@ -187,11 +172,8 @@ class NodeTypeFieldsController extends RozierApp
      * @param Request $request
      * @param int $nodeTypeFieldId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \Twig\Error\RuntimeError
+     * @return Response
+     * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $nodeTypeFieldId)
     {
@@ -211,15 +193,7 @@ class NodeTypeFieldsController extends RozierApp
                 $this->em()->remove($field);
                 $this->em()->flush();
 
-                /*
-                 * Update Database
-                 */
-                /** @var NodeType|null $nodeType */
-                $nodeType = $this->em()->find(NodeType::class, (int) $nodeTypeId);
-
-                /** @var NodeTypeHandler $handler */
-                $handler = $this->handlerFactory->getHandler($nodeType);
-                $handler->updateSchema();
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeTypeId)));
 
                 $msg = $this->getTranslator()->trans(
                     'nodeTypeField.%name%.deleted',
@@ -227,11 +201,8 @@ class NodeTypeFieldsController extends RozierApp
                 );
                 $this->publishConfirmMessage($request, $msg);
 
-                /*
-                 * Redirect to update schema page
-                 */
                 return $this->redirectToRoute(
-                    'nodeTypesFieldSchemaUpdate',
+                    'nodeTypeFieldsListPage',
                     [
                         'nodeTypeId' => $nodeTypeId,
                     ]
@@ -245,24 +216,5 @@ class NodeTypeFieldsController extends RozierApp
         }
 
         throw new ResourceNotFoundException();
-    }
-
-    /**
-     * @param NodeTypeField $field
-     *
-     * @return FormInterface
-     */
-    private function buildDeleteForm(NodeTypeField $field)
-    {
-        $builder = $this->createFormBuilder()
-                        ->add('nodeTypeFieldId', HiddenType::class, [
-                            'data' => $field->getId(),
-                            'constraints' => [
-                                new NotNull(),
-                                new NotBlank(),
-                            ],
-                        ]);
-
-        return $builder->getForm();
     }
 }
