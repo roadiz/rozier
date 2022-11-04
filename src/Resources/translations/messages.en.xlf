@@ -4467,16 +4467,6 @@
         <target state="translated">You have been disconnected. Connect you back again.</target>
         <note>Description for login check warning "modal".</note>
       </trans-unit>
-        <trans-unit xml:space="preserve" id="health_check.failed.title">
-        <source>health_check.failed.title</source>
-            <target state="translated">Houston, we have a problem...</target>
-            <note>Title for health check warning "modal".</note>
-      </trans-unit>
-        <trans-unit xml:space="preserve" id="health_check.failed.content">
-        <source>health_check.failed.content</source>
-            <target state="translated">Roadiz does not respond anymore, a CMS upgrade or a server maintenance might be in progress. Please wait a moment.</target>
-            <note>Description for health check warning "modal".</note>
-      </trans-unit>
       <trans-unit xml:space="preserve" id="single-provider.type">
         <source>single-provider.type</source>
         <target state="translated">Single relationship using a Provider</target>
