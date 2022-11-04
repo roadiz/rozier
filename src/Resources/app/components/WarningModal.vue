@@ -13,16 +13,13 @@
 
                         <div class="btns">
                             <a :href="linkUrl" class="btn large-btn" v-if="linkUrl && linkLabel">{{ linkLabel }}</a>
-                            <button class="large-btn" @click="close">Close</button>
+                            <button v-if="closeable" class="large-btn" @click="close">Close</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="box-part" id="bp-right">
-                <template v-if="imageUrl">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                         v-dynamic-img="imageUrl" />
-                </template>
+            <div class="box-part" id="bp-right" v-if="imageUrl">
+                <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" v-dynamic-img="imageUrl" />
             </div>
         </div>
     </modal>
@@ -49,7 +46,8 @@
             title: '',
             content: '',
             linkLabel: '',
-            linkUrl: ''
+            linkUrl: '',
+            closeable: true
         },
         directives: {
             DynamicImg
@@ -62,7 +60,9 @@
                 .then((url) => {
                     this.imageUrl = url
                 })
-            this.$modal.show('warning-modal')
+                .finally(() => {
+                    this.$modal.show('warning-modal')
+                })
         },
         methods: {
             close () {
@@ -92,16 +92,15 @@
         display: flex;
 
         .box-part {
-            display: inline-block;
+            display: block;
             position: relative;
             vertical-align: top;
             box-sizing: border-box;
-            height: 100%;
-            width: 50%;
 
             &#bp-right {
                 border-left: 1px solid #eee;
                 background: #eee;
+                width: 50%;
 
                 img {
                     width: 100%;
@@ -142,6 +141,8 @@
                 flex-flow: column;
                 justify-content: space-between;
                 height: 100%;
+                max-width: 500px;
+                margin: 0 auto;
 
                 p {
                     margin-top: 0;

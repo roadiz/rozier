@@ -5,11 +5,13 @@
             :title="translations.sessionExpireTitle"
             :content="translations.sessionExpireContent"
             :link-label="translations.login"
+            :closeable="true"
             :link-url="linkUrl">
         </warning-modal>
         <warning-modal
             v-else-if="!healthChecked"
             :title="translations.healthCheckedFailedTitle"
+            :closeable="false"
             :content="translations.healthCheckedFailedContent">
         </warning-modal>
     </div>
