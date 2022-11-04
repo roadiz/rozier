@@ -46,7 +46,6 @@
         },
         props: {
             text: '',
-            open: false,
             title: '',
             content: '',
             linkLabel: '',
@@ -55,10 +54,15 @@
         directives: {
             DynamicImg
         },
-        created () {
+        mounted () {
             this.modalWidth = window.innerWidth < MODAL_WIDTH
                 ? MODAL_WIDTH / 2
                 : MODAL_WIDTH
+            SplashScreenApi.getImage()
+                .then((url) => {
+                    this.imageUrl = url
+                })
+            this.$modal.show('warning-modal')
         },
         methods: {
             close () {
@@ -68,20 +72,6 @@
             beforeClose (event) {
                 if (!this.manualClose) {
                     event.stop()
-                }
-            }
-        },
-        watch: {
-            open (value) {
-                if (value) {
-                    SplashScreenApi.getImage()
-                        .then((url) => {
-                            this.imageUrl = url
-                        })
-
-                    this.$modal.show('warning-modal')
-                } else {
-                    this.$modal.hide('warning-modal')
                 }
             }
         }

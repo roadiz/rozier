@@ -1256,8 +1256,12 @@
 
             <trans-unit xml:space="preserve" id="placeholder"><source>placeholder</source><note>Label for «placeholder» field for Custom form field and Node-Type field. Placeholder is the HTML placeholder attribute for inputs and select-boxes.</note></trans-unit>
             <trans-unit xml:space="preserve" id="label_for_field_with_empty_data"><source>label_for_field_with_empty_data</source><note>Description for «placeholder» field for Custom form field and Node-Type field. Placeholder is the HTML placeholder attribute for inputs and select-boxes.</note></trans-unit>
+
+
             <trans-unit xml:space="preserve" id="session.expire.title"><source>session.expire.title</source><note>Title for login check warning "modal".</note></trans-unit>
             <trans-unit xml:space="preserve" id="session.expire.content"><source>session.expire.content</source><note>Description for login check warning "modal".</note></trans-unit>
+            <trans-unit xml:space="preserve" id="health_check.failed.title"><source>health_check.failed.title</source><note>Title for health check warning "modal".</note></trans-unit>
+            <trans-unit xml:space="preserve" id="health_check.failed.content"><source>health_check.failed.content</source><note>Description for health check warning "modal".</note></trans-unit>
 
             <trans-unit xml:space="preserve" id="single-provider.type"><source>single-provider.type</source><note>Node-type field type for Provider manual many-to-one relationship.</note></trans-unit>
             <trans-unit xml:space="preserve" id="multiple-provider.type"><source>multiple-provider.type</source><note>Node-type field type for Provider manual many-to-many relationship.</note></trans-unit>

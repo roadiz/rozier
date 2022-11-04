@@ -29,7 +29,8 @@
 import Vuex from 'vuex'
 import {
     KEYBOARD_EVENT_ESCAPE,
-    LOGIN_CHECK_DISCONNECTED
+    LOGIN_CHECK_DISCONNECTED,
+    HEALTH_CHECK_FAILED, LOGIN_CHECK_CONNECTED, HEALTH_CHECK_SUCCEEDED
 } from '../types/mutationTypes'
 
 // Modules
@@ -53,11 +54,21 @@ export default new Vuex.Store({
     },
     state: {
         translations: window.RozierRoot.messages,
-        connected: true
+        connected: true,
+        healthChecked: true
     },
     mutations: {
+        [LOGIN_CHECK_CONNECTED] (state) {
+            state.connected = true
+        },
         [LOGIN_CHECK_DISCONNECTED] (state) {
             state.connected = false
+        },
+        [HEALTH_CHECK_SUCCEEDED] (state) {
+            state.healthChecked = true
+        },
+        [HEALTH_CHECK_FAILED] (state) {
+            state.healthChecked = false
         }
     },
     actions: {
