@@ -96,6 +96,7 @@
             position: relative;
             vertical-align: top;
             box-sizing: border-box;
+            width: 100%;
 
             &#bp-right {
                 border-left: 1px solid #eee;
