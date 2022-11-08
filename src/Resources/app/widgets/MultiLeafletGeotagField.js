@@ -50,7 +50,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
         const resetButtonId = fieldId + '-reset'
         const mapOptions = {
             center: this.createLatLng(jsonCode),
-            zoom: jsonCode.zoom,
+            zoom: jsonCode.zoom || jsonCode.alt,
             scrollwheel: false,
             styles: window.Rozier.mapsStyle,
         }
@@ -102,10 +102,13 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
 
         if ($input.val() !== '') {
             try {
-                let geocodes = JSON.parse($input.val())
-                const geocodesLength = geocodes.length
-                for (let i = 0; i < geocodesLength; i++) {
-                    const marker = this.createMarker(geocodes[i], map)
+                const featureCollection = JSON.parse($input.val())
+                if (!featureCollection.features) {
+                    throw new Error('Data is not a valid GeoJSON featureCollection')
+                }
+
+                for (const feature of featureCollection.features) {
+                    const marker = this.createMarker(feature, map)
                     marker.on(
                         'dragend',
                         $.proxy(this.setMarkerEvent, this, marker, markers, $input, $geocodeReset, map, $selector)
@@ -218,7 +221,8 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             event.preventDefault()
         }
         if (map && marker) {
-            map.panTo(marker.getLatLng())
+            const latLng = marker.getLatLng()
+            map.flyTo(latLng, latLng.alt)
         }
     }
 
@@ -240,14 +244,17 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
      * @param {jQuery} $input
      * @param {jQuery} $geocodeReset
      * @param {Map} map
-     * @param {Event} event
+     * @param {Event|MouseEvent} event
      * @param {jQuery} $selector
      */
     setMarkerEvent(marker, markers, $input, $geocodeReset, map, $selector, event) {
         if (event.latlng) {
             this.setMarker(marker, markers, $input, $geocodeReset, map, event.latlng)
         } else if (marker !== null) {
-            map.panTo(marker.getLatLng())
+            const latLng = marker.getLatLng()
+            latLng.alt = map.getZoom()
+            marker.setLatLng(latLng)
+            map.flyTo(latLng, latLng.alt)
             this.writeMarkers(markers, $input)
         }
 
@@ -260,24 +267,25 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
      * @param {jQuery} $input
      * @param {jQuery} $geocodeReset
      * @param {Map|null} map
-     * @param {LatLng} latlng
-     * @param name
-     * @returns {Object}
+     * @param {LatLng} latLng
+     * @param {String} name
+     * @returns {Marker}
      */
-    setMarker(marker, markers, $input, $geocodeReset, map, latlng, name) {
+    setMarker(marker, markers, $input, $geocodeReset, map, latLng, name) {
         if (map) {
-            latlng.zoom = map.getZoom()
-            latlng.alt = map.getZoom()
+            if (!latLng.alt) {
+                latLng.alt = map.getZoom()
+            }
 
             if (marker === null) {
-                marker = this.createMarker(latlng, map)
+                marker = this.createMarker(latLng, map)
             } else {
-                marker.setLatLng(latlng)
+                marker.setLatLng(latLng)
                 marker.addTo(map)
             }
 
             marker.name = name
-            map.panTo(latlng)
+            map.flyTo(latLng, latLng.alt)
             markers.push(marker)
             this.writeMarkers(markers, $input)
             $geocodeReset.show()
@@ -287,17 +295,23 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
     }
 
     /**
+     * Convert markers to GeoJSON.
+     *
      * @param {Array<Marker>} markers
      * @param {jQuery} $input
      */
     writeMarkers(markers, $input) {
-        let geocodes = []
+        const featuresCollection = {
+            type: 'FeatureCollection',
+            features: [],
+        }
         for (const marker of markers) {
             if (marker) {
-                geocodes.push(this.latLngToFeature(marker.getLatLng(), marker.getLatLng().zoom, marker.name))
+                const latLng = marker.getLatLng()
+                featuresCollection.features.push(this.latLngToFeature(latLng, latLng.alt, marker.name))
             }
         }
-        $input.val(JSON.stringify(geocodes))
+        $input.val(JSON.stringify(featuresCollection))
     }
 
     /**
@@ -319,7 +333,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                 return
             }
 
-            latLng.zoom = map.getZoom()
+            latLng.alt = map.getZoom()
             this.setMarker(null, markers, $input, $geocodeReset, map, latLng, latLng.name || '')
             this.syncSelector($selector, markers, map, $input)
         }

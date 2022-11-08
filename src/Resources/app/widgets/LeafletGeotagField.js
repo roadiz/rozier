@@ -84,7 +84,7 @@ export default class LeafletGeotagField {
          */
         let mapOptions = {
             center: this.createLatLng(jsonCode),
-            zoom: jsonCode.zoom,
+            zoom: jsonCode.zoom || jsonCode.alt,
             styles: window.Rozier.mapsStyle,
         }
         let map = this.createMap(fieldId, mapOptions)
@@ -171,12 +171,17 @@ export default class LeafletGeotagField {
     }
 
     /**
-     * @param {LatLng} latlng
+     * @param {LatLng} latLng
      * @param {Number} zoom
      * @param {String|undefined} name
      * @returns {{geometry: {coordinates: ([*,*,*]|[*,*]), type: string}, type: string, properties: {name: string, zoom}}}
      */
-    latLngToFeature(latlng, zoom, name) {
+    latLngToFeature(latLng, zoom, name) {
+        if (latLng.alt) {
+            // Remove altitude to be compatible with MySQL Geometry POINT
+            zoom = latLng.alt
+            latLng.alt = undefined
+        }
         return {
             type: 'Feature',
             properties: {
@@ -185,7 +190,7 @@ export default class LeafletGeotagField {
             },
             geometry: {
                 type: 'Point',
-                coordinates: GeoJSON.latLngToCoords(latlng),
+                coordinates: GeoJSON.latLngToCoords(latLng),
             },
         }
     }
@@ -193,13 +198,13 @@ export default class LeafletGeotagField {
     /**
      * @param {jQuery} $input
      * @param {jQuery} $geocodeReset
-     * @param {LatLng} latlng
+     * @param {LatLng} latLng
      * @param {Number} zoom
      * @param {String|undefined} name
      * @return {void}
      */
-    applyGeocode($input, $geocodeReset, latlng, zoom, name) {
-        $input.val(JSON.stringify(this.latLngToFeature(latlng, zoom, name)))
+    applyGeocode($input, $geocodeReset, latLng, zoom, name) {
+        $input.val(JSON.stringify(this.latLngToFeature(latLng, zoom, name)))
         $geocodeReset.show()
     }
 
@@ -221,9 +226,8 @@ export default class LeafletGeotagField {
             draggable: true,
         }).addTo(map)
 
-        map.panTo(latLng)
-        map.setZoom(geocode.zoom)
-        marker.alt = geocode.zoom
+        map.flyTo(latLng, latLng.alt)
+        marker.alt = latLng.alt
 
         if (geocode.type && geocode.type === 'Feature' && geocode.properties && geocode.properties.name) {
             marker.name = geocode.properties.name
@@ -280,7 +284,7 @@ export default class LeafletGeotagField {
     createLatLng(data) {
         // Data is a Legacy LatLng Object
         if (data.lat && data.lng) {
-            return new LatLng(data.lat, data.lng, data.zoom)
+            return new LatLng(data.lat, data.lng, data.zoom || data.alt)
         } else if (data.type && data.type === 'Feature') {
             // Data is a GeoJSON feature
             const latLng = new LatLng(
