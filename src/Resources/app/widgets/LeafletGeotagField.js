@@ -2,10 +2,10 @@ import $ from 'jquery'
 import { Map, Marker, LatLng, TileLayer, Icon, GeoJSON } from 'leaflet'
 import GeoCodingService from '../services/GeoCodingService'
 
-export const DEFAULT_LOCATION = {'lat': 45.769785, 'lng': 4.833967, 'zoom': 14}
+export const DEFAULT_LOCATION = { lat: 45.769785, lng: 4.833967, zoom: 14 }
 
 export default class LeafletGeotagField {
-    constructor () {
+    constructor() {
         this.$fields = $('.rz-geotag-field:not(.is-enable)')
 
         if (this.$fields.length) {
@@ -13,24 +13,22 @@ export default class LeafletGeotagField {
         }
     }
 
-    init () {
+    init() {
         if (!this.$fields.hasClass('is-enable')) {
             this.$fields.addClass('is-enable')
             this.bindFields()
         }
     }
 
-    unbind () {
+    unbind() {}
 
-    }
-
-    bindFields () {
+    bindFields() {
         this.$fields.each((index, element) => {
             this.bindSingleField(element)
         })
     }
 
-    bindSingleField (element) {
+    bindSingleField(element) {
         const $input = $(element)
         const $label = $input.parent().find('.uk-form-label')
         const labelText = $label[0].innerHTML
@@ -64,10 +62,14 @@ export default class LeafletGeotagField {
             '<div class="uk-navbar-content uk-navbar-flip">',
             '<div class="geotag-widget-quick-creation uk-button-group">',
             '<input class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
-            '<button id="' + resetButtonId + '" class="uk-button uk-button-content uk-button-table-delete rz-geotag-reset" title="' + window.Rozier.messages.geotag.resetMarker + '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
+            '<button id="' +
+                resetButtonId +
+                '" class="uk-button uk-button-content uk-button-table-delete rz-geotag-reset" title="' +
+                window.Rozier.messages.geotag.resetMarker +
+                '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
             '</div>',
             '</div>',
-            '</nav>'
+            '</nav>',
         ].join('')
 
         $input.after(metaDOM)
@@ -83,7 +85,7 @@ export default class LeafletGeotagField {
         let mapOptions = {
             center: this.createLatLng(jsonCode),
             zoom: jsonCode.zoom,
-            styles: window.Rozier.mapsStyle
+            styles: window.Rozier.mapsStyle,
         }
         let map = this.createMap(fieldId, mapOptions)
         let marker = null
@@ -112,7 +114,7 @@ export default class LeafletGeotagField {
         this.resetMap(map, marker, mapOptions, null)
     }
 
-    resetMap (map, marker, mapOptions) {
+    resetMap(map, marker, mapOptions) {
         window.setTimeout(() => {
             map.invalidateSize(true)
             if (marker !== null) {
@@ -130,7 +132,7 @@ export default class LeafletGeotagField {
      * @param {Map} map
      * @param {Event} event
      */
-    resetMarker (marker, $input, $geocodeReset, map, event) {
+    resetMarker(marker, $input, $geocodeReset, map, event) {
         marker.removeFrom(map)
         $input.val('')
         $geocodeReset.hide()
@@ -144,7 +146,7 @@ export default class LeafletGeotagField {
      * @param {Map} map
      * @param {Event} event
      */
-    setMarkerEvent (marker, $input, $geocodeReset, map, event) {
+    setMarkerEvent(marker, $input, $geocodeReset, map, event) {
         if (typeof event.latlng !== 'undefined') {
             this.setMarker(marker, $input, $geocodeReset, map, event.latlng)
         } else if (marker !== null) {
@@ -161,7 +163,7 @@ export default class LeafletGeotagField {
      * @param {Map} map
      * @param {LatLng} latlng
      */
-    setMarker (marker, $input, $geocodeReset, map, latlng) {
+    setMarker(marker, $input, $geocodeReset, map, latlng) {
         marker.setLatLng(latlng)
         marker.addTo(map)
         map.panTo(latlng)
@@ -174,17 +176,17 @@ export default class LeafletGeotagField {
      * @param {String|undefined} name
      * @returns {{geometry: {coordinates: ([*,*,*]|[*,*]), type: string}, type: string, properties: {name: string, zoom}}}
      */
-    latLngToFeature (latlng, zoom, name) {
+    latLngToFeature(latlng, zoom, name) {
         return {
-            'type': 'Feature',
-            'properties': {
-                'name': name || '',
-                'zoom': zoom
+            type: 'Feature',
+            properties: {
+                name: name || '',
+                zoom: zoom,
             },
-            'geometry': {
-                'type': 'Point',
-                'coordinates': GeoJSON.latLngToCoords(latlng)
-            }
+            geometry: {
+                type: 'Point',
+                coordinates: GeoJSON.latLngToCoords(latlng),
+            },
         }
     }
 
@@ -196,7 +198,7 @@ export default class LeafletGeotagField {
      * @param {String|undefined} name
      * @return {void}
      */
-    applyGeocode ($input, $geocodeReset, latlng, zoom, name) {
+    applyGeocode($input, $geocodeReset, latlng, zoom, name) {
         $input.val(JSON.stringify(this.latLngToFeature(latlng, zoom, name)))
         $geocodeReset.show()
     }
@@ -207,7 +209,7 @@ export default class LeafletGeotagField {
      *
      * @return Marker
      */
-    createMarker (geocode, map) {
+    createMarker(geocode, map) {
         let latLng = null
         if (geocode instanceof LatLng) {
             latLng = geocode
@@ -216,7 +218,7 @@ export default class LeafletGeotagField {
         }
         let marker = new Marker(latLng, {
             icon: this.createIcon(),
-            draggable: true
+            draggable: true,
         }).addTo(map)
 
         map.panTo(latLng)
@@ -241,7 +243,7 @@ export default class LeafletGeotagField {
      * @param {Event} event
      * @return {Promise<void>}
      */
-    async requestGeocode (marker, $input, $geocodeReset, map, event) {
+    async requestGeocode(marker, $input, $geocodeReset, map, event) {
         let address = event.currentTarget.value
         if (event.which && event.which === 13) {
             event.preventDefault()
@@ -254,7 +256,7 @@ export default class LeafletGeotagField {
         }
     }
 
-    uniqid () {
+    uniqid() {
         let n = new Date()
         return n.getTime()
     }
@@ -265,23 +267,27 @@ export default class LeafletGeotagField {
      * @param mapOptions
      * @returns {*}
      */
-    createMap (fieldId, mapOptions) {
+    createMap(fieldId, mapOptions) {
         const map = new Map(document.getElementById(fieldId)).setView(mapOptions.center, mapOptions.zoom)
         const osmLayer = new TileLayer(window.Rozier.leafletMapTileUrl, {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
+            maxZoom: 18,
         })
         map.addLayer(osmLayer)
         return map
     }
 
-    createLatLng (data) {
+    createLatLng(data) {
         // Data is a Legacy LatLng Object
         if (data.lat && data.lng) {
             return new LatLng(data.lat, data.lng, data.zoom)
         } else if (data.type && data.type === 'Feature') {
             // Data is a GeoJSON feature
-            const latLng = new LatLng(data.geometry.coordinates[1], data.geometry.coordinates[0], (data.properties.zoom || 7))
+            const latLng = new LatLng(
+                data.geometry.coordinates[1],
+                data.geometry.coordinates[0],
+                data.properties.zoom || 7
+            )
             if (data.properties && data.properties.name) {
                 latLng.name = data.properties.name
             }
@@ -289,7 +295,7 @@ export default class LeafletGeotagField {
         }
     }
 
-    createIcon () {
+    createIcon() {
         return new Icon({
             iconUrl: window.Rozier.resourcesUrl + 'assets/img/marker.png',
             iconRetinaUrl: window.Rozier.resourcesUrl + 'assets/img/marker@2x.png',
@@ -298,7 +304,7 @@ export default class LeafletGeotagField {
             iconSize: [22, 30], // size of the icon
             shadowSize: [25, 22], // size of the shadow
             iconAnchor: [11, 30], // point of the icon which will correspond to marker's location
-            shadowAnchor: [2, 22]  // the same for the shadow
+            shadowAnchor: [2, 22], // the same for the shadow
         })
     }
 
@@ -307,19 +313,21 @@ export default class LeafletGeotagField {
      * @param {String} address
      * @return Promise<LatLng|null>
      */
-    getLatLngForAddress (address) {
-        return GeoCodingService.geoCode(address).then((response) => {
-            if (response !== null) {
-                const latLng = new LatLng(response.lat, response.lon)
-                latLng.name = response.display_name
-                return latLng
-            } else {
-                console.error('Geocode was not successful.')
+    getLatLngForAddress(address) {
+        return GeoCodingService.geoCode(address)
+            .then((response) => {
+                if (response !== null) {
+                    const latLng = new LatLng(response.lat, response.lon)
+                    latLng.name = response.display_name
+                    return latLng
+                } else {
+                    console.error('Geocode was not successful.')
+                    return null
+                }
+            })
+            .catch((e) => {
+                console.error(e)
                 return null
-            }
-        }).catch(e => {
-            console.error(e)
-            return null
-        })
+            })
     }
 }

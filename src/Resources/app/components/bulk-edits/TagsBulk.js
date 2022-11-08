@@ -7,7 +7,7 @@ export default class TagsBulk {
     /**
      * Create Tags bulk
      */
-    constructor () {
+    constructor() {
         this.$tagsCheckboxes = $('input.tag-checkbox')
         this.$tagsIdBulkTags = $('input.tags-id-bulk-tags')
         this.$tagsIdBulkStatus = $('input.tags-id-bulk-status')
@@ -40,7 +40,7 @@ export default class TagsBulk {
     /**
      * Init
      */
-    init () {
+    init() {
         this.$tagsCheckboxes.on('change', this.onCheckboxChange)
         this.$tagsStatusButton.on('click', this.tagsStatusButtonClick)
         this.$tagsFolderButton.on('click', this.tagsFolderButtonClick)
@@ -48,7 +48,7 @@ export default class TagsBulk {
         this.$tagsDeselectAll.on('click', this.onDeselectAll)
     }
 
-    unbind () {
+    unbind() {
         if (this.$tagsCheckboxes.length) {
             this.$tagsCheckboxes.off('change', this.onCheckboxChange)
             this.$tagsStatusButton.off('click', this.tagsStatusButtonClick)
@@ -58,14 +58,14 @@ export default class TagsBulk {
         }
     }
 
-    onSelectAll () {
+    onSelectAll() {
         this.$tagsCheckboxes.prop('checked', true)
         this.onCheckboxChange(null)
 
         return false
     }
 
-    onDeselectAll () {
+    onDeselectAll() {
         this.$tagsCheckboxes.prop('checked', false)
         this.onCheckboxChange(null)
 
@@ -75,7 +75,7 @@ export default class TagsBulk {
     /**
      * On checkbox change
      */
-    onCheckboxChange () {
+    onCheckboxChange() {
         this.tagsIds = []
 
         $('input.tag-checkbox:checked').each((index, domElement) => {
@@ -101,13 +101,17 @@ export default class TagsBulk {
     /**
      * On bulk delete
      */
-    onBulkDelete () {
+    onBulkDelete() {
         if (this.tagsIds.length > 0) {
-            history.pushState({
-                'headerData': {
-                    'tags': this.tagsIds
-                }
-            }, null, window.Rozier.routes.tagsBulkDeletePage)
+            history.pushState(
+                {
+                    headerData: {
+                        tags: this.tagsIds,
+                    },
+                },
+                null,
+                window.Rozier.routes.tagsBulkDeletePage
+            )
 
             window.Rozier.lazyload.onPopState(null)
         }
@@ -119,21 +123,21 @@ export default class TagsBulk {
      * Show actions
      * @return {[type]} [description]
      */
-    showActions () {
+    showActions() {
         this.$actionsMenu.slideDown()
     }
 
     /**
      * Hide actions
      */
-    hideActions () {
+    hideActions() {
         this.$actionsMenu.slideUp()
     }
 
     /**
      * Tags folder button click
      */
-    tagsFolderButtonClick () {
+    tagsFolderButtonClick() {
         if (!this.tagsFolderOpen) {
             this.$tagsStatusCont.slideUp()
             this.tagsStatusOpen = false
@@ -151,7 +155,7 @@ export default class TagsBulk {
     /**
      * Tags status button click
      */
-    tagsStatusButtonClick () {
+    tagsStatusButtonClick() {
         if (!this.tagsStatusOpen) {
             this.$tagsFolderCont.slideUp()
             this.tagsFolderOpen = false

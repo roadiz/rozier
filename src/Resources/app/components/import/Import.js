@@ -8,14 +8,14 @@ export default class Import {
      * Constructor
      * @param {Array} routesArray
      */
-    constructor (routesArray) {
+    constructor(routesArray) {
         this.routes = routesArray
         this.always(0, this.routes)
         this.$nextStepButton = $('#next-step-button')
         this.score = 0
     }
 
-    always (index, routes) {
+    always(index, routes) {
         if (routes.length > index) {
             if (typeof routes[index].update !== 'undefined') {
                 $.ajax({
@@ -24,7 +24,7 @@ export default class Import {
                     dataType: 'json',
                     complete: () => {
                         this.callSingleImport(index)
-                    }
+                    },
                 })
             } else {
                 this.callSingleImport(index)
@@ -34,7 +34,7 @@ export default class Import {
         }
     }
 
-    callSingleImport (index) {
+    callSingleImport(index) {
         const currentIndex = index
         const routes = this.routes
         let $row = $('#' + routes[currentIndex].id)
@@ -44,7 +44,7 @@ export default class Import {
         $icon.addClass('uk-icon-spinner')
 
         let postData = {
-            'filename': routes[currentIndex].filename
+            filename: routes[currentIndex].filename,
         }
 
         $.ajax({
@@ -60,8 +60,10 @@ export default class Import {
 
                 // Call post-update route
                 if (routes[currentIndex].postUpdate) {
-                    if (routes[currentIndex].postUpdate instanceof Array &&
-                         routes[currentIndex].postUpdate.length > 1) {
+                    if (
+                        routes[currentIndex].postUpdate instanceof Array &&
+                        routes[currentIndex].postUpdate.length > 1
+                    ) {
                         // Call clear cache before updating schema
                         $.ajax({
                             url: routes[currentIndex].postUpdate[0],
@@ -74,9 +76,9 @@ export default class Import {
                                     dataType: 'json',
                                     complete: () => {
                                         this.always(currentIndex + 1, routes)
-                                    }
+                                    },
                                 })
-                            }
+                            },
                         })
                     } else {
                         $.ajax({
@@ -85,7 +87,7 @@ export default class Import {
                             dataType: 'json',
                             complete: () => {
                                 this.always(currentIndex + 1, routes)
-                            }
+                            },
                         })
                     }
                 } else {
@@ -99,13 +101,19 @@ export default class Import {
                 $row.addClass('uk-badge-danger')
 
                 if (data.responseJSON && data.responseJSON.error) {
-                    $row.parent().parent().after('<tr><td class="uk-alert uk-alert-danger" colspan="3">' + data.responseJSON.error + '</td></tr>')
+                    $row.parent()
+                        .parent()
+                        .after(
+                            '<tr><td class="uk-alert uk-alert-danger" colspan="3">' +
+                                data.responseJSON.error +
+                                '</td></tr>'
+                        )
                 }
             },
             complete: () => {
                 $icon.removeClass('uk-icon-spin')
                 $icon.removeClass('uk-icon-spinner')
-            }
+            },
         })
     }
 }

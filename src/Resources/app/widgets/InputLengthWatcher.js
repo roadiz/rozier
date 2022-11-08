@@ -1,7 +1,7 @@
 import $ from 'jquery'
 
 export default class InputLengthWatcher {
-    constructor () {
+    constructor() {
         this.$maxLengthed = $('input[data-max-length]')
         this.$minLengthed = $('input[data-min-length]')
 
@@ -11,7 +11,7 @@ export default class InputLengthWatcher {
         this.init()
     }
 
-    init () {
+    init() {
         if (this.$maxLengthed.length) {
             this.$maxLengthed.on('keyup', this.onMaxKeyUp)
         }
@@ -21,7 +21,7 @@ export default class InputLengthWatcher {
         }
     }
 
-    unbind () {
+    unbind() {
         if (this.$maxLengthed.length) {
             this.$maxLengthed.off('keyup', this.onMaxKeyUp)
         }
@@ -34,7 +34,7 @@ export default class InputLengthWatcher {
     /**
      * @param {Event} event
      */
-    onMaxKeyUp (event) {
+    onMaxKeyUp(event) {
         let input = $(event.currentTarget)
         let maxLength = Math.round(event.currentTarget.getAttribute('data-max-length'))
         let currentLength = event.currentTarget.value.length
@@ -49,7 +49,7 @@ export default class InputLengthWatcher {
     /**
      * @param {Event} event
      */
-    onMinKeyUp (event) {
+    onMinKeyUp(event) {
         let input = $(event.currentTarget)
         let maxLength = Math.round(event.currentTarget.getAttribute('data-min-length'))
         let currentLength = event.currentTarget.value.length

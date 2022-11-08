@@ -1,14 +1,11 @@
 import $ from 'jquery'
-import {
-    TweenLite,
-    Expo
-} from 'gsap'
+import { TweenLite, Expo } from 'gsap'
 
 /**
  * NODE TYPE FIELD EDIT
  */
 export default class NodeTypeFieldEdit {
-    constructor () {
+    constructor() {
         // Selectors
         this.$btn = $('.node-type-field-edit-button')
         this.currentRequest = null
@@ -31,16 +28,16 @@ export default class NodeTypeFieldEdit {
     /**
      * Init
      */
-    init () {}
+    init() {}
 
-    unbind () {}
+    unbind() {}
 
     /**
      * Btn click
      * @param {Event} e
      * @returns {boolean}
      */
-    btnClick (e) {
+    btnClick(e) {
         e.preventDefault()
 
         if (this.indexOpen !== null) {
@@ -70,9 +67,9 @@ export default class NodeTypeFieldEdit {
                     url: e.currentTarget.href,
                     type: 'get',
                     cache: false,
-                    dataType: 'html'
+                    dataType: 'html',
                 })
-                    .done(data => {
+                    .done((data) => {
                         this.applyContent(e.currentTarget, data, e.currentTarget.href)
                     })
                     .fail(() => {
@@ -80,7 +77,7 @@ export default class NodeTypeFieldEdit {
                             message: window.Rozier.messages.forbiddenPage,
                             status: 'danger',
                             timeout: 3000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
                     })
                     .always(() => {
@@ -98,7 +95,7 @@ export default class NodeTypeFieldEdit {
      * @param data
      * @param url
      */
-    applyContent (target, data, url) {
+    applyContent(target, data, url) {
         let dataWrapped = [
             '<tr class="node-type-field-edit-form-row">',
             '<td colspan="5">',
@@ -106,7 +103,7 @@ export default class NodeTypeFieldEdit {
             data,
             '</div>',
             '</td>',
-            '</tr>'
+            '</tr>',
         ].join('')
 
         $(target).parent().parent().after(dataWrapped)
@@ -116,7 +113,7 @@ export default class NodeTypeFieldEdit {
 
         // Switch checkboxes
         $('.rz-boolean-checkbox').bootstrapSwitch({
-            size: 'small'
+            size: 'small',
         })
 
         window.Rozier.lazyload.initMarkdownEditors()
@@ -136,12 +133,12 @@ export default class NodeTypeFieldEdit {
 
             TweenLite.to(this.$form, 0.6, {
                 height: this.formContHeight,
-                ease: Expo.easeOut
+                ease: Expo.easeOut,
             })
 
             TweenLite.to(this.$formCont, 0.6, {
                 height: this.formContHeight,
-                ease: Expo.easeOut
+                ease: Expo.easeOut,
             })
         }, 200)
     }
@@ -149,20 +146,22 @@ export default class NodeTypeFieldEdit {
     /**
      * Close form
      */
-    closeForm () {
+    closeForm() {
         this.$formIcon[0].className = 'uk-icon-chevron-right'
 
-        TweenLite.to(this.$formCont, 0.4, {height: 0,
+        TweenLite.to(this.$formCont, 0.4, {
+            height: 0,
             ease: Expo.easeOut,
             onComplete: () => {
                 this.$formRow.remove()
                 this.indexOpen = null
                 this.$formFieldCol.addClass('node-type-field-col')
-            }})
+            },
+        })
     }
 
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

@@ -6,7 +6,7 @@ import $ from 'jquery'
  * attribute to point form ID to submit.
  */
 export default class SaveButtons {
-    constructor () {
+    constructor() {
         this.$button = $('.rz-action-save').eq(0)
         this.$actionMenu = $('.actions-menu').eq(0)
         this.formToSave = null
@@ -16,13 +16,12 @@ export default class SaveButtons {
 
         this.bindKeyboard()
 
-        if (this.$button.length &&
-            this.$actionMenu.length) {
+        if (this.$button.length && this.$actionMenu.length) {
             this.init()
         }
     }
 
-    init () {
+    init() {
         this.formToSave = $(this.$button.attr('data-action-save'))
 
         if (this.formToSave.length) {
@@ -38,17 +37,17 @@ export default class SaveButtons {
         }
     }
 
-    unbind () {
+    unbind() {
         if (this.formToSave && this.formToSave.length) {
             this.$button.off('click', this.onClick)
         }
     }
 
-    onClick () {
+    onClick() {
         this.formToSave.submit()
     }
 
-    bindKeyboard () {
+    bindKeyboard() {
         window.Mousetrap.stopCallback = (e, element) => {
             // if the element has the class "mousetrap" then no need to stop
             if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {

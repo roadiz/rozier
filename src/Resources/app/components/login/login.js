@@ -1,11 +1,10 @@
 import $ from 'jquery'
 import request from 'axios'
-
-(function () {
+;(function () {
     const onLoad = function (data) {
         const $splashContainer = $('#splash-container')
         $splashContainer.css({
-            'background-image': 'url(' + data.url + ')'
+            'background-image': 'url(' + data.url + ')',
         })
         $splashContainer.addClass('visible')
     }
@@ -15,22 +14,21 @@ import request from 'axios'
             method: 'GET',
             url: window.RozierRoot.routes.splashRequest,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
             },
             withCredentials: false,
-            responseType: 'json'
+            responseType: 'json',
         })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' &&
-                typeof response.data.url !== 'undefined') {
-                let myImage = new Image(window.width, window.height)
-                myImage.src = response.data.url
-                myImage.onload = $.proxy(onLoad, this, response.data)
-            }
-        })
-        .catch((error) => {
-            console.error(error.response.data.humanMessage)
-        })
+            .then((response) => {
+                if (typeof response.data !== 'undefined' && typeof response.data.url !== 'undefined') {
+                    let myImage = new Image(window.width, window.height)
+                    myImage.src = response.data.url
+                    myImage.onload = $.proxy(onLoad, this, response.data)
+                }
+            })
+            .catch((error) => {
+                console.error(error.response.data.humanMessage)
+            })
     }
 
     if (typeof window.RozierRoot.routes.splashRequest !== 'undefined') {
