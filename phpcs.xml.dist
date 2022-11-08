@@ -11,6 +11,9 @@
         <exclude name="Generic.Files.LineLength"/>
     </rule>
     <file>./</file>
+    <exclude-pattern>*.js</exclude-pattern>
+    <exclude-pattern>*.vue</exclude-pattern>
+    <exclude-pattern>*/Resources/app</exclude-pattern>
     <exclude-pattern>*/node_modules</exclude-pattern>
     <exclude-pattern>*/.AppleDouble</exclude-pattern>
     <exclude-pattern>*/vendor</exclude-pattern>

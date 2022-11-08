@@ -1,7 +1,7 @@
 import $ from 'jquery'
 
 export default class NodeTreeContextActions {
-    constructor () {
+    constructor() {
         this.$contextualMenus = $('.tree-contextualmenu')
         this.$links = this.$contextualMenus.find('.node-actions a')
         this.$nodeMoveFirstLinks = this.$contextualMenus.find('a.move-node-first-position')
@@ -15,19 +15,19 @@ export default class NodeTreeContextActions {
         }
     }
 
-    bind () {
+    bind() {
         this.$links.on('click', this.onClick)
         this.$nodeMoveFirstLinks.on('click', (e) => this.moveNodeToPosition('first', e))
         this.$nodeMoveLastLinks.on('click', (e) => this.moveNodeToPosition('last', e))
     }
 
-    unbind () {
+    unbind() {
         this.$links.off('click', this.onClick)
         this.$nodeMoveFirstLinks.off('click')
         this.$nodeMoveLastLinks.off('click')
     }
 
-    onClick (event) {
+    onClick(event) {
         event.preventDefault()
 
         let $link = $(event.currentTarget)
@@ -40,8 +40,7 @@ export default class NodeTreeContextActions {
         if (typeof action !== 'undefined') {
             window.Rozier.lazyload.canvasLoader.show()
 
-            if (typeof statusName !== 'undefined' &&
-                typeof statusValue !== 'undefined') {
+            if (typeof statusName !== 'undefined' && typeof statusValue !== 'undefined') {
                 // Change node status
                 this.changeStatus(nodeId, statusName, statusValue)
             } else {
@@ -53,42 +52,42 @@ export default class NodeTreeContextActions {
         }
     }
 
-    changeStatus (nodeId, statusName, statusValue) {
+    changeStatus(nodeId, statusName, statusValue) {
         if (this.ajaxTimeout) {
             window.clearTimeout(this.ajaxTimeout)
         }
 
         this.ajaxTimeout = window.setTimeout(() => {
             let postData = {
-                '_token': window.Rozier.ajaxToken,
-                '_action': 'nodeChangeStatus',
-                'nodeId': nodeId,
-                'statusName': statusName,
-                'statusValue': statusValue
+                _token: window.Rozier.ajaxToken,
+                _action: 'nodeChangeStatus',
+                nodeId: nodeId,
+                statusName: statusName,
+                statusValue: statusValue,
             }
 
             $.ajax({
                 url: window.Rozier.routes.nodesStatusesAjax,
                 type: 'post',
                 dataType: 'json',
-                data: postData
+                data: postData,
             })
-            .done(() => {
-                window.Rozier.refreshAllNodeTrees()
-                window.Rozier.getMessages()
-            })
-            .fail(data => {
-                data = JSON.parse(data.responseText)
-                window.UIkit.notify({
-                    message: data.message,
-                    status: 'danger',
-                    timeout: 3000,
-                    pos: 'top-center'
+                .done(() => {
+                    window.Rozier.refreshAllNodeTrees()
+                    window.Rozier.getMessages()
                 })
-            })
-            .always(() => {
-                window.Rozier.lazyload.canvasLoader.hide()
-            })
+                .fail((data) => {
+                    data = JSON.parse(data.responseText)
+                    window.UIkit.notify({
+                        message: data.message,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                })
         }, 100)
     }
 
@@ -97,7 +96,7 @@ export default class NodeTreeContextActions {
      *
      * @param nodeId
      */
-    duplicateNode (nodeId) {
+    duplicateNode(nodeId) {
         if (this.ajaxTimeout) {
             window.clearTimeout(this.ajaxTimeout)
         }
@@ -106,31 +105,31 @@ export default class NodeTreeContextActions {
             let postData = {
                 _token: window.Rozier.ajaxToken,
                 _action: 'duplicate',
-                nodeId: nodeId
+                nodeId: nodeId,
             }
 
             $.ajax({
                 url: window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId),
                 type: 'POST',
                 dataType: 'json',
-                data: postData
+                data: postData,
             })
-            .done(() => {
-                window.Rozier.refreshAllNodeTrees()
-                window.Rozier.getMessages()
-            })
-            .fail(data => {
-                data = JSON.parse(data.responseText)
-                window.UIkit.notify({
-                    message: data.error_message,
-                    status: 'danger',
-                    timeout: 3000,
-                    pos: 'top-center'
+                .done(() => {
+                    window.Rozier.refreshAllNodeTrees()
+                    window.Rozier.getMessages()
                 })
-            })
-            .always(() => {
-                window.Rozier.lazyload.canvasLoader.hide()
-            })
+                .fail((data) => {
+                    data = JSON.parse(data.responseText)
+                    window.UIkit.notify({
+                        message: data.error_message,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                })
         }, 100)
     }
 
@@ -140,7 +139,7 @@ export default class NodeTreeContextActions {
      * @param {String} position
      * @param {Event} event
      */
-    moveNodeToPosition (position, event) {
+    moveNodeToPosition(position, event) {
         window.Rozier.lazyload.canvasLoader.show()
 
         let element = $($(event.currentTarget).parents('.nodetree-element')[0])
@@ -149,7 +148,7 @@ export default class NodeTreeContextActions {
         let postData = {
             _token: window.Rozier.ajaxToken,
             _action: 'updatePosition',
-            nodeId: nodeId
+            nodeId: nodeId,
         }
 
         /*
@@ -175,23 +174,23 @@ export default class NodeTreeContextActions {
             url: window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId),
             type: 'POST',
             dataType: 'json',
-            data: postData
+            data: postData,
         })
-        .done(() => {
-            window.Rozier.refreshAllNodeTrees()
-            window.Rozier.getMessages()
-        })
-        .fail(data => {
-            data = JSON.parse(data.responseText)
-            window.UIkit.notify({
-                message: data.error_message,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center'
+            .done(() => {
+                window.Rozier.refreshAllNodeTrees()
+                window.Rozier.getMessages()
             })
-        })
-        .always(() => {
-            window.Rozier.lazyload.canvasLoader.hide()
-        })
+            .fail((data) => {
+                data = JSON.parse(data.responseText)
+                window.UIkit.notify({
+                    message: data.error_message,
+                    status: 'danger',
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
+            })
+            .always(() => {
+                window.Rozier.lazyload.canvasLoader.hide()
+            })
     }
 }

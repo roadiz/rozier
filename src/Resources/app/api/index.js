@@ -13,7 +13,7 @@ const api = {
     ...DrawerApi,
     ...TagApi,
     ...SplashScreenApi,
-    ...ExplorerProviderApi
+    ...ExplorerProviderApi,
 }
 
 export default api

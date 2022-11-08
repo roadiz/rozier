@@ -26,9 +26,7 @@
  * @author Adrien Scholaert <adrien@rezo-zero.com>
  */
 
-import {
-    remove
-} from 'lodash'
+import { remove } from 'lodash'
 import {
     DRAWERS_ADD_INSTANCE,
     DRAWERS_REMOVE_INSTANCE,
@@ -42,10 +40,8 @@ import {
     DRAWERS_INIT_DATA_REQUEST_SUCCESS,
     DRAWERS_INIT_DATA_REQUEST_FAILED,
     DRAWERS_INIT_DATA_REQUEST_EMPTY,
-
     KEYBOARD_EVENT_ESCAPE,
-
-    EXPLORER_CLOSE
+    EXPLORER_CLOSE,
 } from '../../types/mutationTypes'
 import * as DrawerApi from '../../api/DrawerApi'
 import EntityAwareFactory from '../../factories/EntityAwareFactory'
@@ -62,7 +58,7 @@ import EntityAwareFactory from '../../factories/EntityAwareFactory'
 const state = {
     list: [],
     trans: null,
-    selectedDrawer: null
+    selectedDrawer: null,
 }
 
 /**
@@ -70,24 +66,24 @@ const state = {
  */
 const getters = {
     drawersGetById: (state, getters) => (id) => {
-        return state.list.find(drawer => drawer.id === id)
+        return state.list.find((drawer) => drawer.id === id)
     },
     getDrawerFilters: (state) => {
         return state.selectedDrawer ? state.selectedDrawer.filters : null
-    }
+    },
 }
 
 /**
  * Actions
  */
 const actions = {
-    drawersAddInstance ({ commit }, drawer) {
+    drawersAddInstance({ commit }, drawer) {
         commit(DRAWERS_ADD_INSTANCE, { drawer })
     },
-    drawersRemoveInstance ({ commit }, drawerToRemove) {
+    drawersRemoveInstance({ commit }, drawerToRemove) {
         commit(DRAWERS_REMOVE_INSTANCE, { drawerToRemove })
     },
-    drawersInitData ({ commit }, { drawer, entity, ids, filters, maxLength, minLength }) {
+    drawersInitData({ commit }, { drawer, entity, ids, filters, maxLength, minLength }) {
         commit(DRAWERS_INIT_DATA_REQUEST, { drawer, entity, ids, filters })
 
         // If no initial ids provided no need to use the api
@@ -104,7 +100,7 @@ const actions = {
                 })
         }
     },
-    drawersAddItem ({ commit, state }, { drawer, item, newIndex }) {
+    drawersAddItem({ commit, state }, { drawer, item, newIndex }) {
         let drawerToChange = state.selectedDrawer
 
         if (drawer) {
@@ -117,13 +113,11 @@ const actions = {
 
         commit(DRAWERS_ADD_ITEM, { drawer: drawerToChange, item, newIndex })
     },
-    drawersMoveItem ({ commit }, { drawer, item }) {
-
-    },
-    drawersRemoveItem ({ commit }, { drawer, item }) {
+    drawersMoveItem({ commit }, { drawer, item }) {},
+    drawersRemoveItem({ commit }, { drawer, item }) {
         commit(DRAWERS_REMOVE_ITEM, { drawer, item })
     },
-    drawersExplorerButtonClick ({ commit, dispatch }, drawer) {
+    drawersExplorerButtonClick({ commit, dispatch }, drawer) {
         commit(DRAWERS_EDIT_INSTANCE, { drawer })
 
         if (!state.selectedDrawer.isActive) {
@@ -132,26 +126,26 @@ const actions = {
             dispatch('explorerOpen', { entity: drawer.entity })
         }
     },
-    drawersDropzoneButtonClick ({ state, dispatch }, drawer) {
+    drawersDropzoneButtonClick({ state, dispatch }, drawer) {
         if (drawer.isDropzoneEnable) {
             dispatch('drawersDisableDropzone', { drawer })
         } else {
             dispatch('drawersEnableDropzone', { drawer })
         }
     },
-    drawersEnableDropzone ({ commit }, { drawer }) {
+    drawersEnableDropzone({ commit }, { drawer }) {
         commit(DRAWERS_ENABLE_DROPZONE, { drawer })
     },
-    drawersDisableDropzone ({ commit }, { drawer }) {
+    drawersDisableDropzone({ commit }, { drawer }) {
         commit(DRAWERS_DISABLE_DROPZONE, { drawer })
-    }
+    },
 }
 
 /**
  * Mutations
  */
 const mutations = {
-    [DRAWERS_ADD_INSTANCE] (state, { drawer }) {
+    [DRAWERS_ADD_INSTANCE](state, { drawer }) {
         state.list.push({
             entity: null,
             id: drawer._uid,
@@ -162,20 +156,20 @@ const mutations = {
             filters: {
                 nodeTypes: null,
                 nodeTypeField: null,
-                providerClass: null
+                providerClass: null,
             },
             isDropzoneEnable: false,
             minLength: 0,
             maxLength: 999999,
-            acceptMore: true
+            acceptMore: true,
         })
     },
-    [DRAWERS_REMOVE_INSTANCE] (state, { drawerToRemove }) {
+    [DRAWERS_REMOVE_INSTANCE](state, { drawerToRemove }) {
         state.list = remove(state.list, (drawer) => {
             return drawer._uid === drawerToRemove._uid
         })
     },
-    [DRAWERS_EDIT_INSTANCE] (state, { drawer }) {
+    [DRAWERS_EDIT_INSTANCE](state, { drawer }) {
         // Disable other drawers
         state.list.forEach((item) => {
             if (item !== drawer) {
@@ -192,15 +186,15 @@ const mutations = {
         // Define the drawer as current selected drawer
         state.selectedDrawer = drawer
     },
-    [DRAWERS_ADD_ITEM] (state, { drawer, item, newIndex = 0 }) {
+    [DRAWERS_ADD_ITEM](state, { drawer, item, newIndex = 0 }) {
         drawer.items.push(item)
         drawer.acceptMore = drawer.items.length < drawer.maxLength
     },
-    [DRAWERS_UPDATE_LIST] (state, { drawer, newList }) {
+    [DRAWERS_UPDATE_LIST](state, { drawer, newList }) {
         drawer.items = newList
         drawer.acceptMore = drawer.items.length < drawer.maxLength
     },
-    [DRAWERS_REMOVE_ITEM] (state, { drawer, item }) {
+    [DRAWERS_REMOVE_ITEM](state, { drawer, item }) {
         let indexOf = drawer.items.indexOf(item)
         if (indexOf >= 0) {
             drawer.items.splice(indexOf, 1)
@@ -208,10 +202,10 @@ const mutations = {
 
         drawer.acceptMore = drawer.items.length < drawer.maxLength
     },
-    [EXPLORER_CLOSE] (state) {
+    [EXPLORER_CLOSE](state) {
         state = disableActiveDrawer(state)
     },
-    [DRAWERS_INIT_DATA_REQUEST_SUCCESS] (state, { drawer, result, maxLength, minLength }) {
+    [DRAWERS_INIT_DATA_REQUEST_SUCCESS](state, { drawer, result, maxLength, minLength }) {
         drawer.isLoading = false
         drawer.items = result.items
         drawer.trans = result.trans
@@ -219,26 +213,26 @@ const mutations = {
         drawer.minLength = minLength
         drawer.acceptMore = result.items.length < maxLength
     },
-    [DRAWERS_INIT_DATA_REQUEST] (state, { drawer, entity, filters }) {
+    [DRAWERS_INIT_DATA_REQUEST](state, { drawer, entity, filters }) {
         drawer.isLoading = true
         drawer.entity = entity
         drawer.filters = filters
         drawer.currentListingView = EntityAwareFactory.getListingView(entity)
     },
-    [DRAWERS_INIT_DATA_REQUEST_FAILED] (state, { drawer, error }) {
+    [DRAWERS_INIT_DATA_REQUEST_FAILED](state, { drawer, error }) {
         drawer.isLoading = false
         drawer.errorMessage = error.message
     },
-    [DRAWERS_INIT_DATA_REQUEST_EMPTY] (state, { drawer, maxLength, minLength }) {
+    [DRAWERS_INIT_DATA_REQUEST_EMPTY](state, { drawer, maxLength, minLength }) {
         drawer.isLoading = false
         drawer.acceptMore = true
         drawer.maxLength = maxLength
         drawer.minLength = minLength
     },
-    [KEYBOARD_EVENT_ESCAPE] (state) {
+    [KEYBOARD_EVENT_ESCAPE](state) {
         state = disableActiveDrawer(state)
     },
-    [DRAWERS_ENABLE_DROPZONE] (state, { drawer }) {
+    [DRAWERS_ENABLE_DROPZONE](state, { drawer }) {
         // Disable other dropzone
         state.list.forEach((drawer) => {
             drawer.isDropzoneEnable = false
@@ -246,12 +240,12 @@ const mutations = {
 
         drawer.isDropzoneEnable = true
     },
-    [DRAWERS_DISABLE_DROPZONE] (state, { drawer }) {
+    [DRAWERS_DISABLE_DROPZONE](state, { drawer }) {
         drawer.isDropzoneEnable = false
-    }
+    },
 }
 
-function disableActiveDrawer (state) {
+function disableActiveDrawer(state) {
     state.list.forEach((drawer) => {
         drawer.isActive = false
         drawer.isDropzoneEnable = false
@@ -266,5 +260,5 @@ export default {
     state,
     getters,
     actions,
-    mutations
+    mutations,
 }

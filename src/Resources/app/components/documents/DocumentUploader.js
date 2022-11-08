@@ -9,31 +9,31 @@ export default class DocumentUploader {
      * Constructor
      * @param {Object} options
      */
-    constructor (options) {
+    constructor(options) {
         this.attached = false
         this.options = {
-            'onSuccess': (data) => {},
-            'onError': (data) => {},
-            'onAdded': (file) => {},
-            'url': window.Rozier.routes.documentsUploadPage,
-            'selector': '#upload-dropzone-document',
-            'paramName': 'form[attachment]',
-            'uploadMultiple': false,
-            'maxFilesize': 64,
-            'timeout': 0, // no timeout
-            'autoDiscover': false,
-            'headers': {'_token': window.Rozier.ajaxToken},
-            'dictDefaultMessage': 'Drop files here to upload or click to open your explorer',
-            'dictFallbackMessage': "Your browser does not support drag'n'drop file uploads.",
-            'dictFallbackText': 'Please use the fallback form below to upload your files like in the olden days.',
-            'dictFileTooBig': 'File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.',
-            'dictInvalidFileType': "You can't upload files of this type.",
-            'dictResponseError': 'Server responded with {{statusCode}} code.',
-            'dictCancelUpload': 'Cancel upload',
-            'dictCancelUploadConfirmation': 'Are you sure you want to cancel this upload?',
-            'dictRemoveFile': 'Remove file',
-            'dictRemoveFileConfirmation': null,
-            'dictMaxFilesExceeded': 'You can not upload any more files.'
+            onSuccess: (data) => {},
+            onError: (data) => {},
+            onAdded: (file) => {},
+            url: window.Rozier.routes.documentsUploadPage,
+            selector: '#upload-dropzone-document',
+            paramName: 'form[attachment]',
+            uploadMultiple: false,
+            maxFilesize: 64,
+            timeout: 0, // no timeout
+            autoDiscover: false,
+            headers: { _token: window.Rozier.ajaxToken },
+            dictDefaultMessage: 'Drop files here to upload or click to open your explorer',
+            dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
+            dictFallbackText: 'Please use the fallback form below to upload your files like in the olden days.',
+            dictFileTooBig: 'File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.',
+            dictInvalidFileType: "You can't upload files of this type.",
+            dictResponseError: 'Server responded with {{statusCode}} code.',
+            dictCancelUpload: 'Cancel upload',
+            dictCancelUploadConfirmation: 'Are you sure you want to cancel this upload?',
+            dictRemoveFile: 'Remove file',
+            dictRemoveFileConfirmation: null,
+            dictMaxFilesExceeded: 'You can not upload any more files.',
         }
 
         if (typeof options !== 'undefined') {
@@ -45,7 +45,7 @@ export default class DocumentUploader {
         }
     }
 
-    init () {
+    init() {
         const _self = this
 
         // Get folder id
@@ -113,7 +113,7 @@ export default class DocumentUploader {
                         console.error('Server Timeout')
                     }
                 })
-            }
+            },
         }
 
         Dropzone.autoDiscover = this.options.autoDiscover
@@ -140,7 +140,5 @@ export default class DocumentUploader {
         }
     }
 
-    unbind () {
-
-    }
+    unbind() {}
 }

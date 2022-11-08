@@ -4,7 +4,7 @@ import $ from 'jquery'
  * Nodes bulk
  */
 export default class NodesBulk {
-    constructor () {
+    constructor() {
         this.$nodesCheckboxes = $('input.node-checkbox')
         this.$nodesIdBulkTags = $('input.nodes-id-bulk-tags')
         this.$nodesIdBulkStatus = $('input.nodes-id-bulk-status')
@@ -37,7 +37,7 @@ export default class NodesBulk {
     /**
      * Init
      */
-    init () {
+    init() {
         this.$nodesCheckboxes.on('change', this.onCheckboxChange)
         this.$nodesFolderButton.on('click', this.nodesFolderButtonClick)
         this.$nodesStatusButton.on('click', this.nodesStatusButtonClick)
@@ -45,7 +45,7 @@ export default class NodesBulk {
         this.$nodesDeselectAll.on('click', this.onDeselectAll)
     }
 
-    unbind () {
+    unbind() {
         if (this.$nodesCheckboxes.length) {
             this.$nodesCheckboxes.off('change', this.onCheckboxChange)
             this.$nodesFolderButton.off('click', this.nodesFolderButtonClick)
@@ -55,13 +55,13 @@ export default class NodesBulk {
         }
     }
 
-    onSelectAll () {
+    onSelectAll() {
         this.$nodesCheckboxes.prop('checked', true)
         this.onCheckboxChange(null)
         return false
     }
 
-    onDeselectAll () {
+    onDeselectAll() {
         this.$nodesCheckboxes.prop('checked', false)
         this.onCheckboxChange(null)
         return false
@@ -70,7 +70,7 @@ export default class NodesBulk {
     /**
      * On checkbox change
      */
-    onCheckboxChange () {
+    onCheckboxChange() {
         this.nodesIds = []
 
         $('input.node-checkbox:checked').each((index, domElement) => {
@@ -97,13 +97,17 @@ export default class NodesBulk {
     /**
      * On bulk delete
      */
-    onBulkDelete () {
+    onBulkDelete() {
         if (this.nodesIds.length > 0) {
-            history.pushState({
-                'headerData': {
-                    'nodes': this.nodesIds
-                }
-            }, null, window.Rozier.routes.nodesBulkDeletePage)
+            history.pushState(
+                {
+                    headerData: {
+                        nodes: this.nodesIds,
+                    },
+                },
+                null,
+                window.Rozier.routes.nodesBulkDeletePage
+            )
 
             window.Rozier.lazyload.onPopState(null)
         }
@@ -114,21 +118,21 @@ export default class NodesBulk {
     /**
      * Show actions
      */
-    showActions () {
+    showActions() {
         this.$actionsMenu.slideDown()
     }
 
     /**
      * Hide actions
      */
-    hideActions () {
+    hideActions() {
         this.$actionsMenu.slideUp()
     }
 
     /**
      * Nodes folder button click
      */
-    nodesFolderButtonClick () {
+    nodesFolderButtonClick() {
         if (!this.nodesFolderOpen) {
             this.$nodesStatusCont.slideUp()
             this.nodesStatusOpen = false
@@ -146,7 +150,7 @@ export default class NodesBulk {
     /**
      * Nodes status button click
      */
-    nodesStatusButtonClick () {
+    nodesStatusButtonClick() {
         if (!this.nodesStatusOpen) {
             this.$nodesFolderCont.slideUp()
             this.nodesFolderOpen = false

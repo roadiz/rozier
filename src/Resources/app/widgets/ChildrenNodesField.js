@@ -5,14 +5,14 @@ import NodeTreeContextActions from '../components/trees/NodeTreeContextActions'
  * Children nodes field
  */
 export default class ChildrenNodesField {
-    constructor () {
+    constructor() {
         // Bind methods
         this.onQuickAddClick = this.onQuickAddClick.bind(this)
 
         this.init()
     }
 
-    init () {
+    init() {
         this.$fields = $('[data-children-nodes-widget]')
         this.$nodeTrees = this.$fields.find('.nodetree-widget')
         this.$quickAddNodeButtons = this.$fields.find('.children-nodes-quick-creation a')
@@ -24,13 +24,13 @@ export default class ChildrenNodesField {
         this.$fields.find('.nodetree-langs').remove()
     }
 
-    unbind () {
+    unbind() {
         if (this.$quickAddNodeButtons.length) {
             this.$quickAddNodeButtons.off('click', this.onQuickAddClick)
         }
     }
 
-    treeAvailable () {
+    treeAvailable() {
         let $nodeTree = this.$fields.find('.nodetree-widget')
 
         if ($nodeTree.length) {
@@ -40,7 +40,7 @@ export default class ChildrenNodesField {
         }
     }
 
-    onQuickAddClick (event) {
+    onQuickAddClick(event) {
         if (this.ajaxTimeout) {
             clearTimeout(this.ajaxTimeout)
         }
@@ -53,17 +53,17 @@ export default class ChildrenNodesField {
 
             if (nodeTypeId > 0 && parentNodeId > 0) {
                 let postData = {
-                    '_token': window.Rozier.ajaxToken,
-                    '_action': 'quickAddNode',
-                    'nodeTypeId': nodeTypeId,
-                    'parentNodeId': parentNodeId,
-                    'translationId': translationId
+                    _token: window.Rozier.ajaxToken,
+                    _action: 'quickAddNode',
+                    nodeTypeId: nodeTypeId,
+                    parentNodeId: parentNodeId,
+                    translationId: translationId,
                 }
                 $.ajax({
                     url: window.Rozier.routes.nodesQuickAddAjax,
                     type: 'post',
                     dataType: 'json',
-                    data: postData
+                    data: postData,
                 })
                     .done(() => {
                         window.Rozier.refreshMainNodeTree()
@@ -71,13 +71,13 @@ export default class ChildrenNodesField {
                         let $nodeTree = $link.parents('.children-nodes-widget').find('.nodetree-widget').eq(0)
                         this.refreshNodeTree($nodeTree)
                     })
-                    .fail(data => {
+                    .fail((data) => {
                         data = JSON.parse(data.responseText)
                         window.UIkit.notify({
                             message: data.error_message,
                             status: 'danger',
                             timeout: 3000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
                     })
                     .always(() => {
@@ -92,7 +92,7 @@ export default class ChildrenNodesField {
     /**
      * @param $nodeTree
      */
-    refreshNodeTree ($nodeTree) {
+    refreshNodeTree($nodeTree) {
         if ($nodeTree.length) {
             let linkedTypes = []
             let $rootTree = $nodeTree.find('.root-tree').eq(0)
@@ -108,10 +108,10 @@ export default class ChildrenNodesField {
 
             window.Rozier.lazyload.canvasLoader.show()
             let postData = {
-                '_token': window.Rozier.ajaxToken,
-                '_action': 'requestNodeTree',
-                'parentNodeId': rootNodeId,
-                'linkedTypes': linkedTypes
+                _token: window.Rozier.ajaxToken,
+                _action: 'requestNodeTree',
+                parentNodeId: rootNodeId,
+                linkedTypes: linkedTypes,
             }
 
             let url = window.Rozier.routes.nodesTreeAjax
@@ -126,11 +126,10 @@ export default class ChildrenNodesField {
                 type: 'get',
                 dataType: 'json',
                 cache: false,
-                data: postData
+                data: postData,
             })
-                .done(data => {
-                    if ($nodeTree.length &&
-                        typeof data.nodeTree !== 'undefined') {
+                .done((data) => {
+                    if ($nodeTree.length && typeof data.nodeTree !== 'undefined') {
                         $nodeTree.fadeOut('slow', () => {
                             let $tempContainer = $nodeTree.parents('.children-nodes-widget')
                             $nodeTree.replaceWith(data.nodeTree)
@@ -153,13 +152,13 @@ export default class ChildrenNodesField {
                         })
                     }
                 })
-                .fail(data => {
+                .fail((data) => {
                     data = JSON.parse(data.responseText)
                     window.UIkit.notify({
                         message: data.error_message,
                         status: 'danger',
                         timeout: 3000,
-                        pos: 'top-center'
+                        pos: 'top-center',
                     })
                 })
         } else {

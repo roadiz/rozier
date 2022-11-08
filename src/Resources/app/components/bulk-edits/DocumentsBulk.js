@@ -1,14 +1,10 @@
 import $ from 'jquery'
 
-/**
- * Documents Bulk
- * @class
- */
 export default class DocumentsBulk {
     /**
      * Create a documents bulk
      */
-    constructor () {
+    constructor() {
         this.$documentsCheckboxes = $('input.document-checkbox')
         this.$documentsIdBulkFolders = $('input.document-id-bulk-folder')
         this.$actionsMenu = $('.documents-bulk-actions')
@@ -33,7 +29,7 @@ export default class DocumentsBulk {
         }
     }
 
-    init () {
+    init() {
         this.$documentsCheckboxes.on('change', this.onCheckboxChange)
         this.$bulkDeleteButton.on('click', this.onBulkDelete)
         this.$documentsFolderButton.on('click', this.documentsFolderButtonClick)
@@ -42,7 +38,7 @@ export default class DocumentsBulk {
         this.$documentsDeselectAll.on('click', this.onDeselectAll)
     }
 
-    unbind () {
+    unbind() {
         if (this.$documentsCheckboxes.length) {
             this.$documentsCheckboxes.off('change', this.onCheckboxChange)
             this.$bulkDeleteButton.off('click', this.onBulkDelete)
@@ -53,13 +49,13 @@ export default class DocumentsBulk {
         }
     }
 
-    onSelectAll () {
+    onSelectAll() {
         this.$documentsCheckboxes.prop('checked', true)
         this.onCheckboxChange(null)
         return false
     }
 
-    onDeselectAll () {
+    onDeselectAll() {
         this.$documentsCheckboxes.prop('checked', false)
         this.onCheckboxChange(null)
         return false
@@ -68,7 +64,7 @@ export default class DocumentsBulk {
     /**
      * On checkbox change
      */
-    onCheckboxChange () {
+    onCheckboxChange() {
         this.documentsIds = []
 
         $('input.document-checkbox:checked').each((index, domElement) => {
@@ -90,13 +86,17 @@ export default class DocumentsBulk {
      * On bulk delete
      * @returns {boolean}
      */
-    onBulkDelete () {
+    onBulkDelete() {
         if (this.documentsIds.length > 0) {
-            history.pushState({
-                'headerData': {
-                    'documents': this.documentsIds
-                }
-            }, null, window.Rozier.routes.documentsBulkDeletePage)
+            history.pushState(
+                {
+                    headerData: {
+                        documents: this.documentsIds,
+                    },
+                },
+                null,
+                window.Rozier.routes.documentsBulkDeletePage
+            )
 
             window.Rozier.lazyload.onPopState(null)
         }
@@ -108,13 +108,17 @@ export default class DocumentsBulk {
      * On bulk Download
      * @returns {boolean}
      */
-    onBulkDownload () {
+    onBulkDownload() {
         if (this.documentsIds.length > 0) {
-            history.pushState({
-                'headerData': {
-                    'documents': this.documentsIds
-                }
-            }, null, window.Rozier.routes.documentsBulkDownloadPage)
+            history.pushState(
+                {
+                    headerData: {
+                        documents: this.documentsIds,
+                    },
+                },
+                null,
+                window.Rozier.routes.documentsBulkDownloadPage
+            )
 
             window.Rozier.lazyload.onPopState(null)
         }
@@ -125,7 +129,7 @@ export default class DocumentsBulk {
     /**
      * Show actions
      */
-    showActions () {
+    showActions() {
         this.$actionsMenu.stop()
         this.$actionsMenu.slideDown()
     }
@@ -133,7 +137,7 @@ export default class DocumentsBulk {
     /**
      * Hide actions
      */
-    hideActions () {
+    hideActions() {
         this.$actionsMenu.stop()
         this.$actionsMenu.slideUp()
     }
@@ -142,7 +146,7 @@ export default class DocumentsBulk {
      * Documents folder button click
      * @returns {boolean}
      */
-    documentsFolderButtonClick () {
+    documentsFolderButtonClick() {
         if (!this.documentsFolderOpen) {
             this.$documentsFolderCont.slideDown()
             this.documentsFolderOpen = true

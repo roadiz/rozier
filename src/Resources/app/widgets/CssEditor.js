@@ -8,7 +8,7 @@ export default class CssEditor {
      * @param $textarea
      * @param index
      */
-    constructor ($textarea, index) {
+    constructor($textarea, index) {
         this.$textarea = $textarea
         this.textarea = this.$textarea[0]
         this.$cont = this.$textarea.parents('.uk-form-row').eq(0)
@@ -22,11 +22,11 @@ export default class CssEditor {
             indentWithTabs: false,
             lineWrapping: true,
             dragDrop: false,
-            readOnly: (this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled'),
+            readOnly: this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled',
             extraKeys: {
                 Tab: (cm) => cm.execCommand('indentMore'),
-                'Shift-Tab': (cm) => cm.execCommand('indentLess')
-            }
+                'Shift-Tab': (cm) => cm.execCommand('indentLess'),
+            },
         }
 
         if (this.$settingRow.length) {
@@ -47,7 +47,7 @@ export default class CssEditor {
     /**
      * Init
      */
-    init () {
+    init() {
         if (this.$textarea.length) {
             this.editor.on('change', this.textareaChange)
             this.editor.on('focus', this.textareaFocus)
@@ -60,33 +60,33 @@ export default class CssEditor {
         }
     }
 
-    forceEditorUpdate () {
+    forceEditorUpdate() {
         this.editor.refresh()
     }
 
     /**
      * Textarea change
      */
-    textareaChange () {
+    textareaChange() {
         this.editor.save()
     }
 
     /**
      * Textarea focus
      */
-    textareaFocus () {
+    textareaFocus() {
         this.$cont.addClass('form-col-focus')
     }
 
     /**
      * Textarea focus out
      */
-    textareaBlur () {
+    textareaBlur() {
         this.$cont.removeClass('form-col-focus')
     }
 
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

@@ -3,7 +3,7 @@ import NodesBulk from '../components/bulk-edits/NodesBulk'
 import NodeTreeContextActions from '../components/trees/NodeTreeContextActions'
 
 export default class StackNodeTree {
-    constructor () {
+    constructor() {
         this.$page = $('.stack-tree').eq(0)
         this.currentRequest = null
         this.$quickAddNodeButtons = this.$page.find('.stack-tree-quick-creation a')
@@ -19,7 +19,7 @@ export default class StackNodeTree {
     /**
      * @return {Number}
      */
-    getCurrentPage () {
+    getCurrentPage() {
         this.$nodeTree = this.$page.find('.root-tree').eq(0)
         let currentPage = parseInt(this.$nodeTree.attr('data-page'))
         if (isNaN(currentPage)) {
@@ -32,7 +32,7 @@ export default class StackNodeTree {
     /**
      * @return {Number|null}
      */
-    getTranslationId () {
+    getTranslationId() {
         this.$nodeTree = this.$page.find('.root-tree').eq(0)
         let currentTranslationId = parseInt(this.$nodeTree.attr('data-translation-id'))
         if (isNaN(currentTranslationId)) {
@@ -42,7 +42,7 @@ export default class StackNodeTree {
         return currentTranslationId
     }
 
-    init () {
+    init() {
         if (this.$quickAddNodeButtons.length) {
             this.$quickAddNodeButtons.on('click', this.onQuickAddClick)
         }
@@ -52,7 +52,7 @@ export default class StackNodeTree {
         }
     }
 
-    unbind () {
+    unbind() {
         if (this.$quickAddNodeButtons.length) {
             this.$quickAddNodeButtons.off('click', this.onQuickAddClick)
         }
@@ -62,7 +62,7 @@ export default class StackNodeTree {
         }
     }
 
-    onChangeLangClick (event) {
+    onChangeLangClick(event) {
         event.preventDefault()
 
         let $link = $(event.currentTarget)
@@ -77,7 +77,7 @@ export default class StackNodeTree {
      * @param {Event} event
      * @returns {boolean}
      */
-    onQuickAddClick (event) {
+    onQuickAddClick(event) {
         if (this.currentRequest && this.currentRequest.readyState !== 4) {
             this.currentRequest.abort()
         }
@@ -88,11 +88,11 @@ export default class StackNodeTree {
 
         if (nodeTypeId > 0 && parentNodeId > 0) {
             let postData = {
-                '_token': window.Rozier.ajaxToken,
-                '_action': 'quickAddNode',
-                'nodeTypeId': nodeTypeId,
-                'parentNodeId': parentNodeId,
-                'pushTop': 1
+                _token: window.Rozier.ajaxToken,
+                _action: 'quickAddNode',
+                nodeTypeId: nodeTypeId,
+                parentNodeId: parentNodeId,
+                pushTop: 1,
             }
 
             if ($link.attr('data-filter-tag')) {
@@ -103,20 +103,20 @@ export default class StackNodeTree {
                 url: window.Rozier.routes.nodesQuickAddAjax,
                 type: 'post',
                 dataType: 'json',
-                data: postData
+                data: postData,
             })
-                .done(data => {
+                .done((data) => {
                     window.Rozier.refreshMainNodeTree()
                     this.refreshNodeTree(parentNodeId, null, postData.tagId, 1)
                     window.Rozier.getMessages()
                 })
-                .fail(data => {
+                .fail((data) => {
                     data = JSON.parse(data.responseText)
                     window.UIkit.notify({
                         message: data.error_message,
                         status: 'danger',
                         timeout: 3000,
-                        pos: 'top-center'
+                        pos: 'top-center',
                     })
                 })
                 .always(() => {
@@ -127,7 +127,7 @@ export default class StackNodeTree {
         return false
     }
 
-    treeAvailable () {
+    treeAvailable() {
         let $nodeTree = this.$page.find('.nodetree-widget')
         return !!$nodeTree.length
     }
@@ -139,7 +139,7 @@ export default class StackNodeTree {
      * @param tagId
      * @param page
      */
-    refreshNodeTree (rootNodeId, translationId, tagId, page) {
+    refreshNodeTree(rootNodeId, translationId, tagId, page) {
         if (this.currentRequest && this.currentRequest.readyState !== 4) {
             this.currentRequest.abort()
         }
@@ -161,12 +161,12 @@ export default class StackNodeTree {
 
             window.Rozier.lazyload.canvasLoader.show()
             let postData = {
-                '_token': window.Rozier.ajaxToken,
-                '_action': 'requestNodeTree',
-                'stackTree': true,
-                'parentNodeId': rootNodeId,
-                'page': this.getCurrentPage(),
-                'translationId': this.getTranslationId()
+                _token: window.Rozier.ajaxToken,
+                _action: 'requestNodeTree',
+                stackTree: true,
+                parentNodeId: rootNodeId,
+                page: this.getCurrentPage(),
+                translationId: this.getTranslationId(),
             }
 
             let url = window.Rozier.routes.nodesTreeAjax
@@ -195,41 +195,40 @@ export default class StackNodeTree {
                 type: 'get',
                 cache: false,
                 dataType: 'json',
-                data: postData
+                data: postData,
+            }).done((data) => {
+                if ($nodeTree.length && typeof data.nodeTree !== 'undefined') {
+                    $nodeTree.fadeOut('slow', () => {
+                        $nodeTree.replaceWith(data.nodeTree)
+                        $nodeTree = this.$page.find('.nodetree-widget')
+
+                        window.Rozier.initNestables()
+                        window.Rozier.bindMainTrees()
+                        window.Rozier.lazyload.bindAjaxLink()
+                        $nodeTree.fadeIn()
+                        window.Rozier.resize()
+
+                        /* eslint-disable no-new */
+                        new NodesBulk()
+
+                        this.$switchLangButtons = this.$page.find('.nodetree-langs a')
+                        this.$nodeTree = this.$page.find('.root-tree').eq(0)
+
+                        if (this.$switchLangButtons.length) {
+                            this.$switchLangButtons.off('click', this.onChangeLangClick)
+                            this.$switchLangButtons.on('click', this.onChangeLangClick)
+                        }
+
+                        window.Rozier.lazyload.canvasLoader.hide()
+
+                        if (window.Rozier.lazyload.nodeTreeContextActions) {
+                            window.Rozier.lazyload.nodeTreeContextActions.unbind()
+                        }
+
+                        window.Rozier.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
+                    })
+                }
             })
-                .done(data => {
-                    if ($nodeTree.length && typeof data.nodeTree !== 'undefined') {
-                        $nodeTree.fadeOut('slow', () => {
-                            $nodeTree.replaceWith(data.nodeTree)
-                            $nodeTree = this.$page.find('.nodetree-widget')
-
-                            window.Rozier.initNestables()
-                            window.Rozier.bindMainTrees()
-                            window.Rozier.lazyload.bindAjaxLink()
-                            $nodeTree.fadeIn()
-                            window.Rozier.resize()
-
-                            /* eslint-disable no-new */
-                            new NodesBulk()
-
-                            this.$switchLangButtons = this.$page.find('.nodetree-langs a')
-                            this.$nodeTree = this.$page.find('.root-tree').eq(0)
-
-                            if (this.$switchLangButtons.length) {
-                                this.$switchLangButtons.off('click', this.onChangeLangClick)
-                                this.$switchLangButtons.on('click', this.onChangeLangClick)
-                            }
-
-                            window.Rozier.lazyload.canvasLoader.hide()
-
-                            if (window.Rozier.lazyload.nodeTreeContextActions) {
-                                window.Rozier.lazyload.nodeTreeContextActions.unbind()
-                            }
-
-                            window.Rozier.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
-                        })
-                    }
-                })
         } else {
             console.error('No node-tree available.')
         }
