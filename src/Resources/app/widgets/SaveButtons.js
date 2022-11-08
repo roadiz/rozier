@@ -7,8 +7,8 @@ import $ from 'jquery'
  */
 export default class SaveButtons {
     constructor () {
-        this.$button = $($('.rz-action-save').get(0))
-        this.$actionMenu = $($('.actions-menu').get(0))
+        this.$button = $('.rz-action-save').eq(0)
+        this.$actionMenu = $('.actions-menu').eq(0)
         this.formToSave = null
 
         // Bind method
