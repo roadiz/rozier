@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
 
 class SettingsController extends RozierApp
 {
@@ -96,6 +97,13 @@ class SettingsController extends RozierApp
             ['name' => 'ASC']
         );
         $listManager->setDisplayingNotPublishedNodes(true);
+
+        /*
+         * Stored in session
+         */
+        $sessionListFilter = new SessionListFilters('settings_item_per_page');
+        $sessionListFilter->handleItemPerPage($request, $listManager);
+
         $listManager->handle();
 
         $this->assignation['filters'] = $listManager->getAssignation();

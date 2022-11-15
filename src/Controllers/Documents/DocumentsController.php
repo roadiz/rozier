@@ -30,7 +30,6 @@ use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Document\Renderer\RendererInterface;
 use RZ\Roadiz\Utils\Asset\Packages;
 use RZ\Roadiz\Utils\MediaFinders\AbstractEmbedFinder;
-use RZ\Roadiz\Utils\MediaFinders\EmbedFinderInterface;
 use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -45,7 +44,6 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -74,7 +72,6 @@ class DocumentsController extends RozierApp
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
-    private bool $webpSupported;
 
     protected array $thumbnailFormat = [
         'quality' => 50,
@@ -84,6 +81,8 @@ class DocumentsController extends RozierApp
         'picture' => true,
         'loading' => 'lazy',
     ];
+    private ?string $googleServerId;
+    private ?string $soundcloudClientId;
 
     public function __construct(
         array $documentPlatforms,
@@ -95,24 +94,26 @@ class DocumentsController extends RozierApp
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
         UrlGeneratorInterface $urlGenerator,
-        bool $webpSupported
+        ?string $googleServerId = null,
+        ?string $soundcloudClientId = null
     ) {
         $this->documentPlatforms = $documentPlatforms;
         $this->packages = $packages;
         $this->handlerFactory = $handlerFactory;
         $this->logger = $logger;
         $this->randomImageFinder = $randomImageFinder;
-        $this->webpSupported = $webpSupported;
         $this->documentFactory = $documentFactory;
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->googleServerId = $googleServerId;
+        $this->soundcloudClientId = $soundcloudClientId;
     }
 
     /**
      * @param Request $request
      * @param int|null $folderId
-     * @return RedirectResponse|Response
+     * @return Response
      * @throws RuntimeError
      */
     public function indexAction(Request $request, ?int $folderId = null): Response
@@ -212,7 +213,7 @@ class DocumentsController extends RozierApp
     /**
      * @param Request $request
      * @param int $documentId
-     * @return JsonResponse|Response
+     * @return Response
      * @throws RuntimeError
      */
     public function adjustAction(Request $request, int $documentId): Response
@@ -377,73 +378,6 @@ class DocumentsController extends RozierApp
             $this->assignation['form'] = $form->createView();
 
             return $this->render('@RoadizRozier/documents/edit.html.twig', $this->assignation);
-        }
-
-        throw new ResourceNotFoundException();
-    }
-
-    /**
-     * @param Request $request
-     * @param int $documentId
-     * @return Response
-     * @throws RuntimeError
-     */
-    public function previewAction(Request $request, int $documentId): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
-
-        /** @var Document|null $document */
-        $document = $this->em()->find(Document::class, $documentId);
-
-        if ($document !== null) {
-            $this->assignation['document'] = $document;
-            $this->assignation['thumbnailFormat'] = [
-                'width' => 750,
-                'controls' => true,
-                'srcset' => [
-                    [
-                        'format' => [
-                            'width' => 480,
-                            'quality' => 80,
-                        ],
-                        'rule' => '480w',
-                    ],
-                    [
-                        'format' => [
-                            'width' => 768,
-                            'quality' => 80,
-                        ],
-                        'rule' => '768w',
-                    ],
-                    [
-                        'format' => [
-                            'width' => 1400,
-                            'quality' => 80,
-                        ],
-                        'rule' => '1400w',
-                    ],
-                ],
-                'sizes' => [
-                    '(min-width: 1380px) 1200px',
-                    '(min-width: 768px) 768px',
-                    '(min-width: 480px) 480px',
-                ],
-            ];
-
-            if ($this->webpSupported) {
-                $this->assignation['thumbnailFormat']['picture'] = true;
-            }
-
-            $this->assignation['infos'] = [];
-            if ($document->isProcessable() || $document->isSvg()) {
-                $this->assignation['infos']['width'] = $document->getImageWidth() . 'px';
-                $this->assignation['infos']['height'] = $document->getImageHeight() . 'px';
-            }
-            if ($document->getMediaDuration() > 0) {
-                $this->assignation['infos']['duration'] = $document->getMediaDuration() . ' sec';
-            }
-
-            return $this->render('@RoadizRozier/documents/preview.html.twig', $this->assignation);
         }
 
         throw new ResourceNotFoundException();
@@ -1238,10 +1172,10 @@ class DocumentsController extends RozierApp
             $finder = new $class('', false);
 
             if ($finder instanceof YoutubeEmbedFinder) {
-                $finder->setKey($this->getSettingsBag()->get('google_server_id'));
+                $finder->setKey($this->googleServerId);
             }
             if ($finder instanceof SoundcloudEmbedFinder) {
-                $finder->setKey($this->getSettingsBag()->get('soundcloud_client_id'));
+                $finder->setKey($this->soundcloudClientId);
             }
             $finder->setEmbedId($data['embedId']);
             return $this->createDocumentFromFinder($finder, $folderId);
