@@ -1,24 +1,27 @@
 import $ from 'jquery'
 
 export default class FolderAutocomplete {
-    constructor () {
+    constructor() {
         const _this = this
 
         $('.rz-folder-autocomplete')
             // don't navigate away from the field on tab when selecting an item
             .bind('keydown', function (event) {
-                if (event.keyCode === $.ui.keyCode.TAB &&
-                    $(this).autocomplete('instance').menu.active) {
+                if (event.keyCode === $.ui.keyCode.TAB && $(this).autocomplete('instance').menu.active) {
                     event.preventDefault()
                 }
             })
             .autocomplete({
                 source: function (request, response) {
-                    $.getJSON(window.Rozier.routes.foldersAjaxSearch, {
-                        '_action': 'folderAutocomplete',
-                        '_token': window.Rozier.ajaxToken,
-                        'search': _this.extractLast(request.term)
-                    }, response)
+                    $.getJSON(
+                        window.Rozier.routes.foldersAjaxSearch,
+                        {
+                            _action: 'folderAutocomplete',
+                            _token: window.Rozier.ajaxToken,
+                            search: _this.extractLast(request.term),
+                        },
+                        response
+                    )
                 },
                 search: function () {
                     // custom minLength
@@ -41,17 +44,17 @@ export default class FolderAutocomplete {
                     terms.push('')
                     this.value = terms.join(', ')
                     return false
-                }
+                },
             })
     }
 
-    unbind () {}
+    unbind() {}
 
-    split (val) {
+    split(val) {
         return val.split(/,\s*/)
     }
 
-    extractLast (term) {
+    extractLast(term) {
         return this.split(term).pop()
     }
 }

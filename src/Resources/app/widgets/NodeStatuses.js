@@ -4,7 +4,7 @@ import $ from 'jquery'
  * Node Statuses
  */
 export default class NodeStatuses {
-    constructor () {
+    constructor() {
         this.$containers = $('.node-statuses, .node-actions')
         this.$icon = $('.node-status header i')
         this.$inputs = this.$containers.find('input[type="checkbox"], input[type="radio"]')
@@ -19,7 +19,7 @@ export default class NodeStatuses {
         this.init()
     }
 
-    init () {
+    init() {
         this.$item.off('click', this.itemClick)
         this.$item.on('click', this.itemClick)
 
@@ -31,11 +31,11 @@ export default class NodeStatuses {
 
         this.$containers.find('.rz-boolean-checkbox').bootstrapSwitch({
             size: 'small',
-            onSwitchChange: this.onChange
+            onSwitchChange: this.onChange,
         })
     }
 
-    containerEnter (event) {
+    containerEnter(event) {
         event.stopPropagation()
 
         let $container = $(event.currentTarget)
@@ -51,14 +51,14 @@ export default class NodeStatuses {
         }
     }
 
-    containerLeave (event) {
+    containerLeave(event) {
         event.stopPropagation()
 
         let $container = $(event.currentTarget)
         $container.removeClass('reverse')
     }
 
-    itemClick (event) {
+    itemClick(event) {
         event.stopPropagation()
 
         let $input = $(event.currentTarget).find('input[type="radio"]')
@@ -69,7 +69,7 @@ export default class NodeStatuses {
         }
     }
 
-    onChange (event) {
+    onChange(event) {
         event.stopPropagation()
         if (this.locked === false) {
             this.locked = true
@@ -87,11 +87,11 @@ export default class NodeStatuses {
                 }
 
                 let postData = {
-                    '_token': window.Rozier.ajaxToken,
-                    '_action': 'nodeChangeStatus',
-                    'nodeId': parseInt($input.attr('data-node-id')),
-                    'statusName': statusName,
-                    'statusValue': statusValue
+                    _token: window.Rozier.ajaxToken,
+                    _action: 'nodeChangeStatus',
+                    nodeId: parseInt($input.attr('data-node-id')),
+                    statusName: statusName,
+                    statusValue: statusValue,
                 }
 
                 $.ajax({
@@ -99,24 +99,24 @@ export default class NodeStatuses {
                     type: 'post',
                     dataType: 'json',
                     cache: false,
-                    data: postData
+                    data: postData,
                 })
-                .done(() => {
-                    window.Rozier.refreshMainNodeTree()
-                    window.Rozier.getMessages()
-                })
-                .fail(data => {
-                    data = JSON.parse(data.responseText)
-                    window.UIkit.notify({
-                        message: data.error_message,
-                        status: 'danger',
-                        timeout: 3000,
-                        pos: 'top-center'
+                    .done(() => {
+                        window.Rozier.refreshMainNodeTree()
+                        window.Rozier.getMessages()
                     })
-                })
-                .always(() => {
-                    this.locked = false
-                })
+                    .fail((data) => {
+                        data = JSON.parse(data.responseText)
+                        window.UIkit.notify({
+                            message: data.error_message,
+                            status: 'danger',
+                            timeout: 3000,
+                            pos: 'top-center',
+                        })
+                    })
+                    .always(() => {
+                        this.locked = false
+                    })
             }
         }
     }

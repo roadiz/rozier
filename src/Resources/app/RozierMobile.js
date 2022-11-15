@@ -1,18 +1,12 @@
 import $ from 'jquery'
-import {
-    TweenLite,
-    Expo
-} from 'gsap'
-import {
-    addClass,
-    removeClass
-} from './utils/plugins'
+import { TweenLite, Expo } from 'gsap'
+import { addClass, removeClass } from './utils/plugins'
 
 /**
  * Rozier Mobile
  */
 export default class RozierMobile {
-    constructor () {
+    constructor() {
         // Selectors
         this.$menu = $('#menu-mobile')
         this.$adminMenu = $('#admin-menu')
@@ -51,7 +45,7 @@ export default class RozierMobile {
      * Init
      * @return {[type]} [description]
      */
-    init () {
+    init() {
         if (this.$userPicture.length) {
             // Add class on user picture link to unbind default event
             addClass(this.$userPicture[0], 'rz-no-ajax-link')
@@ -74,7 +68,7 @@ export default class RozierMobile {
      * Menu click
      * @return {[type]} [description]
      */
-    menuClick (e) {
+    menuClick(e) {
         if (!this.menuOpen) this.openMenu()
         else this.closeMenu()
     }
@@ -83,28 +77,28 @@ export default class RozierMobile {
      * Admin menu nav parent click
      * @return {[type]} [description]
      */
-    adminMenuNavParentClick (e) {
+    adminMenuNavParentClick(e) {
         let $target = $(e.currentTarget)
         let $ukNavSub = $(e.currentTarget).find('.uk-nav-sub')
 
         // Open
         if (!$target.hasClass('nav-open')) {
             let $ukNavSubItem = $ukNavSub.find('.uk-nav-sub-item')
-            let ukNavSubHeight = ($ukNavSubItem.length * 41) - 3
+            let ukNavSubHeight = $ukNavSubItem.length * 41 - 3
 
             $ukNavSub[0].style.display = 'block'
-            TweenLite.to($ukNavSub, 0.6, {height: ukNavSubHeight,
-                ease: Expo.easeOut,
-                onComplete: function () {
-                }})
+            TweenLite.to($ukNavSub, 0.6, { height: ukNavSubHeight, ease: Expo.easeOut, onComplete: function () {} })
 
             $target.addClass('nav-open')
-        } else { // Close
-            TweenLite.to($ukNavSub, 0.6, {height: 0,
+        } else {
+            // Close
+            TweenLite.to($ukNavSub, 0.6, {
+                height: 0,
                 ease: Expo.easeOut,
                 onComplete: function () {
                     $ukNavSub[0].style.display = 'none'
-                }})
+                },
+            })
 
             $target.removeClass('nav-open')
         }
@@ -114,7 +108,7 @@ export default class RozierMobile {
      * Admin menu link click
      * @return {[type]} [description]
      */
-    adminMenuLinkClick (e) {
+    adminMenuLinkClick(e) {
         if (this.menuOpen) this.closeMenu()
     }
 
@@ -122,17 +116,17 @@ export default class RozierMobile {
      * Open menu
      * @return {[type]} [description]
      */
-    openMenu () {
+    openMenu() {
         // Close panel if open
         this.closeSearch()
         this.closeTree()
         this.closeUser()
 
         // Translate menu panel
-        TweenLite.to(this.$adminMenu, 0.6, {x: 0, ease: Expo.easeOut})
+        TweenLite.to(this.$adminMenu, 0.6, { x: 0, ease: Expo.easeOut })
         if (this.$mainContentOverlay.length) {
             this.$mainContentOverlay[0].style.display = 'block'
-            TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0.5, ease: Expo.easeOut})
+            TweenLite.to(this.$mainContentOverlay, 0.6, { opacity: 0.5, ease: Expo.easeOut })
         }
         this.menuOpen = true
     }
@@ -141,16 +135,18 @@ export default class RozierMobile {
      * Close menu
      * @return {[type]} [description]
      */
-    closeMenu () {
+    closeMenu() {
         let adminMenuX = -window.Rozier.windowWidth * 0.8
-        TweenLite.to(this.$adminMenu, 0.6, {x: adminMenuX, ease: Expo.easeOut})
-        TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0,
+        TweenLite.to(this.$adminMenu, 0.6, { x: adminMenuX, ease: Expo.easeOut })
+        TweenLite.to(this.$mainContentOverlay, 0.6, {
+            opacity: 0,
             ease: Expo.easeOut,
             onComplete: () => {
                 if (this.$mainContentOverlay.length) {
                     this.$mainContentOverlay[0].style.display = 'none'
                 }
-            }})
+            },
+        })
 
         this.menuOpen = false
     }
@@ -159,7 +155,7 @@ export default class RozierMobile {
      * Search button click
      * @return {[type]} [description]
      */
-    searchButtonClick (e) {
+    searchButtonClick(e) {
         if (!this.searchOpen) this.openSearch()
         else this.closeSearch()
     }
@@ -168,18 +164,18 @@ export default class RozierMobile {
      * Open search
      * @return {[type]} [description]
      */
-    openSearch () {
+    openSearch() {
         // Close panel if open
         this.closeMenu()
         this.closeTree()
         this.closeUser()
 
         // Translate search panel
-        TweenLite.to(this.$searchPanel, 0.6, {x: 0, ease: Expo.easeOut})
+        TweenLite.to(this.$searchPanel, 0.6, { x: 0, ease: Expo.easeOut })
 
         if (this.$mainContentOverlay.length) {
             this.$mainContentOverlay[0].style.display = 'block'
-            TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0.5, ease: Expo.easeOut})
+            TweenLite.to(this.$mainContentOverlay, 0.6, { opacity: 0.5, ease: Expo.easeOut })
         }
 
         // Add active class
@@ -191,14 +187,16 @@ export default class RozierMobile {
      * Close search
      * @return {[type]} [description]
      */
-    closeSearch () {
+    closeSearch() {
         let searchPanelX = -window.Rozier.windowWidth * 0.8
-        TweenLite.to(this.$searchPanel, 0.6, {x: searchPanelX, ease: Expo.easeOut})
-        TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0,
+        TweenLite.to(this.$searchPanel, 0.6, { x: searchPanelX, ease: Expo.easeOut })
+        TweenLite.to(this.$mainContentOverlay, 0.6, {
+            opacity: 0,
             ease: Expo.easeOut,
             onComplete: () => {
                 this.$mainContentOverlay[0].style.display = 'none'
-            }})
+            },
+        })
 
         // Remove active class
         this.$searchButton.removeClass('active')
@@ -209,7 +207,7 @@ export default class RozierMobile {
      * Tree button click
      * @return {[type]} [description]
      */
-    treeButtonClick (e) {
+    treeButtonClick(e) {
         if (!this.treeOpen) this.openTree()
         else this.closeTree()
     }
@@ -218,7 +216,7 @@ export default class RozierMobile {
      * Tree wrapper link click
      * @return {[type]} [description]
      */
-    treeWrapperLinkClick (e) {
+    treeWrapperLinkClick(e) {
         if (e.currentTarget.className.indexOf('tab-link') === -1 && this.treeOpen) {
             this.closeTree()
         }
@@ -228,17 +226,17 @@ export default class RozierMobile {
      * Open tree
      * @return {[type]} [description]
      */
-    openTree () {
+    openTree() {
         // Close panel if open
         this.closeMenu()
         this.closeSearch()
         this.closeUser()
 
         // Translate tree panel
-        TweenLite.to(this.$treeWrapper, 0.6, {x: 0, ease: Expo.easeOut})
+        TweenLite.to(this.$treeWrapper, 0.6, { x: 0, ease: Expo.easeOut })
 
         this.$mainContentOverlay[0].style.display = 'block'
-        TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0.5, ease: Expo.easeOut})
+        TweenLite.to(this.$mainContentOverlay, 0.6, { opacity: 0.5, ease: Expo.easeOut })
 
         // Add active class
         this.$treeButton.addClass('active')
@@ -249,15 +247,17 @@ export default class RozierMobile {
      * Close tree
      * @return {[type]} [description]
      */
-    closeTree () {
+    closeTree() {
         let treeWrapperX = -window.Rozier.windowWidth * 0.8
 
-        TweenLite.to(this.$treeWrapper, 0.6, {x: treeWrapperX, ease: Expo.easeOut})
-        TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0,
+        TweenLite.to(this.$treeWrapper, 0.6, { x: treeWrapperX, ease: Expo.easeOut })
+        TweenLite.to(this.$mainContentOverlay, 0.6, {
+            opacity: 0,
             ease: Expo.easeOut,
             onComplete: () => {
                 this.$mainContentOverlay[0].style.display = 'none'
-            }})
+            },
+        })
 
         // Remove active class
         removeClass(this.$treeButton[0], 'active')
@@ -269,7 +269,7 @@ export default class RozierMobile {
      * User picture click
      * @return {[type]} [description]
      */
-    userPictureClick (e) {
+    userPictureClick(e) {
         if (!this.userOpen) this.openUser()
         else this.closeUser()
         return false
@@ -279,7 +279,7 @@ export default class RozierMobile {
      * User actions link click
      * @return {[type]} [description]
      */
-    userActionsLinkClick (e) {
+    userActionsLinkClick(e) {
         if (this.userOpen) {
             this.closeUser()
         }
@@ -289,18 +289,18 @@ export default class RozierMobile {
      * Open user
      * @return {[type]} [description]
      */
-    openUser () {
+    openUser() {
         // Close panel if open
         this.closeMenu()
         this.closeSearch()
         this.closeTree()
 
         // Translate user panel
-        TweenLite.to(this.$userActions, 0.6, {x: 0, ease: Expo.easeOut})
+        TweenLite.to(this.$userActions, 0.6, { x: 0, ease: Expo.easeOut })
 
         if (this.$mainContentOverlay.length) {
             this.$mainContentOverlay[0].style.display = 'block'
-            TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0.5, ease: Expo.easeOut})
+            TweenLite.to(this.$mainContentOverlay, 0.6, { opacity: 0.5, ease: Expo.easeOut })
         }
 
         // Add active class
@@ -312,14 +312,16 @@ export default class RozierMobile {
      * Close user
      * @return {[type]} [description]
      */
-    closeUser () {
+    closeUser() {
         let userActionsX = window.Rozier.windowWidth * 0.8
-        TweenLite.to(this.$userActions, 0.6, {x: userActionsX, ease: Expo.easeOut})
-        TweenLite.to(this.$mainContentOverlay, 0.6, {opacity: 0,
+        TweenLite.to(this.$userActions, 0.6, { x: userActionsX, ease: Expo.easeOut })
+        TweenLite.to(this.$mainContentOverlay, 0.6, {
+            opacity: 0,
             ease: Expo.easeOut,
             onComplete: () => {
                 this.$mainContentOverlay[0].style.display = 'none'
-            }})
+            },
+        })
 
         // Remove active class
         this.$userPicture.removeClass('active')
@@ -330,7 +332,7 @@ export default class RozierMobile {
      * Main content overlay click
      * @return {[type]} [description]
      */
-    mainContentOverlayClick (e) {
+    mainContentOverlayClick(e) {
         this.closeMenu()
         this.closeTree()
         this.closeUser()
@@ -341,6 +343,5 @@ export default class RozierMobile {
      * Window resize callback
      * @return {[type]} [description]
      */
-    resize () {
-    }
+    resize() {}
 }

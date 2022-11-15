@@ -1,14 +1,11 @@
 import $ from 'jquery'
-import {
-    TweenLite,
-    Expo
-} from 'gsap'
+import { TweenLite, Expo } from 'gsap'
 
 /**
  * Custom form field edit
  */
 export default class CustomFormFieldEdit {
-    constructor () {
+    constructor() {
         // Selectors
         this.$btn = $('.custom-form-field-edit-button')
 
@@ -33,12 +30,12 @@ export default class CustomFormFieldEdit {
      * Init
      * @return {[type]} [description]
      */
-    init () {
+    init() {
         // Events
         this.$btn.on('click', this.btnClick)
     }
 
-    unbind () {
+    unbind() {
         if (this.$btn.length) {
             this.$btn.off('click', this.btnClick)
         }
@@ -47,7 +44,7 @@ export default class CustomFormFieldEdit {
     /**
      * Btn click
      */
-    btnClick (e) {
+    btnClick(e) {
         e.preventDefault()
 
         if (this.indexOpen !== null) {
@@ -67,9 +64,9 @@ export default class CustomFormFieldEdit {
                     url: e.currentTarget.href,
                     type: 'get',
                     cache: false,
-                    dataType: 'html'
+                    dataType: 'html',
                 })
-                    .done(data => {
+                    .done((data) => {
                         this.applyContent(e.currentTarget, data, e.currentTarget.href)
                     })
                     .fail(() => {
@@ -77,7 +74,7 @@ export default class CustomFormFieldEdit {
                             message: window.Rozier.messages.forbiddenPage,
                             status: 'danger',
                             timeout: 3000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
                     })
             }, this.openFormDelay)
@@ -89,7 +86,7 @@ export default class CustomFormFieldEdit {
     /**
      * Apply content
      */
-    applyContent (target, data, url) {
+    applyContent(target, data, url) {
         let dataWrapped = [
             '<tr class="custom-form-field-edit-form-row">',
             '<td colspan="4">',
@@ -97,7 +94,7 @@ export default class CustomFormFieldEdit {
             data,
             '</div>',
             '</td>',
-            '</tr>'
+            '</tr>',
         ].join('')
 
         $(target).parent().parent().after(dataWrapped)
@@ -107,7 +104,7 @@ export default class CustomFormFieldEdit {
 
         // Switch checkboxes
         $('.rz-boolean-checkbox').bootstrapSwitch({
-            size: 'small'
+            size: 'small',
         })
 
         window.Rozier.lazyload.initMarkdownEditors()
@@ -127,12 +124,12 @@ export default class CustomFormFieldEdit {
 
             TweenLite.to(this.$form, 0.6, {
                 height: this.formContHeight,
-                ease: Expo.easeOut
+                ease: Expo.easeOut,
             })
 
             TweenLite.to(this.$formCont, 0.6, {
                 height: this.formContHeight,
-                ease: Expo.easeOut
+                ease: Expo.easeOut,
             })
         }, 200)
     }
@@ -140,7 +137,7 @@ export default class CustomFormFieldEdit {
     /**
      * Close form
      */
-    closeForm () {
+    closeForm() {
         this.$formIcon[0].className = 'uk-icon-chevron-right'
 
         TweenLite.to(this.$formCont, 0.4, {
@@ -150,7 +147,7 @@ export default class CustomFormFieldEdit {
                 this.$formRow.remove()
                 this.indexOpen = null
                 this.$formFieldCol.addClass('custom-form-field-col')
-            }
+            },
         })
     }
 
@@ -158,5 +155,5 @@ export default class CustomFormFieldEdit {
      * Window resize callback
      * @return {[type]} [description]
      */
-    resize () {}
+    resize() {}
 }

@@ -4,7 +4,7 @@ import $ from 'jquery'
  * Documents list
  */
 export default class DocumentsList {
-    constructor () {
+    constructor() {
         // Selectors
         this.$cont = $('.documents-list')
 
@@ -20,5 +20,5 @@ export default class DocumentsList {
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

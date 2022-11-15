@@ -39,10 +39,8 @@ import {
     EXPLORER_LOAD_MORE_SUCCESS,
     EXPLORER_IS_LOADED,
     EXPLORER_UPDATE_SEARCH_TERMS,
-
     FILTER_EXPLORER_UPDATE,
-
-    KEYBOARD_EVENT_ESCAPE
+    KEYBOARD_EVENT_ESCAPE,
 } from '../../types/mutationTypes'
 import EntityAwareFactory from '../../factories/EntityAwareFactory'
 
@@ -56,7 +54,7 @@ const initialState = {
     isLoadingMore: false,
     items: [],
     trans: {
-        moreItems: ''
+        moreItems: '',
     },
     filters: {},
     entity: null,
@@ -64,7 +62,7 @@ const initialState = {
     currentListingView: null,
     isFilterEnable: null,
     filterExplorerIcon: 'uk-icon-cog',
-    widgetView: null
+    widgetView: null,
 }
 
 const state = { ...initialState }
@@ -73,15 +71,15 @@ const state = { ...initialState }
  * Getters
  */
 const getters = {
-    getExplorerEntity: state => state.entity,
-    getExplorerSearchTerms: state => state.searchTerms
+    getExplorerEntity: (state) => state.entity,
+    getExplorerSearchTerms: (state) => state.searchTerms,
 }
 
 /**
  * Actions
  */
 const actions = {
-    async explorerOpen ({ commit, dispatch }, { entity }) {
+    async explorerOpen({ commit, dispatch }, { entity }) {
         dispatch('filterExplorerClose')
 
         // Reset explorer
@@ -95,20 +93,20 @@ const actions = {
 
         commit(EXPLORER_IS_LOADED)
     },
-    explorerClose ({ commit, dispatch }) {
+    explorerClose({ commit, dispatch }) {
         dispatch('filterExplorerClose')
         dispatch('filterExplorerReset')
         commit(EXPLORER_RESET)
         commit(EXPLORER_CLOSE)
     },
-    explorerToggle ({ dispatch, state }) {
+    explorerToggle({ dispatch, state }) {
         if (state.isOpen) {
             dispatch('explorerClose')
         } else {
             dispatch('explorerOpen')
         }
     },
-    explorerResetSearchTerms ({ commit, state, dispatch }) {
+    explorerResetSearchTerms({ commit, state, dispatch }) {
         const searchTerms = ''
 
         if (state.searchTerms === searchTerms) {
@@ -117,11 +115,11 @@ const actions = {
             dispatch('explorerUpdateSearch', { searchTerms })
         }
     },
-    explorerUpdateSearch ({ commit, dispatch }, { searchTerms }) {
+    explorerUpdateSearch({ commit, dispatch }, { searchTerms }) {
         commit(EXPLORER_UPDATE_SEARCH_TERMS, { searchTerms })
         dispatch('explorerMakeSearch')
     },
-    explorerMakeSearch ({ commit, state, getters }) {
+    explorerMakeSearch({ commit, state, getters }) {
         const entity = state.entity
         const searchTerms = state.searchTerms
         const preFilters = getters.getDrawerFilters
@@ -131,14 +129,15 @@ const actions = {
 
         commit(EXPLORER_REQUEST)
 
-        return api.getExplorerItems({
-            entity,
-            searchTerms,
-            preFilters,
-            filters,
-            filterExplorerSelection,
-            moreData
-        })
+        return api
+            .getExplorerItems({
+                entity,
+                searchTerms,
+                preFilters,
+                filters,
+                filterExplorerSelection,
+                moreData,
+            })
             .then((result) => {
                 commit(EXPLORER_SUCCESS, { result })
             })
@@ -147,28 +146,28 @@ const actions = {
                 commit(EXPLORER_FAILED, { error })
             })
     },
-    async explorerLoadMore ({ commit, dispatch }) {
+    async explorerLoadMore({ commit, dispatch }) {
         commit(EXPLORER_LOAD_MORE)
 
         await dispatch('explorerMakeSearch')
 
         commit(EXPLORER_LOAD_MORE_SUCCESS)
-    }
+    },
 }
 
 /**
  * Mutations
  */
 const mutations = {
-    [EXPLORER_REQUEST] (state) {
+    [EXPLORER_REQUEST](state) {
         if (!state.isLoadingMore) {
             state.isLoading = true
         }
     },
-    [EXPLORER_UPDATE_SEARCH_TERMS] (state, { searchTerms }) {
+    [EXPLORER_UPDATE_SEARCH_TERMS](state, { searchTerms }) {
         state.searchTerms = searchTerms
     },
-    [EXPLORER_SUCCESS] (state, { result }) {
+    [EXPLORER_SUCCESS](state, { result }) {
         state.isLoading = false
 
         if (state.isLoadingMore) {
@@ -179,16 +178,16 @@ const mutations = {
 
         state.filters = result.filters
     },
-    [EXPLORER_LOAD_MORE] (state) {
+    [EXPLORER_LOAD_MORE](state) {
         state.isLoadingMore = true
     },
-    [EXPLORER_LOAD_MORE_SUCCESS] (state) {
+    [EXPLORER_LOAD_MORE_SUCCESS](state) {
         state.isLoadingMore = false
     },
-    [FILTER_EXPLORER_UPDATE] (state) {
+    [FILTER_EXPLORER_UPDATE](state) {
         state.filters = {}
     },
-    [EXPLORER_RESET] (state) {
+    [EXPLORER_RESET](state) {
         // Reset state
         for (let f in state) {
             if (state.hasOwnProperty(f)) {
@@ -196,12 +195,12 @@ const mutations = {
             }
         }
     },
-    [EXPLORER_FAILED] (state) {
+    [EXPLORER_FAILED](state) {
         state.isLoading = false
         state.isLoadingMore = false
         state.error = 'Request failed'
     },
-    [EXPLORER_OPEN] (state, { entity }) {
+    [EXPLORER_OPEN](state, { entity }) {
         state.isOpen = true
         state.isLoading = true
         state.entity = entity
@@ -220,21 +219,21 @@ const mutations = {
             }
         }
     },
-    [EXPLORER_IS_LOADED] (state) {
+    [EXPLORER_IS_LOADED](state) {
         state.isLoading = false
     },
-    [EXPLORER_CLOSE] (state) {
+    [EXPLORER_CLOSE](state) {
         state.isOpen = false
         state.isLoading = false
     },
-    [KEYBOARD_EVENT_ESCAPE] () {
+    [KEYBOARD_EVENT_ESCAPE]() {
         state.isOpen = false
-    }
+    },
 }
 
 export default {
     state,
     getters,
     actions,
-    mutations
+    mutations,
 }

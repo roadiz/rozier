@@ -1,13 +1,11 @@
 import $ from 'jquery'
-import {
-    toType
-} from '../../utils/plugins'
+import { toType } from '../../utils/plugins'
 
 /**
  * Node edit source
  */
 export default class TagEdit {
-    constructor () {
+    constructor() {
         // Selectors
         this.$content = $('.content-tag-edit').eq(0)
         this.$form = $('#edit-tag-form')
@@ -24,17 +22,17 @@ export default class TagEdit {
         }
     }
 
-    initEvents () {
+    initEvents() {
         this.$form.on('submit', this.onFormSubmit)
     }
 
-    unbind () {
+    unbind() {
         if (this.$content.length) {
             this.$form.off('submit', this.onFormSubmit)
         }
     }
 
-    onFormSubmit () {
+    onFormSubmit() {
         window.Rozier.lazyload.canvasLoader.show()
 
         if (this.currentTimeout) {
@@ -57,19 +55,19 @@ export default class TagEdit {
                 data: formData,
                 processData: false,
                 cache: false,
-                contentType: false
+                contentType: false,
             })
-                .done(data => {
+                .done((data) => {
                     this.cleanErrors()
                 })
-                .fail(data => {
+                .fail((data) => {
                     if (data.responseJSON) {
                         this.displayErrors(data.responseJSON.errors)
                         window.UIkit.notify({
                             message: data.responseJSON.message,
                             status: 'danger',
                             timeout: 2000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
                     }
                 })
@@ -83,7 +81,7 @@ export default class TagEdit {
         return false
     }
 
-    cleanErrors () {
+    cleanErrors() {
         const $previousErrors = $('.form-errored')
         $previousErrors.each((index) => {
             $previousErrors.eq(index).removeClass('form-errored')
@@ -95,7 +93,7 @@ export default class TagEdit {
      * @param {Array} errors
      * @param {Boolean} keepExisting Keep existing errors.
      */
-    displayErrors (errors, keepExisting) {
+    displayErrors(errors, keepExisting) {
         // First clean fields
         if (!keepExisting || keepExisting === false) {
             this.cleanErrors()
@@ -116,7 +114,11 @@ export default class TagEdit {
                 let $field = $('.form-col-' + classKey)
                 if ($field.length) {
                     $field.addClass('form-errored')
-                    $field.append('<p class="error-message uk-alert uk-alert-danger"><i class="uk-icon uk-icon-warning"></i> ' + errorMessage + '</p>')
+                    $field.append(
+                        '<p class="error-message uk-alert uk-alert-danger"><i class="uk-icon uk-icon-warning"></i> ' +
+                            errorMessage +
+                            '</p>'
+                    )
                 }
             }
         }
@@ -125,5 +127,5 @@ export default class TagEdit {
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

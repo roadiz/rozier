@@ -1,12 +1,6 @@
 import $ from 'jquery'
-import {
-    stripTags,
-    addClass
-} from '../utils/plugins'
-import {
-    TweenLite,
-    Expo
-} from 'gsap'
+import { stripTags, addClass } from '../utils/plugins'
+import { TweenLite, Expo } from 'gsap'
 import Markdownit from '../../../bower_components/markdown-it/dist/markdown-it'
 import markdownItFootnote from '../../../bower_components/markdown-it-footnote/dist/markdown-it-footnote'
 
@@ -14,7 +8,7 @@ import markdownItFootnote from '../../../bower_components/markdown-it-footnote/d
  * Markdown Editor
  */
 export default class MarkdownEditor {
-    constructor ($textarea, index) {
+    constructor($textarea, index) {
         this.markdownit = new Markdownit()
         this.markdownit.use(markdownItFootnote)
 
@@ -31,8 +25,8 @@ export default class MarkdownEditor {
             lineWrapping: true,
             viewportMargin: Infinity,
             enterMode: 'keep',
-            direction: (this.textarea.hasAttribute('dir') && this.textarea.getAttribute('dir') === 'rtl') ? ('rtl') : ('ltr'),
-            readOnly: (this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled')
+            direction: this.textarea.hasAttribute('dir') && this.textarea.getAttribute('dir') === 'rtl' ? 'rtl' : 'ltr',
+            readOnly: this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled',
         })
 
         this.editor.addKeyMap({
@@ -47,7 +41,7 @@ export default class MarkdownEditor {
             },
             'Cmd-I': (cm) => {
                 cm.replaceSelections(this.italicSelections())
-            }
+            },
         })
 
         // Selectors
@@ -83,11 +77,10 @@ export default class MarkdownEditor {
      * Init
      * @return {[type]} [description]
      */
-    init () {
+    init() {
         this.editor.on('change', this.textareaChange)
 
-        if (this.$cont.length &&
-            this.$textarea.length) {
+        if (this.$cont.length && this.$textarea.length) {
             this.$editor = this.$cont.find('.CodeMirror').eq(0)
 
             this.$cont.addClass('markdown-editor')
@@ -125,30 +118,28 @@ export default class MarkdownEditor {
             this.editor.refresh()
 
             // Check if a max length is defined
-            if (this.textarea.hasAttribute('data-max-length') &&
-                this.textarea.getAttribute('data-max-length') !== '') {
+            if (this.textarea.hasAttribute('data-max-length') && this.textarea.getAttribute('data-max-length') !== '') {
                 this.limit = true
                 this.countMaxLimit = parseInt(this.textarea.getAttribute('data-max-length'))
 
-                if (this.$countCurrent.length &&
-                    this.$countMaxLimitText.length &&
-                    this.$count.length) {
+                if (this.$countCurrent.length && this.$countMaxLimitText.length && this.$count.length) {
                     this.$countCurrent[0].innerHTML = stripTags(this.editor.getValue()).length
                     this.$countMaxLimitText[0].innerHTML = this.textarea.getAttribute('data-max-length')
                     this.$count[0].style.display = 'block'
                 }
             }
 
-            if (this.textarea.hasAttribute('data-min-length') &&
-                this.textarea.getAttribute('data-min-length') !== '') {
+            if (this.textarea.hasAttribute('data-min-length') && this.textarea.getAttribute('data-min-length') !== '') {
                 this.limit = true
                 this.countMinLimit = parseInt(this.textarea.getAttribute('data-min-length'))
             }
 
-            if (this.textarea.hasAttribute('data-max-length') &&
+            if (
+                this.textarea.hasAttribute('data-max-length') &&
                 this.textarea.hasAttribute('data-min-length') &&
                 this.textarea.getAttribute('data-min-length') === '' &&
-                this.textarea.getAttribute('data-max-length') === '') {
+                this.textarea.getAttribute('data-max-length') === ''
+            ) {
                 this.limit = false
                 this.countMaxLimit = null
                 this.countAlertActive = null
@@ -183,7 +174,7 @@ export default class MarkdownEditor {
         }
     }
 
-    onDropFile (editor, event) {
+    onDropFile(editor, event) {
         let _this = this
 
         event.preventDefault(event)
@@ -202,13 +193,12 @@ export default class MarkdownEditor {
                 cache: false,
                 data: formData,
                 processData: false,
-                contentType: false
-            })
-                .always($.proxy(this.onDropFileUploaded, _this, editor))
+                contentType: false,
+            }).always($.proxy(this.onDropFileUploaded, _this, editor))
         }
     }
 
-    onDropFileUploaded (editor, data) {
+    onDropFileUploaded(editor, data) {
         window.Rozier.lazyload.canvasLoader.hide()
 
         if (data.success === true) {
@@ -218,7 +208,7 @@ export default class MarkdownEditor {
         }
     }
 
-    forceEditorUpdate () {
+    forceEditorUpdate() {
         this.editor.refresh()
 
         if (this.usePreview) {
@@ -229,7 +219,7 @@ export default class MarkdownEditor {
     /**
      * @param {Event} event
      */
-    buttonClick (event) {
+    buttonClick(event) {
         if (this.editor.getOption('readOnly') === true) {
             return false
         }
@@ -238,51 +228,51 @@ export default class MarkdownEditor {
 
         if (sel.length > 0) {
             switch ($button.attr('data-markdowneditor-button')) {
-            case 'nbsp':
-                this.editor.replaceSelections(this.nbspSelections(sel))
-                break
-            case 'nb-hyphen':
-                this.editor.replaceSelections(this.nbHyphenSelections(sel))
-                break
-            case 'listUl':
-                this.editor.replaceSelections(this.listUlSelections(sel))
-                break
-            case 'link':
-                this.editor.replaceSelections(this.linkSelections(sel))
-                break
-            case 'image':
-                this.editor.replaceSelections(this.imageSelections(sel))
-                break
-            case 'bold':
-                this.editor.replaceSelections(this.boldSelections(sel))
-                break
-            case 'italic':
-                this.editor.replaceSelections(this.italicSelections(sel))
-                break
-            case 'blockquote':
-                this.editor.replaceSelections(this.blockquoteSelections(sel))
-                break
-            case 'h2':
-                this.editor.replaceSelections(this.h2Selections(sel))
-                break
-            case 'h3':
-                this.editor.replaceSelections(this.h3Selections(sel))
-                break
-            case 'h4':
-                this.editor.replaceSelections(this.h4Selections(sel))
-                break
-            case 'h5':
-                this.editor.replaceSelections(this.h5Selections(sel))
-                break
-            case 'h6':
-                this.editor.replaceSelections(this.h6Selections(sel))
-                break
-            case 'back':
-                this.editor.replaceSelections(this.backSelections(sel))
-                break
-            case 'hr':
-                this.editor.replaceSelections(this.hrSelections(sel))
-                break
+                case 'nbsp':
+                    this.editor.replaceSelections(this.nbspSelections(sel))
+                    break
+                case 'nb-hyphen':
+                    this.editor.replaceSelections(this.nbHyphenSelections(sel))
+                    break
+                case 'listUl':
+                    this.editor.replaceSelections(this.listUlSelections(sel))
+                    break
+                case 'link':
+                    this.editor.replaceSelections(this.linkSelections(sel))
+                    break
+                case 'image':
+                    this.editor.replaceSelections(this.imageSelections(sel))
+                    break
+                case 'bold':
+                    this.editor.replaceSelections(this.boldSelections(sel))
+                    break
+                case 'italic':
+                    this.editor.replaceSelections(this.italicSelections(sel))
+                    break
+                case 'blockquote':
+                    this.editor.replaceSelections(this.blockquoteSelections(sel))
+                    break
+                case 'h2':
+                    this.editor.replaceSelections(this.h2Selections(sel))
+                    break
+                case 'h3':
+                    this.editor.replaceSelections(this.h3Selections(sel))
+                    break
+                case 'h4':
+                    this.editor.replaceSelections(this.h4Selections(sel))
+                    break
+                case 'h5':
+                    this.editor.replaceSelections(this.h5Selections(sel))
+                    break
+                case 'h6':
+                    this.editor.replaceSelections(this.h6Selections(sel))
+                    break
+                case 'back':
+                    this.editor.replaceSelections(this.backSelections(sel))
+                    break
+                case 'hr':
+                    this.editor.replaceSelections(this.hrSelections(sel))
+                    break
             }
 
             /*
@@ -292,49 +282,49 @@ export default class MarkdownEditor {
         }
     }
 
-    backSelections (selections) {
+    backSelections(selections) {
         for (let i in selections) {
             selections[i] = '   \n'
         }
         return selections
     }
 
-    hrSelections (selections) {
+    hrSelections(selections) {
         for (let i in selections) {
             selections[i] = '\n\n---\n\n'
         }
         return selections
     }
 
-    nbspSelections (selections) {
+    nbspSelections(selections) {
         for (let i in selections) {
             selections[i] = ' '
         }
         return selections
     }
 
-    nbHyphenSelections (selections) {
+    nbHyphenSelections(selections) {
         for (let i in selections) {
             selections[i] = '‑'
         }
         return selections
     }
 
-    listUlSelections (selections) {
+    listUlSelections(selections) {
         for (let i in selections) {
             selections[i] = '\n\n* ' + selections[i] + '\n\n'
         }
         return selections
     }
 
-    linkSelections (selections) {
+    linkSelections(selections) {
         for (let i in selections) {
             selections[i] = '[' + selections[i] + '](http://)'
         }
         return selections
     }
 
-    imageSelections (selections) {
+    imageSelections(selections) {
         if (!selections) {
             selections = this.editor.getSelections()
         }
@@ -344,7 +334,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    boldSelections (selections) {
+    boldSelections(selections) {
         if (!selections) {
             selections = this.editor.getSelections()
         }
@@ -356,7 +346,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    italicSelections (selections) {
+    italicSelections(selections) {
         if (!selections) {
             selections = this.editor.getSelections()
         }
@@ -368,7 +358,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    h2Selections (selections) {
+    h2Selections(selections) {
         for (let i in selections) {
             selections[i] = '\n## ' + selections[i] + '\n'
         }
@@ -376,7 +366,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    h3Selections (selections) {
+    h3Selections(selections) {
         for (let i in selections) {
             selections[i] = '\n### ' + selections[i] + '\n'
         }
@@ -384,7 +374,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    h4Selections (selections) {
+    h4Selections(selections) {
         for (let i in selections) {
             selections[i] = '\n#### ' + selections[i] + '\n'
         }
@@ -392,7 +382,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    h5Selections (selections) {
+    h5Selections(selections) {
         for (let i in selections) {
             selections[i] = '\n##### ' + selections[i] + '\n'
         }
@@ -400,7 +390,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    h6Selections (selections) {
+    h6Selections(selections) {
         for (let i in selections) {
             selections[i] = '\n###### ' + selections[i] + '\n'
         }
@@ -408,7 +398,7 @@ export default class MarkdownEditor {
         return selections
     }
 
-    blockquoteSelections (selections) {
+    blockquoteSelections(selections) {
         for (let i in selections) {
             selections[i] = '\n> ' + selections[i] + '\n'
         }
@@ -419,7 +409,7 @@ export default class MarkdownEditor {
     /**
      * Textarea change
      */
-    textareaChange () {
+    textareaChange() {
         this.editor.save()
 
         if (this.usePreview) {
@@ -460,21 +450,21 @@ export default class MarkdownEditor {
     /**
      * Textarea focus
      */
-    textareaFocus () {
+    textareaFocus() {
         this.$cont.addClass('form-col-focus')
     }
 
     /**
      * Textarea focus out
      */
-    textareaBlur () {
+    textareaBlur() {
         this.$cont.removeClass('form-col-focus')
     }
 
     /**
      * Button preview click
      */
-    buttonPreviewClick (e) {
+    buttonPreviewClick(e) {
         e.preventDefault()
 
         let width = this.$preview.outerWidth()
@@ -486,11 +476,11 @@ export default class MarkdownEditor {
             this.$buttonPreview.addClass('uk-active active')
             this.$preview.addClass('active')
             this.forceEditorUpdate()
-            TweenLite.fromTo(this.$preview, 1, {x: width * -1, opacity: 0}, {x: 0, ease: Expo.easeOut, opacity: 1})
+            TweenLite.fromTo(this.$preview, 1, { x: width * -1, opacity: 0 }, { x: 0, ease: Expo.easeOut, opacity: 1 })
             window.Rozier.$window.on('keyup', this.closePreview)
 
             let openPreview = new CustomEvent('markdownPreviewOpen', {
-                'detail': this
+                detail: this,
             })
 
             document.body.dispatchEvent(openPreview)
@@ -500,7 +490,7 @@ export default class MarkdownEditor {
     /**
      *
      */
-    closePreview (e) {
+    closePreview(e) {
         if (e) {
             if (e.keyCode === 27) {
                 e.preventDefault()
@@ -513,17 +503,24 @@ export default class MarkdownEditor {
         window.Rozier.$window.off('keyup', this.closePreview)
         this.usePreview = false
         this.$buttonPreview.removeClass('uk-active active')
-        TweenLite.fromTo(this.$preview, 1, {x: 0, opacity: 1}, {x: width * -1,
-            opacity: 0,
-            ease: Expo.easeOut,
-            onComplete: () => {
-                this.$preview.removeClass('active')
-            }})
+        TweenLite.fromTo(
+            this.$preview,
+            1,
+            { x: 0, opacity: 1 },
+            {
+                x: width * -1,
+                opacity: 0,
+                ease: Expo.easeOut,
+                onComplete: () => {
+                    this.$preview.removeClass('active')
+                },
+            }
+        )
     }
 
     /**
      * Window resize callback
      * @return {[type]} [description]
      */
-    resize () {}
+    resize() {}
 }

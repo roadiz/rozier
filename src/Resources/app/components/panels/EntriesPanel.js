@@ -4,12 +4,12 @@ import $ from 'jquery'
  * Entries panel
  */
 export default class EntriesPanel {
-    constructor () {
+    constructor() {
         this.$adminMenuNav = $('#admin-menu-nav')
         this.replaceSubNavs()
     }
 
-    replaceSubNavs () {
+    replaceSubNavs() {
         this.$adminMenuNav.find('.uk-nav-sub').each((index, element) => {
             let subMenu = $(element)
 
@@ -20,7 +20,7 @@ export default class EntriesPanel {
 
             subMenu.removeAttr('style')
 
-            if ((top + height + 20) > $(window).height()) {
+            if (top + height + 20 > $(window).height()) {
                 subMenu.parent().addClass('reversed-nav')
             }
         })
