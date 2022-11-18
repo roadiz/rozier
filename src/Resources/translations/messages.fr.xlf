@@ -4475,7 +4475,7 @@
       <trans-unit xml:space="preserve" id="health_check.failed.content">
         <source>health_check.failed.content</source>
         <target state="translated">Roadiz ne répond plus, une mise à jour ou une maintenance sur le serveur est surement en cours. Merci de patienter quelques instants.</target>
-        <note>Description for login check warning "modal".</note>
+        <note>Description for health check warning "modal".</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="single-provider.type">
         <source>single-provider.type</source>
