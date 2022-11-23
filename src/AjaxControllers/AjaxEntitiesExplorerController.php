@@ -4,31 +4,27 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
-use RZ\Roadiz\CoreBundle\Configuration\JoinNodeTypeFieldConfiguration;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\CoreBundle\Configuration\JoinNodeTypeFieldConfiguration;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\User;
-use RZ\Roadiz\Document\Renderer\RendererInterface;
-use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\Documents\Renderer\RendererInterface;
+use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Yaml\Yaml;
 use Themes\Rozier\Explorer\ConfigurableExplorerItem;
 use Themes\Rozier\Explorer\FolderExplorerItem;
 use Themes\Rozier\Explorer\SettingExplorerItem;
 use Themes\Rozier\Explorer\UserExplorerItem;
-use Themes\Rozier\Models\DocumentModel;
 
 /**
  * @package Themes\Rozier\AjaxControllers

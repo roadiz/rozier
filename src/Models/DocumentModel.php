@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Models\DocumentInterface;
-use RZ\Roadiz\Core\Models\HasThumbnailInterface;
 use RZ\Roadiz\CoreBundle\Entity\Document;
-use RZ\Roadiz\Document\Renderer\RendererInterface;
-use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\Documents\Models\DocumentInterface;
+use RZ\Roadiz\Documents\Models\HasThumbnailInterface;
+use RZ\Roadiz\Documents\Renderer\RendererInterface;
+use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
