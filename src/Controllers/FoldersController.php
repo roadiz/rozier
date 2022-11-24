@@ -12,7 +12,7 @@ use RZ\Roadiz\CoreBundle\Event\Folder\FolderCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
-use RZ\Roadiz\Documents\Packages;
+use RZ\Roadiz\Documents\DocumentArchiver;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,27 +23,16 @@ use Themes\Rozier\Forms\FolderType;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class FoldersController extends RozierApp
 {
-    private Packages $packages;
+    private DocumentArchiver $documentArchiver;
 
-    /**
-     * @param Packages $packages
-     */
-    public function __construct(Packages $packages)
+    public function __construct(DocumentArchiver $documentArchiver)
     {
-        $this->packages = $packages;
+        $this->documentArchiver = $documentArchiver;
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return Response
-     */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -60,14 +49,14 @@ class FoldersController extends RozierApp
     }
 
     /**
-     * Return an creation form for requested folder.
+     * Return a creation form for requested folder.
      *
      * @param Request $request
      * @param int|null $parentFolderId
      *
      * @return Response
      */
-    public function addAction(Request $request, ?int $parentFolderId = null)
+    public function addAction(Request $request, ?int $parentFolderId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -125,7 +114,7 @@ class FoldersController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function deleteAction(Request $request, int $folderId)
+    public function deleteAction(Request $request, int $folderId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -176,7 +165,7 @@ class FoldersController extends RozierApp
      *
      * @return Response
      */
-    public function editAction(Request $request, int $folderId)
+    public function editAction(Request $request, int $folderId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -231,7 +220,7 @@ class FoldersController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function editTranslationAction(Request $request, int $folderId, int $translationId)
+    public function editTranslationAction(Request $request, int $folderId, int $translationId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -326,12 +315,11 @@ class FoldersController extends RozierApp
     /**
      * Return a ZipArchive of requested folder.
      *
-     * @param Request $request
      * @param int     $folderId
      *
      * @return Response
      */
-    public function downloadAction(Request $request, int $folderId)
+    public function downloadAction(int $folderId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -339,44 +327,17 @@ class FoldersController extends RozierApp
         $folder = $this->em()->find(Folder::class, $folderId);
 
         if ($folder !== null) {
-            // Prepare File
-            $file = tempnam(sys_get_temp_dir(), "folder_" . $folder->getId());
-            $zip = new \ZipArchive();
-            $zip->open($file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-
             $documents = $this->em()
                               ->getRepository(Document::class)
                               ->findBy([
                                   'folders' => [$folder],
                               ]);
 
-            /** @var Document $document */
-            foreach ($documents as $document) {
-                if ($document->isLocal()) {
-                    $zip->addFile(
-                        $this->packages->getDocumentFilePath($document),
-                        $document->getFolder() . DIRECTORY_SEPARATOR . $document->getFilename()
-                    );
-                }
-            }
-
-            // Close and send to users
-            $zip->close();
-
-            $filename = StringHandler::slugify($folder->getFolderName()) . '.zip';
-
-            $response = new Response(
-                file_get_contents($file),
-                Response::HTTP_OK,
-                [
-                    'content-type' => 'application/zip',
-                    'content-length' => filesize($file),
-                    'content-disposition' => 'attachment; filename=' . $filename,
-                ]
+            return $this->documentArchiver->archiveAndServe(
+                $documents,
+                $folder->getFolderName() . '_' . date('YmdHi'),
+                true
             );
-            unlink($file);
-
-            return $response;
         }
 
         throw new ResourceNotFoundException();

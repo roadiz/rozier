@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Documents;
 
 use GuzzleHttp\Exception\RequestException;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Document\DocumentFactory;
@@ -17,8 +19,6 @@ use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
-use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
-use RZ\Roadiz\CoreBundle\Repository\DocumentRepository;
 use RZ\Roadiz\Documents\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Documents\Events\DocumentDeletedEvent;
 use RZ\Roadiz\Documents\Events\DocumentFileUpdatedEvent;
@@ -29,10 +29,8 @@ use RZ\Roadiz\Documents\Exceptions\APINeedsAuthentificationException;
 use RZ\Roadiz\Documents\MediaFinders\AbstractEmbedFinder;
 use RZ\Roadiz\Documents\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Documents\Models\DocumentInterface;
-use RZ\Roadiz\Documents\Packages;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -58,20 +56,19 @@ use Themes\Rozier\RozierApp;
 use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers\Documents
- */
 class DocumentsController extends RozierApp
 {
     private array $documentPlatforms;
     private DocumentFactory $documentFactory;
-    private Packages $packages;
     private HandlerFactoryInterface $handlerFactory;
     private LoggerInterface $logger;
     private RandomImageFinder $randomImageFinder;
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private FilesystemOperator $documentsStorage;
+    private ?string $googleServerId;
+    private ?string $soundcloudClientId;
 
     protected array $thumbnailFormat = [
         'quality' => 50,
@@ -81,12 +78,10 @@ class DocumentsController extends RozierApp
         'picture' => true,
         'loading' => 'lazy',
     ];
-    private ?string $googleServerId;
-    private ?string $soundcloudClientId;
 
     public function __construct(
         array $documentPlatforms,
-        Packages $packages,
+        FilesystemOperator $documentsStorage,
         HandlerFactoryInterface $handlerFactory,
         LoggerInterface $logger,
         RandomImageFinder $randomImageFinder,
@@ -98,7 +93,6 @@ class DocumentsController extends RozierApp
         ?string $soundcloudClientId = null
     ) {
         $this->documentPlatforms = $documentPlatforms;
-        $this->packages = $packages;
         $this->handlerFactory = $handlerFactory;
         $this->logger = $logger;
         $this->randomImageFinder = $randomImageFinder;
@@ -108,6 +102,7 @@ class DocumentsController extends RozierApp
         $this->urlGenerator = $urlGenerator;
         $this->googleServerId = $googleServerId;
         $this->soundcloudClientId = $soundcloudClientId;
+        $this->documentsStorage = $documentsStorage;
     }
 
     /**
@@ -215,6 +210,7 @@ class DocumentsController extends RozierApp
      * @param int $documentId
      * @return Response
      * @throws RuntimeError
+     * @throws FilesystemException
      */
     public function adjustAction(Request $request, int $documentId): Response
     {
@@ -245,20 +241,16 @@ class DocumentsController extends RozierApp
                     $em->flush();
 
                     $cloneDocument->setRawDocument($rawDocument);
-
-                    $oldPath = $this->packages->getDocumentFilePath($cloneDocument);
-                    $fs = new Filesystem();
+                    $oldPath = $cloneDocument->getMountPath();
 
                     /*
                      * Prefix document filename with unique id to avoid overriding original
                      * if already existing.
                      */
                     $cloneDocument->setFilename('original_' . uniqid() . '_' . $cloneDocument);
-                    $newPath = $this->packages->getDocumentFilePath($cloneDocument);
-                    $fs->rename(
-                        $oldPath,
-                        $newPath
-                    );
+                    $newPath = $cloneDocument->getMountPath();
+
+                    $this->documentsStorage->move($oldPath, $newPath);
 
                     $em->persist($cloneDocument);
                     $em->flush();
@@ -286,7 +278,7 @@ class DocumentsController extends RozierApp
 
                 return new JsonResponse([
                     'message' => $msg,
-                    'path' => $this->packages->getUrl($document->getRelativePath(), Packages::DOCUMENTS) . '?' . \random_int(10, 999),
+                    'path' => $this->documentsStorage->publicUrl($document->getMountPath()) . '?' . \random_int(10, 999),
                 ]);
             }
 
@@ -492,55 +484,6 @@ class DocumentsController extends RozierApp
     }
 
     /**
-     * Return an deletion form for multiple docs.
-     *
-     * @param Request $request
-     * @return Response
-     * @throws RuntimeError
-     */
-    public function bulkDownloadAction(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
-
-        $documentsIds = $request->get('documents', []);
-        if (count($documentsIds) <= 0) {
-            throw new ResourceNotFoundException('No selected documents to download.');
-        }
-
-        /** @var array<Document> $documents */
-        $documents = $this->em()
-            ->getRepository(Document::class)
-            ->findBy([
-                'id' => $documentsIds,
-            ]);
-
-        if (count($documents) > 0) {
-            $this->assignation['documents'] = $documents;
-            $form = $this->buildBulkDownloadForm($documentsIds);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    return $this->downloadDocuments($documents);
-                } catch (\Exception $e) {
-                    $msg = $this->getTranslator()->trans('documents.cannot_download');
-                    $this->publishErrorMessage($request, $msg);
-                }
-
-                return $this->redirectToRoute('documentsHomePage');
-            }
-
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
-            $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
-
-            return $this->render('@RoadizRozier/documents/bulkDownload.html.twig', $this->assignation);
-        }
-
-        throw new ResourceNotFoundException();
-    }
-
-    /**
      * Embed external document page.
      *
      * @param Request $request
@@ -656,6 +599,7 @@ class DocumentsController extends RozierApp
      * @param Request $request
      * @param int $documentId
      * @return Response
+     * @throws FilesystemException
      */
     public function downloadAction(Request $request, int $documentId): Response
     {
@@ -796,45 +740,6 @@ class DocumentsController extends RozierApp
     }
 
     /**
-     * See unused documents.
-     *
-     * @param Request $request
-     * @return Response
-     * @throws RuntimeError
-     */
-    public function unusedAction(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
-
-        $this->assignation['orphans'] = true;
-        /** @var DocumentRepository $documentRepository */
-        $documentRepository = $this->em()
-            ->getRepository(Document::class);
-
-        $listManager = new QueryBuilderListManager(
-            $request,
-            $documentRepository->getAllUnusedQueryBuilder(),
-            'd'
-        );
-        $listManager->setItemPerPage(static::DEFAULT_ITEM_PER_PAGE);
-
-        /*
-         * Stored in session
-         */
-        $sessionListFilter = new SessionListFilters('unused_documents_item_per_page');
-        $sessionListFilter->handleItemPerPage($request, $listManager);
-
-        $listManager->handle();
-
-        $this->assignation['filters'] = $listManager->getAssignation();
-        $this->assignation['no_sorting'] = true;
-        $this->assignation['documents'] = $listManager->getEntities();
-        $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
-
-        return $this->render('@RoadizRozier/documents/list-table.html.twig', $this->assignation);
-    }
-
-    /**
      * @param Document $doc
      * @return FormInterface
      */
@@ -854,33 +759,12 @@ class DocumentsController extends RozierApp
 
         return $builder->getForm();
     }
-    /**
-     * @param array $documentsIds
-     * @return FormInterface
-     */
-    private function buildBulkDeleteForm($documentsIds): FormInterface
-    {
-        $defaults = [
-            'checksum' => md5(serialize($documentsIds)),
-        ];
-        $builder = $this->createFormBuilder($defaults, [
-            'action' => '?' . http_build_query(['documents' => $documentsIds]),
-        ])
-            ->add('checksum', HiddenType::class, [
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                ],
-            ]);
-
-        return $builder->getForm();
-    }
 
     /**
      * @param array $documentsIds
      * @return FormInterface
      */
-    private function buildBulkDownloadForm($documentsIds): FormInterface
+    private function buildBulkDeleteForm(array $documentsIds): FormInterface
     {
         $defaults = [
             'checksum' => md5(serialize($documentsIds)),
@@ -1096,54 +980,6 @@ class DocumentsController extends RozierApp
         }
 
         return $msg;
-    }
-    /**
-     * @param array $documents
-     * @return Response
-     */
-    private function downloadDocuments($documents): Response
-    {
-        if (count($documents) > 0) {
-            $tmpFileName = tempnam(sys_get_temp_dir(), "rzdocs_");
-            if (false === $tmpFileName) {
-                throw new \RuntimeException('Failed to create a unique file name in system temp dir');
-            }
-            $zip = new \ZipArchive();
-            $zip->open($tmpFileName, \ZipArchive::CREATE);
-
-            /** @var Document $document */
-            foreach ($documents as $document) {
-                if ($document->isLocal()) {
-                    $zip->addFile(
-                        $this->packages->getDocumentFilePath($document),
-                        $document->getFolder() . DIRECTORY_SEPARATOR . $document->getFilename()
-                    );
-                }
-            }
-
-            $zip->close();
-            $fileContent = file_get_contents($tmpFileName);
-            if (false === $fileContent) {
-                throw new \RuntimeException(sprintf('Failed to read temp file %s', $fileContent));
-            }
-
-            $response = new Response(
-                $fileContent,
-                Response::HTTP_OK,
-                [
-                    'content-control' => 'private',
-                    'content-type' => 'application/zip',
-                    'content-length' => filesize($tmpFileName),
-                    'content-disposition' => 'attachment; filename=documents_archive.zip',
-                ]
-            );
-
-            unlink($tmpFileName);
-
-            return $response;
-        }
-
-        throw new ResourceNotFoundException();
     }
 
     /**

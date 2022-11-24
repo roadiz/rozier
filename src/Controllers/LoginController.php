@@ -6,7 +6,6 @@ namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\Documents\MediaFinders\RandomImageFinder;
-use RZ\Roadiz\Documents\Packages;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,21 +18,17 @@ use Themes\Rozier\RozierApp;
 class LoginController extends RozierApp
 {
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private Packages $packages;
     private RandomImageFinder $randomImageFinder;
 
     /**
      * @param DocumentUrlGeneratorInterface $documentUrlGenerator
-     * @param Packages $packages
      * @param RandomImageFinder $randomImageFinder
      */
     public function __construct(
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        Packages $packages,
         RandomImageFinder $randomImageFinder
     ) {
         $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->packages = $packages;
         $this->randomImageFinder = $randomImageFinder;
     }
 
@@ -68,7 +63,7 @@ class LoginController extends RozierApp
             $url = $feed['url'] ?? $feed['urls']['regular'] ?? $feed['urls']['full'] ?? $feed['urls']['raw'] ?? null;
         }
         $response->setData([
-            'url' => $url ?? $this->packages->getUrl('themes/Rozier/static/assets/img/default_login.jpg')
+            'url' => '/themes/Rozier/static/assets/img/default_login.jpg'
         ]);
         return $this->makeResponseCachable($request, $response, 60, true);
     }
