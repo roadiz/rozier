@@ -120,7 +120,7 @@ class NodeTypesUtilsController extends RozierApp
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'documentation-' . date('Y-m-d-H-i-s') . '.zip'
         );
-        $response->prepare($request);
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
@@ -182,7 +182,7 @@ class NodeTypesUtilsController extends RozierApp
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'nodetypes-' . date('Y-m-d-H-i-s') . '.zip'
         );
-        $response->prepare($request);
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
