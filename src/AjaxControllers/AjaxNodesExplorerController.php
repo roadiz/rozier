@@ -7,10 +7,11 @@ namespace Themes\Rozier\AjaxControllers;
 use Doctrine\ORM\EntityManager;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CoreBundle\EntityApi\NodeTypeApi;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
+use RZ\Roadiz\CoreBundle\EntityApi\NodeTypeApi;
+use RZ\Roadiz\CoreBundle\SearchEngine\ClientRegistry;
 use RZ\Roadiz\CoreBundle\SearchEngine\NodeSourceSearchHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,19 +21,18 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\NodeModel;
 use Themes\Rozier\Models\NodeSourceModel;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
 class AjaxNodesExplorerController extends AbstractAjaxController
 {
     private SerializerInterface $serializer;
-    private ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler;
+    private ClientRegistry $clientRegistry;
+    private NodeSourceSearchHandlerInterface $nodeSourceSearchHandler;
     private NodeTypeApi $nodeTypeApi;
     private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         SerializerInterface $serializer,
-        ?NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
+        ClientRegistry $clientRegistry,
+        NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
         NodeTypeApi $nodeTypeApi,
         UrlGeneratorInterface $urlGenerator
     ) {
@@ -40,6 +40,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         $this->nodeTypeApi = $nodeTypeApi;
         $this->serializer = $serializer;
         $this->urlGenerator = $urlGenerator;
+        $this->clientRegistry = $clientRegistry;
     }
 
     protected function getItemPerPage(): int
@@ -47,18 +48,23 @@ class AjaxNodesExplorerController extends AbstractAjaxController
         return 30;
     }
 
+    protected function isSearchEngineAvailable(Request $request): bool
+    {
+        return $request->get('search') !== '' && null !== $this->clientRegistry->getClient();
+    }
+
     /**
      * @param Request $request
      *
      * @return Response JSON response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         $criteria = $this->parseFilterFromRequest($request);
         $sorting = $this->parseSortingFromRequest($request);
-        if ($request->get('search') !== '' && null !== $this->nodeSourceSearchHandler) {
+        if ($this->isSearchEngineAvailable($request)) {
             $responseArray = $this->getSolrSearchResults($request, $criteria);
         } else {
             $responseArray = $this->getNodeSearchResults($request, $criteria, $sorting);
@@ -200,7 +206,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 

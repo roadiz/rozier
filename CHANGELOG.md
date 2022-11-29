@@ -1,3 +1,9 @@
+## 2.0.16 (2022-11-29)
+
+### Bug Fixes
+
+* Do not use Solr Search Engine if service is NULL ([3bb599f](https://github.com/roadiz/rozier/commit/3bb599ffe4cde56fe0057c7cfbcad0e7826bd76d))
+
 ## 2.0.15 (2022-10-17)
 
 ### Features
