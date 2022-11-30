@@ -1077,8 +1077,9 @@ class DocumentsController extends RozierApp
      * Handle upload form data to create a Document.
      *
      * @param FormInterface $data
-     * @param int|null      $folderId
+     * @param int|null $folderId
      * @return DocumentInterface|null
+     * @throws FilesystemException
      */
     private function uploadDocument($data, ?int $folderId = null): ?DocumentInterface
     {
