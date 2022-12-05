@@ -28,11 +28,11 @@ final class NodeSourceSeoType extends AbstractType
                 'help' => 'nodeSource.metaTitle.help',
                 'required' => false,
                 'attr' => [
-                    'data-max-length' => 60,
+                    'data-max-length' => 80,
                 ],
                 'constraints' => [
                     new Length([
-                        'max' => 60
+                        'max' => 80
                     ])
                 ]
             ])
