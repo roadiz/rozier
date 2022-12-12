@@ -40,8 +40,6 @@ trait VersionedControllerTrait
     protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
     {
         /**
-         * Versioning.
-         *
          * @var LogEntryRepository $repo
          */
         $repo = $this->em()->getRepository(UserLogEntry::class);

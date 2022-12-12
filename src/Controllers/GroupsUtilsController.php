@@ -42,7 +42,7 @@ class GroupsUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportAllAction(Request $request)
+    public function exportAllAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 

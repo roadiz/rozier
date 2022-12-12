@@ -12,9 +12,11 @@ use RZ\Roadiz\CoreBundle\Form\RolesType;
 use RZ\Roadiz\CoreBundle\Form\UsersType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\GroupType;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers
@@ -116,18 +118,18 @@ class GroupsController extends AbstractAdminController
      * Return an edition form for requested group.
      *
      * @param Request $request
-     * @param int     $id
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param int $id
+     * @return Response
+     * @throws RuntimeError
      */
-    public function editRolesAction(Request $request, int $id)
+    public function editRolesAction(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
 
-        if (null === $item || !($item instanceof Group)) {
+        if (!$item instanceof Group) {
             throw $this->createNotFoundException();
         }
 
@@ -159,12 +161,13 @@ class GroupsController extends AbstractAdminController
 
     /**
      * @param Request $request
-     * @param int     $id
-     * @param int     $roleId
+     * @param int $id
+     * @param int $roleId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
-    public function removeRolesAction(Request $request, int $id, int $roleId)
+    public function removeRolesAction(Request $request, int $id, int $roleId): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
@@ -174,11 +177,11 @@ class GroupsController extends AbstractAdminController
         /** @var Role|null $role */
         $role = $this->em()->find(Role::class, $roleId);
 
-        if (null === $item || !($item instanceof Group)) {
+        if (!($item instanceof Group)) {
             throw $this->createNotFoundException();
         }
 
-        if (null === $role || !($role instanceof Role)) {
+        if (!($role instanceof Role)) {
             throw $this->createNotFoundException();
         }
 
@@ -211,18 +214,19 @@ class GroupsController extends AbstractAdminController
 
     /**
      * @param Request $request
-     * @param int     $id
+     * @param int $id
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
-    public function editUsersAction(Request $request, int $id)
+    public function editUsersAction(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
         /** @var Group|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
 
-        if (null === $item || !($item instanceof Group)) {
+        if (!($item instanceof Group)) {
             throw $this->createNotFoundException();
         }
 
@@ -254,12 +258,13 @@ class GroupsController extends AbstractAdminController
 
     /**
      * @param Request $request
-     * @param int     $id
-     * @param int     $userId
+     * @param int $id
+     * @param int $userId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
-    public function removeUsersAction(Request $request, int $id, int $userId)
+    public function removeUsersAction(Request $request, int $id, int $userId): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
 
@@ -268,7 +273,7 @@ class GroupsController extends AbstractAdminController
         /** @var User|null $user */
         $user = $this->em()->find(User::class, $userId);
 
-        if (null === $item || !($item instanceof Group)) {
+        if (!($item instanceof Group)) {
             throw $this->createNotFoundException();
         }
 
@@ -429,12 +434,12 @@ class GroupsController extends AbstractAdminController
      *
      * @return Role|null
      */
-    private function addRole($data, Group $group)
+    private function addRole($data, Group $group): ?Role
     {
         if ($data['groupId'] == $group->getId()) {
             $role = $this->em()->find(Role::class, (int) $data['roleId']);
             if ($role !== null) {
-                $group->addRole($role);
+                $group->addRoleEntity($role);
                 $this->em()->flush();
 
                 return $role;
@@ -450,16 +455,14 @@ class GroupsController extends AbstractAdminController
      *
      * @return Role|null
      */
-    private function removeRole($data, Group $group, Role $role)
+    private function removeRole($data, Group $group, Role $role): ?Role
     {
         if (
             $data['groupId'] == $group->getId() &&
             $data['roleId'] == $role->getId()
         ) {
-            if ($role !== null) {
-                $group->removeRole($role);
-                $this->em()->flush();
-            }
+            $group->removeRoleEntity($role);
+            $this->em()->flush();
 
             return $role;
         }
@@ -472,20 +475,23 @@ class GroupsController extends AbstractAdminController
      *
      * @return User|null
      */
-    private function addUser($data, Group $group)
+    private function addUser($data, Group $group): ?User
     {
-        if ($data['groupId'] == $group->getId()) {
-            /** @var User|null $user */
-            $user = $this->em()
-                         ->find(User::class, (int) $data['userId']);
-
-            if ($user !== null) {
-                $user->addGroup($group);
-                $this->em()->flush();
-
-                return $user;
-            }
+        if ($data['groupId'] !== $group->getId()) {
+            return null;
         }
+
+        /** @var User|null $user */
+        $user = $this->em()
+                     ->find(User::class, (int) $data['userId']);
+
+        if ($user !== null) {
+            $user->addGroup($group);
+            $this->em()->flush();
+
+            return $user;
+        }
+
         return null;
     }
 
@@ -496,16 +502,14 @@ class GroupsController extends AbstractAdminController
      *
      * @return User|null
      */
-    private function removeUser($data, Group $group, User $user)
+    private function removeUser($data, Group $group, User $user): ?User
     {
         if (
             $data['groupId'] == $group->getId() &&
             $data['userId'] == $user->getId()
         ) {
-            if ($user !== null) {
-                $user->removeGroup($group);
-                $this->em()->flush();
-            }
+            $user->removeGroup($group);
+            $this->em()->flush();
 
             return $user;
         }

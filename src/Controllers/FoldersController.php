@@ -55,6 +55,7 @@ class FoldersController extends RozierApp
      * @param int|null $parentFolderId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function addAction(Request $request, ?int $parentFolderId = null): Response
     {
@@ -121,49 +122,50 @@ class FoldersController extends RozierApp
         /** @var Folder|null $folder */
         $folder = $this->em()->find(Folder::class, $folderId);
 
-        if (null !== $folder && !$folder->isLocked()) {
-            $form = $this->createForm(FormType::class, $folder);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $this->em()->remove($folder);
-                    $this->em()->flush();
-                    $msg = $this->getTranslator()->trans(
-                        'folder.%name%.deleted',
-                        ['%name%' => $folder->getFolderName()]
-                    );
-                    $this->publishConfirmMessage($request, $msg);
-
-                    /*
-                     * Dispatch event
-                     */
-                    $this->dispatchEvent(
-                        new FolderDeletedEvent($folder)
-                    );
-                } catch (\RuntimeException $e) {
-                    $this->publishErrorMessage($request, $e->getMessage());
-                }
-
-                return $this->redirectToRoute('foldersHomePage');
-            }
-
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['folder'] = $folder;
-
-            return $this->render('@RoadizRozier/folders/delete.html.twig', $this->assignation);
+        if (null === $folder || $folder->isLocked()) {
+            throw new ResourceNotFoundException('Folder does not exist or is locked');
         }
 
-        throw new ResourceNotFoundException();
+        $form = $this->createForm(FormType::class, $folder);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->em()->remove($folder);
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
+                    'folder.%name%.deleted',
+                    ['%name%' => $folder->getFolderName()]
+                );
+                $this->publishConfirmMessage($request, $msg);
+
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(
+                    new FolderDeletedEvent($folder)
+                );
+            } catch (\RuntimeException $e) {
+                $this->publishErrorMessage($request, $e->getMessage());
+            }
+
+            return $this->redirectToRoute('foldersHomePage');
+        }
+
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['folder'] = $folder;
+
+        return $this->render('@RoadizRozier/folders/delete.html.twig', $this->assignation);
     }
 
     /**
      * Return an edition form for requested folder.
      *
      * @param Request $request
-     * @param int     $folderId
+     * @param int $folderId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function editAction(Request $request, int $folderId): Response
     {
@@ -172,44 +174,44 @@ class FoldersController extends RozierApp
         /** @var Folder|null $folder */
         $folder = $this->em()->find(Folder::class, $folderId);
 
+        if ($folder === null) {
+            throw new ResourceNotFoundException();
+        }
+
         /** @var Translation $translation */
         $translation = $this->em()
             ->getRepository(Translation::class)
             ->findDefault();
 
-        if ($folder !== null) {
-            $form = $this->createForm(FolderType::class, $folder);
-            $form->handleRequest($request);
+        $form = $this->createForm(FolderType::class, $folder);
+        $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $this->em()->flush();
-                    $msg = $this->getTranslator()->trans(
-                        'folder.%name%.updated',
-                        ['%name%' => $folder->getFolderName()]
-                    );
-                    $this->publishConfirmMessage($request, $msg);
-                    /*
-                     * Dispatch event
-                     */
-                    $this->dispatchEvent(
-                        new FolderUpdatedEvent($folder)
-                    );
-                } catch (\RuntimeException $e) {
-                    $this->publishErrorMessage($request, $e->getMessage());
-                }
-
-                return $this->redirectToRoute('foldersEditPage', ['folderId' => $folderId]);
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
+                    'folder.%name%.updated',
+                    ['%name%' => $folder->getFolderName()]
+                );
+                $this->publishConfirmMessage($request, $msg);
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(
+                    new FolderUpdatedEvent($folder)
+                );
+            } catch (\RuntimeException $e) {
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
-            $this->assignation['folder'] = $folder;
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['translation'] = $translation;
-
-            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
+            return $this->redirectToRoute('foldersEditPage', ['folderId' => $folderId]);
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['folder'] = $folder;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['translation'] = $translation;
+
+        return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -233,6 +235,10 @@ class FoldersController extends RozierApp
         /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
 
+        if (null === $folder || null === $translation) {
+            throw new ResourceNotFoundException();
+        }
+
         /** @var FolderTranslation|null $folderTranslation */
         $folderTranslation = $this->em()
             ->getRepository(FolderTranslation::class)
@@ -246,59 +252,55 @@ class FoldersController extends RozierApp
             $this->em()->persist($folderTranslation);
         }
 
-        if (null !== $folder && null !== $translation) {
-            $form = $this->createForm(FolderTranslationType::class, $folderTranslation);
-            $form->handleRequest($request);
+        $form = $this->createForm(FolderTranslationType::class, $folderTranslation);
+        $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    /*
-                     * Update folder slug if not locked
-                     * only from default translation.
-                     */
-                    $newFolderName = StringHandler::slugify($folderTranslation->getName());
-                    if ($folder->getFolderName() !== $newFolderName) {
-                        if (
-                            !$folder->isLocked() &&
-                            $translation->isDefaultTranslation() &&
-                            !$this->folderNameExists($newFolderName)
-                        ) {
-                            $folder->setFolderName($folderTranslation->getName());
-                        }
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                /*
+                 * Update folder slug if not locked
+                 * only from default translation.
+                 */
+                $newFolderName = StringHandler::slugify($folderTranslation->getName());
+                if ($folder->getFolderName() !== $newFolderName) {
+                    if (
+                        !$folder->isLocked() &&
+                        $translation->isDefaultTranslation() &&
+                        !$this->folderNameExists($newFolderName)
+                    ) {
+                        $folder->setFolderName($folderTranslation->getName());
                     }
-
-                    $this->em()->flush();
-                    $msg = $this->getTranslator()->trans(
-                        'folder.%name%.updated',
-                        ['%name%' => $folder->getFolderName()]
-                    );
-                    $this->publishConfirmMessage($request, $msg);
-                    /*
-                     * Dispatch event
-                     */
-                    $this->dispatchEvent(
-                        new FolderUpdatedEvent($folder)
-                    );
-                } catch (\RuntimeException $e) {
-                    $this->publishErrorMessage($request, $e->getMessage());
                 }
 
-                return $this->redirectToRoute('foldersEditTranslationPage', [
-                    'folderId' => $folderId,
-                    'translationId' => $translationId,
-                ]);
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
+                    'folder.%name%.updated',
+                    ['%name%' => $folder->getFolderName()]
+                );
+                $this->publishConfirmMessage($request, $msg);
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(
+                    new FolderUpdatedEvent($folder)
+                );
+            } catch (\RuntimeException $e) {
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
-            $this->assignation['folder'] = $folder;
-            $this->assignation['translation'] = $translation;
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['available_translations'] = $translationRepository->findAll();
-            $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
-
-            return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
+            return $this->redirectToRoute('foldersEditTranslationPage', [
+                'folderId' => $folderId,
+                'translationId' => $translationId,
+            ]);
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['folder'] = $folder;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['available_translations'] = $translationRepository->findAll();
+        $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
+
+        return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -326,20 +328,20 @@ class FoldersController extends RozierApp
         /** @var Folder|null $folder */
         $folder = $this->em()->find(Folder::class, $folderId);
 
-        if ($folder !== null) {
-            $documents = $this->em()
-                              ->getRepository(Document::class)
-                              ->findBy([
-                                  'folders' => [$folder],
-                              ]);
-
-            return $this->documentArchiver->archiveAndServe(
-                $documents,
-                $folder->getFolderName() . '_' . date('YmdHi'),
-                true
-            );
+        if ($folder === null) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        $documents = $this->em()
+            ->getRepository(Document::class)
+            ->findBy([
+                'folders' => [$folder],
+            ]);
+
+        return $this->documentArchiver->archiveAndServe(
+            $documents,
+            $folder->getFolderName() . '_' . date('YmdHi'),
+            true
+        );
     }
 }
