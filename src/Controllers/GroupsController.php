@@ -11,6 +11,7 @@ use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\CoreBundle\Form\RolesType;
 use RZ\Roadiz\CoreBundle\Form\UsersType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -313,9 +314,9 @@ class GroupsController extends AbstractAdminController
     /**
      * @param Group $group
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    private function buildEditRolesForm(Group $group)
+    private function buildEditRolesForm(Group $group): FormInterface
     {
         $defaults = [
             'groupId' => $group->getId(),
@@ -343,9 +344,9 @@ class GroupsController extends AbstractAdminController
     /**
      * @param Group $group
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    private function buildEditUsersForm(Group $group)
+    private function buildEditUsersForm(Group $group): FormInterface
     {
         $defaults = [
             'groupId' => $group->getId(),
@@ -378,9 +379,9 @@ class GroupsController extends AbstractAdminController
      * @param Group $group
      * @param Role  $role
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    private function buildRemoveRoleForm(Group $group, Role $role)
+    private function buildRemoveRoleForm(Group $group, Role $role): FormInterface
     {
         $builder = $this->createFormBuilder()
                         ->add('groupId', HiddenType::class, [
@@ -403,11 +404,11 @@ class GroupsController extends AbstractAdminController
 
     /**
      * @param Group $group
-     * @param User  $user
+     * @param User $user
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    private function buildRemoveUserForm(Group $group, User $user)
+    private function buildRemoveUserForm(Group $group, User $user): FormInterface
     {
         $builder = $this->createFormBuilder()
                         ->add('groupId', HiddenType::class, [
@@ -436,7 +437,7 @@ class GroupsController extends AbstractAdminController
      */
     private function addRole($data, Group $group): ?Role
     {
-        if ($data['groupId'] == $group->getId()) {
+        if ($data['groupId'] === $group->getId()) {
             $role = $this->em()->find(Role::class, (int) $data['roleId']);
             if ($role !== null) {
                 $group->addRoleEntity($role);
@@ -458,8 +459,8 @@ class GroupsController extends AbstractAdminController
     private function removeRole($data, Group $group, Role $role): ?Role
     {
         if (
-            $data['groupId'] == $group->getId() &&
-            $data['roleId'] == $role->getId()
+            $data['groupId'] === $group->getId() &&
+            $data['roleId'] === $role->getId()
         ) {
             $group->removeRoleEntity($role);
             $this->em()->flush();
@@ -505,8 +506,8 @@ class GroupsController extends AbstractAdminController
     private function removeUser($data, Group $group, User $user): ?User
     {
         if (
-            $data['groupId'] == $group->getId() &&
-            $data['userId'] == $user->getId()
+            $data['groupId'] === $group->getId() &&
+            $data['userId'] === $user->getId()
         ) {
             $user->removeGroup($group);
             $this->em()->flush();

@@ -6,6 +6,7 @@ namespace Themes\Rozier\Controllers;
 
 use DateTime;
 use IteratorAggregate;
+use PhpOffice\PhpSpreadsheet\Exception;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
@@ -36,10 +37,8 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Themes\Rozier\Forms\NodeSource\NodeSourceType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class SearchController extends RozierApp
 {
     protected bool $pagination = true;
@@ -49,7 +48,7 @@ class SearchController extends RozierApp
      * @param mixed $var
      * @return bool
      */
-    public function isBlank($var)
+    public function isBlank(mixed $var): bool
     {
         return empty($var) && !is_numeric($var);
     }
@@ -58,7 +57,7 @@ class SearchController extends RozierApp
      * @param mixed $var
      * @return bool
      */
-    public function notBlank($var)
+    public function notBlank(mixed $var): bool
     {
         return !$this->isBlank($var);
     }
@@ -196,6 +195,7 @@ class SearchController extends RozierApp
     /**
      * @param Request $request
      * @return Response
+     * @throws RuntimeError
      */
     public function searchNodeAction(Request $request)
     {
@@ -254,6 +254,9 @@ class SearchController extends RozierApp
      * @param int $nodetypeId
      *
      * @return null|RedirectResponse|Response
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws RuntimeError
      */
     public function searchNodeSourceAction(Request $request, int $nodetypeId)
     {
@@ -312,12 +315,12 @@ class SearchController extends RozierApp
     }
 
     /**
-     * @param FormBuilder $builder
+     * @param FormBuilderInterface $builder
      * @param bool $exportXlsx
      *
-     * @return FormBuilder
+     * @return FormBuilderInterface
      */
-    protected function addButtons(FormBuilder $builder, bool $exportXlsx = false)
+    protected function addButtons(FormBuilderInterface $builder, bool $exportXlsx = false): FormBuilderInterface
     {
         $builder->add('search', SubmitType::class, [
             'label' => 'search.a.node',
@@ -366,8 +369,10 @@ class SearchController extends RozierApp
      * @param NodeType $nodetype
      *
      * @return null|Response
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    protected function handleNodeForm(FormInterface $form, NodeType $nodetype)
+    protected function handleNodeForm(FormInterface $form, NodeType $nodetype): ?Response
     {
         if ($form->isSubmitted() && $form->isValid()) {
             $data = [];
@@ -437,12 +442,14 @@ class SearchController extends RozierApp
     }
 
     /**
-     * @param NodeType                $nodetype
+     * @param NodeType $nodetype
      * @param array|IteratorAggregate $entities
      *
      * @return string
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    protected function getXlsxResults(NodeType $nodetype, $entities)
+    protected function getXlsxResults(NodeType $nodetype, $entities): string
     {
         $fields = $nodetype->getFields();
         $keys = [];
@@ -473,9 +480,9 @@ class SearchController extends RozierApp
 
     /**
      * @param string $prefix
-     * @return FormBuilder
+     * @return FormBuilderInterface
      */
-    protected function buildSimpleForm(string $prefix = '')
+    protected function buildSimpleForm(string $prefix = ''): FormBuilderInterface
     {
         /** @var FormBuilder $builder */
         $builder = $this->createFormBuilder([], ["method" => "get"]);
@@ -578,11 +585,11 @@ class SearchController extends RozierApp
     }
 
     /**
-     * @param FormBuilder $builder
+     * @param FormBuilderInterface $builder
      * @param NodeType $nodetype
-     * @return FormBuilder
+     * @return FormBuilderInterface
      */
-    private function extendForm(FormBuilder $builder, NodeType $nodetype)
+    private function extendForm(FormBuilderInterface $builder, NodeType $nodetype): FormBuilderInterface
     {
         $fields = $nodetype->getFields();
 

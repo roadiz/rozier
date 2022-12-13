@@ -16,10 +16,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class GroupsUtilsController extends RozierApp
 {
     private SerializerInterface $serializer;
@@ -56,7 +54,7 @@ class GroupsUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['group'])
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-all-' . date("YmdHis") . '.json'),
             ],
@@ -72,7 +70,7 @@ class GroupsUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportAction(Request $request, int $id)
+    public function exportAction(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
@@ -88,7 +86,7 @@ class GroupsUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['group'])
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-' . $existingGroup->getName() . '-' . date("YmdHis") . '.json'),
             ],
@@ -102,8 +100,9 @@ class GroupsUtilsController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function importJsonFileAction(Request $request)
+    public function importJsonFileAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
@@ -148,7 +147,7 @@ class GroupsUtilsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildImportJsonFileForm()
+    private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()
                         ->add('group_file', FileType::class, [

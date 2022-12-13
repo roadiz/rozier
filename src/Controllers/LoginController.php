@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class LoginController extends RozierApp
 {
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
@@ -37,7 +34,7 @@ class LoginController extends RozierApp
      *
      * @return Response
      */
-    public function imageAction(Request $request)
+    public function imageAction(Request $request): Response
     {
         $response = new JsonResponse();
         if (null !== $document = $this->getSettingsBag()->getDocument('login_image')) {

@@ -216,65 +216,70 @@ class DocumentsController extends RozierApp
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        /** @var Document $document */
+        /** @var Document|null $document */
         $document = $this->em()->find(Document::class, $documentId);
+        if ($document === null) {
+            throw new ResourceNotFoundException();
+        }
+        if (!$document->isLocal()) {
+            throw new ResourceNotFoundException('Document is not local');
+        }
 
-        if ($document !== null && $document->isLocal()) {
-            // Assign document
-            $this->assignation['document'] = $document;
+        // Assign document
+        $this->assignation['document'] = $document;
 
-            // Build form and handle it
-            $fileForm = $this->buildFileForm();
-            $fileForm->handleRequest($request);
+        // Build form and handle it
+        $fileForm = $this->buildFileForm();
+        $fileForm->handleRequest($request);
 
-            // Check if form is valid
-            if ($fileForm->isSubmitted() && $fileForm->isValid()) {
-                $em = $this->em();
+        // Check if form is valid
+        if ($fileForm->isSubmitted() && $fileForm->isValid()) {
+            $em = $this->em();
 
-                if (null !== $document->getRawDocument()) {
-                    $cloneDocument = clone $document;
+            if (null !== $document->getRawDocument()) {
+                $cloneDocument = clone $document;
 
-                    // need to remove raw document BEFORE
-                    // setting it to cloned document
-                    $rawDocument = $document->getRawDocument();
-                    $document->setRawDocument(null);
-                    $em->flush();
-
-                    $cloneDocument->setRawDocument($rawDocument);
-                    $oldPath = $cloneDocument->getMountPath();
-
-                    /*
-                     * Prefix document filename with unique id to avoid overriding original
-                     * if already existing.
-                     */
-                    $cloneDocument->setFilename('original_' . uniqid() . '_' . $cloneDocument);
-                    $newPath = $cloneDocument->getMountPath();
-
-                    $this->documentsStorage->move($oldPath, $newPath);
-
-                    $em->persist($cloneDocument);
-                    $em->flush();
-                }
-
-                /** @var UploadedFile $uploadedFile */
-                $uploadedFile = $fileForm->get('editDocument')->getData();
-                $this->documentFactory->setFile($uploadedFile);
-                $this->documentFactory->updateDocument($document);
+                // need to remove raw document BEFORE
+                // setting it to cloned document
+                $rawDocument = $document->getRawDocument();
+                $document->setRawDocument(null);
                 $em->flush();
 
-                // Event must be dispatched AFTER flush for async concurrency matters
-                $this->dispatchEvent(
-                    new DocumentFileUpdatedEvent($document)
-                );
-                // Event must be dispatched AFTER flush for async concurrency matters
-                $this->dispatchEvent(
-                    new DocumentUpdatedEvent($document)
-                );
+                $cloneDocument->setRawDocument($rawDocument);
+                $oldPath = $cloneDocument->getMountPath();
 
-                $translator = $this->getTranslator();
-                $msg = $translator->trans('document.%name%.updated', [
-                    '%name%' => (string) $document,
-                ]);
+                /*
+                 * Prefix document filename with unique id to avoid overriding original
+                 * if already existing.
+                 */
+                $cloneDocument->setFilename('original_' . uniqid() . '_' . $cloneDocument);
+                $newPath = $cloneDocument->getMountPath();
+
+                $this->documentsStorage->move($oldPath, $newPath);
+
+                $em->persist($cloneDocument);
+                $em->flush();
+            }
+
+            /** @var UploadedFile $uploadedFile */
+            $uploadedFile = $fileForm->get('editDocument')->getData();
+            $this->documentFactory->setFile($uploadedFile);
+            $this->documentFactory->updateDocument($document);
+            $em->flush();
+
+            // Event must be dispatched AFTER flush for async concurrency matters
+            $this->dispatchEvent(
+                new DocumentFileUpdatedEvent($document)
+            );
+            // Event must be dispatched AFTER flush for async concurrency matters
+            $this->dispatchEvent(
+                new DocumentUpdatedEvent($document)
+            );
+
+            $translator = $this->getTranslator();
+            $msg = $translator->trans('document.%name%.updated', [
+                '%name%' => (string) $document,
+            ]);
 
                 return new JsonResponse([
                     'message' => $msg,
@@ -282,19 +287,17 @@ class DocumentsController extends RozierApp
                 ]);
             }
 
-            // Create form view and assign it
-            $this->assignation['file_form'] = $fileForm->createView();
+        // Create form view and assign it
+        $this->assignation['file_form'] = $fileForm->createView();
 
-            return $this->render('@RoadizRozier/documents/adjust.html.twig', $this->assignation);
-        }
-
-        throw new ResourceNotFoundException();
+        return $this->render('@RoadizRozier/documents/adjust.html.twig', $this->assignation);
     }
 
     /**
      * @param Request $request
      * @param int $documentId
      * @return Response
+     * @throws FilesystemException
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $documentId): Response
@@ -303,76 +306,72 @@ class DocumentsController extends RozierApp
 
         /** @var Document|null $document */
         $document = $this->em()->find(Document::class, $documentId);
+        if ($document === null) {
+            throw new ResourceNotFoundException();
+        }
 
-        if ($document !== null) {
-            /*
-             * Handle main form
-             */
-            $form = $this->createForm(DocumentEditType::class, $document, [
-                'referer' => $this->getRequest()->get('referer'),
-                'document_platforms' => $this->documentPlatforms,
-            ]);
-            $form->handleRequest($request);
+        $form = $this->createForm(DocumentEditType::class, $document, [
+            'referer' => $this->getRequest()->get('referer'),
+            'document_platforms' => $this->documentPlatforms,
+        ]);
+        $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $this->em()->flush();
-                    /*
-                    * Update document file
-                    * if present
-                    */
-                    if (null !== $newDocumentFile = $form->get('newDocument')->getData()) {
-                        $this->documentFactory->setFile($newDocumentFile);
-                        $this->documentFactory->updateDocument($document);
-                        $msg = $this->getTranslator()->trans('document.file.%name%.updated', [
-                            '%name%' => (string) $document,
-                        ]);
-                        $this->em()->flush();
-                        // Event must be dispatched AFTER flush for async concurrency matters
-                        $this->dispatchEvent(
-                            new DocumentFileUpdatedEvent($document)
-                        );
-                        $this->publishConfirmMessage($request, $msg);
-                    }
-
-                    $msg = $this->getTranslator()->trans('document.%name%.updated', [
-                       '%name%' => (string) $document,
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->em()->flush();
+                /*
+                * Update document file
+                * if present
+                */
+                if (null !== $newDocumentFile = $form->get('newDocument')->getData()) {
+                    $this->documentFactory->setFile($newDocumentFile);
+                    $this->documentFactory->updateDocument($document);
+                    $msg = $this->getTranslator()->trans('document.file.%name%.updated', [
+                        '%name%' => (string) $document,
                     ]);
-                    $this->publishConfirmMessage($request, $msg);
                     $this->em()->flush();
                     // Event must be dispatched AFTER flush for async concurrency matters
                     $this->dispatchEvent(
-                        new DocumentUpdatedEvent($document)
+                        new DocumentFileUpdatedEvent($document)
                     );
-                    $this->em()->flush();
-
-                    $routeParams = ['documentId' => $document->getId()];
-
-                    if ($form->get('referer')->getData()) {
-                        $routeParams = array_merge($routeParams, [
-                           'referer' => $form->get('referer')->getData(),
-                        ]);
-                    }
-                    /*
-                    * Force redirect to avoid resending form when refreshing page
-                    */
-                    return $this->redirectToRoute(
-                        'documentsEditPage',
-                        $routeParams
-                    );
-                } catch (FileException $exception) {
-                    $form->get('filename')->addError(new FormError($exception->getMessage()));
+                    $this->publishConfirmMessage($request, $msg);
                 }
+
+                $msg = $this->getTranslator()->trans('document.%name%.updated', [
+                   '%name%' => (string) $document,
+                ]);
+                $this->publishConfirmMessage($request, $msg);
+                $this->em()->flush();
+                // Event must be dispatched AFTER flush for async concurrency matters
+                $this->dispatchEvent(
+                    new DocumentUpdatedEvent($document)
+                );
+                $this->em()->flush();
+
+                $routeParams = ['documentId' => $document->getId()];
+
+                if ($form->get('referer')->getData()) {
+                    $routeParams = array_merge($routeParams, [
+                       'referer' => $form->get('referer')->getData(),
+                    ]);
+                }
+                /*
+                * Force redirect to avoid resending form when refreshing page
+                */
+                return $this->redirectToRoute(
+                    'documentsEditPage',
+                    $routeParams
+                );
+            } catch (FileException $exception) {
+                $form->get('filename')->addError(new FormError($exception->getMessage()));
             }
-
-            $this->assignation['document'] = $document;
-            $this->assignation['rawDocument'] = $document->getRawDocument();
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/documents/edit.html.twig', $this->assignation);
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['document'] = $document;
+        $this->assignation['rawDocument'] = $document->getRawDocument();
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/documents/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -390,45 +389,45 @@ class DocumentsController extends RozierApp
         /** @var Document|null $document */
         $document = $this->em()->find(Document::class, $documentId);
 
-        if ($document !== null) {
-            $this->assignation['document'] = $document;
-            $form = $this->buildDeleteForm($document);
-            $form->handleRequest($request);
-
-            if (
-                $form->isSubmitted() &&
-                $form->isValid() &&
-                $form->getData()['documentId'] == $document->getId()
-            ) {
-                try {
-                    $this->dispatchEvent(
-                        new DocumentDeletedEvent($document)
-                    );
-                    $this->em()->remove($document);
-                    $this->em()->flush();
-                    $msg = $this->getTranslator()->trans('document.%name%.deleted', [
-                        '%name%' => (string) $document
-                    ]);
-                    $this->publishConfirmMessage($request, $msg);
-                } catch (\Exception $e) {
-                    $msg = $this->getTranslator()->trans('document.%name%.cannot_delete', [
-                        '%name%' => (string) $document
-                    ]);
-                    $this->logger->error($e->getMessage());
-                    $this->publishErrorMessage($request, $msg);
-                }
-                /*
-                 * Force redirect to avoid resending form when refreshing page
-                 */
-                return $this->redirectToRoute('documentsHomePage');
-            }
-
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/documents/delete.html.twig', $this->assignation);
+        if ($document === null) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['document'] = $document;
+        $form = $this->buildDeleteForm($document);
+        $form->handleRequest($request);
+
+        if (
+            $form->isSubmitted() &&
+            $form->isValid() &&
+            $form->getData()['documentId'] == $document->getId()
+        ) {
+            try {
+                $this->dispatchEvent(
+                    new DocumentDeletedEvent($document)
+                );
+                $this->em()->remove($document);
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans('document.%name%.deleted', [
+                    '%name%' => (string) $document
+                ]);
+                $this->publishConfirmMessage($request, $msg);
+            } catch (\Exception $e) {
+                $msg = $this->getTranslator()->trans('document.%name%.cannot_delete', [
+                    '%name%' => (string) $document
+                ]);
+                $this->logger->error($e->getMessage());
+                $this->publishErrorMessage($request, $msg);
+            }
+            /*
+             * Force redirect to avoid resending form when refreshing page
+             */
+            return $this->redirectToRoute('documentsHomePage');
+        }
+
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/documents/delete.html.twig', $this->assignation);
     }
 
     /**
@@ -454,33 +453,33 @@ class DocumentsController extends RozierApp
                 'id' => $documentsIds,
             ]);
 
-        if (count($documents) > 0) {
-            $this->assignation['documents'] = $documents;
-            $form = $this->buildBulkDeleteForm($documentsIds);
-
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                foreach ($documents as $document) {
-                    $this->em()->remove($document);
-                    $msg = $this->getTranslator()->trans(
-                        'document.%name%.deleted',
-                        ['%name%' => (string) $document]
-                    );
-                    $this->publishConfirmMessage($request, $msg);
-                }
-                $this->em()->flush();
-
-                return $this->redirectToRoute('documentsHomePage');
-            }
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
-            $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
-
-            return $this->render('@RoadizRozier/documents/bulkDelete.html.twig', $this->assignation);
+        if (count($documents) <= 0) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['documents'] = $documents;
+        $form = $this->buildBulkDeleteForm($documentsIds);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            foreach ($documents as $document) {
+                $this->em()->remove($document);
+                $msg = $this->getTranslator()->trans(
+                    'document.%name%.deleted',
+                    ['%name%' => (string) $document]
+                );
+                $this->publishConfirmMessage($request, $msg);
+            }
+            $this->em()->flush();
+
+            return $this->redirectToRoute('documentsHomePage');
+        }
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['action'] = '?' . http_build_query(['documents' => $documentsIds]);
+        $this->assignation['thumbnailFormat'] = $this->thumbnailFormat;
+
+        return $this->render('@RoadizRozier/documents/bulkDelete.html.twig', $this->assignation);
     }
 
     /**
@@ -721,22 +720,22 @@ class DocumentsController extends RozierApp
         /** @var Document|null $document */
         $document = $this->em()->find(Document::class, $documentId);
 
-        if ($document !== null) {
-            $this->assignation['document'] = $document;
-            $this->assignation['usages'] = $document->getNodesSourcesByFields();
-            $this->assignation['attributes'] = $document->getAttributeDocuments()
-                ->map(function (AttributeDocuments $attributeDocument) {
-                    return $attributeDocument->getAttribute();
-                });
-            $this->assignation['tags'] = $document->getTagTranslations()
-                ->map(function (TagTranslationDocuments $tagTranslationDocuments) {
-                    return $tagTranslationDocuments->getTagTranslation()->getTag();
-                });
-
-            return $this->render('@RoadizRozier/documents/usage.html.twig', $this->assignation);
+        if ($document === null) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['document'] = $document;
+        $this->assignation['usages'] = $document->getNodesSourcesByFields();
+        $this->assignation['attributes'] = $document->getAttributeDocuments()
+            ->map(function (AttributeDocuments $attributeDocument) {
+                return $attributeDocument->getAttribute();
+            });
+        $this->assignation['tags'] = $document->getTagTranslations()
+            ->map(function (TagTranslationDocuments $tagTranslationDocuments) {
+                return $tagTranslationDocuments->getTagTranslation()->getTag();
+            });
+
+        return $this->render('@RoadizRozier/documents/usage.html.twig', $this->assignation);
     }
 
     /**

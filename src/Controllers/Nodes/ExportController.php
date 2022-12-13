@@ -13,9 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Themes\Rozier\RozierApp;
 
-/**
- * @package Themes\Rozier\Controllers\Nodes
- */
 class ExportController extends RozierApp
 {
     private NodeSourceXlsxSerializer $xlsxSerializer;
@@ -39,7 +36,7 @@ class ExportController extends RozierApp
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function exportAllXlsxAction(Request $request, int $translationId, ?int $parentNodeId = null)
+    public function exportAllXlsxAction(Request $request, int $translationId, ?int $parentNodeId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 

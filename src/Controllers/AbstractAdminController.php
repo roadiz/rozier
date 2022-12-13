@@ -36,7 +36,6 @@ abstract class AbstractAdminController extends RozierApp
         $this->urlGenerator = $urlGenerator;
     }
 
-
     /**
      * @return string
      */
@@ -210,10 +209,7 @@ abstract class AbstractAdminController extends RozierApp
         );
     }
 
-    /**
-     * @return JsonResponse
-     */
-    public function exportAction(Request $request)
+    public function exportAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
         $this->additionalAssignation($request);
@@ -226,7 +222,7 @@ abstract class AbstractAdminController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups([$this->getNamespace()])
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s_%s.json"',

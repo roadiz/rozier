@@ -16,10 +16,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class RolesUtilsController extends RozierApp
 {
     private SerializerInterface $serializer;
@@ -43,7 +41,7 @@ class RolesUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportAction(Request $request, int $id)
+    public function exportAction(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ROLES');
 
@@ -60,7 +58,7 @@ class RolesUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['role'])
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf('attachment; filename="%s"', 'role-' . $existingRole->getName() . '-' . date("YmdHis") . '.json'),
             ],
@@ -74,13 +72,13 @@ class RolesUtilsController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function importJsonFileAction(Request $request)
+    public function importJsonFileAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ROLES');
 
         $form = $this->buildImportJsonFileForm();
-
         $form->handleRequest($request);
 
         if (
@@ -126,7 +124,7 @@ class RolesUtilsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildImportJsonFileForm()
+    private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()
                         ->add('role_file', FileType::class, [
