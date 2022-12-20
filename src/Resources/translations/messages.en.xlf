@@ -4680,6 +4680,10 @@
         <source>documents.document_display_list</source>
         <target state="translated">List</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="nodeSource.noIndex">
+        <source>nodeSource.noIndex</source>
+        <target state="translated">Disallow indexing</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
