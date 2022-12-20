@@ -6,6 +6,7 @@ namespace Themes\Rozier\Forms\NodeSource;
 
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -39,6 +40,11 @@ final class NodeSourceSeoType extends AbstractType
             ->add('metaDescription', TextareaType::class, [
                 'label' => 'metaDescription',
                 'help' => 'nodeSource.metaDescription.help',
+                'required' => false,
+            ])
+            ->add('noIndex', CheckboxType::class, [
+                'label' => 'nodeSource.noIndex',
+                'help' => 'nodeSource.noIndex.help',
                 'required' => false,
             ])
         ;
