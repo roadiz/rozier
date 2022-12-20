@@ -37,6 +37,9 @@
       <trans-unit xml:space="preserve" id="nodeSource.metaDescription.help">
                 <source>nodeSource.metaDescription.help</source>
             <target state="translated">La description est un résumé de quelques caractères de votre page. Son objectif est de décrire succinctement son contenu. Cette description doit respecter une taille entre 120 et 155 caractères.</target></trans-unit>
+      <trans-unit xml:space="preserve" id="nodeSource.noIndex.help">
+                <source>nodeSource.noIndex.help</source>
+            <target state="translated">Indique aux robots de ne pas indexer le contenu et de le cacher du sitemap.</target></trans-unit>
       <trans-unit xml:space="preserve" id="nodeSource.urlAlias.help">
                 <source>nodeSource.urlAlias.help</source>
 
