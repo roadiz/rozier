@@ -390,6 +390,13 @@ export default class Rozier {
                         })
                     }
                 })
+                .fail(() => {
+                    console.log('[Rozier.refreshMainNodeTree] Retrying in 3 seconds')
+                    // Wait for background jobs to be done
+                    setTimeout(() => {
+                        this.refreshMainNodeTree(translationId)
+                    }, 3000)
+                })
                 .always(() => {
                     this.lazyload.canvasLoader.hide()
                 })
