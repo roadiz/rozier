@@ -11,7 +11,9 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
+use RZ\Roadiz\CoreBundle\TwigExtension\JwtExtension;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,6 +33,15 @@ class NodesSourcesController extends RozierApp
 {
     use VersionedControllerTrait;
 
+    private JwtExtension $jwtExtension;
+    private FormErrorSerializer $formErrorSerializer;
+
+    public function __construct(JwtExtension $jwtExtension, FormErrorSerializer $formErrorSerializer)
+    {
+        $this->jwtExtension = $jwtExtension;
+        $this->formErrorSerializer = $formErrorSerializer;
+    }
+
     /**
      * Return an edition form for requested node.
      *
@@ -41,12 +52,13 @@ class NodesSourcesController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function editSourceAction(Request $request, int $nodeId, int $translationId)
+    public function editSourceAction(Request $request, int $nodeId, int $translationId): Response
     {
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
         /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
+
         if (null === $translation) {
             throw new ResourceNotFoundException('Translation does not exist');
         }
@@ -102,45 +114,50 @@ class NodesSourcesController extends RozierApp
             if ($form->isValid() && !$this->isReadOnly) {
                 $this->onPostUpdate($source, $request);
 
-                if ($request->isXmlHttpRequest()) {
-                    if ($this->getSettingsBag()->get('custom_preview_scheme')) {
-                        $previewUrl = $this->generateUrl($source, [
-                            'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
-                            NodeRouter::NO_CACHE_PARAMETER => true
-                        ], UrlGeneratorInterface::ABSOLUTE_URL);
-                    } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
-                        $previewUrl = $this->generateUrl($source, [
-                            'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
-                            '_preview' => 1,
-                            NodeRouter::NO_CACHE_PARAMETER => true
-                        ], UrlGeneratorInterface::ABSOLUTE_URL);
-                    } else {
-                        $previewUrl = $this->generateUrl($source, [
-                            '_preview' => 1,
-                            NodeRouter::NO_CACHE_PARAMETER => true
-                        ]);
-                    }
-
-                    if ($this->getSettingsBag()->get('custom_public_scheme')) {
-                        $publicUrl = $this->generateUrl($source, [
-                            'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
-                            NodeRouter::NO_CACHE_PARAMETER => true
-                        ], UrlGeneratorInterface::ABSOLUTE_URL);
-                    } else {
-                        $publicUrl = $this->generateUrl($source, [
-                            NodeRouter::NO_CACHE_PARAMETER => true
-                        ]);
-                    }
-
-                    return new JsonResponse([
-                        'status' => 'success',
-                        'public_url' => $source->getNode()->isPublished() ? $publicUrl : null,
-                        'preview_url' => $previewUrl,
-                        'errors' => [],
-                    ], Response::HTTP_PARTIAL_CONTENT);
+                if (!$request->isXmlHttpRequest()) {
+                    return $this->getPostUpdateRedirection($source);
                 }
 
-                return $this->getPostUpdateRedirection($source);
+                $jwtToken = $this->jwtExtension->createPreviewJwt();
+
+                if ($this->getSettingsBag()->get('custom_preview_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
+                        '_preview' => 1,
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } else {
+                    $previewUrl = $this->generateUrl($source, [
+                        '_preview' => 1,
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ]);
+                }
+
+                if ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $publicUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } else {
+                    $publicUrl = $this->generateUrl($source, [
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ]);
+                }
+
+                return new JsonResponse([
+                    'status' => 'success',
+                    'public_url' => $source->getNode()->isPublished() ? $publicUrl : null,
+                    'preview_url' => $previewUrl,
+                    'errors' => [],
+                ], Response::HTTP_PARTIAL_CONTENT);
             }
 
             if ($this->isReadOnly) {
@@ -151,7 +168,7 @@ class NodesSourcesController extends RozierApp
              * Handle errors when Ajax POST requests
              */
             if ($request->isXmlHttpRequest()) {
-                $errors = $this->getErrorsAsArray($form);
+                $errors = $this->formErrorSerializer->getErrorsAsArray($form);
                 return new JsonResponse([
                     'status' => 'fail',
                     'errors' => $errors,
@@ -175,7 +192,7 @@ class NodesSourcesController extends RozierApp
     }
 
     /**
-     * Return an remove form for requested nodeSource.
+     * Return a remove form for requested nodeSource.
      *
      * @param Request $request
      * @param int     $nodeSourceId
@@ -183,7 +200,7 @@ class NodesSourcesController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function removeAction(Request $request, int $nodeSourceId)
+    public function removeAction(Request $request, int $nodeSourceId): Response
     {
         /** @var NodesSources|null $ns */
         $ns = $this->em()->find(NodesSources::class, $nodeSourceId);
