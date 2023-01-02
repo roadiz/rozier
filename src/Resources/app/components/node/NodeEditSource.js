@@ -64,7 +64,14 @@ export default class NodeEditSource {
             }
 
             if (fieldsGroupsLength > 1) {
-                this.$form.append('<div id="node-source-form-switcher-nav-cont"><ul id="node-source-form-switcher-nav" class="uk-subnav uk-subnav-pill" data-uk-switcher="{connect:\'#node-source-form-switcher\', swiping:false}"></ul></div><ul id="node-source-form-switcher" class="uk-switcher"></ul>')
+                this.$form.append(
+                    '<div id="node-source-form-switcher-nav-cont">' +
+                        '<ul id="node-source-form-switcher-nav" class="uk-subnav uk-subnav-pill" data-uk-switcher="{connect:\'#node-source-form-switcher\', swiping:false}">' +
+                        '</ul>' +
+                        '</div>' +
+                        '<ul id="node-source-form-switcher" class="uk-switcher">' +
+                        '</ul>'
+                )
                 let $formSwitcher = this.$form.find('.uk-switcher')
                 let $formSwitcherNav = this.$form.find('#node-source-form-switcher-nav')
 
