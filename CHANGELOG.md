@@ -1,3 +1,9 @@
+## 2.0.17 (2023-01-02)
+
+### Bug Fixes
+
+* Send preview JWT after nodeSource AJAX edition ([a9adee9](https://github.com/roadiz/rozier/commit/a9adee9a6dd057edd9cb172943e9fada25768ff4))
+
 ## 2.0.16 (2022-11-29)
 
 ### Bug Fixes

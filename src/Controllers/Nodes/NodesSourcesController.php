@@ -11,7 +11,9 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
+use RZ\Roadiz\CoreBundle\TwigExtension\JwtExtension;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Routing\Router;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\NodeSource\NodeSourceType;
@@ -33,6 +35,15 @@ use Twig\Error\RuntimeError;
 class NodesSourcesController extends RozierApp
 {
     use VersionedControllerTrait;
+
+    private JwtExtension $jwtExtension;
+    private FormErrorSerializer $formErrorSerializer;
+
+    public function __construct(JwtExtension $jwtExtension, FormErrorSerializer $formErrorSerializer)
+    {
+        $this->jwtExtension = $jwtExtension;
+        $this->formErrorSerializer = $formErrorSerializer;
+    }
 
     /**
      * Return an edition form for requested node.
@@ -48,128 +59,139 @@ class NodesSourcesController extends RozierApp
     {
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
-        /** @var Translation $translation */
+        /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
+
+        if (null === $translation) {
+            throw new ResourceNotFoundException('Translation does not exist');
+        }
         /*
          * Here we need to directly select nodeSource
          * if not doctrine will grab a cache tag because of NodeTreeWidget
          * that is initialized before calling route method.
          */
-        /** @var Node|null $gnode */
-        $gnode = $this->em()->find(Node::class, $nodeId);
+        /** @var Node|null $gNode */
+        $gNode = $this->em()->find(Node::class, $nodeId);
+        if (null === $gNode) {
+            throw new ResourceNotFoundException('Node does not exist');
+        }
 
-        if ($translation !== null && $gnode !== null) {
-            /** @var NodesSources $source */
-            $source = $this->em()
-                           ->getRepository(NodesSources::class)
-                           ->setDisplayingAllNodesStatuses(true)
-                           ->setDisplayingNotPublishedNodes(true)
-                           ->findOneBy(['translation' => $translation, 'node' => $gnode]);
+        /** @var NodesSources|null $source */
+        $source = $this->em()
+                       ->getRepository(NodesSources::class)
+                       ->setDisplayingAllNodesStatuses(true)
+                       ->setDisplayingNotPublishedNodes(true)
+                       ->findOneBy(['translation' => $translation, 'node' => $gNode]);
 
-            if (null !== $source) {
-                $this->em()->refresh($source);
-                $node = $source->getNode();
+        if (null === $source) {
+            throw new ResourceNotFoundException('Node source does not exist');
+        }
 
-                /**
-                 * Versioning
-                 */
-                if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
-                    if (null !== $response = $this->handleVersions($request, $source)) {
-                        return $response;
-                    }
-                }
+        $this->em()->refresh($source);
 
-                $form = $this->createForm(
-                    NodeSourceType::class,
-                    $source,
-                    [
-                        'class' => $node->getNodeType()->getSourceEntityFullQualifiedClassName(),
-                        'nodeType' => $node->getNodeType(),
-                        'withVirtual' => true,
-                        'withTitle' => true,
-                        'disabled' => $this->isReadOnly,
-                    ]
-                );
-                $form->handleRequest($request);
+        $node = $source->getNode();
 
-                if ($form->isSubmitted()) {
-                    if ($form->isValid() && !$this->isReadOnly) {
-                        $this->onPostUpdate($source, $request);
-
-                        if ($request->isXmlHttpRequest()) {
-                            if ($this->getSettingsBag()->get('custom_preview_scheme')) {
-                                $previewUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
-                                    NodeRouter::NO_CACHE_PARAMETER => true
-                                ], Router::ABSOLUTE_URL);
-                            } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
-                                $previewUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
-                                    '_preview' => 1,
-                                    NodeRouter::NO_CACHE_PARAMETER => true
-                                ], Router::ABSOLUTE_URL);
-                            } else {
-                                $previewUrl = $this->generateUrl($source, [
-                                    '_preview' => 1,
-                                    NodeRouter::NO_CACHE_PARAMETER => true
-                                ]);
-                            }
-
-                            if ($this->getSettingsBag()->get('custom_public_scheme')) {
-                                $publicUrl = $this->generateUrl($source, [
-                                    'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
-                                    NodeRouter::NO_CACHE_PARAMETER => true
-                                ], Router::ABSOLUTE_URL);
-                            } else {
-                                $publicUrl = $this->generateUrl($source, [
-                                    NodeRouter::NO_CACHE_PARAMETER => true
-                                ]);
-                            }
-
-                            return new JsonResponse([
-                                'status' => 'success',
-                                'public_url' => $source->getNode()->isPublished() ? $publicUrl : null,
-                                'preview_url' => $previewUrl,
-                                'errors' => [],
-                            ], JsonResponse::HTTP_PARTIAL_CONTENT);
-                        }
-
-                        return $this->getPostUpdateRedirection($source);
-                    }
-
-                    if ($this->isReadOnly) {
-                        $form->addError(new FormError('nodeSource.form.is_read_only'));
-                    }
-
-                    /*
-                     * Handle errors when Ajax POST requests
-                     */
-                    if ($request->isXmlHttpRequest()) {
-                        $errors = $this->getErrorsAsArray($form);
-                        return new JsonResponse([
-                            'status' => 'fail',
-                            'errors' => $errors,
-                            'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
-                        ], JsonResponse::HTTP_BAD_REQUEST);
-                    }
-                }
-
-                $availableTranslations = $this->em()
-                    ->getRepository(Translation::class)
-                    ->findAvailableTranslationsForNode($gnode);
-
-                $this->assignation['translation'] = $translation;
-                $this->assignation['available_translations'] = $availableTranslations;
-                $this->assignation['node'] = $node;
-                $this->assignation['source'] = $source;
-                $this->assignation['form'] = $form->createView();
-                $this->assignation['readOnly'] = $this->isReadOnly;
-
-                return $this->render('@RoadizRozier/nodes/editSource.html.twig', $this->assignation);
+        /**
+         * Versioning
+         */
+        if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
+            if (null !== $response = $this->handleVersions($request, $source)) {
+                return $response;
             }
         }
 
-        throw new ResourceNotFoundException();
+        $form = $this->createForm(
+            NodeSourceType::class,
+            $source,
+            [
+                'class' => $node->getNodeType()->getSourceEntityFullQualifiedClassName(),
+                'nodeType' => $node->getNodeType(),
+                'withVirtual' => true,
+                'withTitle' => true,
+                'disabled' => $this->isReadOnly,
+            ]
+        );
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid() && !$this->isReadOnly) {
+                $this->onPostUpdate($source, $request);
+
+                if (!$request->isXmlHttpRequest()) {
+                    return $this->getPostUpdateRedirection($source);
+                }
+
+                $jwtToken = $this->jwtExtension->createPreviewJwt();
+
+                if ($this->getSettingsBag()->get('custom_preview_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
+                        '_preview' => 1,
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } else {
+                    $previewUrl = $this->generateUrl($source, [
+                        '_preview' => 1,
+                        'token' => $jwtToken,
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ]);
+                }
+
+                if ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $publicUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                } else {
+                    $publicUrl = $this->generateUrl($source, [
+                        NodeRouter::NO_CACHE_PARAMETER => true
+                    ]);
+                }
+
+                return new JsonResponse([
+                    'status' => 'success',
+                    'public_url' => $source->getNode()->isPublished() ? $publicUrl : null,
+                    'preview_url' => $previewUrl,
+                    'errors' => [],
+                ], Response::HTTP_PARTIAL_CONTENT);
+            }
+
+            if ($this->isReadOnly) {
+                $form->addError(new FormError('nodeSource.form.is_read_only'));
+            }
+
+            /*
+             * Handle errors when Ajax POST requests
+             */
+            if ($request->isXmlHttpRequest()) {
+                $errors = $this->formErrorSerializer->getErrorsAsArray($form);
+                return new JsonResponse([
+                    'status' => 'fail',
+                    'errors' => $errors,
+                    'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        $availableTranslations = $this->em()
+            ->getRepository(Translation::class)
+            ->findAvailableTranslationsForNode($gNode);
+
+        $this->assignation['translation'] = $translation;
+        $this->assignation['available_translations'] = $availableTranslations;
+        $this->assignation['node'] = $node;
+        $this->assignation['source'] = $source;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['readOnly'] = $this->isReadOnly;
+
+        return $this->render('@RoadizRozier/nodes/editSource.html.twig', $this->assignation);
     }
 
     /**
