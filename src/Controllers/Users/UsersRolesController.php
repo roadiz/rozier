@@ -8,38 +8,45 @@ use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\CoreBundle\Form\RolesType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers\Users
- */
 class UsersRolesController extends RozierApp
 {
     /**
      * @param Request $request
-     * @param int     $userId
+     * @param int $userId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
-    public function editRolesAction(Request $request, int $userId)
+    public function editRolesAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
         $user = $this->em()->find(User::class, $userId);
 
-        if ($user !== null) {
-            $this->assignation['user'] = $user;
-            $form = $this->buildEditRolesForm($user);
-            $form->handleRequest($request);
+        if ($user === null) {
+            throw new ResourceNotFoundException();
+        }
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $role = $this->addUserRole($form->getData(), $user);
+        $this->assignation['user'] = $user;
+        $form = $this->buildEditRolesForm($user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var Role|null $role */
+            $role = $this->em()->find(Role::class, $form->get('roleId')->getData());
+
+            if (null !== $role) {
+                $user->addRoleEntity($role);
+                $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('user.%user%.role.%role%.linked', [
                     '%user%' => $user->getUserName(),
@@ -56,123 +63,90 @@ class UsersRolesController extends RozierApp
                     ['userId' => $user->getId()]
                 );
             }
-
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/users/roles.html.twig', $this->assignation);
+            $form->get('roleId')->addError(new FormError('Role not found'));
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/users/roles.html.twig', $this->assignation);
     }
 
     /**
      * Return a deletion form for requested role depending on the user.
      *
      * @param Request $request
-     * @param int     $userId
-     * @param int     $roleId
+     * @param int $userId
+     * @param int $roleId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws RuntimeError
      */
-    public function removeRoleAction(Request $request, int $userId, int $roleId)
+    public function removeRoleAction(Request $request, int $userId, int $roleId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
         /** @var User|null $user */
         $user = $this->em()->find(User::class, $userId);
+        if ($user === null) {
+            throw new ResourceNotFoundException();
+        }
 
         /** @var Role|null $role */
         $role = $this->em()->find(Role::class, $roleId);
-
-        if ($user !== null && $role !== null) {
-            if (!$this->isGranted($role->getRole())) {
-                throw $this->createAccessDeniedException();
-            }
-
-            $this->assignation['user'] = $user;
-            $this->assignation['role'] = $role;
-
-            $form = $this->createForm(FormType::class);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                $user->removeRole($role);
-                $this->em()->flush();
-                $msg = $this->getTranslator()->trans(
-                    'user.%name%.role_removed',
-                    ['%name%' => $role->getRole()]
-                );
-                $this->publishConfirmMessage($request, $msg);
-
-                /*
-                 * Force redirect to avoid resending form when refreshing page
-                 */
-                return $this->redirectToRoute(
-                    'usersEditRolesPage',
-                    ['userId' => $user->getId()]
-                );
-            }
-
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/users/removeRole.html.twig', $this->assignation);
+        if ($role === null) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
-    }
-
-    /**
-     * @param array $data
-     * @param User  $user
-     *
-     * @return Role|null
-     */
-    private function addUserRole($data, User $user)
-    {
-        if ($data['userId'] == $user->getId()) {
-            /** @var Role|null $role */
-            $role = $this->em()->find(Role::class, $data['roleId']);
-
-            if (null !== $role) {
-                $user->addRole($role);
-                $this->em()->flush();
-                return $role;
-            }
+        if (!$this->isGranted($role->getRole())) {
+            throw $this->createAccessDeniedException();
         }
 
-        return null;
+        $this->assignation['user'] = $user;
+        $this->assignation['role'] = $role;
+
+        $form = $this->createForm(FormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->removeRoleEntity($role);
+            $this->em()->flush();
+            $msg = $this->getTranslator()->trans(
+                'user.%name%.role_removed',
+                ['%name%' => $role->getRole()]
+            );
+            $this->publishConfirmMessage($request, $msg);
+
+            /*
+             * Force redirect to avoid resending form when refreshing page
+             */
+            return $this->redirectToRoute(
+                'usersEditRolesPage',
+                ['userId' => $user->getId()]
+            );
+        }
+
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/users/removeRole.html.twig', $this->assignation);
     }
 
     /**
      * @param User $user
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    private function buildEditRolesForm(User $user)
+    private function buildEditRolesForm(User $user): FormInterface
     {
-        $defaults = [
-            'userId' => $user->getId(),
-        ];
-        $builder = $this->createFormBuilder($defaults)
-                        ->add(
-                            'userId',
-                            HiddenType::class,
-                            [
-                                'data' => $user->getId(),
-                                'constraints' => [
-                                    new NotNull(),
-                                    new NotBlank(),
-                                ],
-                            ]
-                        )
-                        ->add(
-                            'roleId',
-                            RolesType::class,
-                            [
-                                'label' => 'choose.role',
-                                'roles' => $user->getRolesEntities(),
-                            ]
-                        );
+        $builder = $this->createFormBuilder()
+            ->add(
+                'roleId',
+                RolesType::class,
+                [
+                    'label' => 'choose.role',
+                    'roles' => $user->getRolesEntities(),
+                ]
+            )
+        ;
 
         return $builder->getForm();
     }

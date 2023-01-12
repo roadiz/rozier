@@ -15,18 +15,17 @@ use Themes\Rozier\Forms\UserDetailsType;
 use Themes\Rozier\Forms\UserType;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Utils\SessionListFilters;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers\Users
- */
 class UsersController extends RozierApp
 {
     /**
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
@@ -54,11 +53,12 @@ class UsersController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $userId
+     * @param int $userId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function editAction(Request $request, int $userId)
+    public function editAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
@@ -108,15 +108,16 @@ class UsersController extends RozierApp
      * @param int $userId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function editDetailsAction(Request $request, int $userId)
+    public function editDetailsAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
         if (
             !(
-            $this->isGranted('ROLE_ACCESS_USERS') ||
-            ($this->getUser() instanceof User && $this->getUser()->getId() == $userId)
+                $this->isGranted('ROLE_ACCESS_USERS') ||
+                ($this->getUser() instanceof User && $this->getUser()->getId() === $userId)
             )
         ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
@@ -168,8 +169,9 @@ class UsersController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function addAction(Request $request)
+    public function addAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS');
 
@@ -200,8 +202,9 @@ class UsersController extends RozierApp
      * @param int $userId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function deleteAction(Request $request, int $userId)
+    public function deleteAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_USERS_DELETE');
         $user = $this->em()->find(User::class, (int) $userId);
