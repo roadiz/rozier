@@ -1,3 +1,10 @@
+## 2.0.18 (2023-01-27)
+
+
+### Bug Fixes
+
+* Fixed DocumentPreviewListItem.vue with Twig filters inside ([8de6fd0](https://github.com/roadiz/rozier/commit/8de6fd08d06f26a07cb16c218784b2644dc4cf64))
+
 ## 2.0.17 (2023-01-02)
 
 ### Bug Fixes
