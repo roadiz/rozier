@@ -1,11 +1,11 @@
 <template>
     <transition name="fade">
-        <li class="image-document uk-sortable-list-item documents-widget-sortable-list-item"
-            v-if="document"
-            data-uk-tooltip="{animation:true, pos:'bottom'}"
+        <li v-if="document"
             :title="document.filename"
-            @mouseover="onMouseover"
-            @mouseleave="onMouseleave">
+            class="image-document uk-sortable-list-item documents-widget-sortable-list-item"
+            data-uk-tooltip="{animation:true, pos:'bottom'}"
+            @mouseleave="onMouseleave"
+            @mouseover="onMouseover">
 
             <div class="preview-zoom" @click.prevent="onPreviewClick">
                 <i class="uk-icon-search-plus"></i>
@@ -44,7 +44,7 @@
                              width="80" height="80"
                              src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
                              v-dynamic-img="document.thumbnail_80" />
-                        <div class="document-platform-icon"><i :class="'uk-icon-file-' + document.shortType +'-o'"></i></div>
+                        <div class="document-platform-icon"><i :class="'uk-icon-file-' + document.icon +'-o'"></i></div>
                     </template>
                     <template v-if="drawerName">
                         <input type="hidden" :name="drawerName + '[' + index +']'" :value="document.id" />
@@ -64,7 +64,7 @@
                     </div>
                     <template v-if="document.isEmbed">
                         <div class="document-mime-type">{{ document.embedPlatform }}</div>
-                        <div class="document-platform-icon"><i :class="'uk-icon-rz-' + document.embedPlatform"></i></div>
+                        <div class="document-platform-icon"><i :class="'uk-icon-rz-' + document.icon"></i></div>
                     </template>
                     <template v-else>
                         <div class="document-mime-type">{{ document.shortMimeType | truncate(13, false, '…') }}</div>
@@ -76,7 +76,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="document-name">{{ document.filename | centralTruncate(12, -4) }}</div>
+                <div class="document-name">{{ filename }}</div>
             </div>
         </li>
     </transition>
@@ -84,15 +84,10 @@
 
 <script>
     import { mapActions } from 'vuex'
-
-    // Filters
     import filters from '../filters'
-
-    // Components
     import AjaxLink from '../components/AjaxLink.vue'
-
-    // Directives
     import DynamicImg from '../directives/DynamicImg'
+    import centralTruncate from '../filters/centralTruncate'
 
     export default {
         props: ['item', 'isItemExplorer', 'drawerName', 'index', 'removeItem', 'addItem'],
@@ -105,6 +100,11 @@
             DynamicImg
         },
         filters: filters,
+        computed: {
+            filename: function () {
+                return centralTruncate(this.document.filename, 12)
+            }
+        },
         methods: {
             ...mapActions([
                 'documentPreviewInit',

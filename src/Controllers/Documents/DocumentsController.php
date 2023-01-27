@@ -27,6 +27,7 @@ use RZ\Roadiz\Documents\Events\DocumentOutFolderEvent;
 use RZ\Roadiz\Documents\Events\DocumentUpdatedEvent;
 use RZ\Roadiz\Documents\Exceptions\APINeedsAuthentificationException;
 use RZ\Roadiz\Documents\MediaFinders\AbstractEmbedFinder;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
 use RZ\Roadiz\Documents\MediaFinders\RandomImageFinder;
 use RZ\Roadiz\Documents\Models\DocumentInterface;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
@@ -78,6 +79,7 @@ class DocumentsController extends RozierApp
         'picture' => true,
         'loading' => 'lazy',
     ];
+    private EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
         array $documentPlatforms,
@@ -89,6 +91,7 @@ class DocumentsController extends RozierApp
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
         UrlGeneratorInterface $urlGenerator,
+        EmbedFinderFactory $embedFinderFactory,
         ?string $googleServerId = null,
         ?string $soundcloudClientId = null
     ) {
@@ -103,6 +106,7 @@ class DocumentsController extends RozierApp
         $this->googleServerId = $googleServerId;
         $this->soundcloudClientId = $soundcloudClientId;
         $this->documentsStorage = $documentsStorage;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -660,7 +664,8 @@ class DocumentsController extends RozierApp
                             $document,
                             $this->renderer,
                             $this->documentUrlGenerator,
-                            $this->urlGenerator
+                            $this->urlGenerator,
+                            $this->embedFinderFactory
                         );
                         return new JsonResponse([
                             'success' => true,

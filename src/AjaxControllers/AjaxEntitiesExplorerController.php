@@ -12,6 +12,7 @@ use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\User;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Config\Definition\Processor;
@@ -34,15 +35,18 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        EmbedFinderFactory $embedFinderFactory
     ) {
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -200,7 +204,8 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
                     $configuration,
                     $this->renderer,
                     $this->documentUrlGenerator,
-                    $this->urlGenerator
+                    $this->urlGenerator,
+                    $this->embedFinderFactory
                 );
                 $entitiesArray[] = $explorerItem->toArray();
             }

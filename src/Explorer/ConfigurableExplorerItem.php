@@ -7,6 +7,7 @@ namespace Themes\Rozier\Explorer;
 use Doctrine\Common\Collections\Collection;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
 use RZ\Roadiz\Documents\Models\DocumentInterface;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
@@ -21,19 +22,22 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private ?EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
         PersistableInterface $entity,
         array &$configuration,
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ?EmbedFinderFactory $embedFinderFactory = null
     ) {
         $this->entity = $entity;
         $this->configuration = $configuration;
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -97,7 +101,8 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
                 $thumbnail,
                 $this->renderer,
                 $this->documentUrlGenerator,
-                $this->urlGenerator
+                $this->urlGenerator,
+                $this->embedFinderFactory
             );
             $thumbnail = $thumbnailModel->toArray();
         } else {

@@ -6,6 +6,7 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,15 +24,18 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        EmbedFinderFactory $embedFinderFactory
     ) {
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     public static array $thumbnailArray = [
@@ -158,7 +162,8 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
                 $doc,
                 $this->renderer,
                 $this->documentUrlGenerator,
-                $this->urlGenerator
+                $this->urlGenerator,
+                $this->embedFinderFactory
             );
             $documentsArray[] = $documentModel->toArray();
         }

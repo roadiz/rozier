@@ -6,6 +6,7 @@ namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\Document;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
 use RZ\Roadiz\Documents\Models\DocumentInterface;
 use RZ\Roadiz\Documents\Models\HasThumbnailInterface;
 use RZ\Roadiz\Documents\Renderer\RendererInterface;
@@ -43,23 +44,27 @@ final class DocumentModel implements ModelInterface
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private ?EmbedFinderFactory $embedFinderFactory;
 
     /**
      * @param DocumentInterface $document
      * @param RendererInterface $renderer
      * @param DocumentUrlGeneratorInterface $documentUrlGenerator
      * @param UrlGeneratorInterface $urlGenerator
+     * @param EmbedFinderFactory|null $embedFinderFactory
      */
     public function __construct(
         DocumentInterface $document,
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ?EmbedFinderFactory $embedFinderFactory = null
     ) {
         $this->document = $document;
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     public function toArray(): array
@@ -89,7 +94,7 @@ final class DocumentModel implements ModelInterface
             $hasThumbnail = true;
         }
 
-        if (!empty($this->document->getRelativePath())) {
+        if (!$this->document->isPrivate() && !empty($this->document->getRelativePath())) {
             $this->documentUrlGenerator->setOptions(DocumentModel::$thumbnail80Array);
             $thumbnail80Url = $this->documentUrlGenerator->getUrl();
             $this->documentUrlGenerator->setOptions(DocumentModel::$previewArray);
@@ -106,6 +111,11 @@ final class DocumentModel implements ModelInterface
             $id = null;
             $editUrl = null;
         }
+
+        $embedFinder = $this->embedFinderFactory->createForPlatform(
+            $this->document->getEmbedPlatform(),
+            $this->document->getEmbedId()
+        );
 
         return [
             'id' => $id,
@@ -124,8 +134,13 @@ final class DocumentModel implements ModelInterface
             'relativePath' => $this->document->getRelativePath(),
             'editUrl' => $editUrl,
             'preview' => $previewUrl,
-            'preview_html' => $this->renderer->render($this->document, DocumentModel::$previewArray),
+            'preview_html' => !$this->document->isPrivate() ?
+                $this->renderer->render($this->document, DocumentModel::$previewArray) :
+                null,
             'embedPlatform' => $this->document->getEmbedPlatform(),
+            'icon' => null !== $embedFinder
+                ? $embedFinder->getShortType()
+                : $this->document->getShortType(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
             'url' => $previewUrl ?? $thumbnail80Url ?? null,
