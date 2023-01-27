@@ -67,7 +67,7 @@
                         <div class="document-platform-icon"><i :class="'uk-icon-rz-' + document.icon"></i></div>
                     </template>
                     <template v-else>
-                        <div class="document-mime-type">{{ document.shortMimeType | truncate(13, false, '…') }}</div>
+                        <div class="document-mime-type">{{ shortMimeType }}</div>
                     </template>
 
                     <a data-document-widget-link-document href="#" class="uk-button uk-button-mini link-button">
@@ -101,6 +101,9 @@
         },
         filters: filters,
         computed: {
+            shortMimeType: function () {
+                return centralTruncate(this.document.shortMimeType, 13)
+            },
             filename: function () {
                 return centralTruncate(this.document.filename, 12)
             }
