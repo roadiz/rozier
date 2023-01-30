@@ -1,6 +1,6 @@
 # Rozier: Roadiz back-office theme
 
-[![Build Status](https://app.travis-ci.com/roadiz/rozier.svg?branch=main)](https://app.travis-ci.com/roadiz/rozier)
+![Run test status](https://github.com/roadiz/rozier/actions/workflows/run-test.yml/badge.svg?branch=develop)
 
 ## Contribute
 
