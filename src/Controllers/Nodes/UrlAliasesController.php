@@ -25,6 +25,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\Forms\NodeSource\NodeSourceSeoType;
 use Themes\Rozier\Forms\RedirectionType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 class UrlAliasesController extends RozierApp
 {
@@ -42,12 +43,13 @@ class UrlAliasesController extends RozierApp
      * Return aliases form for requested node.
      *
      * @param Request $request
-     * @param int     $nodeId
-     * @param int|null  $translationId
+     * @param int $nodeId
+     * @param int|null $translationId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function editAliasesAction(Request $request, int $nodeId, ?int $translationId = null)
+    public function editAliasesAction(Request $request, int $nodeId, ?int $translationId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 

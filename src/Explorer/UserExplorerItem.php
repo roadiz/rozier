@@ -22,9 +22,9 @@ final class UserExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): int|string
     {
-        return $this->user->getId();
+        return $this->user->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
     /**
@@ -54,7 +54,7 @@ final class UserExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getOriginal()
+    public function getOriginal(): User
     {
         return $this->user;
     }

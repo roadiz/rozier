@@ -22,9 +22,9 @@ final class FolderExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): int|string
     {
-        return $this->folder->getId();
+        return $this->folder->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
     /**
@@ -51,7 +51,7 @@ final class FolderExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getOriginal()
+    public function getOriginal(): Folder
     {
         return $this->folder;
     }

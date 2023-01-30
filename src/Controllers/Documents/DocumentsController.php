@@ -568,6 +568,7 @@ class DocumentsController extends RozierApp
      * @param Request $request
      * @param int|null $folderId
      * @return Response
+     * @throws FilesystemException
      */
     public function randomAction(Request $request, ?int $folderId = null): Response
     {
@@ -1030,8 +1031,7 @@ class DocumentsController extends RozierApp
      * @param int|null $folderId
      *
      * @return DocumentInterface|null
-     * @throws \Exception
-     * @throws EntityAlreadyExistsException
+     * @throws FilesystemException
      */
     private function randomDocument(?int $folderId = null): ?DocumentInterface
     {
@@ -1052,8 +1052,9 @@ class DocumentsController extends RozierApp
      * @param AbstractEmbedFinder $finder
      * @param int|null $folderId
      * @return DocumentInterface|array<DocumentInterface>
+     * @throws FilesystemException
      */
-    private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null)
+    private function createDocumentFromFinder(AbstractEmbedFinder $finder, ?int $folderId = null): DocumentInterface|array
     {
         $document = $finder->createDocumentFromFeed($this->em(), $this->documentFactory);
 
@@ -1085,7 +1086,7 @@ class DocumentsController extends RozierApp
      * @return DocumentInterface|null
      * @throws FilesystemException
      */
-    private function uploadDocument($data, ?int $folderId = null): ?DocumentInterface
+    private function uploadDocument(FormInterface $data, ?int $folderId = null): ?DocumentInterface
     {
         $folder = null;
         if (null !== $folderId && $folderId > 0) {

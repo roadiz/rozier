@@ -18,7 +18,6 @@ use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -53,7 +52,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
      * @param NodeTypeField $nodeTypeField
      * @return array
      */
-    protected function getFieldConfiguration(NodeTypeField $nodeTypeField)
+    protected function getFieldConfiguration(NodeTypeField $nodeTypeField): array
     {
         if (
             $nodeTypeField->getType() !== AbstractField::MANY_TO_MANY_T &&
@@ -71,12 +70,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         return $processor->processConfiguration($joinConfig, $configs);
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return Response JSON response
-     */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
@@ -87,6 +81,8 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         /** @var NodeTypeField $nodeTypeField */
         $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
+        /** @var class-string<PersistableInterface> $className */
+        $className = $configuration['classname'];
 
         $orderBy = [];
         foreach ($configuration['orderBy'] as $order) {
@@ -102,7 +98,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
          * Manage get request to filter list
          */
         $listManager = $this->createEntityListManager(
-            $configuration['classname'],
+            $className,
             $criteria,
             $orderBy
         );
@@ -131,7 +127,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request): JsonResponse
     {
         if (!$request->query->has('nodeTypeFieldId')) {
             throw new InvalidParameterException('nodeTypeFieldId parameter is missing.');
@@ -149,6 +145,8 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         /** @var NodeTypeField $nodeTypeField */
         $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
         $configuration = $this->getFieldConfiguration($nodeTypeField);
+        /** @var class-string<PersistableInterface> $className */
+        $className = $configuration['classname'];
 
         $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
             'flags' => \FILTER_FORCE_ARRAY
@@ -156,7 +154,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         $entitiesArray = [];
 
         if (count($cleanNodeIds)) {
-            $entities = $em->getRepository($configuration['classname'])->findBy([
+            $entities = $em->getRepository($className)->findBy([
                 'id' => $cleanNodeIds,
             ]);
 
@@ -179,11 +177,11 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
     /**
      * Normalize response Node list result.
      *
-     * @param array|\Traversable $entities
+     * @param iterable<PersistableInterface> $entities
      * @param array $configuration
      * @return array<array>
      */
-    private function normalizeEntities($entities, array &$configuration): array
+    private function normalizeEntities(iterable $entities, array &$configuration): array
     {
         $entitiesArray = [];
 
@@ -191,13 +189,10 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         foreach ($entities as $entity) {
             if ($entity instanceof Folder) {
                 $explorerItem = new FolderExplorerItem($entity, $this->urlGenerator);
-                $entitiesArray[] = $explorerItem->toArray();
             } elseif ($entity instanceof Setting) {
                 $explorerItem = new SettingExplorerItem($entity, $this->urlGenerator);
-                $entitiesArray[] = $explorerItem->toArray();
             } elseif ($entity instanceof User) {
                 $explorerItem = new UserExplorerItem($entity, $this->urlGenerator);
-                $entitiesArray[] = $explorerItem->toArray();
             } else {
                 $explorerItem = new ConfigurableExplorerItem(
                     $entity,
@@ -207,8 +202,8 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
                     $this->urlGenerator,
                     $this->embedFinderFactory
                 );
-                $entitiesArray[] = $explorerItem->toArray();
             }
+            $entitiesArray[] = $explorerItem->toArray();
         }
 
         return $entitiesArray;

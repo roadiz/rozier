@@ -43,9 +43,9 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): int|string
     {
-        return $this->entity->getId();
+        return $this->entity->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
     /**
@@ -78,7 +78,7 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getOriginal()
+    public function getOriginal(): PersistableInterface
     {
         return $this->entity;
     }

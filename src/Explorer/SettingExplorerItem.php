@@ -22,9 +22,9 @@ final class SettingExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): int|string
     {
-        return $this->setting->getId();
+        return $this->setting->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
     /**
@@ -49,7 +49,7 @@ final class SettingExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getOriginal()
+    public function getOriginal(): Setting
     {
         return $this->setting;
     }
