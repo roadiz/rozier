@@ -285,11 +285,11 @@ class DocumentsController extends RozierApp
                 '%name%' => (string) $document,
             ]);
 
-                return new JsonResponse([
-                    'message' => $msg,
-                    'path' => $this->documentsStorage->publicUrl($document->getMountPath()) . '?' . \random_int(10, 999),
-                ]);
-            }
+            return new JsonResponse([
+                'message' => $msg,
+                'path' => $this->documentsStorage->publicUrl($document->getMountPath()) . '?' . \random_int(10, 999),
+            ]);
+        }
 
         // Create form view and assign it
         $this->assignation['file_form'] = $fileForm->createView();
