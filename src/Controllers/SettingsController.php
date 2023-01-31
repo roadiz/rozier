@@ -13,6 +13,7 @@ use RZ\Roadiz\CoreBundle\Event\Setting\SettingCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Setting\SettingDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Setting\SettingUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Form\SettingType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
@@ -28,13 +29,12 @@ use Twig\Error\RuntimeError;
 class SettingsController extends RozierApp
 {
     private FormFactoryInterface $formFactory;
+    private FormErrorSerializer $formErrorSerializer;
 
-    /**
-     * @param FormFactoryInterface $formFactory
-     */
-    public function __construct(FormFactoryInterface $formFactory)
+    public function __construct(FormFactoryInterface $formFactory, FormErrorSerializer $formErrorSerializer)
     {
         $this->formFactory = $formFactory;
+        $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
@@ -158,11 +158,10 @@ class SettingsController extends RozierApp
                 }
                 // Form can be invalidated during persistance process
                 if (!$form->isValid()) {
-                    $errors = $this->getErrorsAsArray($form);
-                    foreach ($errors as $error) {
-                        $this->publishErrorMessage($request, $error);
-                    }
-
+                    $errors = $this->formErrorSerializer->getErrorsAsArray($form);
+                    /*
+                     * Do not publish any message, it may lead to flushing invalid form
+                     */
                     if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
                         return new JsonResponse([
                             'status' => 'failed',
