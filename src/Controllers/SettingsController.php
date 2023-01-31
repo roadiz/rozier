@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
-use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeRequestEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
 use RZ\Roadiz\CoreBundle\Form\SettingType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -123,6 +127,7 @@ class SettingsController extends RozierApp
                 if ($form->isValid()) {
                     try {
                         $this->resetSettingsCache();
+                        $this->dispatchEvent(new SettingUpdatedEvent($setting));
                         $this->em()->flush();
                         $msg = $this->getTranslator()->trans(
                             'setting.%name%.updated',
@@ -134,7 +139,7 @@ class SettingsController extends RozierApp
                             return new JsonResponse([
                                 'status' => 'success',
                                 'message' => $msg,
-                            ], JsonResponse::HTTP_ACCEPTED);
+                            ], Response::HTTP_ACCEPTED);
                         }
 
                         if (null !== $settingGroup) {
@@ -147,25 +152,28 @@ class SettingsController extends RozierApp
                                 'settingsHomePage'
                             );
                         }
-                    } catch (EntityAlreadyExistsException $e) {
+                    } catch (\RuntimeException $e) {
                         $form->addError(new FormError($e->getMessage()));
                     }
-                } else {
-                    foreach ($this->getErrorsAsArray($form) as $error) {
+                }
+                // Form can be invalidated during persistance process
+                if (!$form->isValid()) {
+                    $errors = $this->getErrorsAsArray($form);
+                    foreach ($errors as $error) {
                         $this->publishErrorMessage($request, $error);
                     }
 
                     if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
                         return new JsonResponse([
                             'status' => 'failed',
-                            'errors' => $this->getErrorsAsArray($form),
-                        ], JsonResponse::HTTP_BAD_REQUEST);
+                            'errors' => $errors,
+                        ], Response::HTTP_BAD_REQUEST);
                     }
                 }
             }
 
             $document = null;
-            if ($setting->getType() == NodeTypeField::DOCUMENTS_T) {
+            if ($setting->getType() == AbstractField::DOCUMENTS_T) {
                 $document = $this->getSettingsBag()->getDocument($setting->getName());
             }
 
@@ -208,6 +216,7 @@ class SettingsController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->resetSettingsCache();
+                $this->dispatchEvent(new SettingUpdatedEvent($setting));
                 $this->em()->flush();
                 $msg = $this->getTranslator()->trans('setting.%name%.updated', ['%name%' => $setting->getName()]);
                 $this->publishConfirmMessage($request, $msg);
@@ -218,7 +227,7 @@ class SettingsController extends RozierApp
                     'settingsEditPage',
                     ['settingId' => $setting->getId()]
                 );
-            } catch (EntityAlreadyExistsException $e) {
+            } catch (\RuntimeException $e) {
                 $form->addError(new FormError($e->getMessage()));
             }
         }
@@ -234,6 +243,7 @@ class SettingsController extends RozierApp
         /** @var CacheProvider|null $cacheDriver */
         $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
         $cacheDriver?->deleteAll();
+        $this->dispatchEvent(new CachePurgeRequestEvent());
     }
 
     /**
@@ -259,6 +269,7 @@ class SettingsController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                $this->dispatchEvent(new SettingCreatedEvent($setting));
                 $this->resetSettingsCache();
                 $this->em()->persist($setting);
                 $this->em()->flush();
@@ -302,17 +313,22 @@ class SettingsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->resetSettingsCache();
-            $this->em()->remove($setting);
-            $this->em()->flush();
+            try {
+                $this->dispatchEvent(new SettingDeletedEvent($setting));
+                $this->resetSettingsCache();
+                $this->em()->remove($setting);
+                $this->em()->flush();
 
-            $msg = $this->getTranslator()->trans('setting.%name%.deleted', ['%name%' => $setting->getName()]);
-            $this->publishConfirmMessage($request, $msg);
+                $msg = $this->getTranslator()->trans('setting.%name%.deleted', ['%name%' => $setting->getName()]);
+                $this->publishConfirmMessage($request, $msg);
 
-            /*
-             * Force redirect to avoid resending form when refreshing page
-             */
-            return $this->redirectToRoute('settingsHomePage');
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute('settingsHomePage');
+            } catch (\RuntimeException $e) {
+                $form->addError(new FormError($e->getMessage()));
+            }
         }
 
         $this->assignation['form'] = $form->createView();
