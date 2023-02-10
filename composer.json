@@ -39,12 +39,12 @@
         "roadiz/core-bundle":                      "~2.1.0 || dev-develop",
         "roadiz/compat-bundle":                    "~2.1.0 || dev-develop",
         "roadiz/rozier-bundle":                    "~2.1.0 || dev-develop",
-        "roadiz/doc-generator":                    "~2.0.0",
+        "roadiz/doc-generator":                    "~2.1.0 || dev-develop",
         "roadiz/documents":                        "~2.1.0 || dev-develop",
-        "roadiz/dts-generator":                    "~2.0.0",
+        "roadiz/dts-generator":                    "~2.1.0 || dev-develop",
         "roadiz/models":                           "~2.1.0 || dev-develop",
         "roadiz/nodetype-contracts":               "~1.1.2",
-        "roadiz/openid":                           "~2.0.0",
+        "roadiz/openid":                           "~2.1.0 || dev-develop",
         "symfony/asset":                           "5.4.*",
         "symfony/filesystem":                      "5.4.*",
         "symfony/form":                            "5.4.*",
@@ -92,6 +92,7 @@
     },
     "extra": {
         "branch-alias": {
+            "dev-main": "2.0-dev",
             "dev-develop": "2.1-dev"
         }
     }
