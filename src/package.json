@@ -8,6 +8,7 @@
     "dev": "better-npm-run dev",
     "dev-livereload": "better-npm-run dev-livereload",
     "build": "better-npm-run build",
+    "clean": "rm -rf node_modules && rm -rf bower_components",
     "start": "npm run dev"
   },
   "betterScripts": {
