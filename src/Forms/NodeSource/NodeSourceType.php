@@ -258,6 +258,7 @@ final class NodeSourceType extends AbstractType
      * @param NodeTypeField $field
      * @param array $formOptions
      * @return array
+     * @throws \ReflectionException
      */
     public function getFormOptionsFromFieldType(NodesSources $nodeSource, NodeTypeField $field, array &$formOptions)
     {

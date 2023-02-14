@@ -283,7 +283,7 @@ export default class LeafletGeotagField {
 
     createLatLng(data) {
         // Data is a Legacy LatLng Object
-        if (data.lat && data.lng) {
+        if (typeof data.lat === 'number' && typeof data.lng === 'number') {
             return new LatLng(data.lat, data.lng, data.zoom || data.alt)
         } else if (data.type && data.type === 'Feature') {
             // Data is a GeoJSON feature
@@ -297,6 +297,7 @@ export default class LeafletGeotagField {
             }
             return latLng
         }
+        throw new Error('Cannot create LatLng object from data')
     }
 
     createIcon() {
