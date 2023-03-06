@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
 use Psr\Log\LoggerInterface;
-use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeAssetsRequestEvent;
 use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeRequestEvent;
+use RZ\Roadiz\Documents\Events\CachePurgeAssetsRequestEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -98,15 +99,9 @@ class CacheController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $event = $this->dispatchEvent(new CachePurgeAssetsRequestEvent());
+            $this->dispatchEvent(new CachePurgeAssetsRequestEvent());
             $msg = $this->getTranslator()->trans('cache.deleted');
             $this->publishConfirmMessage($request, $msg);
-            foreach ($event->getMessages() as $message) {
-                $this->logger->info(sprintf('Cache cleared: %s', $message['description']));
-            }
-            foreach ($event->getErrors() as $message) {
-                $this->publishErrorMessage($request, sprintf('Could not clear cache: %s', $message['description']));
-            }
 
             /*
              * Force redirect to avoid resending form when refreshing page

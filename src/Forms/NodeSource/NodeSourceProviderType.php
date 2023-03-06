@@ -38,9 +38,11 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
     {
         parent::configureOptions($resolver);
 
-        $resolver->setDefault('multiple', false);
+        $resolver->setDefault('multiple', true);
+        $resolver->setDefault('asMultiple', false);
         $resolver->setAllowedTypes('multiple', ['bool']);
-        $resolver->setNormalizer('multiple', function (Options $options) {
+        $resolver->setAllowedTypes('asMultiple', ['bool']);
+        $resolver->setNormalizer('asMultiple', function (Options $options) {
             /** @var NodeTypeField $nodeTypeField */
             $nodeTypeField = $options['nodeTypeField'];
             if ($nodeTypeField->isMultipleProvider()) {
@@ -110,11 +112,9 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             $entities = $provider->getItemsById($ids);
         }
 
-        if (is_array($entities)) {
-            /** @var AbstractExplorerItem $entity */
-            foreach ($entities as $entity) {
-                $displayableData[] = $entity->toArray();
-            }
+        /** @var AbstractExplorerItem $entity */
+        foreach ($entities as $entity) {
+            $displayableData[] = $entity->toArray();
         }
 
         $view->vars['data'] = $displayableData;

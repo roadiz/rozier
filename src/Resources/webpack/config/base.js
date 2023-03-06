@@ -7,7 +7,7 @@ dbg.color = debug.colors[2]
 
 const getConfig = () => {
     let config = {
-        env: process.env.NODE_ENV || 'development'
+        env: process.env.NODE_ENV || 'development',
     }
 
     config = {
@@ -40,7 +40,7 @@ const getConfig = () => {
             colors: true,
             children: false,
             version: false,
-            reasons: false
+            reasons: false,
         },
 
         // ----------------------------------
@@ -84,7 +84,7 @@ const getConfig = () => {
             $: '$',
             jquery: '$',
             jQuery: '$',
-            'window.jQuery': '$'
+            'window.jQuery': '$',
         },
 
         // ----------------------------------
@@ -92,10 +92,10 @@ const getConfig = () => {
         // ----------------------------------
         // ⚠️ : You have to add all these constants to .eslintrc file
         globals: {
-            'DEVELOPMENT': JSON.stringify(config.env === 'development'),
-            'PRODUCTION': JSON.stringify(config.env === 'production'),
-            'ENVIRONMENT': JSON.stringify(config.env)
-        }
+            DEVELOPMENT: JSON.stringify(config.env === 'development'),
+            PRODUCTION: JSON.stringify(config.env === 'production'),
+            ENVIRONMENT: JSON.stringify(config.env),
+        },
     }
 
     config.public_path = ''
@@ -112,7 +112,7 @@ const getConfig = () => {
         base: base,
         client: base.bind(null, config.dir_client),
         dist: base.bind(null, config.dir_dist),
-        views: base.bind(null, config.dir_views)
+        views: base.bind(null, config.dir_views),
     }
 
     dbg('⚙  Exporting default configuration.')

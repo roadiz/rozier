@@ -20,7 +20,7 @@
         </div>
         {% endif %}
         {% if document.isEmbed %}
-            {% set iconName = document.embedPlatform %}
+            {% set iconName = (document|embedFinder).shortType|default(document.embedPlatform) %}
             {% if document.embedPlatform == 'unsplash' or document.embedPlatform == 'splashbase' %}
                 {% set iconName = 'documents' %}
             {% endif %}

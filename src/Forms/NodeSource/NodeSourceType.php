@@ -34,6 +34,7 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Yaml\Yaml;
+use Themes\Rozier\Forms\GeoJsonType;
 use Themes\Rozier\Forms\NodeTreeType;
 
 final class NodeSourceType extends AbstractType
@@ -167,9 +168,11 @@ final class NodeSourceType extends AbstractType
             case AbstractField::COLOUR_T:
                 return ColorType::class;
 
-            case AbstractField::STRING_T:
             case AbstractField::GEOTAG_T:
             case AbstractField::MULTI_GEOTAG_T:
+                return GeoJsonType::class;
+
+            case AbstractField::STRING_T:
                 return TextType::class;
 
             case AbstractField::DATETIME_T:
@@ -255,6 +258,7 @@ final class NodeSourceType extends AbstractType
      * @param NodeTypeField $field
      * @param array $formOptions
      * @return array
+     * @throws \ReflectionException
      */
     public function getFormOptionsFromFieldType(NodesSources $nodeSource, NodeTypeField $field, array &$formOptions)
     {

@@ -44,6 +44,13 @@ export const KEYBOARD_EVENT_SPACE = 'KEYBOARD_EVENT_SPACE'
  * Login Check
  */
 export const LOGIN_CHECK_DISCONNECTED = 'LOGIN_CHECK_DISCONNECTED'
+export const LOGIN_CHECK_CONNECTED = 'LOGIN_CHECK_CONNECTED'
+
+/**
+ * Server health check
+ */
+export const HEALTH_CHECK_FAILED = 'HEALTH_CHECK_FAILED'
+export const HEALTH_CHECK_SUCCEEDED = 'HEALTH_CHECK_SUCCEEDED'
 
 /**
  * Drawers Widget

@@ -40,7 +40,7 @@ final class UsersProvider extends AbstractDoctrineExplorerProvider
     /**
      * @inheritDoc
      */
-    public function toExplorerItem($item): ?ExplorerItemInterface
+    public function toExplorerItem(mixed $item): ?ExplorerItemInterface
     {
         if ($item instanceof User) {
             return new UserExplorerItem($item, $this->urlGenerator);

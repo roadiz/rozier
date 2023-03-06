@@ -4,12 +4,12 @@ import $ from 'jquery'
  * Settings save buttons
  */
 export default class SettingsSaveButtons {
-    constructor () {
+    constructor() {
         // Selectors
         this.$button = $('.uk-button-settings-save')
         this.currentRequest = null
 
-        // Binded methods
+        // Bind methods
         this.buttonClick = this.buttonClick.bind(this)
 
         // Methods
@@ -19,12 +19,12 @@ export default class SettingsSaveButtons {
     /**
      * Init
      */
-    init () {
+    init() {
         // Events
         this.$button.on('click', this.buttonClick)
     }
 
-    unbind () {
+    unbind() {
         this.$button.off('click', this.buttonClick)
     }
 
@@ -33,7 +33,7 @@ export default class SettingsSaveButtons {
      * @param {Event} e
      * @returns {boolean}
      */
-    buttonClick (e) {
+    buttonClick(e) {
         if (this.currentRequest && this.currentRequest.readyState !== 4) {
             this.currentRequest.abort()
         }
@@ -59,7 +59,7 @@ export default class SettingsSaveButtons {
             processData: false,
             cache: false,
             contentType: false,
-            headers: {'Accept': 'application/json'}
+            headers: { Accept: 'application/json' },
         }
 
         this.currentRequest = $.ajax(sendData)
@@ -67,12 +67,16 @@ export default class SettingsSaveButtons {
                 if (data.responseJSON && data.responseJSON.errors && data.responseJSON.errors.value) {
                     for (let key in data.responseJSON.errors.value) {
                         $form.addClass('uk-has-errors')
-                        $form.append('<span class="uk-alert uk-alert-danger">' + data.responseJSON.errors.value[key] + '</span>')
+                        $form.append(
+                            '<span class="uk-alert uk-alert-danger">' + data.responseJSON.errors.value[key] + '</span>'
+                        )
                     }
                 } else if (data.responseJSON && data.responseJSON.errors) {
                     for (let key in data.responseJSON.errors) {
                         $form.addClass('uk-has-errors')
-                        $form.append('<span class="uk-alert uk-alert-danger">' + data.responseJSON.errors[key] + '</span>')
+                        $form.append(
+                            '<span class="uk-alert uk-alert-danger">' + data.responseJSON.errors[key] + '</span>'
+                        )
                         break
                     }
                 }
@@ -88,5 +92,5 @@ export default class SettingsSaveButtons {
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

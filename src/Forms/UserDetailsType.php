@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\User;
-use RZ\Roadiz\CoreBundle\Form\Constraint\ValidFacebookName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
 use Themes\Rozier\RozierApp;
 
 class UserDetailsType extends AbstractType
@@ -20,57 +18,34 @@ class UserDetailsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('publicName', TextType::class, [
+                'label' => 'publicName',
+                'help' => 'user.publicName.help',
+                'required' => false,
+            ])
             ->add('firstName', TextType::class, [
                 'label' => 'firstName',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 255
-                    ])
-                ]
+                'required' => false
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'lastName',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 255
-                    ])
-                ]
+                'required' => false
             ])
             ->add('phone', TextType::class, [
                 'label' => 'phone',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 20
-                    ])
-                ]
+                'required' => false
             ])
             ->add('facebookName', TextType::class, [
                 'label' => 'facebookName',
                 'required' => false,
-                'constraints' => [
-                    new ValidFacebookName(),
-                ],
             ])
             ->add('company', TextType::class, [
                 'label' => 'company',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 255
-                    ])
-                ]
+                'required' => false
             ])
             ->add('job', TextType::class, [
                 'label' => 'job',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 255
-                    ])
-                ]
+                'required' => false
             ])
             ->add('birthday', DateType::class, [
                 'label' => 'birthday',
@@ -89,12 +64,7 @@ class UserDetailsType extends AbstractType
             ])
             ->add('pictureUrl', TextType::class, [
                 'label' => 'pictureUrl',
-                'required' => false,
-                'constraints' => [
-                    new Length([
-                        'max' => 255
-                    ])
-                ]
+                'required' => false
             ])
             ->add('locale', ChoiceType::class, [
                 'label' => 'user.backoffice.language',

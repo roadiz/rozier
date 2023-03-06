@@ -29,9 +29,6 @@ use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\VersionedControllerTrait;
 use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers\Nodes
- */
 class NodesSourcesController extends RozierApp
 {
     use VersionedControllerTrait;
@@ -55,7 +52,7 @@ class NodesSourcesController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function editSourceAction(Request $request, int $nodeId, int $translationId)
+    public function editSourceAction(Request $request, int $nodeId, int $translationId): Response
     {
         $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
 
@@ -195,7 +192,7 @@ class NodesSourcesController extends RozierApp
     }
 
     /**
-     * Return an remove form for requested nodeSource.
+     * Return a remove form for requested nodeSource.
      *
      * @param Request $request
      * @param int     $nodeSourceId
@@ -203,12 +200,12 @@ class NodesSourcesController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function removeAction(Request $request, int $nodeSourceId)
+    public function removeAction(Request $request, int $nodeSourceId): Response
     {
         /** @var NodesSources|null $ns */
         $ns = $this->em()->find(NodesSources::class, $nodeSourceId);
         if (null === $ns) {
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException('Node source does not exist');
         }
         /** @var Node $node */
         $node = $ns->getNode();
@@ -277,33 +274,36 @@ class NodesSourcesController extends RozierApp
         /*
          * Dispatch pre-flush event
          */
-        if ($entity instanceof NodesSources) {
-            $this->dispatchEvent(new NodesSourcesPreUpdatedEvent($entity));
-            $this->em()->flush();
-            $this->dispatchEvent(new NodesSourcesUpdatedEvent($entity));
-
-            $msg = $this->getTranslator()->trans('node_source.%node_source%.updated.%translation%', [
-                '%node_source%' => $entity->getNode()->getNodeName(),
-                '%translation%' => $entity->getTranslation()->getName(),
-            ]);
-
-            $this->publishConfirmMessage($request, $msg, $entity);
+        if (!$entity instanceof NodesSources) {
+            return;
         }
+
+        $this->dispatchEvent(new NodesSourcesPreUpdatedEvent($entity));
+        $this->em()->flush();
+        $this->dispatchEvent(new NodesSourcesUpdatedEvent($entity));
+
+        $msg = $this->getTranslator()->trans('node_source.%node_source%.updated.%translation%', [
+            '%node_source%' => $entity->getNode()->getNodeName(),
+            '%translation%' => $entity->getTranslation()->getName(),
+        ]);
+
+        $this->publishConfirmMessage($request, $msg, $entity);
     }
 
     protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
-        if ($entity instanceof NodesSources) {
-            /** @var Translation $translation */
-            $translation = $entity->getTranslation();
-            return $this->redirectToRoute(
-                'nodesEditSourcePage',
-                [
-                    'nodeId' => $entity->getNode()->getId(),
-                    'translationId' => $translation->getId()
-                ]
-            );
+        if (!$entity instanceof NodesSources) {
+            return null;
         }
-        return null;
+
+        /** @var Translation $translation */
+        $translation = $entity->getTranslation();
+        return $this->redirectToRoute(
+            'nodesEditSourcePage',
+            [
+                'nodeId' => $entity->getNode()->getId(),
+                'translationId' => $translation->getId()
+            ]
+        );
     }
 }

@@ -1,10 +1,7 @@
 import $ from 'jquery'
 
 export default class AttributeValuePosition {
-    /**
-     * Constructor
-     */
-    constructor () {
+    constructor() {
         this.$list = $('.attribute-value-forms > .uk-sortable')
         this.currentRequest = null
 
@@ -14,16 +11,13 @@ export default class AttributeValuePosition {
         this.init()
     }
 
-    /**
-     * Init
-     */
-    init () {
+    init() {
         if (this.$list.length && this.$list.children().length > 1) {
             this.$list.on('change.uk.sortable', this.onSortableChange)
         }
     }
 
-    unbind () {
+    unbind() {
         if (this.$list.length && this.$list.children().length > 1) {
             this.$list.off('change.uk.sortable', this.onSortableChange)
         }
@@ -34,7 +28,7 @@ export default class AttributeValuePosition {
      * @param list
      * @param element
      */
-    onSortableChange (event, list, element) {
+    onSortableChange(event, list, element) {
         if (this.currentRequest && this.currentRequest.readyState !== 4) {
             this.currentRequest.abort()
         }
@@ -56,10 +50,10 @@ export default class AttributeValuePosition {
         }
 
         let postData = {
-            '_token': window.Rozier.ajaxToken,
-            '_action': 'updatePosition',
-            'attributeValueId': attributeValueId,
-            'newPosition': newPosition
+            _token: window.Rozier.ajaxToken,
+            _action: 'updatePosition',
+            attributeValueId: attributeValueId,
+            newPosition: newPosition,
         }
         // TODO: entry point
         if (window.Rozier.routes.attributeValueAjaxEdit) {
@@ -67,26 +61,26 @@ export default class AttributeValuePosition {
                 url: window.Rozier.routes.attributeValueAjaxEdit.replace('%attributeValueId%', attributeValueId),
                 type: 'POST',
                 dataType: 'json',
-                data: postData
+                data: postData,
             })
-            .done(data => {
-                $element.attr('data-position', newPosition)
-                window.UIkit.notify({
-                    message: data.responseText,
-                    status: data.status,
-                    timeout: 3000,
-                    pos: 'top-center'
+                .done((data) => {
+                    $element.attr('data-position', newPosition)
+                    window.UIkit.notify({
+                        message: data.responseText,
+                        status: data.status,
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
                 })
-            })
-            .fail(data => {
-                data = JSON.parse(data.responseText)
-                window.UIkit.notify({
-                    message: data.error_message,
-                    status: 'danger',
-                    timeout: 3000,
-                    pos: 'top-center'
+                .fail((data) => {
+                    data = JSON.parse(data.responseText)
+                    window.UIkit.notify({
+                        message: data.error_message,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
                 })
-            })
         }
     }
 }

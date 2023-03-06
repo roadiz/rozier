@@ -8,6 +8,7 @@ use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\CoreBundle\Form\LoginResetForm;
 use RZ\Roadiz\CoreBundle\Traits\LoginResetTrait;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 
 class LoginResetController extends RozierApp
@@ -18,11 +19,11 @@ class LoginResetController extends RozierApp
      * @param Request $request
      * @param string  $token
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function resetAction(Request $request, string $token)
+    public function resetAction(Request $request, string $token): Response
     {
         /** @var User|null $user */
         $user = $this->getUserByToken($this->em(), $token);
@@ -49,10 +50,7 @@ class LoginResetController extends RozierApp
         return $this->render('@RoadizRozier/login/reset.html.twig', $this->assignation);
     }
 
-    /**
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function confirmAction()
+    public function confirmAction(): Response
     {
         return $this->render('@RoadizRozier/login/resetConfirm.html.twig', $this->assignation);
     }

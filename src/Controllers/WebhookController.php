@@ -29,7 +29,6 @@ final class WebhookController extends AbstractAdminController
         $this->webhookDispatcher = $webhookDispatcher;
     }
 
-
     public function triggerAction(Request $request, string $id): Response
     {
         $this->denyAccessUnlessGranted($this->getRequiredRole());
@@ -37,7 +36,7 @@ final class WebhookController extends AbstractAdminController
         /** @var Webhook|null $item */
         $item = $this->em()->find($this->getEntityClass(), $id);
 
-        if (null === $item || !($item instanceof PersistableInterface)) {
+        if (!($item instanceof PersistableInterface)) {
             throw $this->createNotFoundException();
         }
 

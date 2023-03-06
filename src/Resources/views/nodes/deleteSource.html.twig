@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "delete.translation"|trans|u.truncate(25, '[…]', true) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global">
     <header class="content-header header-node header-node-delete">

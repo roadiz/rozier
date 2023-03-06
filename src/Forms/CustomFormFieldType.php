@@ -12,8 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * @package Themes\Rozier\Forms
@@ -25,10 +23,6 @@ class CustomFormFieldType extends AbstractType
         $builder->add('label', TextType::class, [
                 'label' => 'label',
                 'empty_data' => '',
-                'constraints' => [
-                    new NotNull(),
-                    new NotBlank(),
-                ],
             ])
             ->add('description', MarkdownType::class, [
                 'label' => 'description',

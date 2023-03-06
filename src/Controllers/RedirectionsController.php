@@ -9,9 +9,6 @@ use RZ\Roadiz\CoreBundle\Entity\Redirection;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Forms\RedirectionType;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class RedirectionsController extends AbstractAdminController
 {
     /**

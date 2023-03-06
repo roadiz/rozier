@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 class NodesAttributesController extends RozierApp
 {
@@ -34,10 +35,11 @@ class NodesAttributesController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $nodeId
-     * @param int     $translationId
+     * @param int $nodeId
+     * @param int $translationId
      *
      * @return Response
+     * @throws RuntimeError
      */
     public function editAction(Request $request, int $nodeId, int $translationId): Response
     {

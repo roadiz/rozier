@@ -9,6 +9,7 @@ use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Importer\NodeTypesImporter;
+use RZ\Roadiz\CoreBundle\Message\UpdateDoctrineSchemaMessage;
 use RZ\Roadiz\Documentation\Generators\DocumentationGenerator;
 use RZ\Roadiz\Typescript\Declaration\DeclarationGeneratorFactory;
 use RZ\Roadiz\Typescript\Declaration\Generators\DeclarationGenerator;
@@ -20,31 +21,29 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 use ZipArchive;
 
-/**
- * @package Themes\Rozier\Controllers\NodeTypes
- */
 class NodeTypesUtilsController extends RozierApp
 {
     private SerializerInterface $serializer;
     private NodeTypes $nodeTypesBag;
     private NodeTypesImporter $nodeTypesImporter;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param SerializerInterface $serializer
-     * @param NodeTypes $nodeTypesBag
-     * @param NodeTypesImporter $nodeTypesImporter
-     */
     public function __construct(
         SerializerInterface $serializer,
         NodeTypes $nodeTypesBag,
-        NodeTypesImporter $nodeTypesImporter
+        NodeTypesImporter $nodeTypesImporter,
+        MessageBusInterface $messageBus
     ) {
         $this->serializer = $serializer;
         $this->nodeTypesBag = $nodeTypesBag;
         $this->nodeTypesImporter = $nodeTypesImporter;
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -55,7 +54,7 @@ class NodeTypesUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportJsonFileAction(Request $request, int $nodeTypeId)
+    public function exportJsonFileAction(Request $request, int $nodeTypeId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -85,7 +84,7 @@ class NodeTypesUtilsController extends RozierApp
      *
      * @return BinaryFileResponse
      */
-    public function exportDocumentationAction(Request $request)
+    public function exportDocumentationAction(Request $request): BinaryFileResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -121,7 +120,7 @@ class NodeTypesUtilsController extends RozierApp
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'documentation-' . date('Y-m-d-H-i-s') . '.zip'
         );
-        $response->prepare($request);
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
@@ -131,7 +130,7 @@ class NodeTypesUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportTypeScriptDeclarationAction(Request $request)
+    public function exportTypeScriptDeclarationAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -152,7 +151,7 @@ class NodeTypesUtilsController extends RozierApp
      * @param Request $request
      * @return BinaryFileResponse
      */
-    public function exportAllAction(Request $request)
+    public function exportAllAction(Request $request): BinaryFileResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -183,7 +182,7 @@ class NodeTypesUtilsController extends RozierApp
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'nodetypes-' . date('Y-m-d-H-i-s') . '.zip'
         );
-        $response->prepare($request);
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
@@ -194,8 +193,9 @@ class NodeTypesUtilsController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function importJsonFileAction(Request $request)
+    public function importJsonFileAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -217,10 +217,12 @@ class NodeTypesUtilsController extends RozierApp
                     $this->nodeTypesImporter->import($serializedData);
                     $this->em()->flush();
 
+                    $this->messageBus->dispatch(new Envelope(new UpdateDoctrineSchemaMessage()));
+
                     /*
                      * Redirect to update schema page
                      */
-                    return $this->redirectToRoute('nodeTypesSchemaUpdate');
+                    return $this->redirectToRoute('nodeTypesHomePage');
                 }
                 $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {

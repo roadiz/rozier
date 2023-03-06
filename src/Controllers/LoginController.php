@@ -5,35 +5,27 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
-use RZ\Roadiz\Utils\Asset\Packages;
-use RZ\Roadiz\Utils\MediaFinders\RandomImageFinder;
-use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\Documents\MediaFinders\RandomImageFinder;
+use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class LoginController extends RozierApp
 {
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private Packages $packages;
     private RandomImageFinder $randomImageFinder;
 
     /**
      * @param DocumentUrlGeneratorInterface $documentUrlGenerator
-     * @param Packages $packages
      * @param RandomImageFinder $randomImageFinder
      */
     public function __construct(
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        Packages $packages,
         RandomImageFinder $randomImageFinder
     ) {
         $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->packages = $packages;
         $this->randomImageFinder = $randomImageFinder;
     }
 
@@ -42,7 +34,7 @@ class LoginController extends RozierApp
      *
      * @return Response
      */
-    public function imageAction(Request $request)
+    public function imageAction(Request $request): Response
     {
         $response = new JsonResponse();
         if (null !== $document = $this->getSettingsBag()->getDocument('login_image')) {
@@ -68,7 +60,7 @@ class LoginController extends RozierApp
             $url = $feed['url'] ?? $feed['urls']['regular'] ?? $feed['urls']['full'] ?? $feed['urls']['raw'] ?? null;
         }
         $response->setData([
-            'url' => $url ?? $this->packages->getUrl('themes/Rozier/static/assets/img/default_login.jpg')
+            'url' => '/themes/Rozier/static/assets/img/default_login.jpg'
         ]);
         return $this->makeResponseCachable($request, $response, 60, true);
     }

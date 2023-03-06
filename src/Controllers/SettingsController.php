@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
-use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
+use RZ\Roadiz\CoreBundle\Event\Cache\CachePurgeRequestEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingCreatedEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingDeletedEvent;
+use RZ\Roadiz\CoreBundle\Event\Setting\SettingUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Form\SettingType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
@@ -18,27 +23,29 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
+use Twig\Error\RuntimeError;
 
 class SettingsController extends RozierApp
 {
     private FormFactoryInterface $formFactory;
+    private FormErrorSerializer $formErrorSerializer;
 
-    /**
-     * @param FormFactoryInterface $formFactory
-     */
-    public function __construct(FormFactoryInterface $formFactory)
+    public function __construct(FormFactoryInterface $formFactory, FormErrorSerializer $formErrorSerializer)
     {
         $this->formFactory = $formFactory;
+        $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
-     * List every settings.
+     * List every setting.
      *
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
@@ -51,28 +58,29 @@ class SettingsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $settingGroupId
+     * @param int $settingGroupId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function byGroupAction(Request $request, int $settingGroupId)
+    public function byGroupAction(Request $request, int $settingGroupId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         /** @var SettingGroup|null $settingGroup */
         $settingGroup = $this->em()->find(SettingGroup::class, $settingGroupId);
 
-        if ($settingGroup !== null) {
-            $this->assignation['settingGroup'] = $settingGroup;
-
-            if (null !== $response = $this->commonSettingList($request, $settingGroup)) {
-                return $response->send();
-            }
-
-            return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
+        if ($settingGroup === null) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['settingGroup'] = $settingGroup;
+
+        if (null !== $response = $this->commonSettingList($request, $settingGroup)) {
+            return $response->send();
+        }
+
+        return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
     }
 
     /**
@@ -81,7 +89,7 @@ class SettingsController extends RozierApp
      *
      * @return Response|null
      */
-    protected function commonSettingList(Request $request, SettingGroup $settingGroup = null)
+    protected function commonSettingList(Request $request, SettingGroup $settingGroup = null): ?Response
     {
         $criteria = [];
         if (null !== $settingGroup) {
@@ -96,6 +104,13 @@ class SettingsController extends RozierApp
             ['name' => 'ASC']
         );
         $listManager->setDisplayingNotPublishedNodes(true);
+
+        /*
+         * Stored in session
+         */
+        $sessionListFilter = new SessionListFilters('settings_item_per_page');
+        $sessionListFilter->handleItemPerPage($request, $listManager);
+
         $listManager->handle();
 
         $this->assignation['filters'] = $listManager->getAssignation();
@@ -112,6 +127,7 @@ class SettingsController extends RozierApp
                 if ($form->isValid()) {
                     try {
                         $this->resetSettingsCache();
+                        $this->dispatchEvent(new SettingUpdatedEvent($setting));
                         $this->em()->flush();
                         $msg = $this->getTranslator()->trans(
                             'setting.%name%.updated',
@@ -123,7 +139,7 @@ class SettingsController extends RozierApp
                             return new JsonResponse([
                                 'status' => 'success',
                                 'message' => $msg,
-                            ], JsonResponse::HTTP_ACCEPTED);
+                            ], Response::HTTP_ACCEPTED);
                         }
 
                         if (null !== $settingGroup) {
@@ -136,25 +152,27 @@ class SettingsController extends RozierApp
                                 'settingsHomePage'
                             );
                         }
-                    } catch (EntityAlreadyExistsException $e) {
+                    } catch (\RuntimeException $e) {
                         $form->addError(new FormError($e->getMessage()));
                     }
-                } else {
-                    foreach ($this->getErrorsAsArray($form) as $error) {
-                        $this->publishErrorMessage($request, $error);
-                    }
-
+                }
+                // Form can be invalidated during persistance process
+                if (!$form->isValid()) {
+                    $errors = $this->formErrorSerializer->getErrorsAsArray($form);
+                    /*
+                     * Do not publish any message, it may lead to flushing invalid form
+                     */
                     if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
                         return new JsonResponse([
                             'status' => 'failed',
-                            'errors' => $this->getErrorsAsArray($form),
-                        ], JsonResponse::HTTP_BAD_REQUEST);
+                            'errors' => $errors,
+                        ], Response::HTTP_BAD_REQUEST);
                     }
                 }
             }
 
             $document = null;
-            if ($setting->getType() == NodeTypeField::DOCUMENTS_T) {
+            if ($setting->getType() == AbstractField::DOCUMENTS_T) {
                 $document = $this->getSettingsBag()->getDocument($setting->getName());
             }
 
@@ -172,68 +190,70 @@ class SettingsController extends RozierApp
      * Return an edition form for requested setting.
      *
      * @param Request $request
-     * @param int     $settingId
+     * @param int $settingId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function editAction(Request $request, int $settingId)
+    public function editAction(Request $request, int $settingId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
         /** @var Setting|null $setting */
         $setting = $this->em()->find(Setting::class, $settingId);
 
-        if ($setting !== null) {
-            $this->assignation['setting'] = $setting;
-
-            $form = $this->createForm(SettingType::class, $setting, [
-                'shortEdit' => false
-            ]);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $this->resetSettingsCache();
-                    $this->em()->flush();
-                    $msg = $this->getTranslator()->trans('setting.%name%.updated', ['%name%' => $setting->getName()]);
-                    $this->publishConfirmMessage($request, $msg);
-                    /*
-                     * Force redirect to avoid resending form when refreshing page
-                     */
-                    return $this->redirectToRoute(
-                        'settingsEditPage',
-                        ['settingId' => $setting->getId()]
-                    );
-                } catch (EntityAlreadyExistsException $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                }
-            }
-
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/settings/edit.html.twig', $this->assignation);
+        if ($setting === null) {
+            throw $this->createNotFoundException();
         }
 
-        throw $this->createNotFoundException();
+        $this->assignation['setting'] = $setting;
+
+        $form = $this->createForm(SettingType::class, $setting, [
+            'shortEdit' => false
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->resetSettingsCache();
+                $this->dispatchEvent(new SettingUpdatedEvent($setting));
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans('setting.%name%.updated', ['%name%' => $setting->getName()]);
+                $this->publishConfirmMessage($request, $msg);
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute(
+                    'settingsEditPage',
+                    ['settingId' => $setting->getId()]
+                );
+            } catch (\RuntimeException $e) {
+                $form->addError(new FormError($e->getMessage()));
+            }
+        }
+
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/settings/edit.html.twig', $this->assignation);
     }
 
     protected function resetSettingsCache(): void
     {
         $this->getSettingsBag()->reset();
-        /** @var CacheProvider $cacheDriver */
+        /** @var CacheProvider|null $cacheDriver */
         $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
-        if ($cacheDriver !== null) {
-            $cacheDriver->deleteAll();
-        }
+        $cacheDriver?->deleteAll();
+        $this->dispatchEvent(new CachePurgeRequestEvent());
     }
 
     /**
-     * Return an creation form for requested setting.
+     * Return a creation form for requested setting.
      *
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function addAction(Request $request)
+    public function addAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
@@ -248,6 +268,7 @@ class SettingsController extends RozierApp
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                $this->dispatchEvent(new SettingCreatedEvent($setting));
                 $this->resetSettingsCache();
                 $this->em()->persist($setting);
                 $this->em()->flush();
@@ -266,27 +287,33 @@ class SettingsController extends RozierApp
     }
 
     /**
-     * Return an deletion form for requested setting.
+     * Return a deletion form for requested setting.
      *
      * @param Request $request
-     * @param int     $settingId
+     * @param int $settingId
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function deleteAction(Request $request, int $settingId)
+    public function deleteAction(Request $request, int $settingId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         /** @var Setting|null $setting */
         $setting = $this->em()->find(Setting::class, $settingId);
 
-        if (null !== $setting) {
-            $this->assignation['setting'] = $setting;
+        if (null === $setting) {
+            throw new ResourceNotFoundException();
+        }
 
-            $form = $this->createForm(FormType::class, $setting);
-            $form->handleRequest($request);
+        $this->assignation['setting'] = $setting;
 
-            if ($form->isSubmitted() && $form->isValid()) {
+        $form = $this->createForm(FormType::class, $setting);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->dispatchEvent(new SettingDeletedEvent($setting));
                 $this->resetSettingsCache();
                 $this->em()->remove($setting);
                 $this->em()->flush();
@@ -298,13 +325,13 @@ class SettingsController extends RozierApp
                  * Force redirect to avoid resending form when refreshing page
                  */
                 return $this->redirectToRoute('settingsHomePage');
+            } catch (\RuntimeException $e) {
+                $form->addError(new FormError($e->getMessage()));
             }
-
-            $this->assignation['form'] = $form->createView();
-
-            return $this->render('@RoadizRozier/settings/delete.html.twig', $this->assignation);
         }
 
-        throw new ResourceNotFoundException();
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/settings/delete.html.twig', $this->assignation);
     }
 }

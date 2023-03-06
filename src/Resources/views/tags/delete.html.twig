@@ -1,5 +1,11 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {{ "delete.tag.%name%"|trans({'%name%': tag.getTagName })|u.truncate(25, '[…]', true) }}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global">
 
@@ -20,6 +26,5 @@
             </fieldset>
         {{ form_end(form) }}
     </article>
-
 </section>
 {% endblock %}

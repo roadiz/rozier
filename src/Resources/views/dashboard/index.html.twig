@@ -6,6 +6,8 @@
     {% set displayName = '' %}
 {% endif %}
 
+{% block title %}{% trans %}dashboard{% endtrans %} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global">
     <header class="content-header dashboard-header">

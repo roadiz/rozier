@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "delete.nodeType.%name%"|trans({'%name%': nodeType.getDisplayName}) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global">
 

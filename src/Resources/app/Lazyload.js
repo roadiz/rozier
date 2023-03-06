@@ -1,31 +1,3 @@
-/*
- * Copyright (c) 2017. Ambroise Maupate and Julien Blanchet
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is furnished
- * to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of the ROADIZ shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Ambroise Maupate and Julien Blanchet.
- *
- * @file lazyload.js
- * @author Adrien Scholaert <adrien@rezo-zero.com>
- */
-
 import $ from 'jquery'
 import { Expo, TweenLite } from 'gsap'
 import DocumentsBulk from './components/bulk-edits/DocumentsBulk'
@@ -61,7 +33,7 @@ import MainTreeTabs from './components/tabs/MainTreeTabs'
  * Lazyload
  */
 export default class Lazyload {
-    constructor () {
+    constructor() {
         this.$linksSelector = null
         this.$canvasLoaderContainer = null
         this.documentsList = null
@@ -91,7 +63,7 @@ export default class Lazyload {
         this.yamlEditors = []
         this.$window = $(window)
 
-        // Binded methods
+        // Bind methods
         this.onPopState = this.onPopState.bind(this)
         this.onClick = this.onClick.bind(this)
 
@@ -113,7 +85,7 @@ export default class Lazyload {
     /**
      * Init loader
      */
-    initLoader () {
+    initLoader() {
         this.canvasLoader = new window.CanvasLoader('canvasloader-container')
         this.canvasLoader.setColor(this.mainColor)
         this.canvasLoader.setShape('square')
@@ -123,7 +95,7 @@ export default class Lazyload {
         this.canvasLoader.setFPS(30)
     }
 
-    parseLinks () {
+    parseLinks() {
         this.$linksSelector = $("a:not('[target=_blank]')").not('.rz-no-ajax-link').not('[download]').not('[href="#"]')
     }
 
@@ -131,15 +103,17 @@ export default class Lazyload {
      * Bind links to load pages
      * @param {Event} event
      */
-    onClick (event) {
+    onClick(event) {
         let $link = $(event.currentTarget)
         let href = $link.attr('href')
 
-        if (typeof href !== 'undefined' &&
+        if (
+            typeof href !== 'undefined' &&
             !$link.hasClass('rz-no-ajax-link') &&
             href !== '' &&
             href !== '#' &&
-            (href.indexOf(window.Rozier.baseUrl) >= 0 || href.charAt(0) === '/' || href.charAt(0) === '?')) {
+            (href.indexOf(window.Rozier.baseUrl) >= 0 || href.charAt(0) === '/' || href.charAt(0) === '?')
+        ) {
             event.preventDefault()
 
             if (this.clickTimeout) {
@@ -159,7 +133,7 @@ export default class Lazyload {
      * On pop state
      * @param {Event} event
      */
-    onPopState (event) {
+    onPopState(event) {
         let state = null
 
         if (event !== null && event.originalEvent) {
@@ -181,7 +155,7 @@ export default class Lazyload {
      * @param {Object} state
      * @param {Object} location
      */
-    loadContent (state, location) {
+    loadContent(state, location) {
         /*
          * Delay loading if user is click like devil
          */
@@ -205,43 +179,43 @@ export default class Lazyload {
                 data: state.headerData,
                 beforeSend: (xhr) => {
                     xhr.setRequestHeader('X-Partial', true)
-                }
+                },
             })
-            .done(data => {
-                this.applyContent(data)
-                this.canvasLoader.hide()
-                let pageLoadEvent = new CustomEvent('pageload', { 'detail': data })
-                window.dispatchEvent(pageLoadEvent)
-            })
-            .fail(data => {
-                if (typeof data.responseText !== 'undefined') {
-                    try {
-                        let exception = JSON.parse(data.responseText)
+                .done((data) => {
+                    this.applyContent(data)
+                    this.canvasLoader.hide()
+                    let pageLoadEvent = new CustomEvent('pageload', { detail: data })
+                    window.dispatchEvent(pageLoadEvent)
+                })
+                .fail((data) => {
+                    if (typeof data.responseText !== 'undefined') {
+                        try {
+                            let exception = JSON.parse(data.responseText)
+                            window.UIkit.notify({
+                                message: exception.message,
+                                status: 'danger',
+                                timeout: 3000,
+                                pos: 'top-center',
+                            })
+                        } catch (e) {
+                            // No valid JsonResponse, need to refresh page
+                            window.location.href = location.href
+                        }
+                    } else {
                         window.UIkit.notify({
-                            message: exception.message,
+                            message: window.Rozier.messages.forbiddenPage,
                             status: 'danger',
                             timeout: 3000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
-                    } catch (e) {
-                        // No valid JsonResponse, need to refresh page
-                        window.location.href = location.href
                     }
-                } else {
-                    window.UIkit.notify({
-                        message: window.Rozier.messages.forbiddenPage,
-                        status: 'danger',
-                        timeout: 3000,
-                        pos: 'top-center'
-                    })
-                }
 
-                this.canvasLoader.hide()
-            })
+                    this.canvasLoader.hide()
+                })
         }, 100)
     }
 
-    refreshCodemirrorEditor () {
+    refreshCodemirrorEditor() {
         for (let editor of this.markdownEditors) {
             editor.forceEditorUpdate()
         }
@@ -257,11 +231,12 @@ export default class Lazyload {
     }
 
     /**
-     * Apply content to main content
-     * @param {[type]} data [description]
-     * @return {[type]}      [description]
+     * Apply content to main content.
+     *
+     * @param {string} data
+     * @return {void}
      */
-    applyContent (data) {
+    applyContent(data) {
         let $container = $('#main-content-scrollable')
         let $old = $container.find('.content-global')
 
@@ -269,13 +244,24 @@ export default class Lazyload {
         /*
          * If AJAX request data is an entire HTML page.
          */
+        /** @var {jQuery} $ajaxRoot */
         const $ajaxRoot = $tempData.find('[data-ajax-root]')
         if ($ajaxRoot.length) {
             $tempData = $($ajaxRoot.html())
         }
 
         $tempData.addClass('new-content-global')
+        // Removed previous ajax meta[title] tags
+        $container.find('meta[name="title"]').remove()
+        // Append Ajax loaded data to DOM
         $container.append($tempData)
+
+        /** @var {jQuery} $metaTitle */
+        const $metaTitle = $container.find('meta[name="title"]')
+        if ($metaTitle.length) {
+            document.title = $metaTitle[0].getAttribute('content')
+        }
+
         $tempData = $container.find('.new-content-global')
 
         $old.fadeOut(100, () => {
@@ -289,7 +275,7 @@ export default class Lazyload {
         })
     }
 
-    bindAjaxLink () {
+    bindAjaxLink() {
         this.parseLinks()
         this.$linksSelector.off('click', this.onClick)
         this.$linksSelector.on('click', this.onClick)
@@ -299,7 +285,7 @@ export default class Lazyload {
      * General bind on page load
      * @return {[type]} [description]
      */
-    generalBind () {
+    generalBind() {
         this.generalUnbind([
             this.documentsBulk,
             this.mainTreeTabs,
@@ -321,7 +307,7 @@ export default class Lazyload {
             this.nodeTypeFieldEdit,
             this.nodeEditSource,
             this.tagEdit,
-            this.nodeTree
+            this.nodeTree,
         ])
         this.bindAjaxLink()
         this.markdownEditors = []
@@ -369,7 +355,7 @@ export default class Lazyload {
 
         // Animate actions menu
         if ($('.actions-menu').length) {
-            TweenLite.to('.actions-menu', 0.5, {right: 0, delay: 0.4, ease: Expo.easeOut})
+            TweenLite.to('.actions-menu', 0.5, { right: 0, delay: 0.4, ease: Expo.easeOut })
         }
 
         window.Rozier.initNestables()
@@ -381,14 +367,13 @@ export default class Lazyload {
 
         window.Rozier.getMessages()
 
-        if (typeof window.Rozier.importRoutes !== 'undefined' &&
-            window.Rozier.importRoutes !== null) {
+        if (typeof window.Rozier.importRoutes !== 'undefined' && window.Rozier.importRoutes !== null) {
             window.Rozier.import = new Import(window.Rozier.importRoutes)
             window.Rozier.importRoutes = null
         }
     }
 
-    generalUnbind (objects) {
+    generalUnbind(objects) {
         for (let object of objects) {
             if (object) {
                 object.unbind()
@@ -396,7 +381,7 @@ export default class Lazyload {
         }
     }
 
-    initCollectionsForms ($scope = null) {
+    initCollectionsForms($scope = null) {
         const _this = this
         let $types = null
         if ($scope !== null) {
@@ -425,12 +410,12 @@ export default class Lazyload {
                         window.Rozier.vueApp.mainContentComponents.push(window.Rozier.vueApp.buildComponent(el))
                     })
                     return true
-                }
+                },
             })
         }
     }
 
-    initColorPickers ($scope) {
+    initColorPickers($scope) {
         let $colorPickerInput = $('.colorpicker-input')
 
         if ($scope && $scope.length) {
@@ -443,7 +428,7 @@ export default class Lazyload {
         }
     }
 
-    initBootstrapSwitches ($scope) {
+    initBootstrapSwitches($scope) {
         let $checkboxes = $('.rz-boolean-checkbox')
         if ($scope && $scope.length) {
             $checkboxes = $scope.find('.rz-boolean-checkbox')
@@ -451,11 +436,11 @@ export default class Lazyload {
 
         // Switch checkboxes
         $checkboxes.bootstrapSwitch({
-            size: 'small'
+            size: 'small',
         })
     }
 
-    initMarkdownEditors ($scope) {
+    initMarkdownEditors($scope) {
         // Init markdown-preview
         let $textareasMarkdown = []
         if ($scope && $scope.length) {
@@ -472,7 +457,7 @@ export default class Lazyload {
         }
     }
 
-    initJsonEditors ($scope) {
+    initJsonEditors($scope) {
         // Init json-preview
         let $textareasJson = []
         if ($scope && $scope.length) {
@@ -488,7 +473,7 @@ export default class Lazyload {
         }
     }
 
-    initCssEditors ($scope) {
+    initCssEditors($scope) {
         // Init css-preview
         let $textareasCss = []
         if ($scope && $scope.length) {
@@ -505,7 +490,7 @@ export default class Lazyload {
         }
     }
 
-    initYamlEditors ($scope) {
+    initYamlEditors($scope) {
         // Init yaml-preview
         let $textareasYaml = []
         if ($scope && $scope.length) {
@@ -522,12 +507,12 @@ export default class Lazyload {
         }
     }
 
-    initFilterBars () {
+    initFilterBars() {
         const $selectItemPerPage = $('select.item-per-page')
 
         if ($selectItemPerPage.length) {
             $selectItemPerPage.off('change')
-            $selectItemPerPage.on('change', event => {
+            $selectItemPerPage.on('change', (event) => {
                 $(event.currentTarget).parents('form').submit()
             })
         }
@@ -536,9 +521,10 @@ export default class Lazyload {
     /**
      * Resize
      */
-    resize () {
+    resize() {
         if (this.$canvasLoaderContainer.length) {
-            this.$canvasLoaderContainer[0].style.left = window.Rozier.mainContentScrollableOffsetLeft + (window.Rozier.mainContentScrollableWidth / 2) + 'px'
+            this.$canvasLoaderContainer[0].style.left =
+                window.Rozier.mainContentScrollableOffsetLeft + window.Rozier.mainContentScrollableWidth / 2 + 'px'
         }
     }
 }

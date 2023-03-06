@@ -1,5 +1,11 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {{ "edit.tag.%name%"|trans({'%name%': tag.getTagName })|u.truncate(25, '[…]', true) }}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global edit-tag">
 

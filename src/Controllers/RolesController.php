@@ -13,9 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\Forms\RoleType;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class RolesController extends AbstractAdminController
 {
     /**

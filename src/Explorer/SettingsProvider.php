@@ -40,7 +40,7 @@ final class SettingsProvider extends AbstractDoctrineExplorerProvider
     /**
      * @inheritDoc
      */
-    public function toExplorerItem($item): ?ExplorerItemInterface
+    public function toExplorerItem(mixed $item): ?ExplorerItemInterface
     {
         if ($item instanceof Setting) {
             return new SettingExplorerItem($item, $this->urlGenerator);

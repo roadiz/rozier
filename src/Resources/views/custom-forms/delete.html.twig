@@ -1,5 +1,7 @@
 {% extends "@RoadizRozier/admin/base.html.twig" %}
 
+{% block title %}{{- "delete.customForm.%name%"|trans({'%name%': item.displayName})|u.truncate(30, '[…]', true) -}} | {{ parent() }}{% endblock %}
+
 {%- block content_title -%}
     {{- "delete.customForm.%name%"|trans({'%name%': item.displayName})|u.truncate(30, '[…]', true) -}}
 {%- endblock -%}

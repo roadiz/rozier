@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "edit.attribute.%name%"|trans({'%name%': item.code}) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global edit-item">
 

@@ -40,7 +40,7 @@ final class FoldersProvider extends AbstractDoctrineExplorerProvider
     /**
      * @inheritDoc
      */
-    public function toExplorerItem($item): ?ExplorerItemInterface
+    public function toExplorerItem(mixed $item): ?ExplorerItemInterface
     {
         if ($item instanceof Folder) {
             return new FolderExplorerItem($item, $this->urlGenerator);

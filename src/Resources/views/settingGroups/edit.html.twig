@@ -1,5 +1,11 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{%- block title -%}
+    {{- "edit.settingGroup.%name%"|trans({'%name%': item.name })|u.truncate(25, '[…]', true) -}}
+    |
+    {{ parent() -}}
+{%- endblock -%}
+
 {% block content %}
 <section class="content-global">
 

@@ -19,9 +19,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\RozierApp;
 
-/**
- * @package Themes\Rozier\Controllers\Users
- */
 class UsersGroupsController extends RozierApp
 {
     public function editGroupsAction(Request $request, int $userId): Response
@@ -133,7 +130,7 @@ class UsersGroupsController extends RozierApp
      *
      * @return FormInterface
      */
-    private function buildEditGroupsForm(User $user)
+    private function buildEditGroupsForm(User $user): FormInterface
     {
         $defaults = [
             'userId' => $user->getId(),

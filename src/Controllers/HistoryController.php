@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * Display CMS logs.
@@ -34,8 +35,9 @@ class HistoryController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_LOGS');
 
@@ -69,7 +71,7 @@ class HistoryController extends RozierApp
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function userAction(Request $request, int $userId)
+    public function userAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted(['ROLE_BACKEND_USER', 'ROLE_ACCESS_LOGS']);
 
@@ -77,34 +79,34 @@ class HistoryController extends RozierApp
             !($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
             || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))
         ) {
-            throw new AccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
+            throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
 
         /** @var User|null $user */
         $user = $this->em()->find(User::class, $userId);
 
-        if (null !== $user) {
-            /*
-             * Manage get request to filter list
-             */
-            $listManager = $this->createEntityListManager(
-                Log::class,
-                ['user' => $user],
-                ['datetime' => 'DESC']
-            );
-            $listManager->setDisplayingNotPublishedNodes(true);
-            $listManager->setDisplayingAllNodesStatuses(true);
-            $listManager->setItemPerPage(30);
-            $listManager->handle();
-
-            $this->assignation['filters'] = $listManager->getAssignation();
-            $this->assignation['logs'] = $listManager->getEntities();
-            $this->assignation['levels'] = static::$levelToHuman;
-            $this->assignation['user'] = $user;
-
-            return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
+        if (null === $user) {
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        /*
+         * Manage get request to filter list
+         */
+        $listManager = $this->createEntityListManager(
+            Log::class,
+            ['user' => $user],
+            ['datetime' => 'DESC']
+        );
+        $listManager->setDisplayingNotPublishedNodes(true);
+        $listManager->setDisplayingAllNodesStatuses(true);
+        $listManager->setItemPerPage(30);
+        $listManager->handle();
+
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['logs'] = $listManager->getEntities();
+        $this->assignation['levels'] = static::$levelToHuman;
+        $this->assignation['user'] = $user;
+
+        return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
     }
 }

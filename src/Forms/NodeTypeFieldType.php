@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\CoreBundle\Form\Constraint\NonSqlReservedWord;
-use RZ\Roadiz\CoreBundle\Form\Constraint\SimpleLatinString;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -14,9 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * @package Themes\Rozier\Forms
@@ -29,23 +24,11 @@ class NodeTypeFieldType extends AbstractType
             'label' => 'name',
             'empty_data' => '',
             'help' => 'technical_name_for_database_and_templating',
-            'constraints' => [
-                new NotNull(),
-                new NotBlank(),
-                new NonSqlReservedWord(),
-                new SimpleLatinString(),
-                new Length([
-                    'max' => 255,
-                ])
-            ],
         ])
         ->add('label', TextType::class, [
             'label' => 'label',
             'help' => 'human_readable_field_name',
-            'constraints' => [
-                new NotNull(),
-                new NotBlank(),
-            ],
+            'empty_data' => '',
         ])
         ->add('type', ChoiceType::class, [
             'label' => 'type',

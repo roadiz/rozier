@@ -71,7 +71,7 @@ final class TagTreeWidget extends AbstractWidget
     /**
      * @param Tag|null $parent
      *
-     * @return array<Tag>|Paginator<Tag>|null
+     * @return iterable<Tag>|null
      */
     public function getChildrenTags(?Tag $parent): ?iterable
     {

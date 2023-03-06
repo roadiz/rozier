@@ -1,5 +1,7 @@
 {% extends '@RoadizRozier/layout.html.twig' %}
 
+{% block title %}{{ "delete.attribute.%name%"|trans({'%name%': item.code}) }} | {{ parent() }}{% endblock %}
+
 {% block content %}
 <section class="content-global delete-item">
     <header class="content-header header-document header-document-preview">

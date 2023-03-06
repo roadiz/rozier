@@ -17,10 +17,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class SettingsUtilsController extends RozierApp
 {
     private SerializerInterface $serializer;
@@ -44,7 +42,7 @@ class SettingsUtilsController extends RozierApp
      *
      * @return Response
      */
-    public function exportAllAction(Request $request, ?int $settingGroupId = null)
+    public function exportAllAction(Request $request, ?int $settingGroupId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
@@ -71,7 +69,7 @@ class SettingsUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['setting'])
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
             ],
@@ -85,8 +83,9 @@ class SettingsUtilsController extends RozierApp
      * @param Request $request
      *
      * @return Response
+     * @throws RuntimeError
      */
-    public function importJsonFileAction(Request $request)
+    public function importJsonFileAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
@@ -130,7 +129,7 @@ class SettingsUtilsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildImportJsonFileForm()
+    private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()
                         ->add('setting_file', FileType::class, [

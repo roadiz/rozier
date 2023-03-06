@@ -1,13 +1,11 @@
 import $ from 'jquery'
-import {
-    toType
-} from '../../utils/plugins'
+import { toType } from '../../utils/plugins'
 
 /**
  * Node edit source
  */
 export default class NodeEditSource {
-    constructor () {
+    constructor() {
         // Selectors
         this.$content = $('.content-node-edit-source').eq(0)
         this.$form = $('#edit-node-source-form')
@@ -32,13 +30,13 @@ export default class NodeEditSource {
         }
     }
 
-    wrapInTabs () {
+    wrapInTabs() {
         let fieldGroups = {
-            'default': {
-                'name': 'default',
-                'id': 'default',
-                'fields': []
-            }
+            default: {
+                name: 'default',
+                id: 'default',
+                fields: [],
+            },
         }
         let $fields = this.$content.find('.uk-form-row[data-field-group-canonical]')
         let fieldsLength = $fields.length
@@ -51,9 +49,9 @@ export default class NodeEditSource {
                 if (groupNameCanonical) {
                     if (typeof fieldGroups[groupNameCanonical] === 'undefined') {
                         fieldGroups[groupNameCanonical] = {
-                            'name': groupName,
-                            'id': groupNameCanonical,
-                            'fields': []
+                            name: groupName,
+                            id: groupNameCanonical,
+                            fields: [],
                         }
                         fieldsGroupsLength++
                     }
@@ -83,9 +81,13 @@ export default class NodeEditSource {
                     $formSwitcher.append('<li class="field-group" id="' + groupId + '"></li>')
 
                     if (fieldGroup.id === 'default') {
-                        $formSwitcherNav.append('<li class="switcher-nav-item"><a href="#"><i class="uk-icon-star"></i></a></li>')
+                        $formSwitcherNav.append(
+                            '<li class="switcher-nav-item"><a href="#"><i class="uk-icon-star"></i></a></li>'
+                        )
                     } else {
-                        $formSwitcherNav.append('<li class="switcher-nav-item"><a href="#">' + fieldGroup.name + '</a></li>')
+                        $formSwitcherNav.append(
+                            '<li class="switcher-nav-item"><a href="#">' + fieldGroup.name + '</a></li>'
+                        )
                     }
                     let $group = $formSwitcher.find('#' + groupId)
 
@@ -109,7 +111,7 @@ export default class NodeEditSource {
     /**
      * Init
      */
-    init () {
+    init() {
         // Inputs - add form help
         this.$input = this.$content.find('input, select')
         this.$devNames = this.$content.find('[data-dev-name]')
@@ -138,7 +140,7 @@ export default class NodeEditSource {
         }
     }
 
-    initEvents () {
+    initEvents() {
         window.Rozier.$window.on('keydown', this.onInputKeyDown)
         window.Rozier.$window.on('keyup', this.onInputKeyUp)
         this.$input.on('focus', this.inputFocus)
@@ -146,7 +148,7 @@ export default class NodeEditSource {
         this.$form.on('submit', this.onFormSubmit)
     }
 
-    unbind () {
+    unbind() {
         if (this.$content.length) {
             window.Rozier.$window.off('keydown', this.onInputKeyDown)
             window.Rozier.$window.off('keyup', this.onInputKeyUp)
@@ -156,7 +158,7 @@ export default class NodeEditSource {
         }
     }
 
-    onFormSubmit () {
+    onFormSubmit() {
         window.Rozier.lazyload.canvasLoader.show()
 
         if (this.currentTimeout) {
@@ -179,9 +181,9 @@ export default class NodeEditSource {
                 data: formData,
                 processData: false,
                 cache: false,
-                contentType: false
+                contentType: false,
             })
-                .done(data => {
+                .done((data) => {
                     this.cleanErrors()
                     // Update preview or public url
                     if (data.public_url) {
@@ -197,14 +199,14 @@ export default class NodeEditSource {
                         }
                     }
                 })
-                .fail(data => {
+                .fail((data) => {
                     if (data.responseJSON) {
                         this.displayErrors(data.responseJSON.errors)
                         window.UIkit.notify({
                             message: data.responseJSON.message,
                             status: 'danger',
                             timeout: 2000,
-                            pos: 'top-center'
+                            pos: 'top-center',
                         })
                     }
                 })
@@ -218,7 +220,7 @@ export default class NodeEditSource {
         return false
     }
 
-    cleanErrors () {
+    cleanErrors() {
         const $previousErrors = $('.form-errored')
         $previousErrors.each((index) => {
             $previousErrors.eq(index).removeClass('form-errored')
@@ -231,7 +233,7 @@ export default class NodeEditSource {
      * @param {Array} errors
      * @param {Boolean} keepExisting Keep existing errors.
      */
-    displayErrors (errors, keepExisting) {
+    displayErrors(errors, keepExisting) {
         // First clean fields
         if (!keepExisting || keepExisting === false) {
             this.cleanErrors()
@@ -252,7 +254,11 @@ export default class NodeEditSource {
                 let $field = $('.form-col-' + classKey)
                 if ($field.length) {
                     $field.addClass('form-errored')
-                    $field.append('<p class="error-message uk-alert uk-alert-danger"><i class="uk-icon uk-icon-warning"></i> ' + errorMessage + '</p>')
+                    $field.append(
+                        '<p class="error-message uk-alert uk-alert-danger"><i class="uk-icon uk-icon-warning"></i> ' +
+                            errorMessage +
+                            '</p>'
+                    )
                 }
             }
         }
@@ -262,7 +268,7 @@ export default class NodeEditSource {
      * On keyboard key down
      * @param {Event} event
      */
-    onInputKeyDown (event) {
+    onInputKeyDown(event) {
         // ALT key
         if (event.keyCode === 18) {
             window.Rozier.$body.toggleClass('dev-name-visible')
@@ -273,7 +279,7 @@ export default class NodeEditSource {
      * On keyboard key up
      * @param {Event} event
      */
-    onInputKeyUp (event) {
+    onInputKeyUp(event) {
         // ALT key
         if (event.keyCode === 18) {
             window.Rozier.$body.toggleClass('dev-name-visible')
@@ -284,8 +290,8 @@ export default class NodeEditSource {
      * Flip children node widget
      * @param  {Number} index
      */
-    childrenNodeWidgetFlip (index) {
-        if (index >= (this.$formRow.length - 2)) {
+    childrenNodeWidgetFlip(index) {
+        if (index >= this.$formRow.length - 2) {
             this.$dropdown = $(this.$formRow[index]).find('.uk-dropdown-small')
             this.$dropdown.addClass('uk-dropdown-up')
         }
@@ -295,7 +301,7 @@ export default class NodeEditSource {
      * Input focus
      * @param {Event} e
      */
-    inputFocus (e) {
+    inputFocus(e) {
         $(e.currentTarget).parent().addClass('form-col-focus')
     }
 
@@ -303,12 +309,12 @@ export default class NodeEditSource {
      * Input focus out
      * @param {Event} e
      */
-    inputFocusOut (e) {
+    inputFocusOut(e) {
         $(e.currentTarget).parent().removeClass('form-col-focus')
     }
 
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

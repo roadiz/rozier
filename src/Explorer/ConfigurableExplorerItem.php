@@ -6,10 +6,11 @@ namespace Themes\Rozier\Explorer;
 
 use Doctrine\Common\Collections\Collection;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\Models\DocumentInterface;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
-use RZ\Roadiz\Document\Renderer\RendererInterface;
-use RZ\Roadiz\Utils\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
+use RZ\Roadiz\Documents\Models\DocumentInterface;
+use RZ\Roadiz\Documents\Renderer\RendererInterface;
+use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\UnicodeString;
 use Themes\Rozier\Models\DocumentModel;
@@ -21,27 +22,30 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     private RendererInterface $renderer;
     private DocumentUrlGeneratorInterface $documentUrlGenerator;
     private UrlGeneratorInterface $urlGenerator;
+    private ?EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
         PersistableInterface $entity,
         array &$configuration,
         RendererInterface $renderer,
         DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ?EmbedFinderFactory $embedFinderFactory = null
     ) {
         $this->entity = $entity;
         $this->configuration = $configuration;
         $this->renderer = $renderer;
         $this->documentUrlGenerator = $documentUrlGenerator;
         $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): int|string
     {
-        return $this->entity->getId();
+        return $this->entity->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
     /**
@@ -74,7 +78,7 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     /**
      * @inheritDoc
      */
-    public function getOriginal()
+    public function getOriginal(): PersistableInterface
     {
         return $this->entity;
     }
@@ -97,7 +101,8 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
                 $thumbnail,
                 $this->renderer,
                 $this->documentUrlGenerator,
-                $this->urlGenerator
+                $this->urlGenerator,
+                $this->embedFinderFactory
             );
             $thumbnail = $thumbnailModel->toArray();
         } else {

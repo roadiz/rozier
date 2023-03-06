@@ -1,6 +1,6 @@
 # Rozier: Roadiz back-office theme
 
-[![Build Status](https://app.travis-ci.com/roadiz/rozier.svg?branch=main)](https://app.travis-ci.com/roadiz/rozier)
+![Run test status](https://github.com/roadiz/rozier/actions/workflows/run-test.yml/badge.svg?branch=develop)
 
 ## Contribute
 
@@ -15,3 +15,7 @@ yarn build
 # working on LESS and JS files.
 yarn dev
 ```
+
+## Contributing
+
+Report [issues](https://github.com/roadiz/core-bundle-dev-app/issues) and send [Pull Requests](https://github.com/roadiz/core-bundle-dev-app/pulls) in the [main Roadiz repository](https://github.com/roadiz/core-bundle-dev-app)

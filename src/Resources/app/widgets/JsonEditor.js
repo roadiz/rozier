@@ -4,7 +4,7 @@ import $ from 'jquery'
  * Json Editor
  */
 export default class JsonEditor {
-    constructor ($textarea, index) {
+    constructor($textarea, index) {
         this.$textarea = $textarea
         this.textarea = this.$textarea[0]
         this.$cont = this.$textarea.parents('.uk-form-row').eq(0)
@@ -13,18 +13,18 @@ export default class JsonEditor {
 
         let options = {
             lineNumbers: true,
-            mode: {name: 'javascript', json: true},
+            mode: { name: 'javascript', json: true },
             theme: 'mbo',
             tabSize: this.tabSize,
             indentUnit: this.tabSize,
             indentWithTabs: false,
             lineWrapping: true,
             dragDrop: false,
-            readOnly: (this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled'),
+            readOnly: this.textarea.hasAttribute('disabled') && this.textarea.getAttribute('disabled') === 'disabled',
             extraKeys: {
                 Tab: 'indentMore',
-                'Shift-Tab': 'indentLess'
-            }
+                'Shift-Tab': 'indentLess',
+            },
         }
 
         if (this.$settingRow.length) {
@@ -45,7 +45,7 @@ export default class JsonEditor {
     /**
      * Init
      */
-    init () {
+    init() {
         if (this.$textarea.length) {
             this.editor.on('change', this.textareaChange)
             this.editor.on('focus', this.textareaFocus)
@@ -58,33 +58,33 @@ export default class JsonEditor {
         }
     }
 
-    forceEditorUpdate () {
+    forceEditorUpdate() {
         this.editor.refresh()
     }
 
     /**
      * Textarea change
      */
-    textareaChange () {
+    textareaChange() {
         this.editor.save()
     }
 
     /**
      * Textarea focus
      */
-    textareaFocus () {
+    textareaFocus() {
         this.$cont.addClass('form-col-focus')
     }
 
     /**
      * Textarea focus out
      */
-    textareaBlur () {
+    textareaBlur() {
         this.$cont.removeClass('form-col-focus')
     }
 
     /**
      * Window resize callback
      */
-    resize () {}
+    resize() {}
 }

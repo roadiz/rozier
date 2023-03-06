@@ -36,7 +36,9 @@
             </trans-unit>
             <trans-unit xml:space="preserve" id="nodeSource.metaDescription.help">
                 <source>nodeSource.metaDescription.help</source>
-
+            </trans-unit>
+            <trans-unit xml:space="preserve" id="nodeSource.noIndex.help">
+                <source>nodeSource.noIndex.help</source>
             </trans-unit>
             <trans-unit xml:space="preserve" id="nodeSource.urlAlias.help">
                 <source>nodeSource.urlAlias.help</source>

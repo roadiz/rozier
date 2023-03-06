@@ -1,5 +1,7 @@
 {% if not head.ajax %}{% set baseTemplate = '@RoadizRozier/simple.html.twig' %}{% else %}{% set baseTemplate = '@RoadizRozier/ajaxBase.html.twig' %}{% endif %}{% extends baseTemplate %}
 
+{% block title %}{% trans %}purge.cache{% endtrans %} | {{ parent() }}{% endblock %}
+
 {% block content %}
 {% if not head.ajax %}
 <section id="purge-caches" {% if error %}class="uk-animation-shake"{% endif %}>

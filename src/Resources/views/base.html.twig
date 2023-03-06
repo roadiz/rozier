@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>{% block title %}{% trans %}back_office{% endtrans %}{% endblock %}</title>
+        <title>{% block title %}{% trans %}back_office{% endtrans %}: {{ meta.siteName }}{% endblock %}</title>
         <meta name="description" content="{% block description %}{% trans %}back_office{% endtrans %}{% endblock %}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
         {% include '@RoadizRozier/admin/meta-icon.html.twig' %}
@@ -23,7 +23,7 @@
     </head>
     <body>
         <div id="app"></div>
-        <div id="main-container" >
+        <div id="main-container">
             <div id="main-container-inner">
                 <section class="main-container-section navigation-container-section" id="user-panel">
                     {% include '@RoadizRozier/panels/user_panel.html.twig' with {
@@ -92,6 +92,8 @@
                     'login':                  '{{ 'login'|trans|trim|escape }}',
                     'sessionExpireTitle':     '{{ 'session.expire.title'|trans|trim|escape }}',
                     'sessionExpireContent':   '{{ 'session.expire.content'|trans|trim|escape }}',
+                    'healthCheckedFailedTitle':     '{{ 'health_check.failed.title'|trans|trim|escape }}',
+                    'healthCheckedFailedContent':   '{{ 'health_check.failed.content'|trans|trim|escape }}',
                     'createTag':              '{{ 'explorer.create_tag'|trans|trim|escape }}',
                     'explorer':               '{{ 'documents.toggle-explorer'|trans|trim|escape }}',
                     'forbiddenPage':          '{{ 'forbidden.page'|trans|trim|escape }}',

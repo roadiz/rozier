@@ -36,7 +36,7 @@ export default class NodeTypeFieldsPosition {
     /**
      * Constructor
      */
-    constructor () {
+    constructor() {
         this.$list = $('.node-type-fields > .uk-sortable')
         this.currentRequest = null
 
@@ -49,13 +49,13 @@ export default class NodeTypeFieldsPosition {
     /**
      * Init
      */
-    init () {
+    init() {
         if (this.$list.length && this.$list.children().length > 1) {
             this.$list.on('change.uk.sortable', this.onSortableChange)
         }
     }
 
-    unbind () {
+    unbind() {
         if (this.$list.length && this.$list.children().length > 1) {
             this.$list.off('change.uk.sortable', this.onSortableChange)
         }
@@ -66,7 +66,7 @@ export default class NodeTypeFieldsPosition {
      * @param list
      * @param element
      */
-    onSortableChange (event, list, element) {
+    onSortableChange(event, list, element) {
         if (this.currentRequest && this.currentRequest.readyState !== 4) {
             this.currentRequest.abort()
         }
@@ -84,34 +84,34 @@ export default class NodeTypeFieldsPosition {
         }
 
         let postData = {
-            '_token': window.Rozier.ajaxToken,
-            '_action': 'updatePosition',
-            'nodeTypeFieldId': nodeTypeFieldId,
-            'newPosition': newPosition
+            _token: window.Rozier.ajaxToken,
+            _action: 'updatePosition',
+            nodeTypeFieldId: nodeTypeFieldId,
+            newPosition: newPosition,
         }
 
         this.currentRequest = $.ajax({
             url: window.Rozier.routes.nodeTypesFieldAjaxEdit.replace('%nodeTypeFieldId%', nodeTypeFieldId),
             type: 'POST',
             dataType: 'json',
-            data: postData
+            data: postData,
         })
-            .done(data => {
+            .done((data) => {
                 $element.attr('data-position', newPosition)
                 window.UIkit.notify({
                     message: data.responseText,
                     status: data.status,
                     timeout: 3000,
-                    pos: 'top-center'
+                    pos: 'top-center',
                 })
             })
-            .fail(data => {
+            .fail((data) => {
                 data = JSON.parse(data.responseText)
                 window.UIkit.notify({
                     message: data.error_message,
                     status: 'danger',
                     timeout: 3000,
-                    pos: 'top-center'
+                    pos: 'top-center',
                 })
             })
     }
