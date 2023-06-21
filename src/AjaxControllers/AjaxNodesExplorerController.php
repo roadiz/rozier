@@ -116,6 +116,7 @@ class AjaxNodesExplorerController extends AbstractAjaxController
 
         return [
             'updatedAt' => 'DESC',
+            'nodeName' => 'ASC',
         ];
     }
 
