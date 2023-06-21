@@ -1,3 +1,10 @@
+## [1.7.18 (2023-06-21)](https://github.com/roadiz/rozier/compare/1.7.17...1.7.18)
+
+
+### Bug Fixes
+
+* Improved `AjaxNodesExplorerController` sorting array ([01abe3e](https://github.com/roadiz/rozier/commit/01abe3eb9564a9b34a06de022ba644911d8067c0))
+
 ## 1.7.17 (2022-09-30)
 
 ### Features
