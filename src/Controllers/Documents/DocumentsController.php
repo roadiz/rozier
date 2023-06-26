@@ -140,20 +140,16 @@ class DocumentsController extends RozierApp
             $this->assignation['folder'] = $folder;
         }
 
-        if (
-            $request->query->has('type') &&
-            $request->query->get('type', '') !== ''
-        ) {
-            $prefilters['mimeType'] = trim($request->query->get('type', ''));
-            $this->assignation['mimeType'] = trim($request->query->get('type', ''));
+        $type = $request->query->get('type', null);
+        if (\is_string($type) && trim($type) !== '') {
+            $prefilters['mimeType'] = trim($type);
+            $this->assignation['mimeType'] = trim($type);
         }
 
-        if (
-            $request->query->has('embedPlatform') &&
-            $request->query->get('embedPlatform', '') !== ''
-        ) {
-            $prefilters['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
-            $this->assignation['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
+        $embedPlatform = $request->query->get('embedPlatform',  null);
+        if (\is_string($embedPlatform) && trim($embedPlatform) !== '') {
+            $prefilters['embedPlatform'] = trim($embedPlatform);
+            $this->assignation['embedPlatform'] = trim($embedPlatform);
         }
         $this->assignation['availablePlatforms'] = $this->documentPlatforms;
 
@@ -696,6 +692,7 @@ class DocumentsController extends RozierApp
                 /** @var Form $child */
                 foreach ($form as $child) {
                     if ($child->isSubmitted() && !$child->isValid()) {
+                        /** @var FormError $error */
                         foreach ($child->getErrors() as $error) {
                             $errorPerForm[$child->getName()][] = $this->getTranslator()->trans($error->getMessage());
                         }
