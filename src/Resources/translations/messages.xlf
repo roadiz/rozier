@@ -3,6 +3,7 @@
     <file original="./themes/Rozier/Resources/translations/messages.po" source-language="en-US" datatype="plaintext">
         <body>
             <trans-unit xml:space="preserve" id="2"><source>node.%name%.updated</source></trans-unit>
+            <trans-unit xml:space="preserve" id="node.%name%.was_moved"><source>node.%name%.was_moved</source></trans-unit>
             <trans-unit xml:space="preserve" id="3"><source>node.%nodeId%.not_exists</source></trans-unit>
             <trans-unit xml:space="preserve" id="4"><source>node.%name%.status.%field%.updated</source></trans-unit>
             <trans-unit xml:space="preserve" id="5"><source>node.has_no.field.%field%</source></trans-unit>
@@ -607,6 +608,7 @@
             <trans-unit xml:space="preserve" id="add.folder"><source>add.folder</source></trans-unit>
             <trans-unit xml:space="preserve" id="add.child.folder"><source>add.child.folder</source></trans-unit>
             <trans-unit xml:space="preserve" id="add.folder.%name%.child"><source>add.folder.%name%.child</source></trans-unit>
+            <trans-unit xml:space="preserve" id="folder.%name%.created"><source>folder.%name%.created</source></trans-unit>
             <trans-unit xml:space="preserve" id="edit.folder"><source>edit.folder</source></trans-unit>
             <trans-unit xml:space="preserve" id="delete.folder"><source>delete.folder</source></trans-unit>
             <trans-unit xml:space="preserve" id="back_to.folders"><source>back_to.folders</source></trans-unit>
