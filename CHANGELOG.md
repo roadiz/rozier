@@ -1,3 +1,10 @@
+## [1.7.19 (2023-07-18)](https://github.com/roadiz/rozier/compare/1.7.18...1.7.19)
+
+
+### Bug Fixes
+
+* (Back-ported) Wrap Drawers to fix multi-tab node-source edit page issue when field descriptions. ([f5803fe](https://github.com/roadiz/rozier/commit/f5803fe8f128e5e5a0fb4ac57be63f80f08b00c8))
+
 ## [1.7.18 (2023-06-21)](https://github.com/roadiz/rozier/compare/1.7.17...1.7.18)
 
 
