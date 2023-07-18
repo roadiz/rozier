@@ -1,21 +1,34 @@
 {% set entityIds = [] %}
 {% set isSortable = isSortable|default('true') %}
-{% for entity in data %}
+{% for entity in value %}
     {% if entity.id is defined %}
         {% set entityIds = entityIds|merge([entity.id]) %}
     {% else %}
         {#
-         # During **Form Errors**, entities are not transformed to ExplorerProviderItem.
-         # We need to use directly data item as string.
-         #}
+        # During **Form Errors**, entities are not transformed to ExplorerProviderItem.
+        # We need to use directly data item as string.
+        #}
         {% set entityIds = entityIds|merge([entity]) %}
     {% endif %}
 {% endfor %}
 
 {% apply spaceless %}
-    <div class="drawer-widget-wrapper">
+    {% set drawerAttributesWhitelist = [
+        'data-field-group',
+        'data-field-group-canonical',
+        'data-dev-name',
+    ] %}
+    {% set drawerAttributes = [] %}
+    {% for key, value in form.vars.attr %}
+        {% if key in drawerAttributesWhitelist %}
+            {% set drawerAttributes = drawerAttributes|merge([
+                key ~ '="' ~ value|escape ~ '"'
+            ]) %}
+        {% endif %}
+    {% endfor %}
+    <div class="uk-form-row form-col-{{ name }} drawer-widget-wrapper" {{ drawerAttributes|join(' ')|raw }}>
         <drawer-container data-vuejs inline-template>
-            <div class="uk-form-row drawer-widget entity-{{ entity }} form-col-{{ name }}{%- if form.vars.help ?? false %} has-description{%- endif -%}"
+            <div class="drawer-widget entity-{{ entity }}{%- if form.vars.help ?? false %} has-description{%- endif -%}"
                  :class="{ 'uk-active' : isActive, 'uk-alert-danger': drawer.errorMessage }"
                  v-if="drawer"
                  ref="drawer"
