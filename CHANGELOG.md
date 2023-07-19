@@ -1,3 +1,10 @@
+## [1.7.20 (2023-07-19)](https://github.com/roadiz/rozier/compare/1.7.19...1.7.20)
+
+
+### Bug Fixes
+
+* **Search:** Fixed node advanced search using `__node__` prefix ([4728156](https://github.com/roadiz/rozier/commit/472815639dd9933990fc1af3a914e46ced53cdf3))
+
 ## [1.7.19 (2023-07-18)](https://github.com/roadiz/rozier/compare/1.7.18...1.7.19)
 
 
