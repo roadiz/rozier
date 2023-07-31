@@ -49,7 +49,7 @@ export default class ChildrenNodesField {
             let $link = $(event.currentTarget)
             let nodeTypeId = parseInt($link.attr('data-children-node-type'))
             let parentNodeId = parseInt($link.attr('data-children-parent-node'))
-            let translationId = parseInt($link.attr('data-translation-id'))
+            let translationId = $link.attr('data-translation-id')
 
             if (nodeTypeId > 0 && parentNodeId > 0) {
                 let postData = {
@@ -57,7 +57,7 @@ export default class ChildrenNodesField {
                     '_action': 'quickAddNode',
                     'nodeTypeId': nodeTypeId,
                     'parentNodeId': parentNodeId,
-                    'translationId': translationId
+                    'translationId': translationId || null
                 }
                 $.ajax({
                     url: window.Rozier.routes.nodesQuickAddAjax,
@@ -101,7 +101,7 @@ export default class ChildrenNodesField {
             }
             const rootNodeId = parseInt($rootTree.attr('data-parent-node-id'))
             const linkedTypesRaw = $rootTree.attr('data-linked-types')
-            let translationId = parseInt($rootTree.attr('data-translation-id'))
+            let translationId = $rootTree.attr('data-translation-id')
             if (linkedTypesRaw) {
                 linkedTypes = JSON.parse(linkedTypesRaw)
             }
@@ -112,7 +112,7 @@ export default class ChildrenNodesField {
                 '_action': 'requestNodeTree',
                 'parentNodeId': rootNodeId,
                 'linkedTypes': linkedTypes,
-                'translationId': translationId
+                'translationId': translationId || null
             }
 
             let url = window.Rozier.routes.nodesTreeAjax
