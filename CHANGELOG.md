@@ -1,3 +1,10 @@
+## [2.0.21 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.20...2.0.21)
+
+
+### Bug Fixes
+
+* **data-translation-id:** Do not parseInt on non-existant data-attr ([287a4eb](https://github.com/roadiz/rozier/commit/287a4eb74a17ffd0587927d08124a2fbaeeaa6c2))
+
 ## [2.0.20 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.19...2.0.20)
 
 
