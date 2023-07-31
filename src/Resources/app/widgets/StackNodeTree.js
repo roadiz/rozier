@@ -67,7 +67,7 @@ export default class StackNodeTree {
 
         let $link = $(event.currentTarget)
         let parentNodeId = parseInt($link.attr('data-children-parent-node'))
-        let translationId = parseInt($link.attr('data-translation-id'))
+        let translationId = $link.attr('data-translation-id')
         let tagId = $link.attr('data-filter-tag')
         this.refreshNodeTree(parentNodeId, translationId, tagId)
         return false
@@ -135,7 +135,7 @@ export default class StackNodeTree {
     /**
      *
      * @param rootNodeId
-     * @param translationId
+     * @param {Number|null|undefined} translationId
      * @param tagId
      * @param page
      */

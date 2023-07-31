@@ -298,7 +298,7 @@ export default class Rozier {
         $('body').on('click', '#tree-container .nodetree-langs a', event => {
             this.lazyload.canvasLoader.show()
             let $link = $(event.currentTarget)
-            let translationId = parseInt($link.attr('data-translation-id'))
+            let translationId = $link.attr('data-translation-id')
             this.refreshMainNodeTree(translationId)
             return false
         })
@@ -377,20 +377,20 @@ export default class Rozier {
     /**
      * Refresh only main nodeTree.
      *
-     * @param translationId
+     * @param {Number|null|undefined} translationId
      */
     refreshMainNodeTree (translationId) {
         let $currentNodeTree = $('#tree-container').find('.nodetree-widget')
         let $currentRootTree = $currentNodeTree.find('.root-tree').eq(0)
         if ($currentRootTree.length && !translationId) {
-            translationId = parseInt($currentRootTree.attr('data-translation-id'))
+            translationId = $currentRootTree.attr('data-translation-id')
         }
 
         if ($currentNodeTree.length) {
             let postData = {
                 '_token': this.ajaxToken,
                 '_action': 'requestMainNodeTree',
-                'translationId': translationId
+                'translationId': translationId || null
             }
 
             let url = this.routes.nodesTreeAjax
