@@ -1,3 +1,10 @@
+## [2.0.22 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.21...2.0.22)
+
+
+### Bug Fixes
+
+* **AjaxNodeTreeController:** Handles not number translationId ([7273972](https://github.com/roadiz/rozier/commit/7273972120408524febaf9cb097c4f404b3c8840))
+
 ## [2.0.21 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.20...2.0.21)
 
 
