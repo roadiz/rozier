@@ -377,26 +377,24 @@ export default class Rozier {
     /**
      * Refresh only main nodeTree.
      *
-     * @param translationId
+     * @param {Number|undefined} translationId
      */
     refreshMainNodeTree (translationId) {
         let $currentNodeTree = $('#tree-container').find('.nodetree-widget')
         let $currentRootTree = $currentNodeTree.find('.root-tree').eq(0)
 
+        if ($currentRootTree.length && !translationId) {
+            translationId = parseInt($currentRootTree.attr('data-translation-id'))
+        }
+
         if ($currentNodeTree.length) {
             let postData = {
                 '_token': this.ajaxToken,
-                '_action': 'requestMainNodeTree'
-            }
-
-            if ($currentRootTree.length && !translationId) {
-                translationId = parseInt($currentRootTree.attr('data-translation-id'))
+                '_action': 'requestMainNodeTree',
+                'translationId': translationId
             }
 
             let url = this.routes.nodesTreeAjax
-            if (translationId && translationId > 0) {
-                url += '/' + translationId
-            }
 
             $.ajax({
                 url: url,

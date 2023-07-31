@@ -111,13 +111,11 @@ export default class ChildrenNodesField {
                 '_token': window.Rozier.ajaxToken,
                 '_action': 'requestNodeTree',
                 'parentNodeId': rootNodeId,
-                'linkedTypes': linkedTypes
+                'linkedTypes': linkedTypes,
+                'translationId': translationId
             }
 
             let url = window.Rozier.routes.nodesTreeAjax
-            if (translationId && translationId > 0) {
-                url += '/' + translationId
-            }
 
             // Do not abort request for nodes which have multiple
             // children node widgets.
