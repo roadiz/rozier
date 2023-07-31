@@ -1,3 +1,10 @@
+## [2.0.20 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.19...2.0.20)
+
+
+### Bug Fixes
+
+* **AjaxNodeTree:** Removed translationId from path ([9579a28](https://github.com/roadiz/rozier/commit/9579a2833023e85178788ad7c316c1a51b6a0ad7))
+
 ## [2.0.19 (2023-07-19)](https://github.com/roadiz/rozier/compare/2.0.18...2.0.19)
 
 
