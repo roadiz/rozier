@@ -1,3 +1,10 @@
+## [1.7.22 (2023-07-31)](https://github.com/roadiz/rozier/compare/1.7.21...1.7.22)
+
+
+### Bug Fixes
+
+* nodesTreeAjax wrong config ([0e9bdfa](https://github.com/roadiz/rozier/commit/0e9bdfa68b78f3cf8b3062c9158c2c640be62150))
+
 ## [1.7.21 (2023-07-31)](https://github.com/roadiz/rozier/compare/1.7.20...1.7.21)
 
 
