@@ -24,7 +24,7 @@ nodesStatusesAjax:
         _controller: Themes\Rozier\AjaxControllers\AjaxNodesController::statusesAction
         _format: json
 nodesTreeAjax:
-    path:     /nodes/tree/{translationId}
+    path:     /nodes/tree
     methods: [GET]
     defaults:
         _controller: Themes\Rozier\AjaxControllers\AjaxNodeTreeController::getTreeAction
