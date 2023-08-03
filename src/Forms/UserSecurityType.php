@@ -38,6 +38,10 @@ class UserSecurityType extends AbstractType
                     'minute' => 'minute',
                 ],
             ])
+            ->add('expired', CheckboxType::class, [
+                'label' => 'user.force.expired',
+                'required' => false,
+            ])
             ->add('credentialsExpiresAt', DateTimeType::class, [
                 'label' => 'user.credentialsExpiresAt',
                 'required' => false,
@@ -51,6 +55,10 @@ class UserSecurityType extends AbstractType
                     'hour' => 'hour',
                     'minute' => 'minute',
                 ],
+            ])
+            ->add('credentialsExpired', CheckboxType::class, [
+                'label' => 'user.force.credentialsExpired',
+                'required' => false,
             ]);
 
         if ($options['canChroot'] === true) {
