@@ -67,15 +67,15 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
 
         // Geocode input text
         let metaDOM = [
-            '<nav class="geotag-widget-nav uk-navbar rz-geotag-meta">',
-            '<ul class="uk-navbar-nav">',
-            '<li class="uk-navbar-brand"><i class="uk-icon-rz-map-multi-marker"></i>',
-            '<li class="uk-navbar-brand label">' + labelText + '</li>',
-            '</ul>',
-            '<div class="uk-navbar-content uk-navbar-flip">',
+            '<nav class="geotag-widget-nav rz-geotag-meta">',
+            '<div class="geotag-widget-nav__head">',
+            '<div class="geotag-widget-nav__title"><i class="uk-icon-rz-map-multi-marker"></i></div>',
+            '<div class="geotag-widget-nav__title label">' + labelText + '</div>',
+            '</div>',
+            '<div class="geotag-widget-nav__content">',
             '<div class="geotag-widget-quick-creation uk-button-group">',
-            '<input class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
-            '<button id="' +
+            '<input autocomplete="off" class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
+            '<button type="button" id="' +
                 resetButtonId +
                 '" class="uk-button uk-button-content uk-button-table-delete rz-geotag-reset" title="' +
                 window.Rozier.messages.geotag.resetMarker +
@@ -122,7 +122,6 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                     )
                     markers.push(marker)
                 }
-                $geocodeReset.style.display = 'inline-block'
             } catch (e) {
                 element.style.display = 'block'
                 $(document.getElementById(fieldId)).style.display = 'none'
@@ -134,10 +133,6 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
         $geocodeInput.addEventListener(
             'keypress',
             $.proxy(this.requestGeocode, this, markers, element, $geocodeReset, map, $selector)
-        )
-        $geocodeReset.addEventListener(
-            'click',
-            $.proxy(this.resetMarker, this, markers, element, $geocodeReset, map, $selector)
         )
         window.Rozier.$window.on('resize', $.proxy(this.resetMap, this, map, markers, mapOptions))
         window.Rozier.$window.on('pageshowend', $.proxy(this.resetMap, this, map, markers, mapOptions))
@@ -164,10 +159,10 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                 marker.name ? marker.name : '#' + i,
                 '</span>',
                 '<span class="uk-button-group">',
-                '<button class="uk-button uk-button-mini rz-multi-geotag-center" data-geocode-id="' +
+                '<button type="button" class="uk-button uk-button-mini rz-multi-geotag-center" data-geocode-id="' +
                     i +
                     '"><i class="uk-icon-rz-marker"></i></button>',
-                '<button class="uk-button uk-button-mini rz-multi-geotag-remove" data-geocode-id="' +
+                '<button type="button" class="uk-button uk-button-mini rz-multi-geotag-remove" data-geocode-id="' +
                     i +
                     '"><i class="uk-icon-rz-trash-o"></i></button>',
                 '</span>',
@@ -305,7 +300,6 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             map.flyTo(latLng, latLng.alt)
             markers.push(marker)
             this.writeMarkers(markers, $input)
-            $geocodeReset.style.display = 'inline-block'
         }
 
         return marker
