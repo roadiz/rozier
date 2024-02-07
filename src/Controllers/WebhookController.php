@@ -12,22 +12,20 @@ use RZ\Roadiz\CoreBundle\Webhook\Exception\TooManyWebhookTriggeredException;
 use RZ\Roadiz\CoreBundle\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final class WebhookController extends AbstractAdminWithBulkController
+final class WebhookController extends AbstractAdminController
 {
     private WebhookDispatcher $webhookDispatcher;
 
     public function __construct(
         WebhookDispatcher $webhookDispatcher,
-        FormFactoryInterface $formFactory,
         SerializerInterface $serializer,
         UrlGeneratorInterface $urlGenerator
     ) {
-        parent::__construct($formFactory, $serializer, $urlGenerator);
+        parent::__construct($serializer, $urlGenerator);
         $this->webhookDispatcher = $webhookDispatcher;
     }
 
@@ -59,7 +57,7 @@ final class WebhookController extends AbstractAdminWithBulkController
                         '%seconds%' => $item->getThrottleSeconds(),
                     ]
                 );
-                $this->publishConfirmMessage($request, $msg, $item);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirect($this->urlGenerator->generate($this->getDefaultRouteName()));
             } catch (TooManyWebhookTriggeredException $e) {
@@ -131,9 +129,5 @@ final class WebhookController extends AbstractAdminWithBulkController
             return (string) $item;
         }
         return '';
-    }
-    protected function getBulkDeleteRouteName(): ?string
-    {
-        return 'webhooksBulkDeletePage';
     }
 }

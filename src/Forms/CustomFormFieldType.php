@@ -9,11 +9,13 @@ use RZ\Roadiz\CoreBundle\Form\MarkdownType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * @package Themes\Rozier\Forms
+ */
 class CustomFormFieldType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -48,9 +50,9 @@ class CustomFormFieldType extends AbstractType
             ])
             ->add(
                 'defaultValues',
-                TextareaType::class,
+                TextType::class,
                 [
-                    'label' => 'customFormField.defaultValues',
+                    'label' => 'defaultValues',
                     'required' => false,
                     'attr' => [
                         'placeholder' => 'enter_values_comma_separated',

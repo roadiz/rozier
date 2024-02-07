@@ -2,9 +2,34 @@
    CUSTOM FORMS FIELDS
 \*------------------------------------*/
 
+
+/*
+ * Styles for custom-forms-fields pages
+ */
+
+
+/* -------- STYLES -------- */
+
+
+// List
+//.custom-form-fields {
+//    .uk-sortable {
+//        .uk-sortable-placeholder {
+//            .opacity(1);
+//            border: 1px dashed #b5b5b5;
+//
+//            td {
+//                background-color: rgba(0,0,0,0.2);
+//                text-indent: -99999px;
+//            }
+//        }
+//    }
+//}
+
 .rz-custom-form-field-dragged {
+    // width:100%;
     background: #ddd;
-    border: 1px dashed var(--global-border-color);
+    border: 1px dashed #b5b5b5;
     display: table-row;
 
     .uk-button {
@@ -13,9 +38,9 @@
 
     tr{
         height:54px;
-        background: var(--contrasted-bg);
+        background:white;
         border-top:1px solid white;
-        border-bottom:1px solid var(--global-border-lighter-color);
+        border-bottom:1px solid @form-row-border-color;
 
         &:nth-child(2n){
             background:@grey-verylight;
@@ -30,8 +55,8 @@
     }
 
     a{
-        color: var(--global-text-lighter-color);
-        transition: 0.4s color ease;
+        color:@grey-medium;
+        .transition(0.4s color ease);
 
         &:hover{
             text-decoration:none;
@@ -53,7 +78,8 @@
 }
 
 .custom-form-field-edit-form-row{
-    height:0 !important;
+    // display:none;
+    height:0px !important;
     cursor: default !important;
     border-top:0 !important;
     border-bottom:0 !important;
