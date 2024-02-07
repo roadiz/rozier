@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;

@@ -27,7 +27,7 @@ export default class NodeTreeContextActions {
         this.$nodeMoveLastLinks.off('click')
     }
 
-    async onClick(event) {
+    onClick(event) {
         event.preventDefault()
 
         let $link = $(event.currentTarget)
@@ -42,25 +42,53 @@ export default class NodeTreeContextActions {
 
             if (typeof statusName !== 'undefined' && typeof statusValue !== 'undefined') {
                 // Change node status
-                await this.changeStatus(nodeId, statusName, statusValue)
+                this.changeStatus(nodeId, statusName, statusValue)
             } else {
                 // Other actions
                 if (action === 'duplicate') {
-                    await this.duplicateNode(nodeId)
+                    this.duplicateNode(nodeId)
                 }
             }
         }
     }
 
-    async changeStatus(nodeId, statusName, statusValue) {
-        await this.postNodeUpdate(window.Rozier.routes.nodesStatusesAjax, {
-            _token: window.Rozier.ajaxToken,
-            _action: 'nodeChangeStatus',
-            nodeId: nodeId,
-            statusName: statusName,
-            statusValue: statusValue,
-        })
-        window.Rozier.lazyload.canvasLoader.hide()
+    changeStatus(nodeId, statusName, statusValue) {
+        if (this.ajaxTimeout) {
+            window.clearTimeout(this.ajaxTimeout)
+        }
+
+        this.ajaxTimeout = window.setTimeout(() => {
+            let postData = {
+                _token: window.Rozier.ajaxToken,
+                _action: 'nodeChangeStatus',
+                nodeId: nodeId,
+                statusName: statusName,
+                statusValue: statusValue,
+            }
+
+            $.ajax({
+                url: window.Rozier.routes.nodesStatusesAjax,
+                type: 'post',
+                dataType: 'json',
+                data: postData,
+            })
+                .done(() => {
+                    window.Rozier.refreshAllNodeTrees()
+                    window.Rozier.getMessages()
+                })
+                .fail((data) => {
+                    data = JSON.parse(data.responseText)
+                    window.UIkit.notify({
+                        message: data.message,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                })
+        }, 100)
     }
 
     /**
@@ -68,13 +96,41 @@ export default class NodeTreeContextActions {
      *
      * @param nodeId
      */
-    async duplicateNode(nodeId) {
-        await this.postNodeUpdate(window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId), {
-            _token: window.Rozier.ajaxToken,
-            _action: 'duplicate',
-            nodeId: nodeId,
-        })
-        window.Rozier.lazyload.canvasLoader.hide()
+    duplicateNode(nodeId) {
+        if (this.ajaxTimeout) {
+            window.clearTimeout(this.ajaxTimeout)
+        }
+
+        this.ajaxTimeout = window.setTimeout(() => {
+            let postData = {
+                _token: window.Rozier.ajaxToken,
+                _action: 'duplicate',
+                nodeId: nodeId,
+            }
+
+            $.ajax({
+                url: window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId),
+                type: 'POST',
+                dataType: 'json',
+                data: postData,
+            })
+                .done(() => {
+                    window.Rozier.refreshAllNodeTrees()
+                    window.Rozier.getMessages()
+                })
+                .fail((data) => {
+                    data = JSON.parse(data.responseText)
+                    window.UIkit.notify({
+                        message: data.error_message,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                })
+        }, 100)
     }
 
     /**
@@ -83,7 +139,7 @@ export default class NodeTreeContextActions {
      * @param {String} position
      * @param {Event} event
      */
-    async moveNodeToPosition(position, event) {
+    moveNodeToPosition(position, event) {
         window.Rozier.lazyload.canvasLoader.show()
 
         let element = $($(event.currentTarget).parents('.nodetree-element')[0])
@@ -114,37 +170,27 @@ export default class NodeTreeContextActions {
 
         postData.newParent = parentNodeId
 
-        await this.postNodeUpdate(window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId), postData)
-        window.Rozier.lazyload.canvasLoader.hide()
-    }
-
-    async postNodeUpdate(url, postData) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                    },
-                    body: new URLSearchParams(postData),
-                })
-                if (!response.ok) {
-                    const data = await response.json()
-                    window.UIkit.notify({
-                        message: data.error_message,
-                        status: 'danger',
-                        timeout: 3000,
-                        pos: 'top-center',
-                    })
-                    reject(data)
-                } else {
-                    await window.Rozier.refreshAllNodeTrees()
-                    await window.Rozier.getMessages()
-                    resolve(await response.json())
-                }
-            } catch (err) {
-                reject()
-            }
+        $.ajax({
+            url: window.Rozier.routes.nodeAjaxEdit.replace('%nodeId%', nodeId),
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
         })
+            .done(() => {
+                window.Rozier.refreshAllNodeTrees()
+                window.Rozier.getMessages()
+            })
+            .fail((data) => {
+                data = JSON.parse(data.responseText)
+                window.UIkit.notify({
+                    message: data.error_message,
+                    status: 'danger',
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
+            })
+            .always(() => {
+                window.Rozier.lazyload.canvasLoader.hide()
+            })
     }
 }

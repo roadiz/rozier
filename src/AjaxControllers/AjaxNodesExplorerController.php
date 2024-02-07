@@ -14,39 +14,34 @@ use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\EntityApi\NodeTypeApi;
 use RZ\Roadiz\CoreBundle\SearchEngine\ClientRegistry;
 use RZ\Roadiz\CoreBundle\SearchEngine\NodeSourceSearchHandlerInterface;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Security;
 use Themes\Rozier\Models\NodeModel;
 use Themes\Rozier\Models\NodeSourceModel;
 
-final class AjaxNodesExplorerController extends AbstractAjaxController
+class AjaxNodesExplorerController extends AbstractAjaxController
 {
     private SerializerInterface $serializer;
     private ClientRegistry $clientRegistry;
     private NodeSourceSearchHandlerInterface $nodeSourceSearchHandler;
     private NodeTypeApi $nodeTypeApi;
     private UrlGeneratorInterface $urlGenerator;
-    private Security $security;
 
     public function __construct(
         SerializerInterface $serializer,
         ClientRegistry $clientRegistry,
         NodeSourceSearchHandlerInterface $nodeSourceSearchHandler,
         NodeTypeApi $nodeTypeApi,
-        UrlGeneratorInterface $urlGenerator,
-        Security $security,
+        UrlGeneratorInterface $urlGenerator
     ) {
         $this->nodeSourceSearchHandler = $nodeSourceSearchHandler;
         $this->nodeTypeApi = $nodeTypeApi;
         $this->serializer = $serializer;
         $this->urlGenerator = $urlGenerator;
         $this->clientRegistry = $clientRegistry;
-        $this->security = $security;
     }
 
     protected function getItemPerPage(): int
@@ -66,8 +61,7 @@ final class AjaxNodesExplorerController extends AbstractAjaxController
      */
     public function indexAction(Request $request): Response
     {
-        // Only requires Search permission for nodes
-        $this->denyAccessUnlessGranted(NodeVoter::SEARCH);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         $criteria = $this->parseFilterFromRequest($request);
         $sorting = $this->parseSortingFromRequest($request);
@@ -227,8 +221,7 @@ final class AjaxNodesExplorerController extends AbstractAjaxController
      */
     public function listAction(Request $request): JsonResponse
     {
-        // Only requires Search permission for nodes
-        $this->denyAccessUnlessGranted(NodeVoter::SEARCH);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
@@ -263,10 +256,10 @@ final class AjaxNodesExplorerController extends AbstractAjaxController
     /**
      * Normalize response Node list result.
      *
-     * @param iterable<Node|NodesSources> $nodes
+     * @param array<Node|NodesSources>|\Traversable<Node|NodesSources> $nodes
      * @return array
      */
-    private function normalizeNodes(iterable $nodes): array
+    private function normalizeNodes($nodes)
     {
         $nodesArray = [];
 
@@ -274,12 +267,12 @@ final class AjaxNodesExplorerController extends AbstractAjaxController
             if (null !== $node) {
                 if ($node instanceof NodesSources) {
                     if (!key_exists($node->getNode()->getId(), $nodesArray)) {
-                        $nodeModel = new NodeSourceModel($node, $this->urlGenerator, $this->security);
+                        $nodeModel = new NodeSourceModel($node, $this->urlGenerator);
                         $nodesArray[$node->getNode()->getId()] = $nodeModel->toArray();
                     }
                 } else {
                     if (!key_exists($node->getId(), $nodesArray)) {
-                        $nodeModel = new NodeModel($node, $this->urlGenerator, $this->security);
+                        $nodeModel = new NodeModel($node, $this->urlGenerator);
                         $nodesArray[$node->getId()] = $nodeModel->toArray();
                     }
                 }

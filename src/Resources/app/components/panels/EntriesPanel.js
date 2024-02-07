@@ -1,19 +1,27 @@
+import $ from 'jquery'
+
+/**
+ * Entries panel
+ */
 export default class EntriesPanel {
     constructor() {
-        this.adminMenuNav = document.getElementById('admin-menu-nav')
+        this.$adminMenuNav = $('#admin-menu-nav')
         this.replaceSubNavs()
     }
 
     replaceSubNavs() {
-        /** @var {HTMLElement} element */
-        this.adminMenuNav.querySelectorAll('.uk-nav-sub').forEach((element) => {
-            element.style.display = 'block'
-            const top = element.getBoundingClientRect().top
-            const height = element.getBoundingClientRect().height
-            element.style.display = null
+        this.$adminMenuNav.find('.uk-nav-sub').each((index, element) => {
+            let subMenu = $(element)
 
-            if (top + height + 20 > window.innerHeight) {
-                element.parentElement.classList.add('reversed-nav')
+            subMenu.attr('style', 'display:block;')
+
+            const top = subMenu.offset().top
+            const height = subMenu.height()
+
+            subMenu.removeAttr('style')
+
+            if (top + height + 20 > $(window).height()) {
+                subMenu.parent().addClass('reversed-nav')
             }
         })
     }

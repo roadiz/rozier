@@ -16,7 +16,7 @@
         height: 150px;
 
         .no-thumb {
-            border-radius: 75px;
+            .rounded(75px);
             width: 150px;
             height: 150px;
             background-color: #CCC;
@@ -30,13 +30,13 @@
             display: block;
 
             &.source-image {
-                border-radius: 75px;
+                .rounded(75px);
                 .transform-origin(50%,50%);
                 .transform-transition(ease 0.3s);
             }
         }
         .user-image {
-            border-radius: 30px;
+            .rounded(30px);
             position: absolute;
             bottom: 0;
             right: 0;
@@ -46,7 +46,7 @@
 
     .source-title,
     .source-update-date {
-        color: var(--admin-entries-subnav-text-color);
+        color: @admin-entries-subnav-text-color;
         font-size: 11px;
         text-decoration: none;
         margin: 0px;
