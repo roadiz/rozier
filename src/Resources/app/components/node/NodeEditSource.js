@@ -13,6 +13,7 @@ export default class NodeEditSource {
         this.$dropdown = null
         this.$input = null
 
+        // Binded methods
         this.onInputKeyDown = this.onInputKeyDown.bind(this)
         this.onInputKeyUp = this.onInputKeyUp.bind(this)
         this.inputFocus = this.inputFocus.bind(this)
@@ -23,7 +24,7 @@ export default class NodeEditSource {
         // Methods
         if (this.$content.length) {
             this.$formRow = this.$content.find('.uk-form-row')
-            window.requestAnimationFrame(this.wrapInTabs)
+            window.setTimeout(this.wrapInTabs, 300)
             this.init()
             this.initEvents()
         }
@@ -96,11 +97,10 @@ export default class NodeEditSource {
                 }
 
                 $formSwitcherNav.on('show.uk.switcher', () => {
-                    window.requestAnimationFrame(() => {
-                        window.dispatchEvent(new CustomEvent('NodeEditSource:tabSwitched'))
+                    window.setTimeout(() => {
                         window.Rozier.$window.trigger('resize')
                         window.Rozier.lazyload.refreshCodemirrorEditor()
-                    })
+                    }, 100)
                 })
             }
         }
@@ -158,60 +158,64 @@ export default class NodeEditSource {
         }
     }
 
-    async onFormSubmit(event) {
-        event.preventDefault()
+    onFormSubmit() {
         window.Rozier.lazyload.canvasLoader.show()
 
-        /*
-         * Trigger event on window to notify open
-         * widgets to close.
-         */
-        let pageChangeEvent = new CustomEvent('pagechange')
-        window.dispatchEvent(pageChangeEvent)
-
-        try {
-            let formData = new FormData(this.$form.get(0))
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: formData,
-            })
-            if (!response.ok) {
-                throw response
-            }
-            const data = await response.json()
-            this.cleanErrors()
-            // Update preview or public url
-            if (data.public_url) {
-                let $publicUrlLinks = $('a.public-url-link')
-                if ($publicUrlLinks.length) {
-                    $publicUrlLinks.attr('href', data.public_url)
-                }
-            }
-            if (data.preview_url) {
-                let $previewUrlLinks = $('a.preview-url-link')
-                if ($previewUrlLinks.length) {
-                    $previewUrlLinks.attr('href', data.preview_url)
-                }
-            }
-        } catch (response) {
-            const data = await response.json()
-            if (data.errors) {
-                this.displayErrors(data.errors)
-                window.UIkit.notify({
-                    message: data.message,
-                    status: 'danger',
-                    timeout: 2000,
-                    pos: 'top-center',
-                })
-            }
+        if (this.currentTimeout) {
+            clearTimeout(this.currentTimeout)
         }
 
-        window.Rozier.lazyload.canvasLoader.hide()
-        await window.Rozier.getMessages()
-        window.Rozier.refreshAllNodeTrees()
+        this.currentTimeout = setTimeout(() => {
+            /*
+             * Trigger event on window to notify open
+             * widgets to close.
+             */
+            let pageChangeEvent = new CustomEvent('pagechange')
+            window.dispatchEvent(pageChangeEvent)
+
+            let formData = new FormData(this.$form.get(0))
+
+            $.ajax({
+                url: window.location.href,
+                type: 'post',
+                data: formData,
+                processData: false,
+                cache: false,
+                contentType: false,
+            })
+                .done((data) => {
+                    this.cleanErrors()
+                    // Update preview or public url
+                    if (data.public_url) {
+                        let $publicUrlLinks = $('a.public-url-link')
+                        if ($publicUrlLinks.length) {
+                            $publicUrlLinks.attr('href', data.public_url)
+                        }
+                    }
+                    if (data.preview_url) {
+                        let $previewUrlLinks = $('a.preview-url-link')
+                        if ($previewUrlLinks.length) {
+                            $previewUrlLinks.attr('href', data.preview_url)
+                        }
+                    }
+                })
+                .fail((data) => {
+                    if (data.responseJSON) {
+                        this.displayErrors(data.responseJSON.errors)
+                        window.UIkit.notify({
+                            message: data.responseJSON.message,
+                            status: 'danger',
+                            timeout: 2000,
+                            pos: 'top-center',
+                        })
+                    }
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                    window.Rozier.getMessages()
+                    window.Rozier.refreshAllNodeTrees()
+                })
+        }, 300)
 
         return false
     }
@@ -225,10 +229,11 @@ export default class NodeEditSource {
     }
 
     /**
+     *
      * @param {Array} errors
      * @param {Boolean} keepExisting Keep existing errors.
      */
-    displayErrors(errors, keepExisting = false) {
+    displayErrors(errors, keepExisting) {
         // First clean fields
         if (!keepExisting || keepExisting === false) {
             this.cleanErrors()
