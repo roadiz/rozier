@@ -13,6 +13,9 @@ use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\CustomFormModel;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxCustomFormsExplorerController extends AbstractAjaxController
 {
     private UrlGeneratorInterface $urlGenerator;
@@ -27,9 +30,9 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function indexAction(Request $request): Response
+    public function indexAction(Request $request)
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         $arrayFilter = [];
         /*
@@ -65,15 +68,15 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
      * Get a CustomForm list from an array of id.
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function listAction(Request $request): Response
+    public function listAction(Request $request)
     {
         if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         $cleanCustomFormsIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
             'flags' => \FILTER_FORCE_ARRAY

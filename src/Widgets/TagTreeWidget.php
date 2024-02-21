@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Repository\TagRepository;
@@ -15,7 +16,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final class TagTreeWidget extends AbstractWidget
 {
     protected ?Tag $parentTag = null;
-    protected ?iterable $tags = null;
+    /**
+     * @var array<Tag>|Paginator<Tag>|null
+     */
+    protected $tags = null;
     protected bool $canReorder = true;
     protected bool $forceTranslation = false;
 
@@ -107,9 +111,9 @@ final class TagTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return iterable<Tag>
+     * @return array<Tag>|Paginator<Tag>|null
      */
-    public function getTags(): iterable
+    public function getTags(): ?iterable
     {
         if ($this->tags === null) {
             $this->getTagTreeAssignationForParent();

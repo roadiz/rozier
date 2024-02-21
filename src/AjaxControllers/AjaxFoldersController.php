@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxFoldersController extends AbstractAjaxController
 {
     private HandlerFactoryInterface $handlerFactory;
