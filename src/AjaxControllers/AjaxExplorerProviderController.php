@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerProvider;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
@@ -15,6 +13,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxExplorerProviderController extends AbstractAjaxController
 {
     private ContainerInterface $psrContainer;
@@ -25,10 +26,10 @@ class AjaxExplorerProviderController extends AbstractAjaxController
     }
 
     /**
-     * @param class-string<ExplorerProviderInterface> $providerClass
+     * @param class-string $providerClass
      * @return ExplorerProviderInterface
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     protected function getProvider(string $providerClass): ExplorerProviderInterface
     {
@@ -37,47 +38,27 @@ class AjaxExplorerProviderController extends AbstractAjaxController
         }
         return new $providerClass();
     }
-
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @param Request $request
+     * @return Response JSON response
      */
-    protected function getProviderFromRequest(Request $request): ExplorerProviderInterface
+    public function indexAction(Request $request)
     {
-        /** @var class-string<ExplorerProviderInterface>|null $providerClass */
-        $providerClass = $request->query->get('providerClass');
+        $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!\is_string($providerClass)) {
+        if (!$request->query->has('providerClass')) {
             throw new InvalidParameterException('providerClass parameter is missing.');
         }
-        if (!\class_exists($providerClass)) {
-            throw new InvalidParameterException('providerClass is not a valid class.');
-        }
 
-        $reflection = new \ReflectionClass($providerClass);
-        if (!$reflection->implementsInterface(ExplorerProviderInterface::class)) {
-            throw new InvalidParameterException('providerClass is not a valid ExplorerProviderInterface class.');
+        $providerClass = $request->query->get('providerClass');
+        if (!class_exists($providerClass)) {
+            throw new InvalidParameterException('providerClass is not a valid class.');
         }
 
         $provider = $this->getProvider($providerClass);
         if ($provider instanceof AbstractExplorerProvider) {
             $provider->setContainer($this->psrContainer);
         }
-
-        return $provider;
-    }
-
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function indexAction(Request $request): JsonResponse
-    {
-        $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
-
-        $provider = $this->getProviderFromRequest($request);
         $options = [
             'page' => $request->query->get('page') ?: 1,
             'itemPerPage' => $request->query->get('itemPerPage') ?: 30,
@@ -118,14 +99,28 @@ class AjaxExplorerProviderController extends AbstractAjaxController
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function listAction(Request $request): JsonResponse
+    public function listAction(Request $request)
     {
+        if (!$request->query->has('providerClass')) {
+            throw new InvalidParameterException('providerClass parameter is missing.');
+        }
+
+        $providerClass = $request->query->get('providerClass');
+        if (!class_exists($providerClass)) {
+            throw new InvalidParameterException('providerClass is not a valid class.');
+        }
+
+        if (!$request->query->has('ids')) {
+            throw new InvalidParameterException('Ids should be provided within an array');
+        }
+
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        $provider = $this->getProviderFromRequest($request);
+        $provider = $this->getProvider($providerClass);
+        if ($provider instanceof AbstractExplorerProvider) {
+            $provider->setContainer($this->psrContainer);
+        }
         $entitiesArray = [];
         $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
             'flags' => \FILTER_FORCE_ARRAY

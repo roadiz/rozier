@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -14,7 +15,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final class FolderTreeWidget extends AbstractWidget
 {
     protected ?Folder $parentFolder = null;
-    protected ?iterable $folders = null;
+    /**
+     * @var array<Folder>|Paginator<Folder>|null
+     */
+    protected $folders = null;
 
     /**
      * @param RequestStack $requestStack
@@ -49,7 +53,7 @@ final class FolderTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return iterable<Folder>
+     * @return array<Folder>|Paginator<Folder>
      */
     public function getFolders(): iterable
     {
