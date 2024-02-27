@@ -16,6 +16,9 @@ use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\DocumentModel;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxDocumentsExplorerController extends AbstractAjaxController
 {
     private RendererInterface $renderer;
