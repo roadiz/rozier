@@ -246,23 +246,4 @@ class NodeTypeFieldsController extends RozierApp
 
         throw new ResourceNotFoundException();
     }
-
-    /**
-     * @param NodeTypeField $field
-     *
-     * @return FormInterface
-     */
-    private function buildDeleteForm(NodeTypeField $field)
-    {
-        $builder = $this->createFormBuilder()
-                        ->add('nodeTypeFieldId', HiddenType::class, [
-                            'data' => $field->getId(),
-                            'constraints' => [
-                                new NotNull(),
-                                new NotBlank(),
-                            ],
-                        ]);
-
-        return $builder->getForm();
-    }
 }

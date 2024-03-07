@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\CoreBundle\Entity\Translation;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Widgets\NodeTreeWidget;
@@ -42,19 +41,10 @@ class AjaxNodeTreeController extends AbstractAjaxController
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public function getTreeAction(Request $request)
+    public function getTreeAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-        $translationId = $request->get('translationId', null);
-
-        if (\is_numeric($translationId) && $translationId > 0) {
-            $translation = $this->em()->find(
-                Translation::class,
-                $translationId
-            );
-        } else {
-            $translation = $this->em()->getRepository(Translation::class)->findDefault();
-        }
+        $translation = $this->getTranslation($request);
 
         /** @var NodeTreeWidget|null $nodeTree */
         $nodeTree = null;

@@ -13,16 +13,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AjaxNodeTypeFieldsController extends AjaxAbstractFieldsController
 {
-    /**
+    /*
      * Handle AJAX edition requests for NodeTypeFields
      * such as coming from widgets.
-     *
-     * @param Request $request
-     * @param int     $nodeTypeFieldId
-     *
-     * @return Response JSON response
      */
-    public function editAction(Request $request, int $nodeTypeFieldId)
+    public function editAction(Request $request, int $nodeTypeFieldId): Response
     {
         /*
          * Validate

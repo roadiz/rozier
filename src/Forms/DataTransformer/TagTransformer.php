@@ -26,7 +26,7 @@ class TagTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param Collection|\iterable|null $tags
+     * @param iterable|null $tags
      * @return array|string
      */
     public function transform($tags)
