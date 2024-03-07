@@ -1,3 +1,10 @@
+## [2.0.23](https://github.com/roadiz/rozier/compare/2.0.22...2.0.23) (2024-03-07)
+
+
+### Bug Fixes
+
+* **Trees:** Fixed tag and folder trees when they display first created translation instead of user chosen translation ([102507b](https://github.com/roadiz/rozier/commit/102507bd6113259f1f84077876e59dbaa9bd9c56))
+
 ## [2.0.22 (2023-07-31)](https://github.com/roadiz/rozier/compare/2.0.21...2.0.22)
 
 
