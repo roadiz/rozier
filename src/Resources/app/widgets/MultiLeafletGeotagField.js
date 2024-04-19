@@ -5,7 +5,7 @@ import { LatLngBounds } from 'leaflet'
 export default class MultiLeafletGeotagField extends LeafletGeotagField {
     constructor() {
         super()
-        this.$fields = document.querySelectorAll('.rz-multi-geotag-field:not(.is-enable)')
+        this.$fields = $('.rz-multi-geotag-field:not(.is-enable)')
 
         if (this.$fields.length) {
             this.init()
@@ -14,14 +14,14 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
 
     /**
      * @param {Array<Marker>} markers
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
-     * @param {HTMLElement} $selector
+     * @param {jQuery} $selector
      * @returns {boolean}
      */
     resetMarker(markers, $input, $geocodeReset, map, $selector) {
-        $input.value = ''
+        $input.val('')
 
         for (const marker of markers) {
             if (marker !== null) {
@@ -29,22 +29,16 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             }
         }
         markers = []
-        $geocodeReset.style.display = 'none'
+        $geocodeReset.hide()
         this.syncSelector($selector, markers, map, $input)
 
         return false
     }
 
-    /**
-     * @param {HTMLInputElement} element
-     * @returns {boolean}
-     */
     bindSingleField(element) {
-        /** @type {HTMLLabelElement} */
-        const $label = element.parentElement.querySelector('.uk-form-label')
-        const labelText = $label.innerHTML || 'Geotag'
-        $label.style.display = 'none'
-
+        const $input = $(element)
+        const $label = $input.parent().find('.uk-form-label')
+        const labelText = $label[0].innerHTML
         let jsonCode = null
         if (window.Rozier.defaultMapLocation) {
             jsonCode = window.Rozier.defaultMapLocation
@@ -62,22 +56,23 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
         }
 
         // Prepare DOM
-        element.style.display = 'none'
-        element.setAttribute('data-geotag-canvas', fieldId)
+        $input.hide()
+        $label.hide()
+        $input.attr('data-geotag-canvas', fieldId)
 
         // Geocode input text
         let metaDOM = [
-            '<nav class="geotag-widget-nav rz-geotag-meta">',
-            '<div class="geotag-widget-nav__head">',
-            '<div class="geotag-widget-nav__title"><i class="uk-icon-rz-map-multi-marker"></i></div>',
-            '<div class="geotag-widget-nav__title label">' + labelText + '</div>',
-            '</div>',
-            '<div class="geotag-widget-nav__content">',
+            '<nav class="geotag-widget-nav uk-navbar rz-geotag-meta">',
+            '<ul class="uk-navbar-nav">',
+            '<li class="uk-navbar-brand"><i class="uk-icon-rz-map-multi-marker"></i>',
+            '<li class="uk-navbar-brand label">' + labelText + '</li>',
+            '</ul>',
+            '<div class="uk-navbar-content uk-navbar-flip">',
             '<div class="geotag-widget-quick-creation uk-button-group">',
-            '<input autocomplete="off" class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
-            '<button type="button" id="' +
+            '<input class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
+            '<button id="' +
                 resetButtonId +
-                '" class="uk-button uk-button-content uk-button-danger rz-geotag-reset" title="' +
+                '" class="uk-button uk-button-content uk-button-table-delete rz-geotag-reset" title="' +
                 window.Rozier.messages.geotag.resetMarker +
                 '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
             '</div>',
@@ -89,27 +84,25 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             '<div class="rz-geotag-canvas" id="' + fieldId + '"></div>',
             '</div>',
         ].join('')
-        const metaNode = document.createElement('div')
-        metaNode.innerHTML = metaDOM
-        element.after(metaNode)
 
-        let $geocodeInput = document.getElementById(fieldAddressId)
-        $geocodeInput.setAttribute('placeholder', window.Rozier.messages.geotag.typeAnAddress)
+        $input.after(metaDOM)
+
+        let $geocodeInput = $('#' + fieldAddressId)
+        $geocodeInput.attr('placeholder', window.Rozier.messages.geotag.typeAnAddress)
         // Reset button
-        let $geocodeReset = document.getElementById(resetButtonId)
-        $geocodeReset.style.display = 'none'
+        let $geocodeReset = $('#' + resetButtonId)
+        $geocodeReset.hide()
 
         /*
          * Prepare map and marker
          */
         const map = this.createMap(fieldId, mapOptions)
         const markers = []
-        /** @type {HTMLElement} */
-        const $selector = element.parentElement.querySelector('.multi-geotag-list-markers')
+        const $selector = $input.parent().find('.multi-geotag-list-markers').eq(0)
 
-        if (element.value !== '') {
+        if ($input.val() !== '') {
             try {
-                const featureCollection = JSON.parse(element.value)
+                const featureCollection = JSON.parse($input.val())
                 if (!featureCollection.features) {
                     throw new Error('Data is not a valid GeoJSON featureCollection')
                 }
@@ -118,91 +111,67 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                     const marker = this.createMarker(feature, map)
                     marker.on(
                         'dragend',
-                        $.proxy(this.setMarkerEvent, this, marker, markers, element, $geocodeReset, map, $selector)
+                        $.proxy(this.setMarkerEvent, this, marker, markers, $input, $geocodeReset, map, $selector)
                     )
                     markers.push(marker)
                 }
+                $geocodeReset.show()
             } catch (e) {
-                element.style.display = 'block'
-                $(document.getElementById(fieldId)).style.display = 'none'
+                $input.show()
+                $(document.getElementById(fieldId)).hide()
                 return false
             }
         }
 
-        map.on('click', $.proxy(this.setMarkerEvent, this, null, markers, element, $geocodeReset, map, $selector))
-        $geocodeInput.addEventListener(
-            'keypress',
-            $.proxy(this.requestGeocode, this, markers, element, $geocodeReset, map, $selector)
-        )
-
+        map.on('click', $.proxy(this.setMarkerEvent, this, null, markers, $input, $geocodeReset, map, $selector))
+        $geocodeInput.on('keypress', $.proxy(this.requestGeocode, this, markers, $input, $geocodeReset, map, $selector))
+        $geocodeReset.on('click', $.proxy(this.resetMarker, this, markers, $input, $geocodeReset, map, $selector))
+        window.Rozier.$window.on('resize', $.proxy(this.resetMap, this, map, markers, mapOptions))
+        window.Rozier.$window.on('pageshowend', $.proxy(this.resetMap, this, map, markers, mapOptions))
         this.resetMap(map, markers, mapOptions, null)
-        this.syncSelector($selector, markers, map, element)
-
-        // Use a resize observer to invalidate the map when the container changes size or is hidden
-        const resizeObserver = new ResizeObserver((entries) => {
-            map.invalidateSize({
-                animate: false,
-                pan: false,
-            })
-            if (typeof markers !== 'undefined' && markers.length > 0) {
-                map.fitBounds(this.getMediumLatLng(markers), {
-                    animate: false,
-                    pan: false,
-                })
-            } else {
-                map.panTo(mapOptions.center, {
-                    animate: false,
-                    pan: false,
-                })
-            }
-        })
-        resizeObserver.observe(document.getElementById(fieldId))
+        this.syncSelector($selector, markers, map, $input)
     }
 
     /**
-     * @param {HTMLElement} $selector
+     * @param {jQuery} $selector
      * @param {Array<Marker>} markers
      * @param {Map} map
-     * @param {HTMLInputElement} $input
+     * @param {jQuery} $input
      */
     syncSelector($selector, markers, map, $input) {
-        $selector.innerHTML = ''
-        const innerHtml = []
+        $selector.empty()
         let i = 0
-        const actualMarkers = markers.filter((marker) => marker !== null && marker.getLatLng() !== null)
 
-        for (const marker of actualMarkers) {
-            ;[
-                '<li>',
-                '<span class="multi-geotag-marker-name">',
-                marker.name ? marker.name : '#' + i,
-                '</span>',
-                '<span class="uk-button-group">',
-                '<button type="button" class="uk-button uk-button-mini rz-multi-geotag-center" data-geocode-id="' +
-                    i +
-                    '"><i class="uk-icon-rz-marker"></i></button>',
-                '<button type="button" class="uk-button uk-button-mini rz-multi-geotag-remove" data-geocode-id="' +
-                    i +
-                    '"><i class="uk-icon-rz-trash-o"></i></button>',
-                '</span>',
-                '</li>',
-            ].forEach((item) => innerHtml.push(item))
-            i++
-        }
-        $selector.innerHTML = innerHtml.join('')
-
-        let j = 0
-        for (const marker of actualMarkers) {
-            let $centerBtn = $selector.querySelector('.rz-multi-geotag-center[data-geocode-id="' + j + '"]')
-            let $removeBtn = $selector.querySelector('.rz-multi-geotag-remove[data-geocode-id="' + j + '"]')
-            if ($centerBtn && $removeBtn) {
-                $centerBtn.addEventListener('click', $.proxy(this.centerMap, this, map, marker))
-                $removeBtn.addEventListener(
-                    'click',
-                    $.proxy(this.removeMarker, this, map, markers, marker, $selector, $input)
-                )
+        for (const marker of markers) {
+            if (marker === null) {
+                continue
             }
-            j++
+            const geocode = marker.getLatLng()
+            if (geocode) {
+                $selector.append(
+                    [
+                        '<li>',
+                        '<span class="multi-geotag-marker-name">',
+                        marker.name ? marker.name : '#' + i,
+                        '</span>',
+                        '<span class="uk-button-group">',
+                        '<button class="uk-button uk-button-mini rz-multi-geotag-center" data-geocode-id="' +
+                            i +
+                            '"><i class="uk-icon-rz-marker"></i></button>',
+                        '<button class="uk-button uk-button-mini rz-multi-geotag-remove" data-geocode-id="' +
+                            i +
+                            '"><i class="uk-icon-rz-trash-o"></i></button>',
+                        '</span>',
+                        '</li>',
+                    ].join('')
+                )
+
+                let $centerBtn = $selector.find('.rz-multi-geotag-center[data-geocode-id="' + i + '"]').eq(0)
+                let $removeBtn = $selector.find('.rz-multi-geotag-remove[data-geocode-id="' + i + '"]').eq(0)
+                $centerBtn.on('click', $.proxy(this.centerMap, this, map, marker))
+                $removeBtn.on('click', $.proxy(this.removeMarker, this, map, markers, marker, $selector, $input))
+            }
+            i++
         }
     }
 
@@ -210,8 +179,8 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
      * @param {Map} map
      * @param {Array<Marker>} markers
      * @param {Marker} marker
-     * @param {HTMLElement} $selector
-     * @param {HTMLInputElement} $input
+     * @param {jQuery} $selector
+     * @param {jQuery} $input
      * @param {Event|undefined} event
      * @return {boolean}
      */
@@ -234,17 +203,12 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             event.preventDefault()
         }
 
-        window.requestAnimationFrame(() => {
-            map.invalidateSize({
-                animate: true,
-                pan: true,
-            })
-            if (typeof markers !== 'undefined' && markers.length > 0) {
-                map.fitBounds(this.getMediumLatLng(markers))
-            } else {
-                map.panTo(mapOptions.center)
-            }
-        })
+        map.invalidateSize(true)
+        if (typeof markers !== 'undefined' && markers.length > 0) {
+            map.fitBounds(this.getMediumLatLng(markers))
+        } else {
+            map.panTo(mapOptions.center)
+        }
     }
 
     /**
@@ -277,11 +241,11 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
     /**
      * @param {Marker|null} marker
      * @param {Array<Marker>} markers
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
      * @param {Event|MouseEvent} event
-     * @param {HTMLElement} $selector
+     * @param {jQuery} $selector
      */
     setMarkerEvent(marker, markers, $input, $geocodeReset, map, $selector, event) {
         if (event.latlng) {
@@ -300,8 +264,8 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
     /**
      * @param {Marker} marker
      * @param {Array<Marker>} markers
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map|null} map
      * @param {LatLng} latLng
      * @param {String} name
@@ -324,6 +288,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             map.flyTo(latLng, latLng.alt)
             markers.push(marker)
             this.writeMarkers(markers, $input)
+            $geocodeReset.show()
         }
 
         return marker
@@ -333,7 +298,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
      * Convert markers to GeoJSON.
      *
      * @param {Array<Marker>} markers
-     * @param {HTMLInputElement} $input
+     * @param {jQuery} $input
      */
     writeMarkers(markers, $input) {
         const featuresCollection = {
@@ -346,15 +311,15 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                 featuresCollection.features.push(this.latLngToFeature(latLng, latLng.alt, marker.name))
             }
         }
-        $input.value = JSON.stringify(featuresCollection)
+        $input.val(JSON.stringify(featuresCollection))
     }
 
     /**
      * @param {Array<Marker>} markers
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
-     * @param {HTMLElement} $selector
+     * @param {jQuery} $selector
      * @param {Event} event
      * @return {Promise<void>}
      */

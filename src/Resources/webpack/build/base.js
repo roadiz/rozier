@@ -14,7 +14,7 @@ function resolve(dir) {
 }
 
 const createLintingRule = (config) => ({
-    test: /\.(js)$/,
+    test: /\.(js|vue)$/,
     loader: 'eslint-loader',
     enforce: 'pre',
     include: [resolve('app'), resolve('test')],
@@ -50,6 +50,12 @@ const getWebpackConfigBase = (config) => {
         module: {
             rules: [
                 ...(config.useEslint ? [createLintingRule(config)] : []),
+                {
+                    test: /\.js$/,
+                    enforce: 'pre',
+                    loader: 'eslint-loader',
+                    exclude: [/node_modules/, /bower_components/, /Resources\/app\/vendor/],
+                },
                 {
                     test: /\.js?$/,
                     exclude: /(node_modules)/,

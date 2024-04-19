@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
@@ -18,28 +19,34 @@ use Themes\Rozier\Utils\SessionListFilters;
 final class NodeTreeWidget extends AbstractWidget
 {
     public const SESSION_ITEM_PER_PAGE = 'nodetree_item_per_page';
-    private ?iterable $nodes = null;
-    private ?Tag $tag = null;
-    private bool $stackTree = false;
-    private ?array $filters = null;
-    private bool $canReorder = true;
-    private array $additionalCriteria = [];
+    protected ?Node $parentNode = null;
+    /**
+     * @var array<Node>|Paginator<Node>|null
+     */
+    protected $nodes = null;
+    protected ?Tag $tag = null;
+    protected ?TranslationInterface $translation = null;
+    protected bool $stackTree = false;
+    protected ?array $filters = null;
+    protected bool $canReorder = true;
+    protected array $additionalCriteria = [];
 
     /**
      * @param RequestStack $requestStack
      * @param ManagerRegistry $managerRegistry
-     * @param Node|null $parentNode Entry point of NodeTreeWidget, set null if it's root
+     * @param Node|null $parent Entry point of NodeTreeWidget, set null if it's root
      * @param TranslationInterface|null $translation NodeTree translation
-     * @param bool $includeRootNode
      */
     public function __construct(
         RequestStack $requestStack,
         ManagerRegistry $managerRegistry,
-        private readonly ?Node $parentNode = null,
-        private readonly ?TranslationInterface $translation = null,
-        private readonly bool $includeRootNode = false
+        ?Node $parent = null,
+        ?TranslationInterface $translation = null
     ) {
         parent::__construct($requestStack, $managerRegistry);
+
+        $this->parentNode = $parent;
+        $this->translation = $translation;
     }
 
     /**
@@ -71,13 +78,13 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @param bool $stackTree
+     * @param bool $newstackTree
      *
      * @return $this
      */
-    public function setStackTree(bool $stackTree): NodeTreeWidget
+    public function setStackTree(bool $newstackTree): NodeTreeWidget
     {
-        $this->stackTree = $stackTree;
+        $this->stackTree = (bool) $newstackTree;
 
         return $this;
     }
@@ -202,7 +209,7 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * @param Node|null $parent
      * @param bool $subRequest Default: false
-     * @return iterable<Node>
+     * @return array<int, Node>|Paginator<Node>
      */
     public function getChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
@@ -212,7 +219,7 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * @param Node|null $parent
      * @param bool $subRequest Default: false
-     * @return iterable<Node>
+     * @return array<int, Node>|Paginator<Node>
      */
     public function getReachableChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
@@ -263,13 +270,10 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return iterable<Node>
+     * @return array<int, Node>|Paginator<Node>
      */
     public function getNodes(): iterable
     {
-        if ($this->includeRootNode && null !== $this->getRootNode()) {
-            return [$this->getRootNode()];
-        }
         if (null === $this->nodes) {
             $manager = $this->getRootListManager();
             $this->nodes = $manager->getEntities();

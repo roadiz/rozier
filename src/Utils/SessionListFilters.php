@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Store user item_per_page preferences in session.
+ *
+ * @package Themes\Rozier\Utils
  */
 class SessionListFilters
 {
@@ -46,12 +48,8 @@ class SessionListFilters
             /*
              * Item count is in session
              */
-            $itemPerPage = $request->getSession()->get($this->sessionIdentifier);
-            if (!\is_numeric($itemPerPage)) {
-                $itemPerPage = $this->defaultItemsParPage;
-            }
-            $request->query->set('item_per_page', intval($itemPerPage));
-            $listManager->setItemPerPage(intval($itemPerPage));
+            $request->query->set('item_per_page', intval($request->getSession()->get($this->sessionIdentifier)));
+            $listManager->setItemPerPage(intval($request->getSession()->get($this->sessionIdentifier)));
         } elseif (
             $request->query->has('item_per_page') &&
             $request->query->get('item_per_page') > 0
