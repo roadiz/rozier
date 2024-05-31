@@ -68,7 +68,7 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
         $attributable = $attributeValue->getAttributable();
         $details = [
             '%name%' => $attributeValue->getAttribute()->getLabelOrCode(),
-            '%nodeName%' => $attributable->getNodeName(),
+            '%nodeName%' => $attributable instanceof Node ? $attributable->getNodeName() : '',
         ];
         /*
          * First, we set the new parent

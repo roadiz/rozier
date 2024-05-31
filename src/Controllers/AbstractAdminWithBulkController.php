@@ -17,12 +17,15 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 abstract class AbstractAdminWithBulkController extends AbstractAdminController
 {
+    protected FormFactoryInterface $formFactory;
+
     public function __construct(
-        protected readonly FormFactoryInterface $formFactory,
+        FormFactoryInterface $formFactory,
         SerializerInterface $serializer,
         UrlGeneratorInterface $urlGenerator
     ) {
         parent::__construct($serializer, $urlGenerator);
+        $this->formFactory = $formFactory;
     }
 
     protected function additionalAssignation(Request $request): void
@@ -133,10 +136,6 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                 foreach ($items as $item) {
                     if ($this->supports($item)) {
                         $alterItemCallable($item);
-                        $updateEvent = $this->createUpdateEvent($item);
-                        if (null !== $updateEvent) {
-                            $this->dispatchSingleOrMultipleEvent($updateEvent);
-                        }
                         $msg = $this->getTranslator()->trans(
                             $confirmMessageTemplate,
                             [
