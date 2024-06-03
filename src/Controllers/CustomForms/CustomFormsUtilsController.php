@@ -16,8 +16,14 @@ use Themes\Rozier\RozierApp;
 
 class CustomFormsUtilsController extends RozierApp
 {
-    public function __construct(private readonly CustomFormAnswerSerializer $customFormAnswerSerializer)
+    private CustomFormAnswerSerializer $customFormAnswerSerializer;
+
+    /**
+     * @param CustomFormAnswerSerializer $customFormAnswerSerializer
+     */
+    public function __construct(CustomFormAnswerSerializer $customFormAnswerSerializer)
     {
+        $this->customFormAnswerSerializer = $customFormAnswerSerializer;
     }
 
     /**

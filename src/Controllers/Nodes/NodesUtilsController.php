@@ -16,8 +16,14 @@ use Themes\Rozier\RozierApp;
 
 class NodesUtilsController extends RozierApp
 {
-    public function __construct(private readonly NodeNamePolicyInterface $nodeNamePolicy)
+    private NodeNamePolicyInterface $nodeNamePolicy;
+
+    /**
+     * @param NodeNamePolicyInterface $nodeNamePolicy
+     */
+    public function __construct(NodeNamePolicyInterface $nodeNamePolicy)
     {
+        $this->nodeNamePolicy = $nodeNamePolicy;
     }
 
     /**

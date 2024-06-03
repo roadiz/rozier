@@ -8,25 +8,33 @@ use Doctrine\Persistence\ObjectRepository;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use Symfony\Component\Form\Exception\InvalidConfigurationException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
 
 abstract class AbstractAdminController extends RozierApp
 {
     public const ITEM_PER_PAGE = 20;
 
-    public function __construct(
-        protected readonly SerializerInterface $serializer,
-        protected readonly UrlGeneratorInterface $urlGenerator
-    ) {
+    protected SerializerInterface $serializer;
+    protected UrlGeneratorInterface $urlGenerator;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(SerializerInterface $serializer, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->serializer = $serializer;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -93,7 +101,7 @@ abstract class AbstractAdminController extends RozierApp
      * @return Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function defaultAction(Request $request): ?Response
+    public function defaultAction(Request $request)
     {
         $this->denyAccessUnlessGranted($this->getRequiredListingRole());
         $this->additionalAssignation($request);
@@ -124,10 +132,10 @@ abstract class AbstractAdminController extends RozierApp
 
     /**
      * @param Request $request
-     * @return Response|null
+     * @return RedirectResponse|Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function addAction(Request $request): ?Response
+    public function addAction(Request $request)
     {
         $this->denyAccessUnlessGranted($this->getRequiredCreationRole());
         $this->additionalAssignation($request);
@@ -180,7 +188,7 @@ abstract class AbstractAdminController extends RozierApp
      * @return Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function editAction(Request $request, $id): ?Response
+    public function editAction(Request $request, $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredEditionRole());
         $this->additionalAssignation($request);
@@ -263,10 +271,10 @@ abstract class AbstractAdminController extends RozierApp
     /**
      * @param Request $request
      * @param int|string $id Numeric ID or UUID
-     * @return Response|null
+     * @return RedirectResponse|Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function deleteAction(Request $request, $id): ?Response
+    public function deleteAction(Request $request, $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredDeletionRole());
         $this->additionalAssignation($request);
@@ -483,7 +491,7 @@ abstract class AbstractAdminController extends RozierApp
      * @param T|iterable<T>|array<int, T>|null $event
      * @return T|iterable<T>|array<int, T>|null
      */
-    protected function dispatchSingleOrMultipleEvent(mixed $event): object|array|null
+    protected function dispatchSingleOrMultipleEvent(mixed $event): mixed
     {
         if (null === $event) {
             return null;
