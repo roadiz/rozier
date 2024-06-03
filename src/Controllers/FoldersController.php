@@ -25,8 +25,11 @@ use Twig\Error\RuntimeError;
 
 class FoldersController extends RozierApp
 {
-    public function __construct(private readonly DocumentArchiver $documentArchiver)
+    private DocumentArchiver $documentArchiver;
+
+    public function __construct(DocumentArchiver $documentArchiver)
     {
+        $this->documentArchiver = $documentArchiver;
     }
 
     public function indexAction(Request $request): Response
