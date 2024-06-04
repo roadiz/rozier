@@ -14,6 +14,7 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueTranslationType;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueType;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -26,14 +27,10 @@ use Twig\Error\RuntimeError;
 
 class NodesAttributesController extends RozierApp
 {
-    private FormFactoryInterface $formFactory;
-
-    /**
-     * @param FormFactoryInterface $formFactory
-     */
-    public function __construct(FormFactoryInterface $formFactory)
-    {
-        $this->formFactory = $formFactory;
+    public function __construct(
+        private readonly FormFactoryInterface $formFactory,
+        private readonly FormErrorSerializer $formErrorSerializer
+    ) {
     }
 
     /**
@@ -85,7 +82,15 @@ class NodesAttributesController extends RozierApp
             );
 
         $this->assignation['attribute_value_translation_forms'] = [];
-        $attributeValues = $node->getAttributeValues();
+        $nodeType = $node->getNodeType();
+        $orderByWeight = false;
+        if ($nodeType instanceof NodeType) {
+            $orderByWeight = $nodeType->isSortingAttributesByWeight();
+        }
+        $attributeValues = $this->em()->getRepository(AttributeValue::class)->findByAttributable(
+            $node,
+            $orderByWeight
+        );
         /** @var AttributeValue $attributeValue */
         foreach ($attributeValues as $attributeValue) {
             $name = $node->getNodeName() . '_attribute_' . $attributeValue->getId();
@@ -132,7 +137,7 @@ class NodesAttributesController extends RozierApp
                         'translationId' => $translation->getId(),
                     ]);
                 } else {
-                    $errors = $this->getErrorsAsArray($attributeValueTranslationForm);
+                    $errors = $this->formErrorSerializer->getErrorsAsArray($attributeValueTranslationForm);
                     /*
                      * Handle errors when Ajax POST requests
                      */
@@ -154,6 +159,7 @@ class NodesAttributesController extends RozierApp
 
         $this->assignation['source'] = $nodeSource;
         $this->assignation['translation'] = $translation;
+        $this->assignation['order_by_weight'] = $orderByWeight;
         $availableTranslations = $this->em()
             ->getRepository(Translation::class)
             ->findAvailableTranslationsForNode($node);
