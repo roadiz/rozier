@@ -17,8 +17,14 @@ use Themes\Rozier\RozierApp;
 
 class ExportController extends RozierApp
 {
-    public function __construct(private readonly NodeSourceXlsxSerializer $xlsxSerializer)
+    private NodeSourceXlsxSerializer $xlsxSerializer;
+
+    /**
+     * @param NodeSourceXlsxSerializer $xlsxSerializer
+     */
+    public function __construct(NodeSourceXlsxSerializer $xlsxSerializer)
     {
+        $this->xlsxSerializer = $xlsxSerializer;
     }
 
     /**
