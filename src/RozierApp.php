@@ -103,16 +103,19 @@ class RozierApp extends AppController
         return $view;
     }
 
-    public function prepareBaseAssignation(): static
+    /**
+     * @return $this
+     */
+    public function prepareBaseAssignation()
     {
         parent::prepareBaseAssignation();
         /*
          * Use kernel DI container to delay API requests
          */
-        $this->assignation['themeServices'] = $this->container->get(RozierServiceRegistry::class);
+        $this->assignation['themeServices'] = $this->get(RozierServiceRegistry::class);
 
         /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = $this->container->get('csrfTokenManager');
+        $tokenManager = $this->get('csrfTokenManager');
         /*
          * Switch this to true to use uncompressed JS and CSS files
          */
@@ -160,7 +163,7 @@ class RozierApp extends AppController
     public function cssAction(Request $request): Response
     {
         /** @var NodeTypes $nodeTypesBag */
-        $nodeTypesBag = $this->container->get('nodeTypesBag');
+        $nodeTypesBag = $this->get('nodeTypesBag');
         $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
         $this->assignation['nodeTypes'] = $nodeTypesBag->all();
 

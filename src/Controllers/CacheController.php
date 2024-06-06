@@ -14,10 +14,15 @@ use Themes\Rozier\RozierApp;
 
 final class CacheController extends RozierApp
 {
+    private LoggerInterface $logger;
+    private CacheClearerInterface $cacheClearer;
+
     public function __construct(
-        private readonly CacheClearerInterface $cacheClearer,
-        private readonly LoggerInterface $logger
+        CacheClearerInterface $cacheClearer,
+        LoggerInterface $logger
     ) {
+        $this->logger = $logger;
+        $this->cacheClearer = $cacheClearer;
     }
 
     public function deleteDoctrineCache(Request $request): Response

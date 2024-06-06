@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -21,10 +22,13 @@ use Twig\Error\RuntimeError;
 
 class NodeTypeFieldsController extends RozierApp
 {
-    public function __construct(
-        private readonly bool $allowNodeTypeEdition,
-        private readonly MessageBusInterface $messageBus
-    ) {
+    private MessageBusInterface $messageBus;
+    private KernelInterface $kernel;
+
+    public function __construct(KernelInterface $kernel, MessageBusInterface $messageBus)
+    {
+        $this->messageBus = $messageBus;
+        $this->kernel = $kernel;
     }
 
     /**
@@ -78,7 +82,7 @@ class NodeTypeFieldsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
+            if (!$this->kernel->isDebug()) {
                 $form->addError(new FormError('You cannot edit node-type fields in production.'));
             } else {
                 $this->em()->flush();
@@ -134,12 +138,12 @@ class NodeTypeFieldsController extends RozierApp
         $this->assignation['field'] = $field;
 
         $form = $this->createForm(NodeTypeFieldType::class, $field, [
-            'disabled' => !$this->allowNodeTypeEdition
+            'disabled' => !$this->kernel->isDebug()
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
+            if (!$this->kernel->isDebug()) {
                 $form->addError(new FormError('You cannot add node-type fields in production.'));
             } else {
                 try {
@@ -194,7 +198,7 @@ class NodeTypeFieldsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
+            if (!$this->kernel->isDebug()) {
                 $form->addError(new FormError('You cannot delete node-type fields in production.'));
             } else {
                 /** @var NodeType $nodeType */
