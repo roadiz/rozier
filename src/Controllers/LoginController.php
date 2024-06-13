@@ -16,9 +16,9 @@ use Themes\Rozier\RozierApp;
 class LoginController extends RozierApp
 {
     public function __construct(
-        private DocumentUrlGeneratorInterface $documentUrlGenerator,
-        private RandomImageFinder $randomImageFinder,
-        private Settings $settingsBag
+        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
+        private readonly RandomImageFinder $randomImageFinder,
+        private readonly Settings $settingsBag
     ) {
     }
 
