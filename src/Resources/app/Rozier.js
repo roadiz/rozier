@@ -6,7 +6,6 @@ import { PointerEventsPolyfill } from './utils/plugins'
 import { TweenLite, Expo } from 'gsap'
 import NodeTreeContextActions from './components/trees/NodeTreeContextActions'
 import RozierMobile from './RozierMobile'
-import bulkActions from './widgets/GenericBulkActions'
 
 require('gsap/ScrollToPlugin')
 /**
@@ -21,7 +20,6 @@ export default class Rozier {
         this.windowHeight = null
         this.resizeFirst = true
         this.mobile = null
-        this.ajaxToken = null
 
         this.nodeTrees = []
         this.treeTrees = []
@@ -155,14 +153,6 @@ export default class Rozier {
         this.refreshMainNodeTree()
         this.refreshMainTagTree()
         this.refreshMainFolderTree()
-
-        /*
-         * init generic bulk actions widget
-         */
-        bulkActions()
-        window.addEventListener('pageshowend', () => {
-            bulkActions()
-        })
     }
 
     saveCollapsedNestableState(state = null) {
@@ -233,22 +223,16 @@ export default class Rozier {
     bindMainTrees() {
         // TREES
         let $nodeTree = $('.nodetree-widget .root-tree')
-        if ($nodeTree.length) {
-            $nodeTree.off('change.uk.nestable')
-            $nodeTree.on('change.uk.nestable', this.onNestableNodeTreeChange)
-        }
+        $nodeTree.off('change.uk.nestable')
+        $nodeTree.on('change.uk.nestable', this.onNestableNodeTreeChange)
 
         let $tagTree = $('.tagtree-widget .root-tree')
-        if ($tagTree.length) {
-            $tagTree.off('change.uk.nestable')
-            $tagTree.on('change.uk.nestable', this.onNestableTagTreeChange)
-        }
+        $tagTree.off('change.uk.nestable')
+        $tagTree.on('change.uk.nestable', this.onNestableTagTreeChange)
 
         let $folderTree = $('.foldertree-widget .root-tree')
-        if ($folderTree.length) {
-            $folderTree.off('change.uk.nestable')
-            $folderTree.on('change.uk.nestable', this.onNestableFolderTreeChange)
-        }
+        $folderTree.off('change.uk.nestable')
+        $folderTree.on('change.uk.nestable', this.onNestableFolderTreeChange)
 
         // Tree element name
         this.$mainTreeElementName = this.$mainTrees.find('.tree-element-name')
@@ -288,71 +272,61 @@ export default class Rozier {
         })
     }
 
-    fetchSessionMessages() {
-        return new Promise(async (resolve, reject) => {
-            const query = new URLSearchParams({
-                _action: 'messages',
-                _token: this.ajaxToken,
-            })
-            const url = this.routes.ajaxSessionMessages + '?' + query.toString()
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
-                })
-                const data = await response.json()
-                if (!data.messages) {
-                    reject()
-                }
-                resolve(data.messages)
-            } catch (e) {
-                reject()
-            }
-        })
-    }
     /**
      * Get messages.
      */
-    async getMessages() {
-        const messages = await this.fetchSessionMessages()
-        if (typeof messages.confirm !== 'undefined' && messages.confirm.length > 0) {
-            for (let i = messages.confirm.length - 1; i >= 0; i--) {
-                window.UIkit.notify({
-                    message: messages.confirm[i],
-                    status: 'success',
-                    timeout: 2000,
-                    pos: 'top-center',
-                })
-            }
-        }
+    getMessages() {
+        $.ajax({
+            url: this.routes.ajaxSessionMessages,
+            type: 'GET',
+            dataType: 'json',
+            cache: false,
+            data: {
+                _action: 'messages',
+                _token: this.ajaxToken,
+            },
+        })
+            .done((data) => {
+                if (typeof data.messages !== 'undefined') {
+                    if (typeof data.messages.confirm !== 'undefined' && data.messages.confirm.length > 0) {
+                        for (let i = data.messages.confirm.length - 1; i >= 0; i--) {
+                            window.UIkit.notify({
+                                message: data.messages.confirm[i],
+                                status: 'success',
+                                timeout: 2000,
+                                pos: 'top-center',
+                            })
+                        }
+                    }
 
-        if (typeof messages.error !== 'undefined' && messages.error.length > 0) {
-            for (let j = data.messages.error.length - 1; j >= 0; j--) {
-                window.UIkit.notify({
-                    message: data.messages.error[j],
-                    status: 'error',
-                    timeout: 2000,
-                    pos: 'top-center',
-                })
-            }
-        }
+                    if (typeof data.messages.error !== 'undefined' && data.messages.error.length > 0) {
+                        for (let j = data.messages.error.length - 1; j >= 0; j--) {
+                            window.UIkit.notify({
+                                message: data.messages.error[j],
+                                status: 'error',
+                                timeout: 2000,
+                                pos: 'top-center',
+                            })
+                        }
+                    }
+                }
+            })
+            .fail(() => {
+                console.log('[Rozier.getMessages] error')
+            })
     }
 
     /**
      * @param translationId
      */
     refreshAllNodeTrees(translationId) {
-        const promises = []
-        promises.push(this.refreshMainNodeTree(translationId))
+        this.refreshMainNodeTree(translationId)
 
         /*
          * Stack trees
          */
         if (this.lazyload.stackNodeTrees.treeAvailable()) {
-            promises.push(this.lazyload.stackNodeTrees.refreshNodeTree())
+            this.lazyload.stackNodeTrees.refreshNodeTree()
         }
 
         /*
@@ -361,10 +335,9 @@ export default class Rozier {
         if (this.lazyload.childrenNodesFields.treeAvailable()) {
             for (let i = this.lazyload.childrenNodesFields.$nodeTrees.length - 1; i >= 0; i--) {
                 let $nodeTree = this.lazyload.childrenNodesFields.$nodeTrees.eq(i)
-                promises.push(this.lazyload.childrenNodesFields.refreshNodeTree($nodeTree))
+                this.lazyload.childrenNodesFields.refreshNodeTree($nodeTree)
             }
         }
-        return Promise.all(promises)
     }
 
     /**
@@ -372,163 +345,151 @@ export default class Rozier {
      *
      * @param {Number|null|undefined} translationId
      */
-    async refreshMainNodeTree(translationId = undefined) {
-        let $currentNodeTree = $('#tree-container').find('.nodetree-widget').eq(0)
-        if (!$currentNodeTree.length) {
-            console.debug('No main node-tree available.')
-            return
-        }
-
+    refreshMainNodeTree(translationId) {
+        let $currentNodeTree = $('#tree-container').find('.nodetree-widget')
         let $currentRootTree = $currentNodeTree.find('.root-tree').eq(0)
         if ($currentRootTree.length && !translationId) {
             translationId = $currentRootTree.attr('data-translation-id')
         }
 
-        try {
-            const query = new URLSearchParams({
+        if ($currentNodeTree.length) {
+            let postData = {
                 _token: this.ajaxToken,
                 _action: 'requestMainNodeTree',
                 translationId: translationId || null,
-            })
-            const url = this.routes.nodesTreeAjax + '?' + query.toString()
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                },
-            })
-            if (!response.ok) {
-                throw response
             }
-            const data = await response.json()
-            if (typeof data.nodeTree !== 'undefined') {
-                await this.fadeOut($currentNodeTree)
-                $currentNodeTree.replaceWith(data.nodeTree)
-                $currentNodeTree = $('#tree-container').find('.nodetree-widget')
+            let url = this.routes.nodesTreeAjax
 
-                await this.fadeIn($currentNodeTree)
-                this.initNestables()
-                this.bindMainTrees()
-                this.resize()
-                this.lazyload.bindAjaxLink()
+            $.ajax({
+                url: url,
+                type: 'get',
+                cache: false,
+                dataType: 'json',
+                data: postData,
+            })
+                .done((data) => {
+                    if ($currentNodeTree.length && typeof data.nodeTree !== 'undefined') {
+                        $currentNodeTree.fadeOut('slow', () => {
+                            $currentNodeTree.replaceWith(data.nodeTree)
+                            $currentNodeTree = $('#tree-container').find('.nodetree-widget')
+                            $currentNodeTree.fadeIn()
+                            this.initNestables()
+                            this.bindMainTrees()
+                            this.resize()
+                            this.lazyload.bindAjaxLink()
 
-                if (this.lazyload.nodeTreeContextActions) {
-                    this.lazyload.nodeTreeContextActions.unbind()
-                }
+                            if (this.lazyload.nodeTreeContextActions) {
+                                this.lazyload.nodeTreeContextActions.unbind()
+                            }
 
-                this.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
-            }
-        } catch (e) {
-            console.log('[Rozier.refreshMainNodeTree] Retrying in 3 seconds')
-            // Wait for background jobs to be done
-            window.setTimeout(() => {
-                this.refreshMainNodeTree(translationId)
-            }, 3000)
+                            this.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
+                        })
+                    }
+                })
+                .fail(() => {
+                    console.log('[Rozier.refreshMainNodeTree] Retrying in 3 seconds')
+                    // Wait for background jobs to be done
+                    setTimeout(() => {
+                        this.refreshMainNodeTree(translationId)
+                    }, 3000)
+                })
+                .always(() => {
+                    this.lazyload.canvasLoader.hide()
+                })
+        } else {
+            console.debug('No main node-tree available.')
         }
-
-        this.lazyload.canvasLoader.hide()
     }
 
     /**
      * Refresh only main tagTree.
      *
      */
-    async refreshMainTagTree() {
+    refreshMainTagTree() {
         let $currentTagTree = $('#tree-container').find('.tagtree-widget')
 
-        if (!$currentTagTree.length) {
-            console.debug('No main tag-tree available.')
-            return
-        }
+        if ($currentTagTree.length) {
+            let postData = {
+                _token: this.ajaxToken,
+                _action: 'requestMainTagTree',
+            }
 
-        const query = new URLSearchParams({
-            _token: this.ajaxToken,
-            _action: 'requestMainTagTree',
-        })
-        const url = this.routes.tagsTreeAjax + '?' + query.toString()
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-            },
-        })
-        const data = await response.json()
-        if (typeof data.tagTree !== 'undefined') {
-            await this.fadeOut($currentTagTree)
-            $currentTagTree.replaceWith(data.tagTree)
-            $currentTagTree = $('#tree-container').find('.tagtree-widget')
-            await this.fadeIn($currentTagTree)
-            this.initNestables()
-            this.bindMainTrees()
-            this.resize()
-            this.lazyload.bindAjaxLink()
+            let url = this.routes.tagsTreeAjax
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                cache: false,
+                dataType: 'json',
+                data: postData,
+            })
+                .done((data) => {
+                    if ($currentTagTree.length && typeof data.tagTree !== 'undefined') {
+                        $currentTagTree.fadeOut('slow', () => {
+                            $currentTagTree.replaceWith(data.tagTree)
+                            $currentTagTree = $('#tree-container').find('.tagtree-widget')
+                            $currentTagTree.fadeIn()
+                            this.initNestables()
+                            this.bindMainTrees()
+                            this.resize()
+                            this.lazyload.bindAjaxLink()
+                        })
+                    }
+                })
+                .always(() => {
+                    this.lazyload.canvasLoader.hide()
+                })
+        } else {
+            console.debug('No main tag-tree available.')
         }
-        this.lazyload.canvasLoader.hide()
     }
 
     /**
      * Refresh only main folderTree.
      */
-    async refreshMainFolderTree() {
+    refreshMainFolderTree() {
         let $currentFolderTree = $('#tree-container').find('.foldertree-widget')
 
-        if (!$currentFolderTree.length) {
+        if ($currentFolderTree.length) {
+            let postData = {
+                _token: this.ajaxToken,
+                _action: 'requestMainFolderTree',
+            }
+
+            let url = this.routes.foldersTreeAjax
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                cache: false,
+                dataType: 'json',
+                data: postData,
+            })
+                .done((data) => {
+                    if ($currentFolderTree.length && typeof data.folderTree !== 'undefined') {
+                        $currentFolderTree.fadeOut('slow', () => {
+                            $currentFolderTree.replaceWith(data.folderTree)
+                            $currentFolderTree = $('#tree-container').find('.foldertree-widget')
+                            $currentFolderTree.fadeIn()
+                            this.initNestables()
+                            this.bindMainTrees()
+                            this.resize()
+                            this.lazyload.bindAjaxLink()
+                        })
+                    }
+                })
+                .always(() => {
+                    this.lazyload.canvasLoader.hide()
+                })
+        } else {
             console.debug('No main folder-tree available.')
-            return
         }
-
-        const query = new URLSearchParams({
-            _token: this.ajaxToken,
-            _action: 'requestMainFolderTree',
-        })
-        const url = this.routes.foldersTreeAjax + '?' + query.toString()
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-            },
-        })
-        const data = await response.json()
-        if (typeof data.folderTree !== 'undefined') {
-            await this.fadeOut($currentFolderTree)
-            $currentFolderTree.replaceWith(data.folderTree)
-            $currentFolderTree = $('#tree-container').find('.foldertree-widget')
-            await this.fadeIn($currentFolderTree)
-            this.initNestables()
-            this.bindMainTrees()
-            this.resize()
-            this.lazyload.bindAjaxLink()
-        }
-
-        this.lazyload.canvasLoader.hide()
-    }
-
-    /**
-     * @param {jQuery} element
-     * @return {Promise<unknown>}
-     */
-    async fadeIn(element) {
-        return new Promise((resolve, reject) => {
-            element.fadeIn(() => {
-                resolve()
-            })
-        })
-    }
-
-    /**
-     * @param {jQuery} element
-     * @return {Promise<unknown>}
-     */
-    async fadeOut(element) {
-        return new Promise((resolve, reject) => {
-            element.fadeOut('slow', () => {
-                resolve()
-            })
-        })
     }
 
     /**
      * Toggle trees panel
+     * @param  {[type]} event [description]
+     * @return {[type]}       [description]
      */
     toggleTreesPanel() {
         $('#main-container-inner').toggleClass('trees-panel--minified')
@@ -549,6 +510,8 @@ export default class Rozier {
 
     /**
      * Toggle user panel
+     * @param  {[type]} event [description]
+     * @return {[type]}       [description]
      */
     toggleUserPanel() {
         $('#user-panel').toggleClass('minified')
@@ -602,12 +565,12 @@ export default class Rozier {
 
     /**
      * @param event
-     * @param {HTMLElement} rootEl
-     * @param {HTMLElement} el
-     * @param {string|null|undefined} status
-     * @returns {false|undefined}
+     * @param rootEl
+     * @param el
+     * @param status
+     * @returns {boolean}
      */
-    async onNestableNodeTreeChange(event, rootEl, el, status) {
+    onNestableNodeTreeChange(event, rootEl, el, status) {
         let element = $(el)
         /*
          * If node removed, do not do anything, the other change.uk.nestable nodeTree will be triggered
@@ -643,7 +606,7 @@ export default class Rozier {
             return false
         }
 
-        const postData = {
+        let postData = {
             _token: this.ajaxToken,
             _action: 'updatePosition',
             nodeId: nodeId,
@@ -659,43 +622,39 @@ export default class Rozier {
             postData.prevNodeId = parseInt(element.prev().attr('data-node-id'))
         }
 
-        try {
-            const response = await fetch(this.routes.nodeAjaxEdit.replace('%nodeId%', nodeId), {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: new URLSearchParams(postData),
+        $.ajax({
+            url: this.routes.nodeAjaxEdit.replace('%nodeId%', nodeId),
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+        })
+            .done((data) => {
+                window.UIkit.notify({
+                    message: data.responseText,
+                    status: data.status,
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
             })
-            if (!response.ok) {
-                throw response
-            }
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.responseText || data.detail,
-                status: data.status,
-                timeout: 3000,
-                pos: 'top-center',
+            .fail((data) => {
+                data = JSON.parse(data.responseText)
+                window.UIkit.notify({
+                    message: data.error_message,
+                    status: 'danger',
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
             })
-        } catch (response) {
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.error_message || data.detail,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center',
-            })
-        }
     }
 
     /**
      * @param event
-     * @param {HTMLElement} rootEl
-     * @param {HTMLElement} el
-     * @param {string|null|undefined} status
-     * @returns {false|undefined}
+     * @param rootEl
+     * @param el
+     * @param status
+     * @returns {boolean}
      */
-    async onNestableTagTreeChange(event, rootEl, el, status) {
+    onNestableTagTreeChange(event, rootEl, el, status) {
         let element = $(el)
 
         /*
@@ -747,43 +706,29 @@ export default class Rozier {
             postData.prevTagId = parseInt(element.prev().attr('data-tag-id'))
         }
 
-        try {
-            const response = await fetch(this.routes.tagAjaxEdit.replace('%tagId%', tagId), {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: new URLSearchParams(postData),
-            })
-            if (!response.ok) {
-                throw response
-            }
-            const data = await response.json()
+        $.ajax({
+            url: this.routes.tagAjaxEdit.replace('%tagId%', tagId),
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+        }).done((data) => {
             window.UIkit.notify({
                 message: data.responseText,
                 status: data.status,
                 timeout: 3000,
                 pos: 'top-center',
             })
-        } catch (response) {
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.error_message || data.detail,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center',
-            })
-        }
+        })
     }
 
     /**
+     *
      * @param event
-     * @param {HTMLElement} rootEl
-     * @param {HTMLElement} el
-     * @param {string|null|undefined} status
-     * @returns {false|undefined}
+     * @param element
+     * @param status
+     * @returns {boolean}
      */
-    async onNestableFolderTreeChange(event, rootEl, el, status) {
+    onNestableFolderTreeChange(event, rootEl, el, status) {
         let element = $(el)
         /*
          * If folder removed, do not do anything, the other folderTree will be triggered
@@ -836,33 +781,19 @@ export default class Rozier {
             postData.prevFolderId = parseInt(element.prev().attr('data-folder-id'))
         }
 
-        try {
-            const response = await fetch(this.routes.folderAjaxEdit.replace('%folderId%', folderId), {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: new URLSearchParams(postData),
-            })
-            if (!response.ok) {
-                throw response
-            }
-            const data = await response.json()
+        $.ajax({
+            url: this.routes.folderAjaxEdit.replace('%folderId%', folderId),
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+        }).done((data) => {
             window.UIkit.notify({
                 message: data.responseText,
                 status: data.status,
                 timeout: 3000,
                 pos: 'top-center',
             })
-        } catch (response) {
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.error_message || data.detail,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center',
-            })
-        }
+        })
     }
 
     /**
@@ -886,9 +817,9 @@ export default class Rozier {
         if (this.windowWidth >= 768 && this.windowWidth <= 1200 && this.$mainTrees.length && this.resizeFirst) {
             this.$mainTrees[0].style.display = 'none'
             this.$minifyTreePanelButton.trigger('click')
-            window.requestAnimationFrame(() => {
+            window.setTimeout(() => {
                 this.$mainTrees[0].style.display = 'table-cell'
-            })
+            }, 1000)
         }
 
         // Check if mobile
@@ -934,6 +865,9 @@ export default class Rozier {
 
         this.lazyload.resize()
         this.entriesPanel.replaceSubNavs()
+
+        // Documents list
+        // if(this.lazyload !== null && !this.resizeFirst) this.lazyload.documentsList.resize();
 
         // Set resize first to false
         if (this.resizeFirst) this.resizeFirst = false

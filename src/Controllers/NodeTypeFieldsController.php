@@ -21,10 +21,11 @@ use Twig\Error\RuntimeError;
 
 class NodeTypeFieldsController extends RozierApp
 {
-    public function __construct(
-        private readonly bool $allowNodeTypeEdition,
-        private readonly MessageBusInterface $messageBus
-    ) {
+    private MessageBusInterface $messageBus;
+
+    public function __construct(MessageBusInterface $messageBus)
+    {
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -78,25 +79,21 @@ class NodeTypeFieldsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
-                $form->addError(new FormError('You cannot edit node-type fields in production.'));
-            } else {
-                $this->em()->flush();
+            $this->em()->flush();
 
-                /** @var NodeType $nodeType */
-                $nodeType = $field->getNodeType();
-                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
+            /** @var NodeType $nodeType */
+            $nodeType = $field->getNodeType();
+            $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
-                $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
-                $this->publishConfirmMessage($request, $msg, $field);
+            $msg = $this->getTranslator()->trans('nodeTypeField.%name%.updated', ['%name%' => $field->getName()]);
+            $this->publishConfirmMessage($request, $msg);
 
-                return $this->redirectToRoute(
-                    'nodeTypeFieldsEditPage',
-                    [
-                        'nodeTypeFieldId' => $nodeTypeFieldId,
-                    ]
-                );
-            }
+            return $this->redirectToRoute(
+                'nodeTypeFieldsEditPage',
+                [
+                    'nodeTypeFieldId' => $nodeTypeFieldId,
+                ]
+            );
         }
 
         $this->assignation['form'] = $form->createView();
@@ -133,37 +130,31 @@ class NodeTypeFieldsController extends RozierApp
         $this->assignation['nodeType'] = $nodeType;
         $this->assignation['field'] = $field;
 
-        $form = $this->createForm(NodeTypeFieldType::class, $field, [
-            'disabled' => !$this->allowNodeTypeEdition
-        ]);
+        $form = $this->createForm(NodeTypeFieldType::class, $field);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
-                $form->addError(new FormError('You cannot add node-type fields in production.'));
-            } else {
-                try {
-                    $this->em()->persist($field);
-                    $this->em()->flush();
-                    $this->em()->refresh($nodeType);
+            try {
+                $this->em()->persist($field);
+                $this->em()->flush();
+                $this->em()->refresh($nodeType);
 
-                    $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
-                    $msg = $this->getTranslator()->trans(
-                        'nodeTypeField.%name%.created',
-                        ['%name%' => $field->getName()]
-                    );
-                    $this->publishConfirmMessage($request, $msg, $field);
+                $msg = $this->getTranslator()->trans(
+                    'nodeTypeField.%name%.created',
+                    ['%name%' => $field->getName()]
+                );
+                $this->publishConfirmMessage($request, $msg);
 
-                    return $this->redirectToRoute(
-                        'nodeTypeFieldsListPage',
-                        [
-                            'nodeTypeId' => $nodeTypeId,
-                        ]
-                    );
-                } catch (Exception $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                }
+                return $this->redirectToRoute(
+                    'nodeTypeFieldsListPage',
+                    [
+                        'nodeTypeId' => $nodeTypeId,
+                    ]
+                );
+            } catch (Exception $e) {
+                $form->addError(new FormError($e->getMessage()));
             }
         }
 
@@ -194,30 +185,26 @@ class NodeTypeFieldsController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
-                $form->addError(new FormError('You cannot delete node-type fields in production.'));
-            } else {
-                /** @var NodeType $nodeType */
-                $nodeType = $field->getNodeType();
-                $nodeTypeId = $nodeType->getId();
-                $this->em()->remove($field);
-                $this->em()->flush();
+            /** @var NodeType $nodeType */
+            $nodeType = $field->getNodeType();
+            $nodeTypeId = $nodeType->getId();
+            $this->em()->remove($field);
+            $this->em()->flush();
 
-                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeTypeId)));
+            $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeTypeId)));
 
-                $msg = $this->getTranslator()->trans(
-                    'nodeTypeField.%name%.deleted',
-                    ['%name%' => $field->getName()]
-                );
-                $this->publishConfirmMessage($request, $msg, $field);
+            $msg = $this->getTranslator()->trans(
+                'nodeTypeField.%name%.deleted',
+                ['%name%' => $field->getName()]
+            );
+            $this->publishConfirmMessage($request, $msg);
 
-                return $this->redirectToRoute(
-                    'nodeTypeFieldsListPage',
-                    [
-                        'nodeTypeId' => $nodeTypeId,
-                    ]
-                );
-            }
+            return $this->redirectToRoute(
+                'nodeTypeFieldsListPage',
+                [
+                    'nodeTypeId' => $nodeTypeId,
+                ]
+            );
         }
 
         $this->assignation['field'] = $field;

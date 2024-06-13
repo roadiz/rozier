@@ -62,7 +62,7 @@ final class UserExplorerItem extends AbstractExplorerItem
     protected function getEditItemPath(): ?string
     {
         return $this->urlGenerator->generate('usersEditPage', [
-            'id' => $this->user->getId()
+            'userId' => $this->user->getId()
         ]);
     }
 }
