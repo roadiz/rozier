@@ -52,9 +52,9 @@ class NodeTypesUtilsController extends RozierApp
      * @param Request $request
      * @param int     $nodeTypeId
      *
-     * @return JsonResponse
+     * @return Response
      */
-    public function exportJsonFileAction(Request $request, int $nodeTypeId): JsonResponse
+    public function exportJsonFileAction(Request $request, int $nodeTypeId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
 
@@ -71,7 +71,7 @@ class NodeTypesUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['node_type', 'position'])
             ),
-            Response::HTTP_OK,
+            JsonResponse::HTTP_OK,
             [
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $nodeType->getName() . '.json'),
             ],
@@ -83,7 +83,6 @@ class NodeTypesUtilsController extends RozierApp
      * @param Request $request
      *
      * @return BinaryFileResponse
-     * @throws RuntimeError
      */
     public function exportDocumentationAction(Request $request): BinaryFileResponse
     {
@@ -92,10 +91,6 @@ class NodeTypesUtilsController extends RozierApp
         $documentationGenerator = new DocumentationGenerator($this->nodeTypesBag, $this->getTranslator());
 
         $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
-        if (false === $tmpfname) {
-            throw new RuntimeError('Unable to create temporary file.');
-        }
-
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
         $zipArchive = new ZipArchive();
         $zipArchive->open($tmpfname, ZipArchive::CREATE);
@@ -166,9 +161,6 @@ class NodeTypesUtilsController extends RozierApp
 
         $zipArchive = new ZipArchive();
         $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
-        if (false === $tmpfname) {
-            throw new RuntimeError('Unable to create temporary file.');
-        }
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
         $zipArchive->open($tmpfname, ZipArchive::CREATE);
 
@@ -220,9 +212,6 @@ class NodeTypesUtilsController extends RozierApp
 
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
-                if (false === $serializedData) {
-                    throw new RuntimeError('Unable to read uploaded file.');
-                }
 
                 if (null !== json_decode($serializedData)) {
                     $this->nodeTypesImporter->import($serializedData);
@@ -249,7 +238,7 @@ class NodeTypesUtilsController extends RozierApp
     /**
      * @return FormInterface
      */
-    private function buildImportJsonFileForm(): FormInterface
+    private function buildImportJsonFileForm()
     {
         $builder = $this->createFormBuilder()
                         ->add('node_type_file', FileType::class, [

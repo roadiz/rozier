@@ -103,10 +103,6 @@ class SettingsUtilsController extends RozierApp
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
-                if (!\is_string($serializedData)) {
-                    throw new RuntimeError('Imported file is not a string.');
-                }
-
                 if (null !== \json_decode($serializedData)) {
                     if ($this->settingsImporter->import($serializedData)) {
                         $msg = $this->getTranslator()->trans('setting.imported');

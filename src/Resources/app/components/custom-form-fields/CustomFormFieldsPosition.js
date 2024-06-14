@@ -22,53 +22,49 @@ export default class CustomFormFieldsPosition {
         }
     }
 
-    async onSortableChange(event, list, element) {
+    onSortableChange(event, list, element) {
         let $element = $(element)
         let customFormFieldId = parseInt($element.data('field-id'))
         let $sibling = $element.prev()
-        let afterFieldId = null
-        let beforeFieldId = null
+        let newPosition = 0.0
 
         if ($sibling.length === 0) {
             $sibling = $element.next()
-            beforeFieldId = parseInt($sibling.data('field-id'))
+            newPosition = parseInt($sibling.data('position')) - 0.5
         } else {
-            afterFieldId = parseInt($sibling.data('field-id'))
+            newPosition = parseInt($sibling.data('position')) + 0.5
         }
 
-        const postData = {
+        let postData = {
             _token: window.Rozier.ajaxToken,
             _action: 'updatePosition',
             customFormFieldId: customFormFieldId,
-            beforeFieldId: beforeFieldId,
-            afterFieldId: afterFieldId,
+            newPosition: newPosition,
         }
-        const response = await fetch(
-            window.Rozier.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
-            {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: new URLSearchParams(postData),
-            }
-        )
-        if (!response.ok) {
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.title,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center',
+
+        $.ajax({
+            url: window.Rozier.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+        })
+            .done((data) => {
+                $element.attr('data-position', newPosition)
+                window.UIkit.notify({
+                    message: data.responseText,
+                    status: data.status,
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
             })
-        } else {
-            const data = await response.json()
-            window.UIkit.notify({
-                message: data.responseText,
-                status: data.status,
-                timeout: 3000,
-                pos: 'top-center',
+            .fail((data) => {
+                data = JSON.parse(data.responseText)
+                window.UIkit.notify({
+                    message: data.error_message,
+                    status: 'danger',
+                    timeout: 3000,
+                    pos: 'top-center',
+                })
             })
-        }
     }
 }

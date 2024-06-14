@@ -8,6 +8,9 @@ use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxNodeTypeFieldsController extends AjaxAbstractFieldsController
 {
     /**
@@ -21,10 +24,13 @@ class AjaxNodeTypeFieldsController extends AjaxAbstractFieldsController
      */
     public function editAction(Request $request, int $nodeTypeFieldId): Response
     {
+        /*
+         * Validate
+         */
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODEFIELDS_DELETE');
 
-        $field = $this->findEntity($nodeTypeFieldId);
+        $field = $this->em()->find(NodeTypeField::class, (int) $nodeTypeFieldId);
 
         if (null !== $response = $this->handleFieldActions($request, $field)) {
             return $response;
@@ -36,10 +42,5 @@ class AjaxNodeTypeFieldsController extends AjaxAbstractFieldsController
                 '%nodeTypeFieldId%' => $nodeTypeFieldId
             ]
         ));
-    }
-
-    protected function getEntityClass(): string
-    {
-        return NodeTypeField::class;
     }
 }

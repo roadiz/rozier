@@ -18,18 +18,8 @@
 
 #main-content-scrollable{
     padding: 0px;
-    background-color: var(--maincontent-bg);
+    background-color: @maincontent-bg;
     overflow-y: auto;
-
-    @media (max-width: @screen-xs-max) {
-        padding-top: @mobile-admin-menu-height;
-        height: auto;
-        min-height: 100vh;
-        box-sizing: border-box;
-    }
-    @media (min-width: @screen-sm-min) {
-        min-height: 100%;
-    }
 
     .container{
         padding: 0px 60px;
@@ -37,7 +27,7 @@
     .content {
         position: relative;
 
-        .nodetree-langs {
+        .nodetree-langs{
             margin-top: -15px;
             margin-bottom: 15px;
 
@@ -63,10 +53,10 @@
     position: relative;
     height: 220px;
     padding: 0px 30px;
-    background-color: var(--maincontent-header-bg);
+    background-color: @maincontent-header-bg;
     text-align: center;
     .box-sizing();
-    border-bottom: 1px solid var(--navbars-bg);
+    border-bottom: 1px solid @navbars-bg;
 
     .navbar-navigation {
         @media (min-width: @screen-sm-min) {
@@ -94,7 +84,7 @@
     padding: 3em 0 0;
     margin: 0px;
     text-align: center;
-    color: var(--content-title-color);
+    color:@black-title;
     font-weight: lighter;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -105,7 +95,7 @@
         position: absolute;
         width: 16px;
         height: 1px;
-        background-color: @grey-medium;
+        background-color: #808080;
         left: 50%;
         margin-left: -8px;
         margin-top: 3px;
@@ -118,7 +108,7 @@
     width:16px; height:16px;
     padding:0;
     color:@icon-simple;
-    transition: 0.4s color ease;
+    .transition(0.4s color ease);
 
     &:hover{
         color:@icon-simple-hover;
