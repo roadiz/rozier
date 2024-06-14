@@ -6,25 +6,29 @@ namespace Themes\Rozier\Controllers\NodeTypes;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
-use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\CoreBundle\Message\DeleteNodeTypeMessage;
 use RZ\Roadiz\CoreBundle\Message\UpdateNodeTypeSchemaMessage;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Themes\Rozier\Forms\NodeTypeType;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
 class NodeTypesController extends RozierApp
 {
-    public function __construct(
-        private readonly bool $allowNodeTypeEdition,
-        private readonly MessageBusInterface $messageBus
-    ) {
+    private MessageBusInterface $messageBus;
+    private KernelInterface $kernel;
+
+    public function __construct(KernelInterface $kernel, MessageBusInterface $messageBus)
+    {
+        $this->messageBus = $messageBus;
+        $this->kernel = $kernel;
     }
 
     public function indexAction(Request $request): Response
@@ -108,12 +112,12 @@ class NodeTypesController extends RozierApp
         $nodeType = new NodeType();
 
         $form = $this->createForm(NodeTypeType::class, $nodeType, [
-            'disabled' => !$this->allowNodeTypeEdition
+            'disabled' => !$this->kernel->isDebug()
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
+            if (!$this->kernel->isDebug()) {
                 $form->addError(new FormError('You cannot create a node-type in production mode.'));
             } else {
                 try {
@@ -162,7 +166,7 @@ class NodeTypesController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
+            if (!$this->kernel->isDebug()) {
                 $form->addError(new FormError('You cannot delete a node-type in production mode.'));
             } else {
                 $this->messageBus->dispatch(new Envelope(new DeleteNodeTypeMessage($nodeType->getId())));
