@@ -17,7 +17,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -115,6 +115,14 @@ class DocumentEditType extends AbstractType
             $builder->add('mediaDuration', IntegerType::class, [
                 'label' => 'document.duration',
                 'required' => false
+            ]);
+        }
+
+        if ($document->isProcessable()) {
+            $builder->add('imageCropAlignment', ImageCropAlignmentType::class, [
+                'label' => 'document.imageCropAlignment',
+                'help' => 'document.imageCropAlignment.help',
+                'required' => false,
             ]);
         }
 
