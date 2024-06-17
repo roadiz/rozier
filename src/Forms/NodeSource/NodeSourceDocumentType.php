@@ -88,9 +88,9 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 
         $event->setData($this->managerRegistry
             ->getRepository(Document::class)
-            ->findByNodeSourceAndFieldName(
+            ->findByNodeSourceAndField(
                 $nodeSource,
-                $nodeTypeField->getName()
+                $nodeTypeField
             ));
     }
 
