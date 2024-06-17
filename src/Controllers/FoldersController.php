@@ -25,8 +25,11 @@ use Twig\Error\RuntimeError;
 
 class FoldersController extends RozierApp
 {
-    public function __construct(private readonly DocumentArchiver $documentArchiver)
+    private DocumentArchiver $documentArchiver;
+
+    public function __construct(DocumentArchiver $documentArchiver)
     {
+        $this->documentArchiver = $documentArchiver;
     }
 
     public function indexAction(Request $request): Response
@@ -83,7 +86,7 @@ class FoldersController extends RozierApp
                     'folder.%name%.created',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg);
 
                 /*
                  * Dispatch event
@@ -92,7 +95,7 @@ class FoldersController extends RozierApp
                     new FolderCreatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
             return $this->redirectToRoute('foldersHomePage');
@@ -134,7 +137,7 @@ class FoldersController extends RozierApp
                     'folder.%name%.deleted',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg);
 
                 /*
                  * Dispatch event
@@ -143,7 +146,7 @@ class FoldersController extends RozierApp
                     new FolderDeletedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
             return $this->redirectToRoute('foldersHomePage');
@@ -190,7 +193,7 @@ class FoldersController extends RozierApp
                     'folder.%name%.updated',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg);
                 /*
                  * Dispatch event
                  */
@@ -198,7 +201,7 @@ class FoldersController extends RozierApp
                     new FolderUpdatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
             return $this->redirectToRoute('foldersEditPage', ['folderId' => $folderId]);
@@ -274,7 +277,7 @@ class FoldersController extends RozierApp
                     'folder.%name%.updated',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg);
                 /*
                  * Dispatch event
                  */
@@ -282,7 +285,7 @@ class FoldersController extends RozierApp
                     new FolderUpdatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage());
             }
 
             return $this->redirectToRoute('foldersEditTranslationPage', [

@@ -20,6 +20,9 @@ use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\GroupType;
 use Twig\Error\RuntimeError;
 
+/**
+ * @package Themes\Rozier\Controllers
+ */
 class GroupsController extends AbstractAdminController
 {
     /**
@@ -147,7 +150,7 @@ class GroupsController extends AbstractAdminController
                     '%group%' => $item->getName(),
                     '%role%' => $role->getRole(),
                 ]);
-                $this->publishConfirmMessage($request, $msg, $role);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirectToRoute(
                     'groupsEditRolesPage',
@@ -203,7 +206,7 @@ class GroupsController extends AbstractAdminController
                 '%role%' => $role->getRole(),
                 '%group%' => $item->getName(),
             ]);
-            $this->publishConfirmMessage($request, $msg, $role);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->redirectToRoute(
                 'groupsEditRolesPage',
@@ -251,7 +254,7 @@ class GroupsController extends AbstractAdminController
                     '%group%' => $item->getName(),
                     '%user%' => $user->getUserName(),
                 ]);
-                $this->publishConfirmMessage($request, $msg, $user);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirectToRoute(
                     'groupsEditUsersPage',
@@ -306,7 +309,7 @@ class GroupsController extends AbstractAdminController
                 '%user%' => $user->getUserName(),
                 '%group%' => $item->getName(),
             ]);
-            $this->publishConfirmMessage($request, $msg, $user);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->redirectToRoute(
                 'groupsEditUsersPage',

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Models;
 
+/**
+ * @package Themes\Rozier\Models
+ */
 interface ModelInterface
 {
     /**

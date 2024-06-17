@@ -17,10 +17,18 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 abstract class AbstractWidget
 {
+    private RequestStack $requestStack;
+    private ManagerRegistry $managerRegistry;
     protected ?TranslationInterface $defaultTranslation = null;
 
-    public function __construct(protected RequestStack $requestStack, protected ManagerRegistry $managerRegistry)
+    /**
+     * @param RequestStack $requestStack
+     * @param ManagerRegistry $managerRegistry
+     */
+    public function __construct(RequestStack $requestStack, ManagerRegistry $managerRegistry)
     {
+        $this->managerRegistry = $managerRegistry;
+        $this->requestStack = $requestStack;
     }
 
     /**
@@ -28,11 +36,7 @@ abstract class AbstractWidget
      */
     protected function getRequest(): Request
     {
-        $request = $this->requestStack->getCurrentRequest() ?? $this->requestStack->getMainRequest();
-        if (null === $request) {
-            throw new \RuntimeException('Request cannot be found.');
-        }
-        return $request;
+        return $this->requestStack->getCurrentRequest() ?? $this->requestStack->getMasterRequest();
     }
 
     /**

@@ -1,13 +1,15 @@
+import $ from 'jquery'
+
 const STORAGE_KEY = 'roadiz.currentMainTreeTab'
 
 export default class MainTreeTabs {
     constructor() {
         this.onTabChange = this.onTabChange.bind(this)
-        const treeMenu = document.getElementById('tree-menu')
+        this.tabsMenu = $('#tree-menu')
         const currentTabId = window.localStorage.getItem(STORAGE_KEY)
 
-        if (treeMenu) {
-            this.tabsMenu = window.UIkit.tab(treeMenu, {
+        if (this.tabsMenu) {
+            window.UIkit.tab(this.tabsMenu, {
                 connect: '#tree-container',
                 swiping: false,
                 active: currentTabId ? Number.parseInt(currentTabId) : 0,
@@ -17,9 +19,7 @@ export default class MainTreeTabs {
     }
 
     unbind() {
-        if (this.tabsMenu) {
-            this.tabsMenu.off('change.uk.tab', this.onTabChange)
-        }
+        this.tabsMenu.off('change.uk.tab', this.onTabChange)
     }
 
     onTabChange(event, activeItem, previousItem) {
