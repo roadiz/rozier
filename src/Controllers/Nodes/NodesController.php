@@ -18,6 +18,7 @@ use RZ\Roadiz\CoreBundle\Event\Node\NodePathChangedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUndeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\CoreBundle\Node\Exception\SameNodeUrlException;
 use RZ\Roadiz\CoreBundle\Node\NodeFactory;
 use RZ\Roadiz\CoreBundle\Node\NodeMover;
@@ -36,7 +37,6 @@ use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Workflow\Registry;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\NodesTrait;
-use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
 final class NodesController extends RozierApp
@@ -329,7 +329,10 @@ final class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Translation #%s does not exist.', $translationId));
         }
 
-        $node = new Node($type);
+        $node = new Node();
+        $node->setNodeType($type);
+        $node->setTtl($type->getDefaultTtl());
+
         $chroot = $this->nodeChrootResolver->getChroot($this->getUser());
         if (null !== $chroot) {
             // If user is jailed in a node, prevent moving nodes out.
