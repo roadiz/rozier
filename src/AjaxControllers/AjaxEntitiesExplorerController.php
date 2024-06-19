@@ -26,26 +26,14 @@ use Themes\Rozier\Explorer\FolderExplorerItem;
 use Themes\Rozier\Explorer\SettingExplorerItem;
 use Themes\Rozier\Explorer\UserExplorerItem;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
 class AjaxEntitiesExplorerController extends AbstractAjaxController
 {
-    private RendererInterface $renderer;
-    private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private UrlGeneratorInterface $urlGenerator;
-    private EmbedFinderFactory $embedFinderFactory;
-
     public function __construct(
-        RendererInterface $renderer,
-        DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator,
-        EmbedFinderFactory $embedFinderFactory
+        private readonly RendererInterface $renderer,
+        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly EmbedFinderFactory $embedFinderFactory
     ) {
-        $this->renderer = $renderer;
-        $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->urlGenerator = $urlGenerator;
-        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -121,12 +109,6 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
         );
     }
 
-    /**
-     * Get a Node list from an array of id.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function listAction(Request $request): JsonResponse
     {
         if (!$request->query->has('nodeTypeFieldId')) {
@@ -137,7 +119,7 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+        $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
         /** @var EntityManager $em */
         $em = $this->em();
