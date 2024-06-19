@@ -7,6 +7,9 @@ namespace Themes\Rozier\Models;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * @package Themes\Rozier\Models
+ */
 final class TagModel implements ModelInterface
 {
     private Tag $tag;

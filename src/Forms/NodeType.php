@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueNodeName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -21,6 +22,11 @@ class NodeType extends AbstractType
                 'label' => 'nodeName',
                 'empty_data' => '',
                 'help' => 'node.nodeName.help',
+                'constraints' => [
+                    new UniqueNodeName([
+                        'currentValue' => $options['nodeName'],
+                    ]),
+                ]
             ])
             ->add('dynamicNodeName', CheckboxType::class, [
                 'label' => 'node.dynamicNodeName',
@@ -29,10 +35,7 @@ class NodeType extends AbstractType
             ])
         ;
 
-        /** @var Node|null $node */
-        $node = $builder->getData();
-        $isReachable = null !== $node && $node->getNodeType()->isReachable();
-        if ($isReachable) {
+        if (null !== $builder->getData() && $builder->getData()->getNodeType()->isReachable()) {
             $builder->add('home', CheckboxType::class, [
                 'label' => 'node.isHome',
                 'required' => false,
@@ -53,7 +56,7 @@ class NodeType extends AbstractType
             ])
         ;
 
-        if ($isReachable) {
+        if (null !== $builder->getData() && $builder->getData()->getNodeType()->isReachable()) {
             $builder->add('ttl', IntegerType::class, [
                 'label' => 'node.ttl',
                 'help' => 'node_time_to_live_cache_on_front_controller',
@@ -77,6 +80,7 @@ class NodeType extends AbstractType
                 'class' => 'uk-form node-form',
             ],
         ]);
-        $resolver->setAllowedTypes('nodeName', ['string', 'null']);
+
+        $resolver->setAllowedTypes('nodeName', 'string');
     }
 }
