@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use RZ\Roadiz\CoreBundle\Logger\Entity\Log;
+use RZ\Roadiz\CoreBundle\Entity\Log;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
+/**
+ * @package Themes\Rozier\Controllers
+ */
 class DashboardController extends RozierApp
 {
     /**

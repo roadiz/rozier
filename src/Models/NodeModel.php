@@ -9,20 +9,25 @@ use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\NodesSourcesDocuments;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 
 /**
+ * @package Themes\Rozier\Models
  * @Serializer\ExclusionPolicy("all")
  */
 final class NodeModel implements ModelInterface
 {
-    public function __construct(
-        private Node $node,
-        private UrlGeneratorInterface $urlGenerator,
-        private Security $security
-    ) {
+    private Node $node;
+    private UrlGeneratorInterface $urlGenerator;
+
+    /**
+     * @param Node $node
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(Node $node, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->node = $node;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function toArray(): array
@@ -31,21 +36,18 @@ final class NodeModel implements ModelInterface
         $nodeSource = $this->node->getNodeSources()->first();
 
         if (false === $nodeSource) {
-            $result = [
+            return [
                 'id' => $this->node->getId(),
                 'title' => $this->node->getNodeName(),
                 'nodeName' => $this->node->getNodeName(),
                 'isPublished' => $this->node->isPublished(),
+                'nodesEditPage' => $this->urlGenerator->generate('nodesEditPage', [
+                    'nodeId' => $this->node->getId(),
+                ]),
                 'nodeType' => [
-                    'color' => $this->node->getNodeType()->getColor() ?? '#000000',
+                    'color' => $this->node->getNodeType()->getColor()
                 ]
             ];
-            if ($this->security->isGranted(NodeVoter::EDIT_SETTING, $this->node)) {
-                $result['nodesEditPage'] = $this->urlGenerator->generate('nodesEditPage', [
-                    'nodeId' => $this->node->getId(),
-                ]);
-            }
-            return $result;
         }
 
         /** @var NodesSourcesDocuments|false $thumbnail */
@@ -59,32 +61,25 @@ final class NodeModel implements ModelInterface
             'thumbnail' => $thumbnail ? $thumbnail->getDocument() : null,
             'nodeName' => $this->node->getNodeName(),
             'isPublished' => $this->node->isPublished(),
-            'nodeType' => [
-                'color' => $this->node->getNodeType()->getColor() ?? '#000000',
-            ]
-        ];
-
-        if ($this->security->isGranted(NodeVoter::EDIT_CONTENT, $nodeSource)) {
-            $result['nodesEditPage'] = $this->urlGenerator->generate('nodesEditSourcePage', [
+            'nodesEditPage' => $this->urlGenerator->generate('nodesEditSourcePage', [
                 'nodeId' => $this->node->getId(),
                 'translationId' => $translation->getId(),
-            ]);
-        }
+            ]),
+            'nodeType' => [
+                'color' => $this->node->getNodeType()->getColor()
+            ]
+        ];
 
         $parent = $this->node->getParent();
 
         if ($parent instanceof Node) {
             $result['parent'] = [
-                'title' => $parent->getNodeSources()->first() ?
-                    $parent->getNodeSources()->first()->getTitle() :
-                    $parent->getNodeName()
+                'title' => $parent->getNodeSources()->first()->getTitle()
             ];
             $subParent = $parent->getParent();
             if ($subParent instanceof Node) {
                 $result['subparent'] = [
-                    'title' => $subParent->getNodeSources()->first() ?
-                        $subParent->getNodeSources()->first()->getTitle() :
-                        $subParent->getNodeName()
+                    'title' => $subParent->getNodeSources()->first()->getTitle()
                 ];
             }
         }

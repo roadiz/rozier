@@ -167,14 +167,16 @@ export default class MarkdownEditor {
 
             this.$buttons.on('click', this.buttonClick)
 
-            window.requestAnimationFrame(() => {
+            window.setTimeout(() => {
                 $('[data-uk-switcher]').on('show.uk.switcher', this.forceEditorUpdate)
                 this.forceEditorUpdate()
-            })
+            }, 300)
         }
     }
 
-    async onDropFile(editor, event) {
+    onDropFile(editor, event) {
+        let _this = this
+
         event.preventDefault(event)
 
         for (let i = 0; i < event.dataTransfer.files.length; i++) {
@@ -184,28 +186,15 @@ export default class MarkdownEditor {
             formData.append('_token', window.Rozier.ajaxToken)
             formData.append('form[attachment]', file)
 
-            const response = await fetch(window.Rozier.routes.documentsUploadPage, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                },
-                body: formData,
-            })
-            if (!response.ok) {
-                const data = await response.json()
-                if (data.errors) {
-                    window.UIkit.notify({
-                        message: data.message,
-                        status: 'danger',
-                        timeout: 2000,
-                        pos: 'top-center',
-                    })
-                }
-            } else {
-                const data = await response.json()
-                await window.Rozier.getMessages()
-                this.onDropFileUploaded(editor, data)
-            }
+            $.ajax({
+                url: window.Rozier.routes.documentsUploadPage,
+                type: 'post',
+                dataType: 'json',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+            }).always($.proxy(this.onDropFileUploaded, _this, editor))
         }
     }
 
@@ -213,7 +202,7 @@ export default class MarkdownEditor {
         window.Rozier.lazyload.canvasLoader.hide()
 
         if (data.success === true) {
-            let mark = '![' + data.document.name + '](' + data.document.url + ')'
+            let mark = '![' + data.thumbnail.filename + '](' + data.thumbnail.large + ')'
 
             editor.replaceSelection(mark)
         }
@@ -424,14 +413,14 @@ export default class MarkdownEditor {
         this.editor.save()
 
         if (this.usePreview) {
-            window.cancelAnimationFrame(this.refreshPreviewTimeout)
-            this.refreshPreviewTimeout = window.requestAnimationFrame(() => {
+            clearTimeout(this.refreshPreviewTimeout)
+            this.refreshPreviewTimeout = window.setTimeout(() => {
                 this.$preview.html(this.markdownit.render(this.editor.getValue()))
-            })
+            }, 100)
         }
 
         if (this.limit) {
-            window.requestAnimationFrame(() => {
+            window.setTimeout(() => {
                 let textareaVal = this.editor.getValue()
                 let textareaValStripped = stripTags(textareaVal)
                 let textareaValLength = textareaValStripped.length
@@ -454,7 +443,7 @@ export default class MarkdownEditor {
                         this.countAlertActive = false
                     }
                 }
-            })
+            }, 100)
         }
     }
 

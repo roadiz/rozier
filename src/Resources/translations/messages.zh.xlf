@@ -346,6 +346,10 @@
         <source>metaTitle</source>
         <target state="translated">元-标题</target>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="92">
+        <source>metaKeywords</source>
+        <target state="translated">元-关键词</target>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="93">
         <source>metaDescription</source>
         <target state="translated">元-描述</target>
@@ -1457,10 +1461,6 @@
       </trans-unit>
       <trans-unit xml:space="preserve" id="tag.color">
         <source>tag.color</source>
-        <target state="translated">颜色</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="folder.color">
-        <source>folder.color</source>
         <target state="translated">颜色</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="374">
@@ -4544,6 +4544,11 @@
         <target state="translated">回到最新版本</target>
         <note>Version management : Button label to go back to working copy</note>
       </trans-unit>
+      <trans-unit xml:space="preserve" id="encrypted">
+        <source>encrypted</source>
+        <target state="translated">已加密</target>
+        <note>Settings : defines if setting value will be encrypted in database.</note>
+      </trans-unit>
       <trans-unit xml:space="preserve" id="original.document">
         <source>original.document</source>
         <target state="translated">原始文档</target>
@@ -4608,10 +4613,6 @@
         <source>%namespace%.%item%.was_deleted</source>
         <target state="translated">%namespace% "%item%"已删除。</target>
         <note>Default controller deleteAction result message.</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="attributable">
-        <source>attributable</source>
-        <target state="translated">属性</target>
       </trans-unit>
     </body>
   </file>

@@ -1,5 +1,5 @@
 <template>
-    <textarea :id="id" :cols="cols" :name="name" :rows="rows">{{ initialValue }}</textarea>
+    <textarea :name="name" :id="id" :cols="cols" :rows="rows">{{ initialValue }}</textarea>
 </template>
 <script>
     export default {

@@ -14,12 +14,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Widgets\NodeTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxNodeTreeController extends AbstractAjaxController
 {
     public function __construct(
-        private readonly NodeChrootResolver $nodeChrootResolver,
-        private readonly TreeWidgetFactory $treeWidgetFactory,
-        private readonly NodeTypes $nodeTypesBag
+        private NodeChrootResolver $nodeChrootResolver,
+        private TreeWidgetFactory $treeWidgetFactory,
+        private NodeTypes $nodeTypesBag
     ) {
     }
 
@@ -93,7 +96,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
                     $parent = $this->nodeChrootResolver->getChroot($this->getUser());
                 }
 
-                $nodeTree = $this->treeWidgetFactory->createRootNodeTree($parent, $translation);
+                $nodeTree = $this->treeWidgetFactory->createNodeTree($parent, $translation);
                 $this->assignation['mainNodeTree'] = true;
                 break;
         }

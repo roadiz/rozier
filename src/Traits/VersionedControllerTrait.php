@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Traits;
 
 use Gedmo\Exception\UnexpectedValueException;
+use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\UserLogEntry;
-use RZ\Roadiz\CoreBundle\Repository\UserLogEntryRepository;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +27,7 @@ trait VersionedControllerTrait
 
     /**
      * @param bool $isReadOnly
+     *
      * @return self
      */
     public function setIsReadOnly(bool $isReadOnly)
@@ -38,17 +39,18 @@ trait VersionedControllerTrait
 
     protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
     {
-        /** @var UserLogEntryRepository $repo */
-        $repo = $this->getDoctrine()->getRepository(UserLogEntry::class);
+        /**
+         * @var LogEntryRepository $repo
+         */
+        $repo = $this->em()->getRepository(UserLogEntry::class);
         $logs = $repo->getLogEntries($entity);
-        $versionNumber = $request->get('version', null);
 
         if (
-            \is_numeric($versionNumber) &&
-            intval($versionNumber) > 0
+            $request->get('version', null) !== null &&
+            $request->get('version', null) > 0
         ) {
             try {
-                $versionNumber = intval($versionNumber);
+                $versionNumber = (int) $request->get('version', null);
                 $repo->revert($entity, $versionNumber);
                 $this->isReadOnly = true;
                 $this->assignation['currentVersionNumber'] = $versionNumber;

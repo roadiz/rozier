@@ -32,42 +32,51 @@ export default class TagEdit {
         }
     }
 
-    async onFormSubmit(event) {
-        event.preventDefault()
+    onFormSubmit() {
         window.Rozier.lazyload.canvasLoader.show()
 
-        /*
-         * Trigger event on window to notify open
-         * widgets to close.
-         */
-        let pageChangeEvent = new CustomEvent('pagechange')
-        window.dispatchEvent(pageChangeEvent)
-
-        const formData = new FormData(this.$form.get(0))
-        const response = await fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-            },
-            body: formData,
-        })
-        if (!response.ok) {
-            const data = await response.json()
-            if (data.errors) {
-                this.displayErrors(data.errors)
-                window.UIkit.notify({
-                    message: data.message,
-                    status: 'danger',
-                    timeout: 2000,
-                    pos: 'top-center',
-                })
-            }
-        } else {
-            this.cleanErrors()
+        if (this.currentTimeout) {
+            clearTimeout(this.currentTimeout)
         }
-        await window.Rozier.refreshMainTagTree()
-        await window.Rozier.getMessages()
-        window.Rozier.lazyload.canvasLoader.hide()
+
+        this.currentTimeout = setTimeout(() => {
+            /*
+             * Trigger event on window to notify open
+             * widgets to close.
+             */
+            let pageChangeEvent = new CustomEvent('pagechange')
+            window.dispatchEvent(pageChangeEvent)
+
+            let formData = new FormData(this.$form.get(0))
+
+            $.ajax({
+                url: window.location.href,
+                type: 'post',
+                data: formData,
+                processData: false,
+                cache: false,
+                contentType: false,
+            })
+                .done((data) => {
+                    this.cleanErrors()
+                })
+                .fail((data) => {
+                    if (data.responseJSON) {
+                        this.displayErrors(data.responseJSON.errors)
+                        window.UIkit.notify({
+                            message: data.responseJSON.message,
+                            status: 'danger',
+                            timeout: 2000,
+                            pos: 'top-center',
+                        })
+                    }
+                })
+                .always(() => {
+                    window.Rozier.lazyload.canvasLoader.hide()
+                    window.Rozier.refreshMainTagTree()
+                    window.Rozier.getMessages()
+                })
+        }, 300)
 
         return false
     }

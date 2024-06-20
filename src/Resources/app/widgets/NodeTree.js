@@ -8,6 +8,7 @@ export default class NodeTree {
     constructor() {
         // Selectors
         this.$content = $('.content-node-tree')
+        this.$elements = null
         this.$dropdown = null
 
         // Methods
@@ -22,6 +23,7 @@ export default class NodeTree {
      */
     init() {
         this.contentHeight = this.$content.actual('outerHeight')
+
         if (this.contentHeight >= window.Rozier.windowHeight - 400) this.dropdownFlip()
     }
 
