@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Workflow\Registry;
 
-class AjaxNodesController extends AbstractAjaxController
+final class AjaxNodesController extends AbstractAjaxController
 {
     public function __construct(
         private readonly NodeNamePolicyInterface $nodeNamePolicy,
@@ -50,7 +50,7 @@ class AjaxNodesController extends AbstractAjaxController
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, (int) $nodeId);
         if (null === $node) {
-            throw new NotFoundHttpException('Node not found');
+            throw $this->createNotFoundException('Node not found');
         }
 
         $this->denyAccessUnlessGranted(NodeVoter::READ, $node);
@@ -194,7 +194,11 @@ class AjaxNodesController extends AbstractAjaxController
      */
     protected function parseParentNode(array $parameters): ?Node
     {
-        if (!empty($parameters['newParent']) && $parameters['newParent'] > 0) {
+        if (
+            !empty($parameters['newParent']) &&
+            is_numeric($parameters['newParent']) &&
+            $parameters['newParent'] > 0
+        ) {
             return $this->em()->find(Node::class, (int) $parameters['newParent']);
         } elseif (null !== $this->getUser()) {
             // If user is jailed in a node, prevent moving nodes out.
