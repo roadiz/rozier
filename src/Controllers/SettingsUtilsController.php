@@ -6,9 +6,9 @@ namespace Themes\Rozier\Controllers;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
+use RZ\Roadiz\CoreBundle\Importer\SettingsImporter;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
-use RZ\Roadiz\CoreBundle\Importer\SettingsImporter;
 use RZ\Roadiz\Utils\StringHandler;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
@@ -21,10 +21,17 @@ use Twig\Error\RuntimeError;
 
 class SettingsUtilsController extends RozierApp
 {
-    public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly SettingsImporter $settingsImporter
-    ) {
+    private SerializerInterface $serializer;
+    private SettingsImporter $settingsImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param SettingsImporter $settingsImporter
+     */
+    public function __construct(SerializerInterface $serializer, SettingsImporter $settingsImporter)
+    {
+        $this->serializer = $serializer;
+        $this->settingsImporter = $settingsImporter;
     }
 
     /**
@@ -95,10 +102,6 @@ class SettingsUtilsController extends RozierApp
 
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
-
-                if (!\is_string($serializedData)) {
-                    throw new RuntimeError('Imported file is not a string.');
-                }
 
                 if (null !== \json_decode($serializedData)) {
                     if ($this->settingsImporter->import($serializedData)) {

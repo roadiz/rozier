@@ -29,6 +29,7 @@ export function getDocumentsByIds({ ids = [] }) {
             }
         })
         .catch((error) => {
+            // TODO
             // Log request error or display a message
             throw new Error(error.response.data.humanMessage)
         })
@@ -76,6 +77,7 @@ export function getDocuments({ searchTerms, filters, filterExplorerSelection, mo
             }
         })
         .catch((error) => {
+            // TODO
             // Log request error or display a message
             throw new Error(error)
         })

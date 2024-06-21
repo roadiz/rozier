@@ -8,6 +8,9 @@ use RZ\Roadiz\CoreBundle\Entity\CustomFormField;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxCustomFormFieldsController extends AjaxAbstractFieldsController
 {
     /**
@@ -15,11 +18,11 @@ class AjaxCustomFormFieldsController extends AjaxAbstractFieldsController
      * such as coming from widgets.
      *
      * @param Request $request
-     * @param int $customFormFieldId
+     * @param int     $customFormFieldId
      *
      * @return Response JSON response
      */
-    public function editAction(Request $request, int $customFormFieldId): Response
+    public function editAction(Request $request, int $customFormFieldId)
     {
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS_DELETE');

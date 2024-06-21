@@ -12,20 +12,16 @@
 
 #user-panel {
     position: relative;
-    background: var(--user-panel-color);
-    color: var(--user-panel-text-alt-color);
-    transition: width ease 0.5s;
+    background: @user-panel-color;
+    color: @user-panel-text-alt-color;
+    .transition(width ease 0.5s);
     z-index:2;
 
     p, a, li, h1, h2, h3, h4, h5, h6 {
-        color: var(--user-panel-text-alt-color);
+        color: @user-panel-text-alt-color;
     }
     p, li, h1, h2, h3, h4, h5, h6 {
-        transition: font-size ease 1s;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-        padding: 0 10px;
+        .transition(font-size ease 1s);
     }
 
     &-container{
@@ -37,59 +33,62 @@
     }
 
     .uk-icon-button {
+        margin-right: 5px;
         text-shadow: 0 1px 0 rgba(0,0,0,.8);
-        font-size: 12px;
-        width: 30px;
-        height: 30px;
-        line-height: 29px;
-        opacity: 0.3;
+        font-size: 16px;
+        line-height: 34px;
+        .opacity(0.3);
 
         &:hover {
-            opacity: 0.8;
+            .opacity(0.8);
         }
 
         &:focus{
             background: darken(#333, 5%);
             color:#b7b7b7;
-            opacity: 0.9;
+            .opacity(0.9);
         }
 
-        &.uk-icon-rz-turn-off,
-        &.uk-icon-rz-user {
-            border-color: var(--accent-color);
-            opacity: 0.5;
+        &.uk-icon-rz-turn-off, &.uk-icon-rz-user{
+            margin-right: 0px;
+            border-color: @contrast-color;
+            .opacity(0.5);
 
             &:hover {
-                opacity: 0.8;
+                .opacity(0.8);
             }
         }
 
         &.uk-icon-rz-earth, &.uk-icon-rz-user{
             display: none;
         }
+
+        &.uk-icon-rz-help{
+            margin-right:0;
+        }
     }
 
     .dev-mode {
-        opacity: 0.75;
+        .opacity(0.75);
         padding: 10px;
         margin: 0;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.5em;
-        transition: font-size 1s ease;
+        .transition(font-size 1s ease);
         text-shadow: 0 1px 0 rgba(0,0,0,.8);
 
         i {
             display: block;
             margin: 4px;
             font-size: 32px;
-            transition: font-size 1s ease;
-            color: var(--user-panel-color-l25);
+            .transition(font-size 1s ease);
+            color: lighten(@user-panel-color, 25%);
             text-shadow: 0 1px 0 rgba(0,0,0,.8);
         }
     }
     &.minified {
         p, li, h1, h2, h3, h4, h5, h6 {
-            font-size: @default-font-size;
+            font-size: 12px;
         }
         .dev-mode {
             font-size: 10px;
@@ -98,6 +97,14 @@
         #user-picture {
             width: @user-picture-size-mini;
             height: @user-picture-size-mini;
+        }
+        .uk-icon-button {
+            &.uk-icon-rz-flashimage{
+                margin: 0px;
+            }
+            &.uk-icon-rz-turn-off {
+                margin: 2px 0 0;
+            }
         }
 
         #cms-version {
@@ -108,6 +115,12 @@
     }
 
     @media screen and (max-width: @screen-lg-max) {
+        width:90px;
+
+        .uk-icon-button{
+            margin: 0 5px 12px 5px;
+        }
+
         #cms-version {
             a {
                 display: block;
@@ -122,12 +135,12 @@
 }
 
 .user-actions {
-    padding: 15px 10px;
+    padding: 15px 0px;
 
     @media (max-width: @screen-xs-max) {
         display: block;
-        position: fixed;
-        top: 50px;
+        position:fixed;
+        top:50px;
         right:0;
         bottom:0;
         width:80%;
@@ -145,42 +158,41 @@
 }
 
 #company {
-    background-color: var(--accent-color);
+    background-color: @contrast-color;
     height: @global-header-height;
     text-align: center;
     .box-sizing();
     padding: 0;
 
+    &:before {
+        content:"";
+        display: inline-block;
+        vertical-align: middle;
+        height: 100%;
+    }
+
     a {
-        position: relative;
         font-size: 55px;
         color: #333333;
-        display: block;
+        display: inline-block;
         text-decoration: none;
-        padding: 0;
-        height: 100%;
-        width: 100%;
+        .opacity(0.95);
+        .transition(opacity ease 0.5s);
+        padding-left: 0px;
+        width: 99%; // on Firefox, prevent line-return
+        vertical-align: middle;
 
         img, svg, object {
             display: block;
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-            object-position: center;
+            max-width: 95%;
+            height: auto;
+            width: auto;
+            max-height: 110px;
             margin: 0 auto;
-            padding: 10px;
         }
 
         &:hover {
-            opacity: 1;
-        }
-
-        // Center vertically Default icon when no-image
-        &.uk-icon-rz-roadiz-icon:before {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+            .opacity(1);
         }
     }
 }
@@ -190,23 +202,25 @@
     padding: 20px 0 10px 0;
 
     h3, p {
-        font-size: @default-font-size;
+        font-size: 12px;
         margin-top: 6px;
     }
 
     .username {
-        color: var(--user-panel-text-color);
+        color: @user-panel-text-color;
     }
 
     .user-actions {
+        border-top: 1px solid @user-panel-border-color;
+
         @media (min-width: @screen-sm-min) {
-            margin: 20px 0 0 0;
-            border-top: 1px solid var(--user-panel-border-color);
+            padding: 10px;
+            margin-top: 9px;
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 5px;
         }
     }
 
@@ -216,35 +230,40 @@
 }
 
 #user-picture {
-    display: flex;
+    display: block;
     width: @user-picture-size;
     height: @user-picture-size;
-    border-radius: 50%;
-    border: 3px solid var(--user-panel-color);
-    background: var(--user-panel-color-5);
+    .rounded(50%);
+    border: 3px solid @user-panel-color;
+    background: darken(@user-panel-color, 5%);
     overflow: hidden;
     margin: 0 auto;
-    transition: ~"width 1s ease, height 1s ease, border 0.4s ease";
+    .transition(~"width 1s ease, height 1s ease, border 0.4s ease");
 
     img {
         object-fit: cover;
         width: 100%;
         height: 100%;
-        border-radius: 50%;
+        .rounded(50%);
         border: 0 none;
         background-color: #383838;
-        transition: ~"width 1s ease, height 1s ease, border 1s ease";
+        .transition(~"width 1s ease, height 1s ease, border 1s ease");
 
         &.uk-thumbnail {
             padding: 0px;
         }
     }
-    .uk-icon {
-        color: rgba(255, 255, 255, 0.5);
-    }
     &:hover  {
-        text-decoration: none;
         border: 3px solid #333;
+    }
+    @media (max-width: @screen-lg-max) {
+        width:56px;
+        height:56px;
+
+        img{
+            width:56px;
+            height:56px;
+        }
     }
 }
 #cms-version {
@@ -260,18 +279,18 @@
     }
     p {
         font-size: 10px;
-        color: var(--global-text-lighter-color);
+        color: @grey-medium;
         margin: 5px 0 0;
         &.cms-version {
             padding-top: 10px;
-            border-top: 1px solid var(--user-panel-border-color);
+            border-top: 1px solid @user-panel-border-color;
         }
     }
 
     .uk-icon-rz-roadiz-icon,
     .uk-icon-rz-rezozero {
         font-size: 16px;
-        color: var(--global-text-lighter-color);
+        color: @grey-medium;
     }
 }
 
