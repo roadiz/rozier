@@ -32,13 +32,31 @@ use Twig\Error\RuntimeError;
 
 class NodesTreesController extends RozierApp
 {
+    private NodeChrootResolver $nodeChrootResolver;
+    private TreeWidgetFactory $treeWidgetFactory;
+    private FormFactoryInterface $formFactory;
+    private HandlerFactoryInterface $handlerFactory;
+    private Registry $workflowRegistry;
+
+    /**
+     * @param NodeChrootResolver $nodeChrootResolver
+     * @param TreeWidgetFactory $treeWidgetFactory
+     * @param FormFactoryInterface $formFactory
+     * @param HandlerFactoryInterface $handlerFactory
+     * @param Registry $workflowRegistry
+     */
     public function __construct(
-        private readonly NodeChrootResolver $nodeChrootResolver,
-        private readonly TreeWidgetFactory $treeWidgetFactory,
-        private readonly FormFactoryInterface $formFactory,
-        private readonly HandlerFactoryInterface $handlerFactory,
-        private readonly Registry $workflowRegistry
+        NodeChrootResolver $nodeChrootResolver,
+        TreeWidgetFactory $treeWidgetFactory,
+        FormFactoryInterface $formFactory,
+        HandlerFactoryInterface $handlerFactory,
+        Registry $workflowRegistry
     ) {
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+        $this->formFactory = $formFactory;
+        $this->handlerFactory = $handlerFactory;
+        $this->workflowRegistry = $workflowRegistry;
     }
 
     /**
@@ -341,7 +359,12 @@ class NodesTreesController extends RozierApp
         return $this->getTranslator()->trans('wrong.request');
     }
 
-    private function bulkStatusNodes(array $data): string
+    /**
+     * @param array $data
+     *
+     * @return string
+     */
+    private function bulkStatusNodes(array $data)
     {
         if (!empty($data['nodesIds'])) {
             $nodesIds = trim($data['nodesIds']);
@@ -370,7 +393,10 @@ class NodesTreesController extends RozierApp
         return $this->getTranslator()->trans('wrong.request');
     }
 
-    private function buildBulkTagForm(): FormInterface
+    /**
+     * @return FormInterface
+     */
+    private function buildBulkTagForm()
     {
         /** @var FormBuilder $builder */
         $builder = $this->formFactory

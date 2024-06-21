@@ -68,7 +68,7 @@ class SearchController extends RozierApp
      *
      * @return array
      */
-    protected function appendDateTimeCriteria(array &$data, string $fieldName): array
+    protected function appendDateTimeCriteria(array &$data, string $fieldName)
     {
         $date = $data[$fieldName]['compareDatetime'];
         if ($date instanceof DateTime) {
@@ -86,10 +86,12 @@ class SearchController extends RozierApp
      * @param string $prefix
      * @return mixed
      */
-    protected function processCriteria($data, string $prefix = ""): mixed
+    protected function processCriteria($data, string $prefix = "")
     {
         if (!empty($data[$prefix . "nodeName"])) {
-            if (!isset($data[$prefix . "nodeName_exact"]) || $data[$prefix . "nodeName_exact"] !== true) {
+            if (isset($data[$prefix . "nodeName_exact"]) && $data[$prefix . "nodeName_exact"] === true) {
+                $data[$prefix . "nodeName"] = $data[$prefix . "nodeName"];
+            } else {
                 $data[$prefix . "nodeName"] = ["LIKE", "%" . $data[$prefix . "nodeName"] . "%"];
             }
         }
@@ -137,11 +139,11 @@ class SearchController extends RozierApp
     }
 
     /**
-     * @param array $data
+     * @param array|\Traversable $data
      * @param NodeType $nodetype
-     * @return array
+     * @return mixed
      */
-    protected function processCriteriaNodetype(array $data, NodeType $nodetype): array
+    protected function processCriteriaNodetype($data, NodeType $nodetype)
     {
         $fields = $nodetype->getFields();
         foreach ($data as $key => $value) {
@@ -195,7 +197,7 @@ class SearchController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function searchNodeAction(Request $request): Response
+    public function searchNodeAction(Request $request)
     {
         $builder = $this->buildSimpleForm('');
         $form = $this->addButtons($builder)->getForm();
@@ -251,12 +253,12 @@ class SearchController extends RozierApp
      * @param Request $request
      * @param int $nodetypeId
      *
-     * @return Response
+     * @return null|RedirectResponse|Response
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      * @throws RuntimeError
      */
-    public function searchNodeSourceAction(Request $request, int $nodetypeId): Response
+    public function searchNodeSourceAction(Request $request, int $nodetypeId)
     {
         /** @var NodeType|null $nodetype */
         $nodetype = $this->em()->find(NodeType::class, $nodetypeId);
@@ -344,7 +346,7 @@ class SearchController extends RozierApp
      *
      * @return null|RedirectResponse
      */
-    protected function handleNodeTypeForm(FormInterface $nodeTypeForm): ?RedirectResponse
+    protected function handleNodeTypeForm(FormInterface $nodeTypeForm)
     {
         if ($nodeTypeForm->isSubmitted() && $nodeTypeForm->isValid()) {
             if (empty($nodeTypeForm->getData()['nodetype'])) {
@@ -449,7 +451,7 @@ class SearchController extends RozierApp
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    protected function getXlsxResults(NodeType $nodetype, iterable $entities): string
+    protected function getXlsxResults(NodeType $nodetype, $entities): string
     {
         $fields = $nodetype->getFields();
         $keys = [];

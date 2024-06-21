@@ -10,6 +10,7 @@ use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Node\NodeTranstyper;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -19,8 +20,14 @@ use Twig\Error\RuntimeError;
 
 class TranstypeController extends RozierApp
 {
-    public function __construct(private readonly NodeTranstyper $nodeTranstyper)
+    private NodeTranstyper $nodeTranstyper;
+
+    /**
+     * @param NodeTranstyper $nodeTranstyper
+     */
+    public function __construct(NodeTranstyper $nodeTranstyper)
     {
+        $this->nodeTranstyper = $nodeTranstyper;
     }
 
     /**
