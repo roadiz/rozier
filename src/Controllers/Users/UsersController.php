@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Users;
 
-use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\CoreBundle\Entity\User;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Controllers\AbstractAdminWithBulkController;
 use Themes\Rozier\Forms\UserDetailsType;
 use Themes\Rozier\Forms\UserType;
@@ -20,16 +17,6 @@ use Twig\Error\RuntimeError;
 
 class UsersController extends AbstractAdminWithBulkController
 {
-    public function __construct(
-        FormFactoryInterface $formFactory,
-        SerializerInterface $serializer,
-        UrlGeneratorInterface $urlGenerator,
-        private readonly bool $useGravatar
-    ) {
-        parent::__construct($formFactory, $serializer, $urlGenerator);
-    }
-
-
     protected function supports(PersistableInterface $item): bool
     {
         return $item instanceof User;
@@ -136,7 +123,7 @@ class UsersController extends AbstractAdminWithBulkController
         /*
          * If pictureUrl is empty, use default Gravatar image.
          */
-        if ($item->getPictureUrl() == '' && $this->useGravatar) {
+        if ($item->getPictureUrl() == '') {
             $item->setPictureUrl($item->getGravatarUrl());
         }
 

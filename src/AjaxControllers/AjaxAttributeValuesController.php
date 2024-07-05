@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
+use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,7 +69,7 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
         $attributable = $attributeValue->getAttributable();
         $details = [
             '%name%' => $attributeValue->getAttribute()->getLabelOrCode(),
-            '%nodeName%' => $attributable->getNodeName(),
+            '%nodeName%' => $attributable instanceof Node ? $attributable->getNodeName() : '',
         ];
 
         if (!empty($parameters['afterAttributeValueId']) && is_numeric($parameters['afterAttributeValueId'])) {
