@@ -12,7 +12,6 @@ use RZ\Roadiz\CoreBundle\Entity\DocumentTranslation;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Document\DocumentTranslationUpdatedEvent;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -29,13 +28,13 @@ class DocumentTranslationsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int $documentId
-     * @param int|null $translationId
+     * @param int     $documentId
+     * @param int|null     $translationId
      *
      * @return Response
      * @throws RuntimeError
      */
-    public function editAction(Request $request, int $documentId, ?int $translationId = null): Response
+    public function editAction(Request $request, int $documentId, ?int $translationId = null)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -63,65 +62,69 @@ class DocumentTranslationsController extends RozierApp
             $documentTr = $this->createDocumentTranslation($document, $translation);
         }
 
-        if ($documentTr === null || $document === null) {
-            throw new ResourceNotFoundException();
-        }
+        if ($documentTr !== null && $document !== null) {
+            $this->assignation['document'] = $document;
+            $this->assignation['translation'] = $translation;
+            $this->assignation['documentTr'] = $documentTr;
 
-        $this->assignation['document'] = $document;
-        $this->assignation['translation'] = $translation;
-        $this->assignation['documentTr'] = $documentTr;
-
-        /**
-         * Versioning
-         */
-        if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
-            if (null !== $response = $this->handleVersions($request, $documentTr)) {
-                return $response;
-            }
-        }
-
-        /*
-         * Handle main form
-         */
-        $form = $this->createForm(DocumentTranslationType::class, $documentTr, [
-            'referer' => $this->getRequest()->get('referer'),
-            'disabled' => $this->isReadOnly,
-        ]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->onPostUpdate($documentTr, $request);
-
-            $routeParams = [
-                'documentId' => $document->getId(),
-                'translationId' => $translationId,
-            ];
-
-            if ($form->get('referer')->getData()) {
-                $routeParams = array_merge($routeParams, [
-                    'referer' => $form->get('referer')->getData()
-                ]);
+            /**
+             * Versioning
+             */
+            if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
+                if (null !== $response = $this->handleVersions($request, $documentTr)) {
+                    return $response;
+                }
             }
 
             /*
-             * Force redirect to avoid resending form when refreshing page
+             * Handle main form
              */
-            return $this->redirectToRoute(
-                'documentsMetaPage',
-                $routeParams
-            );
+            $form = $this->createForm(DocumentTranslationType::class, $documentTr, [
+                'referer' => $this->getRequest()->get('referer'),
+                'disabled' => $this->isReadOnly,
+            ]);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $this->onPostUpdate($documentTr, $request);
+
+                $routeParams = [
+                    'documentId' => $document->getId(),
+                    'translationId' => $translationId,
+                ];
+
+                if ($form->get('referer')->getData()) {
+                    $routeParams = array_merge($routeParams, [
+                        'referer' => $form->get('referer')->getData()
+                    ]);
+                }
+
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute(
+                    'documentsMetaPage',
+                    $routeParams
+                );
+            }
+
+            $this->assignation['form'] = $form->createView();
+            $this->assignation['readOnly'] = $this->isReadOnly;
+
+            return $this->render('@RoadizRozier/document-translations/edit.html.twig', $this->assignation);
         }
 
-        $this->assignation['form'] = $form->createView();
-        $this->assignation['readOnly'] = $this->isReadOnly;
-
-        return $this->render('@RoadizRozier/document-translations/edit.html.twig', $this->assignation);
+        throw new ResourceNotFoundException();
     }
 
-    protected function createDocumentTranslation(
-        Document $document,
-        TranslationInterface $translation
-    ): DocumentTranslation {
+    /**
+     * @param Document $document
+     * @param TranslationInterface $translation
+     *
+     * @return DocumentTranslation
+     */
+    protected function createDocumentTranslation(Document $document, TranslationInterface $translation)
+    {
         $dt = new DocumentTranslation();
         $dt->setDocument($document);
         $dt->setTranslation($translation);
@@ -141,7 +144,7 @@ class DocumentTranslationsController extends RozierApp
      * @return Response
      * @throws RuntimeError
      */
-    public function deleteAction(Request $request, int $documentId, int $translationId): Response
+    public function deleteAction(Request $request, int $documentId, int $translationId)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS_DELETE');
 
@@ -198,7 +201,12 @@ class DocumentTranslationsController extends RozierApp
         throw new ResourceNotFoundException();
     }
 
-    private function buildDeleteForm(DocumentTranslation $doc): FormInterface
+    /**
+     * @param DocumentTranslation $doc
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    private function buildDeleteForm(DocumentTranslation $doc)
     {
         $defaults = [
             'documentTranslationId' => $doc->getId(),
@@ -232,6 +240,11 @@ class DocumentTranslationsController extends RozierApp
         }
     }
 
+    /**
+     * @param PersistableInterface $entity
+     *
+     * @return Response
+     */
     protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
         if (

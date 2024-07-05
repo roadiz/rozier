@@ -13,6 +13,7 @@ use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerInterface;
+use RZ\Roadiz\CoreBundle\Mailer\EmailManager;
 use RZ\Roadiz\OpenId\OAuth2LinkGenerator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,6 +59,7 @@ class RozierApp extends AppController
         return array_merge(parent::getSubscribedServices(), [
             'securityAuthenticationUtils' => AuthenticationUtils::class,
             'urlGenerator' => UrlGeneratorInterface::class,
+            EmailManager::class => EmailManager::class,
             'logger' => LoggerInterface::class,
             'kernel' => KernelInterface::class,
             'settingsBag' => Settings::class,
@@ -101,16 +103,19 @@ class RozierApp extends AppController
         return $view;
     }
 
-    public function prepareBaseAssignation(): static
+    /**
+     * @return $this
+     */
+    public function prepareBaseAssignation()
     {
         parent::prepareBaseAssignation();
         /*
          * Use kernel DI container to delay API requests
          */
-        $this->assignation['themeServices'] = $this->container->get(RozierServiceRegistry::class);
+        $this->assignation['themeServices'] = $this->get(RozierServiceRegistry::class);
 
         /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = $this->container->get('csrfTokenManager');
+        $tokenManager = $this->get('csrfTokenManager');
         /*
          * Switch this to true to use uncompressed JS and CSS files
          */
@@ -158,7 +163,7 @@ class RozierApp extends AppController
     public function cssAction(Request $request): Response
     {
         /** @var NodeTypes $nodeTypesBag */
-        $nodeTypesBag = $this->container->get('nodeTypesBag');
+        $nodeTypesBag = $this->get('nodeTypesBag');
         $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
         $this->assignation['nodeTypes'] = $nodeTypesBag->all();
 
