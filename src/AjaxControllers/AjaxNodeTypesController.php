@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\NotSupported;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,9 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Themes\Rozier\Models\NodeTypeModel;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
 class AjaxNodeTypesController extends AbstractAjaxController
 {
     /**
@@ -22,7 +20,7 @@ class AjaxNodeTypesController extends AbstractAjaxController
      *
      * @return Response JSON response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $arrayFilter = [];
@@ -59,8 +57,9 @@ class AjaxNodeTypesController extends AbstractAjaxController
      *
      * @param Request $request
      * @return JsonResponse
+     * @throws NotSupported
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
@@ -101,7 +100,7 @@ class AjaxNodeTypesController extends AbstractAjaxController
      * @param array<NodeType>|\Traversable<NodeType> $nodeTypes
      * @return array
      */
-    private function normalizeNodeType($nodeTypes)
+    private function normalizeNodeType(iterable $nodeTypes): array
     {
         $nodeTypesArray = [];
 
