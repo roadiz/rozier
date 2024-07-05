@@ -11,17 +11,28 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxFoldersController extends AbstractAjaxController
 {
-    public function __construct(private readonly HandlerFactoryInterface $handlerFactory)
+    private HandlerFactoryInterface $handlerFactory;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory)
     {
+        $this->handlerFactory = $handlerFactory;
     }
 
-    /*
+    /**
      * Handle AJAX edition requests for Folder
      * such as coming from tag-tree widgets.
+     *
+     * @param Request $request
+     * @param int $folderId
+     *
+     * @return Response JSON response
      */
-    public function editAction(Request $request, int $folderId): JsonResponse
+    public function editAction(Request $request, int $folderId)
     {
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
@@ -73,7 +84,7 @@ class AjaxFoldersController extends AbstractAjaxController
      * @param Request $request
      * @return JsonResponse
      */
-    public function searchAction(Request $request): JsonResponse
+    public function searchAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -103,7 +114,11 @@ class AjaxFoldersController extends AbstractAjaxController
         throw $this->createNotFoundException($this->getTranslator()->trans('no.folder.found'));
     }
 
-    protected function updatePosition(array $parameters, Folder $folder): void
+    /**
+     * @param array $parameters
+     * @param Folder $folder
+     */
+    protected function updatePosition($parameters, Folder $folder): void
     {
         /*
          * First, we set the new parent

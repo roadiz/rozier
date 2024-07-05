@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
+/**
+ * @package Themes\Rozier\Controllers
+ */
 class CustomFormFieldAttributesController extends RozierApp
 {
     /**
@@ -51,8 +54,8 @@ class CustomFormFieldAttributesController extends RozierApp
         /** @var CustomFormFieldAttribute $answer */
         foreach ($answers as $answer) {
             $groupName = $answer->getCustomFormField()->getGroupName();
-            if (\is_string($groupName) && $groupName !== '') {
-                if (!isset($fieldsArray[$groupName]) || !\is_array($fieldsArray[$groupName])) {
+            if ($groupName != '') {
+                if (!isset($fieldsArray[$groupName])) {
                     $fieldsArray[$groupName] = [];
                 }
                 $fieldsArray[$groupName][] = $answer;

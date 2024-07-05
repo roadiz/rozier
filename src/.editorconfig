@@ -1,6 +1,7 @@
 # TheatreTheme editor config for contributors
 # Root is false as your theme is inside Roadiz filetree
 # http://editorconfig.org/
+root = false
 
 [*]
 indent_style = space

@@ -9,9 +9,17 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxFoldersExplorerController extends AbstractAjaxController
 {
-    public function indexAction(Request $request): JsonResponse
+    /**
+     * @param Request $request
+     *
+     * @return Response JSON response
+     */
+    public function indexAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 

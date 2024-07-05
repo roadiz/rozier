@@ -6,7 +6,6 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
 use RZ\Roadiz\CoreBundle\Entity\Node;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,42 +28,44 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
      */
     public function editAction(Request $request, int $attributeValueId): Response
     {
-        /*
-         * Validate
-         */
         $this->validateRequest($request, 'POST', false);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
 
         /** @var AttributeValue|null $attributeValue */
         $attributeValue = $this->em()->find(AttributeValue::class, (int) $attributeValueId);
 
-        if ($attributeValue === null) {
-            throw $this->createNotFoundException($this->getTranslator()->trans(
-                'attribute_value.%attributeValueId%.not_exists',
-                [
-                    '%attributeValueId%' => $attributeValueId
-                ]
-            ));
+        if ($attributeValue !== null) {
+            $responseArray = [];
+            /*
+             * Get the right update method against "_action" parameter
+             */
+            switch ($request->get('_action')) {
+                case 'updatePosition':
+                    $responseArray = $this->updatePosition($request->request->all(), $attributeValue);
+                    break;
+            }
+
+            return new JsonResponse(
+                $responseArray,
+                Response::HTTP_PARTIAL_CONTENT
+            );
         }
 
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $attributeValue->getAttributable());
-
-        $responseArray = [];
-        /*
-         * Get the right update method against "_action" parameter
-         */
-        switch ($request->get('_action')) {
-            case 'updatePosition':
-                $responseArray = $this->updatePosition($request->request->all(), $attributeValue);
-                break;
-        }
-
-        return new JsonResponse(
-            $responseArray,
-            Response::HTTP_PARTIAL_CONTENT
-        );
+        throw $this->createNotFoundException($this->getTranslator()->trans(
+            'attribute_value.%attributeValueId%.not_exists',
+            [
+                '%attributeValueId%' => $attributeValueId
+            ]
+        ));
     }
 
-    protected function updatePosition(array $parameters, AttributeValue $attributeValue): array
+    /**
+     * @param array         $parameters
+     * @param AttributeValue $attributeValue
+     *
+     * @return array
+     */
+    protected function updatePosition($parameters, AttributeValue $attributeValue): array
     {
         $attributable = $attributeValue->getAttributable();
         $details = [
