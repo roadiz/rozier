@@ -1,3 +1,10 @@
+## [1.7.25](https://github.com/roadiz/rozier/compare/1.7.24...1.7.25) (2024-07-09)
+
+
+### Bug Fixes
+
+* Enforce iterable value in Twig drawer template (single-valued relationships) ([743938b](https://github.com/roadiz/rozier/commit/743938be496d6d5f3918f7585a69d959047fd76c))
+
 ## [1.7.24 (2023-07-31)](https://github.com/roadiz/rozier/compare/1.7.23...1.7.24)
 
 
