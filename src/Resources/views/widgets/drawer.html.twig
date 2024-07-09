@@ -1,5 +1,8 @@
 {% set entityIds = [] %}
 {% set isSortable = isSortable|default('true') %}
+{% if value is defined and value is not iterable %}
+    {% set value = [value] %}
+{% endif %}
 {% for entity in value %}
     {% if entity.id is defined %}
         {% set entityIds = entityIds|merge([entity.id]) %}
