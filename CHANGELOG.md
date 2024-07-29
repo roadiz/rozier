@@ -1,3 +1,11 @@
+## [1.7.26](https://github.com/roadiz/rozier/compare/1.7.25...1.7.26) (2024-07-29)
+
+
+### Bug Fixes
+
+* Removed deadcode and lint php files ([45cacd9](https://github.com/roadiz/rozier/commit/45cacd967b29c10b8ce9653fe309bdc9f40729b0))
+* **Style:** Fixed explorer drawer item style to allow long titles and breadcrumbs ([d0e57c4](https://github.com/roadiz/rozier/commit/d0e57c422e4ee6bd6215578ce46ae20a93e5fa56))
+
 ## [1.7.25](https://github.com/roadiz/rozier/compare/1.7.24...1.7.25) (2024-07-09)
 
 
