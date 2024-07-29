@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Themes\Rozier\Widgets;
 
 use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Folder;
 use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\Tag;
-use RZ\Roadiz\Core\Entities\Translation;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 final class TreeWidgetFactory
@@ -25,7 +25,7 @@ final class TreeWidgetFactory
         $this->managerRegistry = $managerRegistry;
     }
 
-    public function createNodeTree(?Node $root = null, ?Translation $translation = null): NodeTreeWidget
+    public function createNodeTree(?Node $root = null, ?TranslationInterface $translation = null): NodeTreeWidget
     {
         return new NodeTreeWidget(
             $this->requestStack,

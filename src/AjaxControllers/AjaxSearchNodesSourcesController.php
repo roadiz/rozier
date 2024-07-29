@@ -101,10 +101,10 @@ class AjaxSearchNodesSourcesController extends AbstractAjaxController
             ]);
         }
         return [
-            'title' => $source->getTitle() ?? $source->getNode()->getNodeName(),
-            'parent' => $source->getParent() ?
-                $source->getParent()->getTitle() ?? $source->getParent()->getNode()->getNodeName() :
-                null,
+            'title' => !empty($source->getTitle()) ? $source->getTitle() : $source->getNode()->getNodeName(),
+            'parent' => ($source->getParent()) ?
+                (!empty($source->getParent()->getTitle()) ? $source->getParent()->getTitle() : $source->getParent()->getNode()->getNodeName()) :
+                (null),
             'thumbnail' => $thumbnail ? $this->documentUrlGenerator->getUrl() : null,
             'nodeId' => $source->getNode()->getId(),
             'translationId' => $translation->getId(),

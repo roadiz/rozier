@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Documents;
 
+use Doctrine\ORM\ORMException;
 use Exception;
 use RZ\Roadiz\Core\AbstractEntities\AbstractEntity;
+use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Entities\Document;
 use RZ\Roadiz\Core\Entities\DocumentTranslation;
 use RZ\Roadiz\Core\Entities\Translation;
@@ -29,8 +31,8 @@ class DocumentTranslationsController extends RozierApp
 
     /**
      * @param Request $request
-     * @param int     $documentId
-     * @param int|null     $translationId
+     * @param int $documentId
+     * @param int|null $translationId
      *
      * @return Response
      * @throws RuntimeError
@@ -41,7 +43,9 @@ class DocumentTranslationsController extends RozierApp
 
         if (null === $translationId) {
             $translation = $this->em()->getRepository(Translation::class)->findDefault();
-            $translationId = $translation->getId();
+            if ($translation instanceof Translation) {
+                $translationId = $translation->getId();
+            }
         } else {
             $translation = $this->em()->find(Translation::class, $translationId);
         }
@@ -118,11 +122,12 @@ class DocumentTranslationsController extends RozierApp
 
     /**
      * @param Document $document
-     * @param Translation $translation
+     * @param TranslationInterface $translation
      *
      * @return DocumentTranslation
+     * @throws ORMException
      */
-    protected function createDocumentTranslation(Document $document, Translation $translation)
+    protected function createDocumentTranslation(Document $document, TranslationInterface $translation): DocumentTranslation
     {
         $dt = new DocumentTranslation();
         $dt->setDocument($document);

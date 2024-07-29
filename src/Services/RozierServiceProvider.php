@@ -558,7 +558,6 @@ final class RozierServiceProvider implements ServiceProviderInterface
             return new NodesController(
                 $c[NodeChrootResolver::class],
                 $c[NodeMover::class],
-                $c['securityAuthorizationChecker'],
                 $c['workflow.registry'],
                 $c['factory.handler'],
                 $c['utils.uniqueNodeGenerator'],

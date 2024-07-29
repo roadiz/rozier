@@ -42,7 +42,6 @@ class NodesController extends RozierApp
 
     private NodeChrootResolver $nodeChrootResolver;
     private NodeMover $nodeMover;
-    private AuthorizationCheckerInterface $authorizationChecker;
     private Registry $workflowRegistry;
     private HandlerFactoryInterface $handlerFactory;
     private UniqueNodeGenerator $uniqueNodeGenerator;
@@ -58,7 +57,6 @@ class NodesController extends RozierApp
     /**
      * @param NodeChrootResolver $nodeChrootResolver
      * @param NodeMover $nodeMover
-     * @param AuthorizationCheckerInterface $authorizationChecker
      * @param Registry $workflowRegistry
      * @param HandlerFactoryInterface $handlerFactory
      * @param UniqueNodeGenerator $uniqueNodeGenerator
@@ -68,7 +66,6 @@ class NodesController extends RozierApp
     public function __construct(
         NodeChrootResolver $nodeChrootResolver,
         NodeMover $nodeMover,
-        AuthorizationCheckerInterface $authorizationChecker,
         Registry $workflowRegistry,
         HandlerFactoryInterface $handlerFactory,
         UniqueNodeGenerator $uniqueNodeGenerator,
@@ -77,7 +74,6 @@ class NodesController extends RozierApp
     ) {
         $this->nodeChrootResolver = $nodeChrootResolver;
         $this->nodeMover = $nodeMover;
-        $this->authorizationChecker = $authorizationChecker;
         $this->workflowRegistry = $workflowRegistry;
         $this->handlerFactory = $handlerFactory;
         $this->nodeFormTypeClass = $nodeFormTypeClass;
@@ -421,56 +417,56 @@ class NodesController extends RozierApp
             $parentNode = null;
         }
 
-        if (null !== $translation) {
-            $node = new Node();
-            if (null !== $parentNode) {
-                $node->setParent($parentNode);
-            }
-
-            $form = $this->createForm($this->addNodeFormTypeClass, $node, [
-                'nodeName' => '',
-            ]);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $node = $this->createNode($form->get('title')->getData(), $translation, $node);
-                    $this->em()->refresh($node);
-
-                    /*
-                     * Dispatch event
-                     */
-                    $this->dispatchEvent(new NodeCreatedEvent($node));
-
-                    $msg = $this->getTranslator()->trans(
-                        'child_node.%name%.created',
-                        ['%name%' => $node->getNodeName()]
-                    );
-                    $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
-
-                    return $this->redirectToRoute(
-                        'nodesEditSourcePage',
-                        [
-                            'nodeId' => $node->getId(),
-                            'translationId' => $translation->getId()
-                        ]
-                    );
-                } catch (EntityAlreadyExistsException $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                } catch (\InvalidArgumentException $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                }
-            }
-
-            $this->assignation['translation'] = $translation;
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['parentNode'] = $parentNode;
-            $this->assignation['nodeTypesCount'] = $nodeTypesCount;
-
-            return $this->render('nodes/add.html.twig', $this->assignation);
+        if (!($translation instanceof Translation)) {
+            throw new ResourceNotFoundException(sprintf('Translation does not exist'));
         }
 
-        throw new ResourceNotFoundException(sprintf('Translation does not exist'));
+        $node = new Node();
+        if (null !== $parentNode) {
+            $node->setParent($parentNode);
+        }
+
+        $form = $this->createForm($this->addNodeFormTypeClass, $node, [
+            'nodeName' => '',
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $node = $this->createNode($form->get('title')->getData(), $translation, $node);
+                $this->em()->refresh($node);
+
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(new NodeCreatedEvent($node));
+
+                $msg = $this->getTranslator()->trans(
+                    'child_node.%name%.created',
+                    ['%name%' => $node->getNodeName()]
+                );
+                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+
+                return $this->redirectToRoute(
+                    'nodesEditSourcePage',
+                    [
+                        'nodeId' => $node->getId(),
+                        'translationId' => $translation->getId()
+                    ]
+                );
+            } catch (EntityAlreadyExistsException $e) {
+                $form->addError(new FormError($e->getMessage()));
+            } catch (\InvalidArgumentException $e) {
+                $form->addError(new FormError($e->getMessage()));
+            }
+        }
+
+        $this->assignation['translation'] = $translation;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['parentNode'] = $parentNode;
+        $this->assignation['nodeTypesCount'] = $nodeTypesCount;
+
+        return $this->render('nodes/add.html.twig', $this->assignation);
     }
 
     /**
@@ -493,6 +489,11 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
 
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
+        if (!($translation instanceof Translation)) {
+            throw new ResourceNotFoundException('Default translation does not exist');
+        }
+
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'delete')) {
             $this->publishErrorMessage($request, sprintf('Node #%s cannot be deleted.', $nodeId));
@@ -500,7 +501,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $translation->getId()
                 ]
             );
         }
@@ -539,7 +540,7 @@ class NodesController extends RozierApp
                     'nodesEditSourcePage',
                     [
                         'nodeId' => $parent->getId(),
-                        'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                        'translationId' => $translation->getId()
                     ]
                 );
             }
@@ -623,7 +624,11 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
 
-        /** @var Workflow $workflow */
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
+        if (!($translation instanceof Translation)) {
+            throw new ResourceNotFoundException('Default translation does not exist');
+        }
+
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'undelete')) {
             $this->publishErrorMessage($request, sprintf('Node #%s cannot be undeleted.', $nodeId));
@@ -631,7 +636,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $translation->getId()
                 ]
             );
         }
@@ -711,6 +716,11 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
 
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
+        if (!($translation instanceof Translation)) {
+            throw new ResourceNotFoundException('Default translation does not exist');
+        }
+
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'publish')) {
             $this->publishErrorMessage($request, sprintf('Node #%s cannot be published.', $nodeId));
@@ -718,7 +728,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $translation->getId()
                 ]
             );
         }

@@ -108,6 +108,7 @@ class SettingsController extends RozierApp
             ]);
             $form->handleRequest($request);
             if ($form->isSubmitted()) {
+                // @phpstan-ignore-next-line
                 if ($form->isSubmitted() && $form->isValid()) {
                     try {
                         $this->resetSettingsCache();

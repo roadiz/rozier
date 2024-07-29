@@ -2,13 +2,15 @@ parameters:
     level: 5
     paths:
         - src
-    excludes_analyse:
+    excludePaths:
         - */node_modules/*
         - */bower_components/*
         - */static/*
     doctrine:
         repositoryClass: RZ\Roadiz\Core\Repositories\EntityRepository
     ignoreErrors:
+        - identifier: missingType.generics
+        - identifier: missingType.iterableValue
         - '#Class GeneratedNodeSources\\NS([a-zA-Z]+) not found#'
         - '#Call to method ([a-zA-Z]+)\(\) on an unknown class GeneratedNodeSources\\NS([a-zA-Z]+)#'
         - '#Call to an undefined method ([^:]+)\:\:get(?:External|Internal)Link(?:Sources)?\(\)#'
@@ -36,8 +38,7 @@ parameters:
         - '#type mapping mismatch: database can contain array\|bool\|float\|int\|JsonSerializable\|stdClass\|string\|null but property expects array\|null#'
 
     reportUnmatchedIgnoredErrors: false
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false
+    treatPhpDocTypesAsCertain: false
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-doctrine/rules.neon

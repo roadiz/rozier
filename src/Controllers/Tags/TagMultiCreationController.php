@@ -44,55 +44,59 @@ class TagMultiCreationController extends RozierApp
         $parentTag = $this->em()->find(Tag::class, $parentTagId);
 
         if (null !== $parentTag) {
-            $form = $this->createForm(MultiTagType::class);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                try {
-                    $data = $form->getData();
-                    $names = explode(',', $data['names']);
-                    $names = array_map('trim', $names);
-                    $names = array_filter($names);
-                    $names = array_unique($names);
-
-                    /*
-                     * Get latest position to add tags after.
-                     */
-                    $latestPosition = $this->em()
-                        ->getRepository(Tag::class)
-                        ->findLatestPositionInParent($parentTag);
-
-                    $tagsArray = [];
-                    foreach ($names as $name) {
-                        $tagsArray[] = $this->tagFactory->create($name, $translation, $parentTag, $latestPosition);
-                        $this->em()->flush();
-                    }
-
-                    /*
-                     * Dispatch event and msg
-                     */
-                    foreach ($tagsArray as $tag) {
-                        /*
-                         * Dispatch event
-                         */
-                        $this->dispatchEvent(new TagCreatedEvent($tag));
-                        $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
-                        $this->publishConfirmMessage($request, $msg);
-                    }
-
-                    return $this->redirectToRoute('tagsTreePage', ['tagId' => $parentTagId]);
-                } catch (\InvalidArgumentException $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                }
-            }
-
-            $this->assignation['translation'] = $translation;
-            $this->assignation['form'] = $form->createView();
-            $this->assignation['tag'] = $parentTag;
-
-            return $this->render('tags/add-multiple.html.twig', $this->assignation);
+            throw new ResourceNotFoundException();
         }
 
-        throw new ResourceNotFoundException();
+        if (!($translation instanceof Translation)) {
+            throw new ResourceNotFoundException('Default translation is missing.');
+        }
+
+        $form = $this->createForm(MultiTagType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $data = $form->getData();
+                $names = explode(',', $data['names']);
+                $names = array_map('trim', $names);
+                $names = array_filter($names);
+                $names = array_unique($names);
+
+                /*
+                 * Get latest position to add tags after.
+                 */
+                $latestPosition = $this->em()
+                    ->getRepository(Tag::class)
+                    ->findLatestPositionInParent($parentTag);
+
+                $tagsArray = [];
+                foreach ($names as $name) {
+                    $tagsArray[] = $this->tagFactory->create($name, $translation, $parentTag, $latestPosition);
+                    $this->em()->flush();
+                }
+
+                /*
+                 * Dispatch event and msg
+                 */
+                foreach ($tagsArray as $tag) {
+                    /*
+                     * Dispatch event
+                     */
+                    $this->dispatchEvent(new TagCreatedEvent($tag));
+                    $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
+                    $this->publishConfirmMessage($request, $msg);
+                }
+
+                return $this->redirectToRoute('tagsTreePage', ['tagId' => $parentTagId]);
+            } catch (\InvalidArgumentException $e) {
+                $form->addError(new FormError($e->getMessage()));
+            }
+        }
+
+        $this->assignation['translation'] = $translation;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['tag'] = $parentTag;
+
+        return $this->render('tags/add-multiple.html.twig', $this->assignation);
     }
 }

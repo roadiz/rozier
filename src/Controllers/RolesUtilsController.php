@@ -87,7 +87,7 @@ class RolesUtilsController extends RozierApp
             !empty($form['role_file'])) {
             $file = $form['role_file']->getData();
 
-            if ($form->isSubmitted() && $file->isValid()) {
+            if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
 
                 if (null !== \json_decode($serializedData)) {

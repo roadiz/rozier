@@ -3,19 +3,21 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use RZ\Roadiz\Core\Entities\NodeType;
 use RZ\Roadiz\Core\Entities\NodeTypeField;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\Core\Handlers\NodeTypeHandler;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\NodeTypeFieldType;
 use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
 /**
  * @package Themes\Rozier\Controllers
@@ -36,7 +38,11 @@ class NodeTypeFieldsController extends RozierApp
      * @param Request $request
      * @param int $nodeTypeId
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
+     * @throws RuntimeError
      */
     public function listAction(Request $request, int $nodeTypeId)
     {
@@ -185,12 +191,11 @@ class NodeTypeFieldsController extends RozierApp
     /**
      * @param Request $request
      * @param int $nodeTypeFieldId
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \Twig\Error\RuntimeError
+     * @return RedirectResponse|Response|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws RuntimeError
+     * @throws TransactionRequiredException
      */
     public function deleteAction(Request $request, int $nodeTypeFieldId)
     {
@@ -244,24 +249,5 @@ class NodeTypeFieldsController extends RozierApp
         }
 
         throw new ResourceNotFoundException();
-    }
-
-    /**
-     * @param NodeTypeField $field
-     *
-     * @return FormInterface
-     */
-    private function buildDeleteForm(NodeTypeField $field)
-    {
-        $builder = $this->createFormBuilder()
-                        ->add('nodeTypeFieldId', HiddenType::class, [
-                            'data' => $field->getId(),
-                            'constraints' => [
-                                new NotNull(),
-                                new NotBlank(),
-                            ],
-                        ]);
-
-        return $builder->getForm();
     }
 }
