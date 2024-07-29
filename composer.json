@@ -34,7 +34,7 @@
         "guzzlehttp/guzzle":                       "^6.3 || ^7.2.0",
         "jms/serializer":                          "^2.3.0 || ^3.1.1",
         "pimple/pimple":                           "^3.3.1",
-        "roadiz/roadiz":                           "~1.7.0 || dev-develop",
+        "roadiz/roadiz":                           "~1.7.0",
         "roadiz/doc-generator":                    "~1.7.0",
         "roadiz/documents":                        "~1.7.0",
         "roadiz/dts-generator":                    "~1.7.0 ",
