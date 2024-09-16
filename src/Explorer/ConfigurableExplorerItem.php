@@ -17,14 +17,27 @@ use Themes\Rozier\Models\DocumentModel;
 
 final class ConfigurableExplorerItem extends AbstractExplorerItem
 {
+    private PersistableInterface $entity;
+    private array $configuration;
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
+    private ?EmbedFinderFactory $embedFinderFactory;
+
     public function __construct(
-        private readonly PersistableInterface $entity,
-        private readonly array $configuration,
-        private readonly RendererInterface $renderer,
-        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
-        private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly ?EmbedFinderFactory $embedFinderFactory = null
+        PersistableInterface $entity,
+        array &$configuration,
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator,
+        ?EmbedFinderFactory $embedFinderFactory = null
     ) {
+        $this->entity = $entity;
+        $this->configuration = $configuration;
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -42,12 +55,9 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
     {
         $alt = $this->configuration['classname'];
         if (!empty($this->configuration['alt_displayable'])) {
-            $altDisplayableCallable = [$this->entity, $this->configuration['alt_displayable']];
-            if (\is_callable($altDisplayableCallable)) {
-                $alt = call_user_func($altDisplayableCallable);
-                if ($alt instanceof \DateTimeInterface) {
-                    $alt = $alt->format('c');
-                }
+            $alt = call_user_func([$this->entity, $this->configuration['alt_displayable']]);
+            if ($alt instanceof \DateTimeInterface) {
+                $alt = $alt->format('c');
             }
         }
         return (new UnicodeString($alt ?? ''))->truncate(30, '…')->toString();
@@ -58,12 +68,9 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
      */
     public function getDisplayable(): string
     {
-        $displayableCallable = [$this->entity, $this->configuration['displayable']];
-        if (\is_callable($displayableCallable)) {
-            $displayable = call_user_func($displayableCallable);
-            if ($displayable instanceof \DateTimeInterface) {
-                $displayable = $displayable->format('c');
-            }
+        $displayable = call_user_func([$this->entity, $this->configuration['displayable']]);
+        if ($displayable instanceof \DateTimeInterface) {
+            $displayable = $displayable->format('c');
         }
         return (new UnicodeString($displayable ?? ''))->truncate(30, '…')->toString();
     }
@@ -81,14 +88,11 @@ final class ConfigurableExplorerItem extends AbstractExplorerItem
         /** @var DocumentInterface|null $thumbnail */
         $thumbnail = null;
         if (!empty($this->configuration['thumbnail'])) {
-            $thumbnailCallable = [$this->entity, $this->configuration['thumbnail']];
-            if (\is_callable($thumbnailCallable)) {
-                $thumbnail = call_user_func($thumbnailCallable);
-                if ($thumbnail instanceof Collection && $thumbnail->count() > 0 && $thumbnail->first() instanceof DocumentInterface) {
-                    $thumbnail = $thumbnail->first();
-                } elseif (is_array($thumbnail) && count($thumbnail) > 0 && $thumbnail[0] instanceof DocumentInterface) {
-                    $thumbnail = $thumbnail[0];
-                }
+            $thumbnail = call_user_func([$this->entity, $this->configuration['thumbnail']]);
+            if ($thumbnail instanceof Collection && $thumbnail->count() > 0 && $thumbnail->first() instanceof DocumentInterface) {
+                $thumbnail = $thumbnail->first();
+            } elseif (is_array($thumbnail) && count($thumbnail) > 0 && $thumbnail[0] instanceof DocumentInterface) {
+                $thumbnail = $thumbnail[0];
             }
         }
 

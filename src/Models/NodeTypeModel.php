@@ -6,10 +6,19 @@ namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 
+/**
+ * @package Themes\Rozier\Models
+ */
 final class NodeTypeModel implements ModelInterface
 {
-    public function __construct(private readonly NodeType $nodeType)
+    private NodeType $nodeType;
+
+    /**
+     * @param NodeType $nodeType
+     */
+    public function __construct(NodeType $nodeType)
     {
+        $this->nodeType = $nodeType;
     }
 
     public function toArray(): array

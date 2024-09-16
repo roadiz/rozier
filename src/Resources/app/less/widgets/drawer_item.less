@@ -11,19 +11,21 @@
     border: 1px dashed transparent;
     position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-items: center;
     width: 240px;
+    height: @drawer-item-height;
     margin: 0 10px 10px 0;
     padding: 0;
     background: #E5E5E5;
     color: #666;
-    font-size: @default-font-size;
+    font-size: 12px;
     line-height: @drawer-item-height;
+    font-weight: 600;
     overflow: hidden;
     cursor: default;
     .border-radius(3px, 3px, 0, 0);
-    transition: 0.4s background @easeOutExpo, 0.4s opacity @easeOutExpo;
+    .transition(0.4s background @easeOutExpo, 0.4s opacity @easeOutExpo);
 
     flex: 0 1 ~"calc(50% - 12px)";
 
@@ -70,13 +72,13 @@
         }
     }
 
-    .border {
+    .border{
         position: absolute;
         top: 0;
         bottom: 0;
         left: 0;
         width: 4px;
-        background: var(--rz-accent-color);
+        background: @contrast-color;
         z-index: 2;
     }
 
@@ -87,7 +89,7 @@
         top:0;
         right: -@drawer-item-height * 2;
         overflow: hidden;
-        transition: 0.4s right @easeOutExpo;
+        .transition(0.4s right @easeOutExpo);
 
         &.no-edit {
             width: @drawer-item-height;
@@ -97,9 +99,9 @@
             display: inline-block;
             width: @drawer-item-height;
             height: @drawer-item-height;
-            border-radius: 0;
+            .rounded(0);
             color: #333;
-            opacity: 0.95;
+            .opacity(0.95);
             vertical-align: top;
 
             &:hover{
@@ -125,15 +127,16 @@
     }
 
     .parent-name {
+        height: 12px;
         font-size: 8px;
         text-transform: uppercase;
         display: block;
         line-height: 11px;
         color: rgba(0, 0, 0, 0.6);
-        letter-spacing: 0.08em;
-        font-weight: 600;
+        letter-spacing: 0.07em;
+        font-weight: 700;
         text-overflow: ellipsis;
-        text-wrap: pretty;
+        white-space: nowrap;
         overflow: hidden;
         margin: 0;
         padding-right: 10px;
@@ -155,7 +158,7 @@
         padding-right: 10px;
 
         text-overflow: ellipsis;
-        text-wrap: pretty;
+        white-space: nowrap;
         overflow: hidden;
     }
 
@@ -215,9 +218,9 @@
             right: -@drawer-item-height;
             background: #BBBBBB;
             text-align: center;
-            transition: 0.4s right @easeOutExpo;
+            .transition(0.4s right @easeOutExpo);
             .transition-timing-function(@easeOutExpo);
-            opacity: 0.95;
+            .opacity(0.95);
 
             i {
                 color: #333;

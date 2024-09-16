@@ -20,10 +20,17 @@ use Twig\Error\RuntimeError;
 
 class GroupsUtilsController extends RozierApp
 {
-    public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly GroupsImporter $groupsImporter
-    ) {
+    private SerializerInterface $serializer;
+    private GroupsImporter $groupsImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param GroupsImporter $groupsImporter
+     */
+    public function __construct(SerializerInterface $serializer, GroupsImporter $groupsImporter)
+    {
+        $this->serializer = $serializer;
+        $this->groupsImporter = $groupsImporter;
     }
 
     /**
@@ -113,9 +120,6 @@ class GroupsUtilsController extends RozierApp
 
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
-                if (false === $serializedData) {
-                    throw new RuntimeError('Cannot read uploaded file.');
-                }
 
                 if (null !== \json_decode($serializedData)) {
                     $this->groupsImporter->import($serializedData);

@@ -19,9 +19,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldType
 {
-    public function __construct(ManagerRegistry $managerRegistry, private readonly ContainerInterface $container)
+    protected ContainerInterface $container;
+
+    /**
+     * @param ManagerRegistry $managerRegistry
+     * @param ContainerInterface $container
+     */
+    public function __construct(ManagerRegistry $managerRegistry, ContainerInterface $container)
     {
         parent::__construct($managerRegistry);
+        $this->container = $container;
     }
 
     /**
@@ -98,9 +105,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
         $provider = $this->getProvider($configuration, $options);
 
         $displayableData = [];
-        /** @var callable $callable */
-        $callable = [$options['nodeSource'], $options['nodeTypeField']->getGetterName()];
-        $ids = call_user_func($callable);
+        $ids = call_user_func([$options['nodeSource'], $options['nodeTypeField']->getGetterName()]);
         if (!is_array($ids)) {
             $entities = $provider->getItemsById([$ids]);
         } else {
