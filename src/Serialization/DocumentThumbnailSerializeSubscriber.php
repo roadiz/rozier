@@ -13,8 +13,11 @@ use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 
 final class DocumentThumbnailSerializeSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private readonly DocumentUrlGeneratorInterface $documentUrlGenerator)
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+
+    public function __construct(DocumentUrlGeneratorInterface $documentUrlGenerator)
     {
+        $this->documentUrlGenerator = $documentUrlGenerator;
     }
 
     public static function getSubscribedEvents(): array
@@ -39,10 +42,6 @@ final class DocumentThumbnailSerializeSubscriber implements EventSubscriberInter
             \is_array($context->getAttribute('groups')) &&
             in_array('explorer_thumbnail', $context->getAttribute('groups'))
         ) {
-            $visitor->visitProperty(
-                new StaticPropertyMetadata('boolean', 'processable', []),
-                $document->isProcessable()
-            );
             $visitor->visitProperty(
                 new StaticPropertyMetadata('string', 'url', []),
                 $this->documentUrlGenerator

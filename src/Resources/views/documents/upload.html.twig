@@ -17,10 +17,7 @@
         <div class="content-upload-inner">
             {% form_theme form '@RoadizRozier/forms.html.twig' %}
             <form id="upload-dropzone-document"
-                  {% if folder.id %}
-                      data-folder-id="{{ folder.id }}"
-                      style="--rz-accent-color: {{ folder.color }};"
-                  {% endif %}
+                  {% if folder.id %}data-folder-id="{{ folder.id }}"{% endif %}
                   class="uk-form uk-form-stacked dropzone-container"
                   action="#"
                   method="post"

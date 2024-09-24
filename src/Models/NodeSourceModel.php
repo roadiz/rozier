@@ -10,7 +10,7 @@ use RZ\Roadiz\CoreBundle\Entity\NodesSourcesDocuments;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * @Serializer\ExclusionPolicy("all")
@@ -18,9 +18,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 final class NodeSourceModel implements ModelInterface
 {
     public function __construct(
-        private readonly NodesSources $nodeSource,
-        private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly Security $security
+        private NodesSources $nodeSource,
+        private UrlGeneratorInterface $urlGenerator,
+        private Security $security
     ) {
     }
 
@@ -40,7 +40,7 @@ final class NodeSourceModel implements ModelInterface
             'thumbnail' => $thumbnail ? $thumbnail->getDocument() : null,
             'isPublished' => $node->isPublished(),
             'nodeType' => [
-                'color' => $node->getNodeType()->getColor() ?? '#000000',
+                'color' => $node->getNodeType()?->getColor() ?? '#000000',
             ]
         ];
 
