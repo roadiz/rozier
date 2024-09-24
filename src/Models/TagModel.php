@@ -7,18 +7,12 @@ namespace Themes\Rozier\Models;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-/**
- * @package Themes\Rozier\Models
- */
 final class TagModel implements ModelInterface
 {
-    private Tag $tag;
-    private UrlGeneratorInterface $urlGenerator;
-
-    public function __construct(Tag $tag, UrlGeneratorInterface $urlGenerator)
-    {
-        $this->tag = $tag;
-        $this->urlGenerator = $urlGenerator;
+    public function __construct(
+        private readonly Tag $tag,
+        private readonly UrlGeneratorInterface $urlGenerator
+    ) {
     }
 
     public function toArray(): array

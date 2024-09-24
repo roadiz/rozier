@@ -18,6 +18,7 @@ use RZ\Roadiz\CoreBundle\Form\MarkdownType;
 use RZ\Roadiz\CoreBundle\Form\MultipleEnumerationType;
 use RZ\Roadiz\CoreBundle\Form\YamlType;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeTypeFieldVoter;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
@@ -31,7 +32,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Type;
@@ -41,13 +41,10 @@ use Themes\Rozier\Forms\NodeTreeType;
 
 final class NodeSourceType extends AbstractType
 {
-    protected ManagerRegistry $managerRegistry;
-    private Security $security;
-
-    public function __construct(ManagerRegistry $managerRegistry, Security $security)
-    {
-        $this->managerRegistry = $managerRegistry;
-        $this->security = $security;
+    public function __construct(
+        private readonly ManagerRegistry $managerRegistry,
+        private readonly Security $security
+    ) {
     }
 
     /**
