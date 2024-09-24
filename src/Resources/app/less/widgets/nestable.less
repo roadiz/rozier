@@ -24,26 +24,38 @@
     position: relative;
 }
 
-.tree-btn-add {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height:32px;
-    top: 24px;
-    right: 20px;
-    font-size: @default-font-size;
-    margin: 0 0 0;
-    opacity: 0.6;
+.tree-btn-add{
+    position: relative;
+    display: block;
+    width: 100%; height:40px;
+    font-size:12px; line-height:42px;
+    color:#666666;
+    border-bottom:1px dashed #b5b5b5 ;
+    margin:0 0 0;
+    padding-left: 23px;
+    font-weight: bold;
+    text-align: left;
+    background: #D0D0D0;
+    .box-sizing();
+    .transition(~'background ease 0.35s, color ease 0.35s');
 
-    .uk-icon-rz-plus-simple {
-        font-size:16px;
-        margin: 0;
+    &:after{
+        position: absolute;
+        content:'';
+        left:0; right:0; bottom:-4px;
+        height:1px;
+        border-top:1px dashed lighten(#b5b5b5, 15%);
     }
 
-    &:hover, &:focus {
-        opacity: 1;
+    .uk-icon-rz-plus-simple{
+        font-size:16px;
+        margin:-3px 5px 0 0;
+    }
+
+    &:hover{
+        color:@item-color-name-color-hover;
+        text-decoration: none;
+        background: #C9C9C9;
     }
 }
 
@@ -122,7 +134,7 @@
     display: flex;
     flex-wrap: wrap; // warning when lots of tags
     align-items: center;
-    font-size: @default-font-size;
+    font-size: 12px;
     position: relative;
 }
 
@@ -135,9 +147,10 @@
         display: block;
         color: @item-color-name-color-hover;
         text-decoration: none;
+        font-weight: bold;
     }
     i {
-        transition: color ease 0.2s;
+        .transition(color ease 0.2s);
     }
     &.home-stack,
     &.home-node {
@@ -146,7 +159,7 @@
         .uk-icon-rz-home-unpublished {
             position: relative;
             font-size: 16px;
-            color: var(--rz-accent-color);
+            color: darken(@item-color, 10%);
             vertical-align: middle;
             top: -1px;
             left: -2px;
@@ -163,16 +176,16 @@
             position: absolute;
             top: 6px;
             margin-left: 2px;
-            opacity: 0;
+            .opacity(0);
             z-index:4;
         }
         &:hover {
-            .nodetree-element-name a {
+            .nodetree-element-name a{
                 color: @item-color-name-color-hover;
             }
             .uk-icon-rz-home,
             .uk-icon-rz-home-unpublished {
-                color: var(--rz-accent-color-darker);
+                color: @nestable-handle-border-color-hover;
             }
         }
     }
@@ -204,10 +217,10 @@
             content: "";
             font-family: FontAwesome;
             color: @item-color;
-            font-size: @default-font-size;
-            border-radius: 100%;
-            background-color: var(--contrasted-bg);
-            border: 1px solid var(--rz-accent-color);
+            font-size: 12px;
+            .rounded(100%);
+            background-color: white;
+            border: 1px solid @item-color;
             width: 10px;
             display: inline-block;
             height: 10px;
@@ -227,9 +240,9 @@
                     content: "";
                     font-family: FontAwesome;
                     color: @item-color;
-                    font-size: @default-font-size;
-                    border-radius: 100%;
-                    background-color: var(--rz-accent-color);
+                    font-size: 12px;
+                    .rounded(100%);
+                    background-color: @item-color;
                     width: 4px;
                     height: 4px;
                     top: 3px;
@@ -256,7 +269,7 @@
 
         &.unpublished-node {
             .icon-stack-folder, .uk-icon-folder {
-                border-radius: 25%;
+                .rounded(25%);
                 .transform(rotate(45deg));
             }
         }
@@ -283,7 +296,7 @@
         & > .nodetree-element-name {
             a {
                 text-decoration: line-through;
-                opacity: 0.8;
+                .opacity(0.8);
             }
         }
         &:hover {
@@ -298,7 +311,7 @@
         & > .tagtree-element-name {
             a {
                 text-decoration: line-through;
-                opacity: 0.8;
+                .opacity(0.8);
             }
         }
         &:hover {
@@ -313,7 +326,7 @@
         & > .foldertree-element-name {
             a {
                 text-decoration: line-through;
-                opacity: 0.8;
+                .opacity(0.8);
             }
         }
         &:hover {
@@ -329,7 +342,7 @@
         & > .uk-nestable-handle:before {
             width: 9px;
             height: 9px;
-            border-radius: 2px;
+            .rounded(2px);
             .rotation(45deg);
             top: 1px; left: 1px; // t2
         }
@@ -358,8 +371,6 @@
             padding: 4px 7px 4px 25px;
             min-width: 50px;
             text-align: right;
-            text-shadow: none;
-            letter-spacing: 0.02em;
 
             i {
                 display: none;
@@ -436,16 +447,16 @@
     .tree-element-name {
         max-width: 70%;
         white-space: nowrap;
-        transition: color ease 0.35s;
+        .transition(color ease 0.35s);
 
         & > i {
-            font-size: @default-font-size;
-            opacity: 0.5;
+            font-size: 12px;
+            .opacity(0.5);
         }
 
         & > a {
             padding: 0 0.4em;
-            color: var(--user-panel-color);
+            color: #4D4D4D;
         }
 
         &.tagtree-element-name{
@@ -470,15 +481,15 @@
         content: "";
         font-family: FontAwesome;
         color: @item-color;
-        font-size: @default-font-size;
-        border-radius: 100%;
-        background-color: var(--contrasted-bg);
-        border: 1px solid var(--rz-accent-color);
+        font-size: 12px;
+        .rounded(100%);
+        background-color: white;
+        border: 1px solid @item-color;
         width: 10px;
         display: inline-block;
         height: 10px;
         top:1px; // t3
-        transition: ~'border ease 0.2s, background ease 0.2s';
+        .transition(~'border ease 0.2s, background ease 0.2s');
     }
     /*
      * wrapper
@@ -508,7 +519,7 @@
 // Moving
 .uk-nestable-dragged{
     background: #ddd;
-    border: 1px dashed var(--global-border-color);
+    border: 1px dashed #b5b5b5;
     padding-left: 0;
     opacity: 0.9;
 

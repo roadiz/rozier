@@ -6,7 +6,7 @@ export const DEFAULT_LOCATION = { lat: 45.769785, lng: 4.833967, zoom: 14 }
 
 export default class LeafletGeotagField {
     constructor() {
-        this.$fields = document.querySelectorAll('.rz-geotag-field:not(.is-enable)')
+        this.$fields = $('.rz-geotag-field:not(.is-enable)')
 
         if (this.$fields.length) {
             this.init()
@@ -14,29 +14,24 @@ export default class LeafletGeotagField {
     }
 
     init() {
-        this.bindFields()
+        if (!this.$fields.hasClass('is-enable')) {
+            this.$fields.addClass('is-enable')
+            this.bindFields()
+        }
     }
 
     unbind() {}
 
     bindFields() {
-        const fieldsLength = this.$fields.length
-        for (let i = 0; i < fieldsLength; i++) {
-            const element = this.$fields[i]
-            if (!element.classList.contains('is-enable')) {
-                this.bindSingleField(element)
-                element.classList.add('is-enable')
-            }
-        }
+        this.$fields.each((index, element) => {
+            this.bindSingleField(element)
+        })
     }
 
-    /**
-     * @param {HTMLInputElement} element
-     * @returns {boolean}
-     */
     bindSingleField(element) {
-        const $label = element.parentElement.querySelector('.uk-form-label')
-        const labelText = $label.innerHTML
+        const $input = $(element)
+        const $label = $input.parent().find('.uk-form-label')
+        const labelText = $label[0].innerHTML
         let jsonCode = null
 
         if (window.Rozier.defaultMapLocation) {
@@ -52,47 +47,37 @@ export default class LeafletGeotagField {
         /*
          * prepare DOM
          */
-        element.style.display = 'none'
-        $label.style.display = 'none'
-        element.setAttribute('data-geotag-canvas', fieldId)
+        $input.hide()
+        $label.hide()
+        $input.attr('data-geotag-canvas', fieldId)
+        $input.after('<div class="rz-geotag-canvas" id="' + fieldId + '" style="width: 100%; height: 400px;"></div>')
 
         // Geocode input text
         let metaDOM = [
-            '<nav class="geotag-widget-nav rz-geotag-meta">',
-            '<div class="geotag-widget-nav__head">',
-            '<div class="geotag-widget-nav__title"><i class="uk-icon-rz-map-marker"></i></div>',
-            '<div class="geotag-widget-nav__title label">' + labelText + '</div>',
-            '</div>',
-            '<div class="geotag-widget-nav__content">',
+            '<nav class="geotag-widget-nav uk-navbar rz-geotag-meta">',
+            '<ul class="uk-navbar-nav">',
+            '<li class="uk-navbar-brand"><i class="uk-icon-rz-map-marker"></i>',
+            '<li class="uk-navbar-brand label">' + labelText + '</li>',
+            '</ul>',
+            '<div class="uk-navbar-content uk-navbar-flip">',
             '<div class="geotag-widget-quick-creation uk-button-group">',
-            '<input autocomplete="off" class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
-            '<button type="button" id="' +
+            '<input class="rz-geotag-address" id="' + fieldAddressId + '" type="text" value="" />',
+            '<button id="' +
                 resetButtonId +
-                '" class="uk-button uk-button-content uk-button-danger rz-geotag-reset" title="' +
+                '" class="uk-button uk-button-content uk-button-table-delete rz-geotag-reset" title="' +
                 window.Rozier.messages.geotag.resetMarker +
                 '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
             '</div>',
             '</div>',
             '</nav>',
-            '<div class="rz-geotag-canvas" id="' + fieldId + '" style="width: 100%; height: 400px;"></div>',
         ].join('')
-        const metaNode = document.createElement('div')
-        metaNode.innerHTML = metaDOM
-        element.after(metaNode)
 
-        const mapContainer = document.getElementById(fieldId)
-        if (!mapContainer) {
-            throw new Error('Map container does not exist')
-        }
-        let $geocodeInput = document.getElementById(fieldAddressId)
-        if ($geocodeInput) {
-            $geocodeInput.setAttribute('placeholder', window.Rozier.messages.geotag.typeAnAddress)
-        }
+        $input.after(metaDOM)
+        let $geocodeInput = $('#' + fieldAddressId)
+        $geocodeInput.attr('placeholder', window.Rozier.messages.geotag.typeAnAddress)
         // Reset button
-        let $geocodeReset = document.getElementById(resetButtonId)
-        if ($geocodeReset) {
-            $geocodeReset.style.display = 'none'
-        }
+        let $geocodeReset = $('#' + resetButtonId)
+        $geocodeReset.hide()
 
         /*
          * Prepare map and marker
@@ -105,93 +90,66 @@ export default class LeafletGeotagField {
         let map = this.createMap(fieldId, mapOptions)
         let marker = null
 
-        if (element.value !== '') {
+        if ($input.val() !== '') {
             try {
-                jsonCode = JSON.parse(element.value)
+                jsonCode = JSON.parse($input.val())
                 marker = this.createMarker(jsonCode, map)
-                $geocodeReset.style.display = 'inline-block'
-                marker.on('dragend', $.proxy(this.setMarkerEvent, this, marker, element, $geocodeReset, map))
-                $geocodeReset.addEventListener(
-                    'click',
-                    $.proxy(this.resetMarker, this, marker, element, $geocodeReset, map)
-                )
+                $geocodeReset.show()
             } catch (e) {
-                element.style.display = null
-                document.getElementById(fieldId).style.display = 'none'
+                $input.show()
+                $(document.getElementById(fieldId)).hide()
                 return false
             }
+        } else {
+            marker = this.createMarker(jsonCode, map)
         }
 
-        map.on('click', $.proxy(this.setMarkerEvent, this, marker, element, $geocodeReset, map))
-        $geocodeInput.addEventListener(
-            'keypress',
-            $.proxy(this.requestGeocode, this, marker, element, $geocodeReset, map)
-        )
+        marker.on('dragend', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
+        map.on('click', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
 
+        $geocodeInput.on('keypress', $.proxy(this.requestGeocode, this, marker, $input, $geocodeReset, map))
+        $geocodeReset.on('click', $.proxy(this.resetMarker, this, marker, $input, $geocodeReset, map))
+        window.Rozier.$window.on('resize', $.proxy(this.resetMap, this, map, marker, mapOptions))
+        window.Rozier.$window.on('pageshowend', $.proxy(this.resetMap, this, map, marker, mapOptions))
         this.resetMap(map, marker, mapOptions, null)
-
-        // Use a resize observer to invalidate the map when the container changes size or is hidden
-        const resizeObserver = new ResizeObserver((entries) => {
-            map.invalidateSize({
-                animate: false,
-                pan: false,
-            })
-            if (marker !== null) {
-                map.panTo(marker.getLatLng(), {
-                    animate: false,
-                    pan: false,
-                })
-            } else {
-                map.panTo(mapOptions.center, {
-                    animate: false,
-                    pan: false,
-                })
-            }
-        })
-        resizeObserver.observe(document.getElementById(fieldId))
     }
 
     resetMap(map, marker, mapOptions) {
-        window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
             map.invalidateSize(true)
             if (marker !== null) {
                 map.panTo(marker.getLatLng())
             } else {
                 map.panTo(mapOptions.center)
             }
-        })
+        }, 400)
     }
 
     /**
-     * @param {Marker} marker
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {Object} marker
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
      * @param {Event} event
      */
     resetMarker(marker, $input, $geocodeReset, map, event) {
-        event.preventDefault()
         marker.removeFrom(map)
-        $input.value = ''
-        $geocodeReset.style.display = 'none'
+        $input.val('')
+        $geocodeReset.hide()
         return false
     }
 
     /**
-     * @param {Marker|null} marker
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {Marker} marker
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
      * @param {Event} event
      */
     setMarkerEvent(marker, $input, $geocodeReset, map, event) {
-        if (!marker) {
-            marker = this.createAndBindMarker(event.latlng, map, $input, $geocodeReset)
-        }
-
         if (typeof event.latlng !== 'undefined') {
             this.setMarker(marker, $input, $geocodeReset, map, event.latlng)
-        } else {
+        } else if (marker !== null) {
             const latLng = marker.getLatLng()
             map.panTo(latLng)
             this.applyGeocode($input, $geocodeReset, latLng, map.getZoom(), undefined)
@@ -199,33 +157,13 @@ export default class LeafletGeotagField {
     }
 
     /**
-     * @param {LatLng} latlng
-     * @param {Map} map
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
-     * @returns {Marker}
-     */
-    createAndBindMarker(latlng, map, $input, $geocodeReset) {
-        const marker = this.createMarker(latlng, map)
-        marker.on('dragend', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
-        $geocodeReset.addEventListener('click', $.proxy(this.resetMarker, this, marker, $input, $geocodeReset, map))
-        // reset existing click event
-        map.off('click')
-        map.on('click', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
-        return marker
-    }
-
-    /**
-     * @param {Marker|null} marker
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {Marker} marker
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
      * @param {LatLng} latlng
      */
     setMarker(marker, $input, $geocodeReset, map, latlng) {
-        if (!marker) {
-            marker = this.createAndBindMarker(latlng, map, $input, $geocodeReset)
-        }
         marker.setLatLng(latlng)
         marker.addTo(map)
         map.panTo(latlng)
@@ -258,16 +196,16 @@ export default class LeafletGeotagField {
     }
 
     /**
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {LatLng} latLng
      * @param {Number} zoom
      * @param {String|undefined} name
      * @return {void}
      */
     applyGeocode($input, $geocodeReset, latLng, zoom, name) {
-        $input.value = JSON.stringify(this.latLngToFeature(latLng, zoom, name))
-        $geocodeReset.style.display = 'inline-block'
+        $input.val(JSON.stringify(this.latLngToFeature(latLng, zoom, name)))
+        $geocodeReset.show()
     }
 
     /**
@@ -302,9 +240,9 @@ export default class LeafletGeotagField {
     }
 
     /**
-     * @param {Marker|null} marker
-     * @param {HTMLInputElement} $input
-     * @param {HTMLElement} $geocodeReset
+     * @param {Marker} marker
+     * @param {jQuery} $input
+     * @param {jQuery} $geocodeReset
      * @param {Map} map
      * @param {Event} event
      * @return {Promise<void>}
@@ -329,8 +267,8 @@ export default class LeafletGeotagField {
 
     /**
      *
-     * @param {string} fieldId
-     * @param {object} mapOptions
+     * @param fieldId
+     * @param mapOptions
      * @returns {*}
      */
     createMap(fieldId, mapOptions) {
@@ -349,8 +287,11 @@ export default class LeafletGeotagField {
             return new LatLng(data.lat, data.lng, data.zoom || data.alt)
         } else if (data.type && data.type === 'Feature') {
             // Data is a GeoJSON feature
-            const zoom = data.properties && data.properties.zoom ? Number.parseInt(data.properties.zoom) : 7
-            const latLng = new LatLng(data.geometry.coordinates[1], data.geometry.coordinates[0], zoom)
+            const latLng = new LatLng(
+                data.geometry.coordinates[1],
+                data.geometry.coordinates[0],
+                data.properties.zoom || 7
+            )
             if (data.properties && data.properties.name) {
                 latLng.name = data.properties.name
             }
@@ -375,7 +316,7 @@ export default class LeafletGeotagField {
     /**
      *
      * @param {String} address
-     * @return {Promise<LatLng|null>}
+     * @return Promise<LatLng|null>
      */
     getLatLngForAddress(address) {
         return GeoCodingService.geoCode(address)

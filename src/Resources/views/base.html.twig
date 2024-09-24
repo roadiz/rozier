@@ -12,16 +12,7 @@
         {# CSS scripts inclusions / Using webpack #}
         {% include '@RoadizRozier/partials/css-inject.html.twig' %}
 
-        {% if head.mainColor %}
-            <style>
-                :root {
-                    --rz-accent-color: {{ head.mainColor|raw }};
-                    --rz-accent-color-lighter: color-mix(in srgb, var(--rz-accent-color) var(--color-light-mix), white);
-                    --rz-accent-color-darker: color-mix(in srgb, var(--rz-accent-color) var(--color-darker-mix), black);
-                    --rz-accent-color-darkest: color-mix(in srgb, var(--rz-accent-color) var(--color-darkest-mix), black);
-                }
-            </style>
-        {% endif %}
+        <link rel="stylesheet" href="{{ path('cssMainColor') }}" />
         {% block customStyles %}{% endblock %}
         {% if additionalStylesheets %}
             {% for additionalStylesheet in additionalStylesheets %}
@@ -33,15 +24,11 @@
     <body>
         <div id="app"></div>
         <div id="main-container">
-            {% set treePanelEnabled = (is_granted('ROLE_ACCESS_NODES') or
-                is_granted('ROLE_ACCESS_DOCUMENTS') or
-                is_granted('ROLE_ACCESS_TAGS')) %}
-            <div id="main-container-inner"{% if not treePanelEnabled %} class="trees-panel--hidden"{% endif %}>
+            <div id="main-container-inner">
                 <section class="main-container-section navigation-container-section" id="user-panel">
                     {% include '@RoadizRozier/panels/user_panel.html.twig' with {
                         'session' : session,
                         'head' : head,
-                        'rozier_user_actions': rozier_user_actions,
                         'themeServices':themeServices,
                     } only %}
                 </section>
@@ -51,7 +38,9 @@
                         'backofficeEntries':backofficeEntries,
                     } only %}
                 </section>
-                {% if treePanelEnabled %}
+                {% if (is_granted('ROLE_ACCESS_NODES') or
+                       is_granted('ROLE_ACCESS_DOCUMENTS') or
+                       is_granted('ROLE_ACCESS_TAGS')) %}
                 <section class="main-container-section navigation-container-section" id="main-trees">
                     <div id="main-trees-overlay"></div>
                     <div id="main-trees-container">

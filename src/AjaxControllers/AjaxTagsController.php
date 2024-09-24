@@ -19,12 +19,18 @@ use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Themes\Rozier\Models\TagModel;
 
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
 class AjaxTagsController extends AbstractAjaxController
 {
-    public function __construct(
-        private readonly HandlerFactoryInterface $handlerFactory,
-        private readonly UrlGeneratorInterface $urlGenerator
-    ) {
+    private HandlerFactoryInterface $handlerFactory;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(HandlerFactoryInterface $handlerFactory, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->handlerFactory = $handlerFactory;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
