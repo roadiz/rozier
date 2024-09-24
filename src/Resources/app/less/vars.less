@@ -44,15 +44,6 @@
 @icon-size : 20px;
 @icons-picture : @icon-size*31 @icon-size*21;
 
-.matrix-icon(@x:0, @y:0) {
-    background-image:   url(../img/matrix@2x.png);
-    background-repeat:  no-repeat;
-    background-size:    @icons-picture;
-    background-position: @x @y;
-    .keep-image-aspect();
-}
-
-
 /* -------- FONTS -------- */
 @main-font: system-ui;
 @roadiz-mono-font: monospace;
@@ -73,14 +64,15 @@
 
 /* -------- PANEL SIZES -------- */
 
-@user-panel-width: 150px;
+@user-panel-width: 90px;
 @user-panel-sm-width: 90px;
-@user-panel-lg-width: 120px;
-@user-panel-xl-width: 150px;
+@user-panel-lg-width: 90px;
+@user-panel-xl-width: 90px;
 
 @entries-panel-width: 60px;
 @entries-panel-lg-width: 70px;
 @entries-panel-xl-width: 70px;
+
 @trees-panel-width: 270px;
 @trees-panel-lg-width: 270px;
 @trees-panel-xl-width: 350px;
@@ -92,8 +84,8 @@
 @user-panel-color: #4d4d4d;
 @user-panel-text-color: #d8d8d8;
 @user-panel-text-alt-color: #b7b7b7;
-@user-picture-size: 80px;
-@user-picture-size-mini: 70px;
+@user-picture-size: 56px;
+@user-picture-size-mini: 56px;
 @user-panel-border-color: rgba(199,199,204, 0.14);
 
 
@@ -156,9 +148,14 @@
     --maincontent-bar-bg: #efefef;
     --maincontent-header-bg: @maincontent-header-bg;
 
-    --accent-color: #00deab;
-    --accent-color-darker: #00c497;
-    --accent-color-darkest: #00ab83;
+    --color-light-mix: 70%;
+    --color-darker-mix: 95%;
+    --color-darkest-mix: 85%;
+
+    --rz-accent-color: #00deab;
+    --rz-accent-color-lighter: color-mix(in srgb, var(--rz-accent-color) var(--color-light-mix), white);
+    --rz-accent-color-darker: color-mix(in srgb, var(--rz-accent-color) var(--color-darker-mix), black);
+    --rz-accent-color-darkest: color-mix(in srgb, var(--rz-accent-color) var(--color-darkest-mix), black);
 }
 
 /**
