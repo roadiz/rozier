@@ -170,7 +170,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                                 '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
                             ]
                         );
-                        $this->publishConfirmMessage($request, $msg, $item);
+                        $this->publishConfirmMessage($request, $msg);
                     }
                 }
                 $this->em()->flush();

@@ -11,25 +11,22 @@ use RZ\Roadiz\CoreBundle\Form\AttributeImportType;
 use RZ\Roadiz\CoreBundle\Form\AttributeType;
 use RZ\Roadiz\CoreBundle\Importer\AttributeImporter;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Themes\Rozier\Controllers\AbstractAdminWithBulkController;
-use Twig\Error\RuntimeError;
+use Themes\Rozier\Controllers\AbstractAdminController;
 
-class AttributeController extends AbstractAdminWithBulkController
+class AttributeController extends AbstractAdminController
 {
     private AttributeImporter $attributeImporter;
 
     public function __construct(
         AttributeImporter $attributeImporter,
-        FormFactoryInterface $formFactory,
         SerializerInterface $serializer,
         UrlGeneratorInterface $urlGenerator
     ) {
-        parent::__construct($formFactory, $serializer, $urlGenerator);
+        parent::__construct($serializer, $urlGenerator);
         $this->attributeImporter = $attributeImporter;
     }
 
@@ -40,11 +37,6 @@ class AttributeController extends AbstractAdminWithBulkController
     protected function supports(PersistableInterface $item): bool
     {
         return $item instanceof Attribute;
-    }
-
-    protected function getBulkDeleteRouteName(): ?string
-    {
-        return 'attributesBulkDeletePage';
     }
 
     /**
@@ -111,10 +103,7 @@ class AttributeController extends AbstractAdminWithBulkController
      */
     protected function getDefaultOrder(Request $request): array
     {
-        return [
-            'weight' => 'DESC',
-            'code' => 'ASC',
-        ];
+        return ['code' => 'ASC'];
     }
 
     /**
@@ -147,9 +136,8 @@ class AttributeController extends AbstractAdminWithBulkController
     /**
      * @param Request $request
      * @return Response
-     * @throws RuntimeError
      */
-    public function importAction(Request $request): Response
+    public function importAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES');
 
@@ -162,9 +150,6 @@ class AttributeController extends AbstractAdminWithBulkController
 
             if ($file->isValid()) {
                 $serializedData = file_get_contents($file->getPathname());
-                if (false === $serializedData) {
-                    throw new \RuntimeException('Cannot read uploaded file.');
-                }
 
                 $this->attributeImporter->import($serializedData);
                 $this->em()->flush();
