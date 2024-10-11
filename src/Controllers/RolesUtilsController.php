@@ -20,10 +20,17 @@ use Twig\Error\RuntimeError;
 
 class RolesUtilsController extends RozierApp
 {
-    public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly RolesImporter $rolesImporter
-    ) {
+    private SerializerInterface $serializer;
+    private RolesImporter $rolesImporter;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param RolesImporter $rolesImporter
+     */
+    public function __construct(SerializerInterface $serializer, RolesImporter $rolesImporter)
+    {
+        $this->serializer = $serializer;
+        $this->rolesImporter = $rolesImporter;
     }
 
     /**

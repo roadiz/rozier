@@ -1,16 +1,18 @@
 .foldertree {
-    &-element-name {
-        vertical-align: middle;
-        position: relative;
-        max-width: 80%;
-
-        a {
-            white-space: nowrap;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
+    &-element {
+        &-name {
             vertical-align: middle;
+            position: relative;
+            max-width: 80%;
+
+            a {
+                white-space: nowrap;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: block;
+                vertical-align: middle;
+            }
         }
     }
 
@@ -120,9 +122,4 @@
             }
         }
     }
-}
-
-.folder-item i,
-.foldertree-element > .uk-nestable-panel .uk-nestable-handle i {
-    color: var(--rz-accent-color);
 }

@@ -10,10 +10,13 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class FolderExplorerItem extends AbstractExplorerItem
 {
-    public function __construct(
-        private readonly Folder $folder,
-        private readonly UrlGeneratorInterface $urlGenerator
-    ) {
+    private Folder $folder;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(Folder $folder, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->folder = $folder;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**

@@ -124,18 +124,18 @@
 
         &.uk-button-primary {
             background: var(--main-contrast-color-30);
-            border-color: var(--rz-accent-color-darker);
+            border-color: var(--accent-color-darker);
 
             [class*=uk-icon-]{
-                color: var(--rz-accent-color-darkest);
+                color: var(--accent-color-darkest);
             }
 
             &:hover, &:focus{
                 background: var(--main-contrast-color-30);
-                border-color: var(--rz-accent-color-darkest);
+                border-color: var(--accent-color-darkest);
 
                 [class*=uk-icon-]{
-                    color: var(--rz-accent-color-darkest);
+                    color: var(--accent-color-darkest);
                 }
             }
         }
@@ -311,7 +311,7 @@
 
 .uk-button-primary {
     &:not(:disabled) {
-        background: var(--rz-accent-color-darker);
+        background: var(--accent-color-darker);
         border-color: transparent;
         color: white;
         text-shadow: none;
@@ -321,7 +321,7 @@
         }
 
         &:hover, &:active, &:focus {
-            background: var(--rz-accent-color);
+            background: var(--accent-color);
             border-color: transparent;
             color: white;
         }
@@ -351,11 +351,8 @@
 
     &:hover {
         opacity: 0.8;
-        border-color: var(--rz-accent-color);
+        border-color: var(--accent-color);
         background: #333333;
-    }
-    &:focus {
-        border-color: var(--rz-accent-color);
     }
 }
 

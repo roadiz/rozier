@@ -11,9 +11,10 @@
     border: 1px dashed transparent;
     position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-items: center;
     width: 240px;
+    height: @drawer-item-height;
     margin: 0 10px 10px 0;
     padding: 0;
     background: #E5E5E5;
@@ -70,13 +71,13 @@
         }
     }
 
-    .border {
+    .border{
         position: absolute;
         top: 0;
         bottom: 0;
         left: 0;
         width: 4px;
-        background: var(--rz-accent-color);
+        background: var(--accent-color);
         z-index: 2;
     }
 
@@ -125,15 +126,16 @@
     }
 
     .parent-name {
+        height: 12px;
         font-size: 8px;
         text-transform: uppercase;
         display: block;
         line-height: 11px;
         color: rgba(0, 0, 0, 0.6);
-        letter-spacing: 0.08em;
-        font-weight: 600;
+        letter-spacing: 0.07em;
+        font-weight: 700;
         text-overflow: ellipsis;
-        text-wrap: pretty;
+        white-space: nowrap;
         overflow: hidden;
         margin: 0;
         padding-right: 10px;
@@ -155,7 +157,7 @@
         padding-right: 10px;
 
         text-overflow: ellipsis;
-        text-wrap: pretty;
+        white-space: nowrap;
         overflow: hidden;
     }
 

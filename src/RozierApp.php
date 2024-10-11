@@ -9,8 +9,11 @@ use RZ\Roadiz\CompatBundle\Controller\AppController;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Bag\Roles;
 use RZ\Roadiz\CoreBundle\Bag\Settings;
+use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\Node;
+use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerInterface;
+use RZ\Roadiz\CoreBundle\Mailer\EmailManager;
 use RZ\Roadiz\OpenId\OAuth2LinkGenerator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +25,9 @@ use Themes\Rozier\Event\UserActionsMenuEvent;
 use Themes\Rozier\Explorer\FoldersProvider;
 use Themes\Rozier\Explorer\SettingsProvider;
 use Themes\Rozier\Explorer\UsersProvider;
+use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Rozier main theme application
@@ -54,6 +59,7 @@ class RozierApp extends AppController
         return array_merge(parent::getSubscribedServices(), [
             'securityAuthenticationUtils' => AuthenticationUtils::class,
             'urlGenerator' => UrlGeneratorInterface::class,
+            EmailManager::class => EmailManager::class,
             'logger' => LoggerInterface::class,
             'kernel' => KernelInterface::class,
             'settingsBag' => Settings::class,
@@ -97,16 +103,19 @@ class RozierApp extends AppController
         return $view;
     }
 
-    public function prepareBaseAssignation(): static
+    /**
+     * @return $this
+     */
+    public function prepareBaseAssignation()
     {
         parent::prepareBaseAssignation();
         /*
          * Use kernel DI container to delay API requests
          */
-        $this->assignation['themeServices'] = $this->container->get(RozierServiceRegistry::class);
+        $this->assignation['themeServices'] = $this->get(RozierServiceRegistry::class);
 
         /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = $this->container->get('csrfTokenManager');
+        $tokenManager = $this->get('csrfTokenManager');
         /*
          * Switch this to true to use uncompressed JS and CSS files
          */
@@ -134,11 +143,48 @@ class RozierApp extends AppController
 
     /**
      * @param Request $request
+     *
      * @return Response $response
      * @throws RuntimeError
      */
-    public function indexAction(Request $request): Response
+    public function indexAction(Request $request)
     {
         return $this->render('@RoadizRozier/index.html.twig', $this->assignation);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return Response $response
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function cssAction(Request $request): Response
+    {
+        /** @var NodeTypes $nodeTypesBag */
+        $nodeTypesBag = $this->get('nodeTypesBag');
+        $this->assignation['mainColor'] = $this->getSettingsBag()->get('main_color');
+        $this->assignation['nodeTypes'] = $nodeTypesBag->all();
+
+        $folderQb = $this->em()->getRepository(Folder::class)->createQueryBuilder('f');
+        $this->assignation['folders'] = $folderQb->andWhere($folderQb->expr()->neq('f.color', ':defaultColor'))
+            ->setParameter('defaultColor', '#000000')
+            ->getQuery()
+            ->getResult();
+
+        $tagQb = $this->em()->getRepository(Tag::class)->createQueryBuilder('t');
+        $this->assignation['tags'] = $tagQb->andWhere($tagQb->expr()->neq('t.color', ':defaultColor'))
+            ->setParameter('defaultColor', '#000000')
+            ->getQuery()
+            ->getResult();
+
+        $response = new Response(
+            $this->getTwig()->render('@RoadizRozier/css/mainColor.css.twig', $this->assignation),
+            Response::HTTP_OK,
+            ['content-type' => 'text/css']
+        );
+
+        return $this->makeResponseCachable($request, $response, 60, true);
     }
 }
