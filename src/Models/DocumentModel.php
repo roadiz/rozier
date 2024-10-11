@@ -13,17 +13,8 @@ use RZ\Roadiz\Documents\Renderer\RendererInterface;
 use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-/**
- * @package Themes\Rozier\Models
- */
 final class DocumentModel implements ModelInterface
 {
-    public static array $thumbnailArray = [
-        "fit" => "40x40",
-        "quality" => 50,
-        "sharpen" => 5,
-        "inline" => false,
-    ];
     public static array $thumbnail80Array = [
         "fit" => "80x80",
         "quality" => 50,
@@ -36,35 +27,14 @@ final class DocumentModel implements ModelInterface
         "inline" => false,
         "embed" => true,
     ];
-    public static array $largeArray = [
-        "noProcess" => true,
-    ];
 
-    private DocumentInterface $document;
-    private RendererInterface $renderer;
-    private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private UrlGeneratorInterface $urlGenerator;
-    private ?EmbedFinderFactory $embedFinderFactory;
-
-    /**
-     * @param DocumentInterface $document
-     * @param RendererInterface $renderer
-     * @param DocumentUrlGeneratorInterface $documentUrlGenerator
-     * @param UrlGeneratorInterface $urlGenerator
-     * @param EmbedFinderFactory|null $embedFinderFactory
-     */
     public function __construct(
-        DocumentInterface $document,
-        RendererInterface $renderer,
-        DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator,
-        ?EmbedFinderFactory $embedFinderFactory = null
+        private readonly DocumentInterface $document,
+        private readonly RendererInterface $renderer,
+        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ?EmbedFinderFactory $embedFinderFactory = null
     ) {
-        $this->document = $document;
-        $this->renderer = $renderer;
-        $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->urlGenerator = $urlGenerator;
-        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     public function toArray(): array
@@ -112,10 +82,10 @@ final class DocumentModel implements ModelInterface
             $editUrl = null;
         }
 
-        $embedFinder = $this->embedFinderFactory->createForPlatform(
+        $embedFinder = $this->embedFinderFactory?->createForPlatform(
             $this->document->getEmbedPlatform(),
             $this->document->getEmbedId()
-        );
+        ) ?? null;
 
         return [
             'id' => $id,
@@ -143,7 +113,7 @@ final class DocumentModel implements ModelInterface
                 : $this->document->getShortType(),
             'shortMimeType' => $this->document->getShortMimeType(),
             'thumbnail_80' => $thumbnail80Url,
-            'url' => $previewUrl ?? $thumbnail80Url ?? null,
+            'url' => $previewUrl ?? $thumbnail80Url,
         ];
     }
 }

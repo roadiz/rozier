@@ -11,19 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
 abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
-    private HandlerFactoryInterface $handlerFactory;
-
-    /**
-     * @param HandlerFactoryInterface $handlerFactory
-     */
-    public function __construct(HandlerFactoryInterface $handlerFactory)
+    public function __construct(protected readonly HandlerFactoryInterface $handlerFactory)
     {
-        $this->handlerFactory = $handlerFactory;
     }
 
     protected function findEntity(int|string $entityId): ?AbstractField
@@ -39,7 +30,7 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
      *
      * @return null|Response
      */
-    protected function handleFieldActions(Request $request, AbstractField $field = null)
+    protected function handleFieldActions(Request $request, AbstractField $field = null): ?Response
     {
         /*
          * Validate
