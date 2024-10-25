@@ -1,18 +1,16 @@
 .foldertree {
-    &-element {
-        &-name {
-            vertical-align: middle;
-            position: relative;
-            max-width: 80%;
+    &-element-name {
+        vertical-align: middle;
+        position: relative;
+        max-width: 80%;
 
-            a {
-                white-space: nowrap;
-                max-width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
-                vertical-align: middle;
-            }
+        a {
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            vertical-align: middle;
         }
     }
 
@@ -89,7 +87,7 @@
 
         .uk-nestable-handle-folder{
             vertical-align: middle;
-            color: darken(@maintree-global-bg, 30%);
+            color: var(--maintree-global-bg-30);
             left: -5px;
 
             &:before {
@@ -115,11 +113,16 @@
         }
 
         .uk-nestable-handle-folder{
-            color:darken(@maintree-global-bg, 30%);
+            color:var(--maintree-global-bg-30);
 
             &:after{
                 display: none;
             }
         }
     }
+}
+
+.folder-item i,
+.foldertree-element > .uk-nestable-panel .uk-nestable-handle i {
+    color: var(--rz-accent-color);
 }

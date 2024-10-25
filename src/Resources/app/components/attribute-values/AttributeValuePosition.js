@@ -4,10 +4,8 @@ export default class AttributeValuePosition {
     constructor() {
         this.$list = $('.attribute-value-forms > .uk-sortable')
         this.currentRequest = null
-
         // Bind methods
         this.onSortableChange = this.onSortableChange.bind(this)
-
         this.init()
     }
 
@@ -29,10 +27,6 @@ export default class AttributeValuePosition {
      * @param element
      */
     async onSortableChange(event, list, element) {
-        if (this.currentRequest && this.currentRequest.readyState !== 4) {
-            this.currentRequest.abort()
-        }
-
         if (event.target instanceof HTMLInputElement) {
             return
         }
@@ -48,6 +42,10 @@ export default class AttributeValuePosition {
             beforeElementId = parseInt($sibling.data('id'))
         } else {
             afterElementId = parseInt($sibling.data('id'))
+        }
+        const route = window.Rozier.routes.attributeValueAjaxEdit
+        if (!route || !attributeValueId) {
+            return
         }
 
         try {
@@ -68,7 +66,6 @@ export default class AttributeValuePosition {
                 throw response
             }
             const data = await response.json()
-            $element.attr('data-position', newPosition)
             window.UIkit.notify({
                 message: data.responseText,
                 status: data.status,
@@ -83,24 +80,6 @@ export default class AttributeValuePosition {
                 timeout: 3000,
                 pos: 'top-center',
             })
-                .done((data) => {
-                    $element.attr('data-position', newPosition)
-                    window.UIkit.notify({
-                        message: data.responseText,
-                        status: data.status,
-                        timeout: 3000,
-                        pos: 'top-center',
-                    })
-                })
-                .fail((data) => {
-                    data = JSON.parse(data.responseText)
-                    window.UIkit.notify({
-                        message: data.error_message,
-                        status: 'danger',
-                        timeout: 3000,
-                        pos: 'top-center',
-                    })
-                })
         }
     }
 }

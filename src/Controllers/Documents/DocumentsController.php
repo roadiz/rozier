@@ -7,7 +7,6 @@ namespace Themes\Rozier\Controllers\Documents;
 use GuzzleHttp\Exception\RequestException;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use League\Flysystem\UnableToMoveFile;
 use Psr\Log\LoggerInterface;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Document\DocumentFactory;
@@ -20,6 +19,7 @@ use RZ\Roadiz\CoreBundle\Entity\TagTranslationDocuments;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\EntityHandler\DocumentHandler;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\Documents\Events\DocumentCreatedEvent;
 use RZ\Roadiz\Documents\Events\DocumentDeletedEvent;
 use RZ\Roadiz\Documents\Events\DocumentFileUpdatedEvent;
@@ -48,6 +48,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
@@ -55,23 +56,10 @@ use Themes\Rozier\Forms\DocumentEditType;
 use Themes\Rozier\Forms\DocumentEmbedType;
 use Themes\Rozier\Models\DocumentModel;
 use Themes\Rozier\RozierApp;
-use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
 class DocumentsController extends RozierApp
 {
-    private array $documentPlatforms;
-    private DocumentFactory $documentFactory;
-    private HandlerFactoryInterface $handlerFactory;
-    private LoggerInterface $logger;
-    private RandomImageFinder $randomImageFinder;
-    private RendererInterface $renderer;
-    private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private UrlGeneratorInterface $urlGenerator;
-    private FilesystemOperator $documentsStorage;
-    private ?string $googleServerId;
-    private ?string $soundcloudClientId;
-
     protected array $thumbnailFormat = [
         'quality' => 50,
         'fit' => '128x128',
@@ -81,34 +69,21 @@ class DocumentsController extends RozierApp
         'controls' => false,
         'loading' => 'lazy',
     ];
-    private EmbedFinderFactory $embedFinderFactory;
 
     public function __construct(
-        array $documentPlatforms,
-        FilesystemOperator $documentsStorage,
-        HandlerFactoryInterface $handlerFactory,
-        LoggerInterface $logger,
-        RandomImageFinder $randomImageFinder,
-        DocumentFactory $documentFactory,
-        RendererInterface $renderer,
-        DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator,
-        EmbedFinderFactory $embedFinderFactory,
-        ?string $googleServerId = null,
-        ?string $soundcloudClientId = null
+        private readonly array $documentPlatforms,
+        private readonly FilesystemOperator $documentsStorage,
+        private readonly HandlerFactoryInterface $handlerFactory,
+        private readonly LoggerInterface $logger,
+        private readonly RandomImageFinder $randomImageFinder,
+        private readonly DocumentFactory $documentFactory,
+        private readonly RendererInterface $renderer,
+        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly EmbedFinderFactory $embedFinderFactory,
+        private readonly ?string $googleServerId = null,
+        private readonly ?string $soundcloudClientId = null
     ) {
-        $this->documentPlatforms = $documentPlatforms;
-        $this->handlerFactory = $handlerFactory;
-        $this->logger = $logger;
-        $this->randomImageFinder = $randomImageFinder;
-        $this->documentFactory = $documentFactory;
-        $this->renderer = $renderer;
-        $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->urlGenerator = $urlGenerator;
-        $this->googleServerId = $googleServerId;
-        $this->soundcloudClientId = $soundcloudClientId;
-        $this->documentsStorage = $documentsStorage;
-        $this->embedFinderFactory = $embedFinderFactory;
     }
 
     /**
@@ -141,20 +116,16 @@ class DocumentsController extends RozierApp
             $this->assignation['folder'] = $folder;
         }
 
-        if (
-            $request->query->has('type') &&
-            $request->query->get('type', '') !== ''
-        ) {
-            $prefilters['mimeType'] = trim($request->query->get('type', ''));
-            $this->assignation['mimeType'] = trim($request->query->get('type', ''));
+        $type = $request->query->get('type', null);
+        if (\is_string($type) && trim($type) !== '') {
+            $prefilters['mimeType'] = trim($type);
+            $this->assignation['mimeType'] = trim($type);
         }
 
-        if (
-            $request->query->has('embedPlatform') &&
-            $request->query->get('embedPlatform', '') !== ''
-        ) {
-            $prefilters['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
-            $this->assignation['embedPlatform'] = trim($request->query->get('embedPlatform', ''));
+        $embedPlatform = $request->query->get('embedPlatform', null);
+        if (\is_string($embedPlatform) && trim($embedPlatform) !== '') {
+            $prefilters['embedPlatform'] = trim($embedPlatform);
+            $this->assignation['embedPlatform'] = trim($embedPlatform);
         }
         $this->assignation['availablePlatforms'] = $this->documentPlatforms;
 
@@ -340,13 +311,13 @@ class DocumentsController extends RozierApp
                     $this->dispatchEvent(
                         new DocumentFileUpdatedEvent($document)
                     );
-                    $this->publishConfirmMessage($request, $msg);
+                    $this->publishConfirmMessage($request, $msg, $document);
                 }
 
                 $msg = $this->getTranslator()->trans('document.%name%.updated', [
                    '%name%' => (string) $document,
                 ]);
-                $this->publishConfirmMessage($request, $msg);
+                $this->publishConfirmMessage($request, $msg, $document);
                 $this->em()->flush();
                 // Event must be dispatched AFTER flush for async concurrency matters
                 $this->dispatchEvent(
@@ -419,13 +390,13 @@ class DocumentsController extends RozierApp
                 $msg = $this->getTranslator()->trans('document.%name%.deleted', [
                     '%name%' => (string) $document
                 ]);
-                $this->publishConfirmMessage($request, $msg);
+                $this->publishConfirmMessage($request, $msg, $document);
             } catch (\Exception $e) {
                 $msg = $this->getTranslator()->trans('document.%name%.cannot_delete', [
                     '%name%' => (string) $document
                 ]);
                 $this->logger->error($e->getMessage());
-                $this->publishErrorMessage($request, $msg);
+                $this->publishErrorMessage($request, $msg, $document);
             }
             /*
              * Force redirect to avoid resending form when refreshing page
@@ -477,7 +448,7 @@ class DocumentsController extends RozierApp
                     'document.%name%.deleted',
                     ['%name%' => (string) $document]
                 );
-                $this->publishConfirmMessage($request, $msg);
+                $this->publishConfirmMessage($request, $msg, $document);
             }
             $this->em()->flush();
 
@@ -523,18 +494,18 @@ class DocumentsController extends RozierApp
                 if (is_iterable($document)) {
                     foreach ($document as $singleDocument) {
                         $msg = $this->getTranslator()->trans('document.%name%.uploaded', [
-                            '%name%' => (string) $singleDocument,
+                            '%name%' => (new UnicodeString((string) $singleDocument))->truncate(50, '...')->toString(),
                         ]);
-                        $this->publishConfirmMessage($request, $msg);
+                        $this->publishConfirmMessage($request, $msg, $singleDocument);
                         $this->dispatchEvent(
                             new DocumentCreatedEvent($singleDocument)
                         );
                     }
                 } else {
                     $msg = $this->getTranslator()->trans('document.%name%.uploaded', [
-                        '%name%' => (string) $document,
+                        '%name%' => (new UnicodeString((string) $document))->truncate(50, '...')->toString(),
                     ]);
-                    $this->publishConfirmMessage($request, $msg);
+                    $this->publishConfirmMessage($request, $msg, $document);
                     $this->dispatchEvent(
                         new DocumentCreatedEvent($document)
                     );
@@ -582,9 +553,9 @@ class DocumentsController extends RozierApp
             $document = $this->randomDocument($folderId);
 
             $msg = $this->getTranslator()->trans('document.%name%.uploaded', [
-                '%name%' => (string) $document,
+                '%name%' => (new UnicodeString((string) $document))->truncate(50, '...')->toString(),
             ]);
-            $this->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg, $document);
 
             $this->dispatchEvent(
                 new DocumentCreatedEvent($document)
@@ -627,6 +598,31 @@ class DocumentsController extends RozierApp
     }
 
     /**
+     * Download document file inline.
+     *
+     * @param Request $request
+     * @param int $documentId
+     * @return Response
+     * @throws FilesystemException
+     */
+    public function downloadInlineAction(Request $request, int $documentId): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
+
+        /** @var Document|null $document */
+        $document = $this->em()->find(Document::class, $documentId);
+
+        if ($document !== null) {
+            /** @var DocumentHandler $handler */
+            $handler = $this->handlerFactory->getHandler($document);
+
+            return $handler->getDownloadResponse(false);
+        }
+
+        throw new ResourceNotFoundException();
+    }
+
+    /**
      * @param Request $request
      * @param int|null $folderId
      * @param string $_format
@@ -655,9 +651,9 @@ class DocumentsController extends RozierApp
 
                 if (null !== $document) {
                     $msg = $this->getTranslator()->trans('document.%name%.uploaded', [
-                        '%name%' => (string) $document,
+                        '%name%' => (new UnicodeString((string) $document))->truncate(50, '...')->toString(),
                     ]);
-                    $this->publishConfirmMessage($request, $msg);
+                    $this->publishConfirmMessage($request, $msg, $document);
 
                     // Event must be dispatched AFTER flush for async concurrency matters
                     $this->dispatchEvent(
@@ -675,13 +671,13 @@ class DocumentsController extends RozierApp
                         return new JsonResponse([
                             'success' => true,
                             'document' => $documentModel->toArray(),
-                        ], JsonResponse::HTTP_CREATED);
+                        ], Response::HTTP_CREATED);
                     } else {
                         return $this->redirectToRoute('documentsHomePage', ['folderId' => $folderId]);
                     }
                 } else {
                     $msg = $this->getTranslator()->trans('document.cannot_persist');
-                    $this->publishErrorMessage($request, $msg);
+                    $this->publishErrorMessage($request, $msg, $document);
 
                     if ($_format === 'json' || $request->isXmlHttpRequest()) {
                         throw $this->createNotFoundException($msg);
@@ -697,6 +693,7 @@ class DocumentsController extends RozierApp
                 /** @var Form $child */
                 foreach ($form as $child) {
                     if ($child->isSubmitted() && !$child->isValid()) {
+                        /** @var FormError $error */
                         foreach ($child->getErrors() as $error) {
                             $errorPerForm[$child->getName()][] = $this->getTranslator()->trans($error->getMessage());
                         }
