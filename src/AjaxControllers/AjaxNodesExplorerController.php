@@ -11,6 +11,7 @@ use RZ\Roadiz\Core\Entities\Node;
 use RZ\Roadiz\Core\Entities\NodesSources;
 use RZ\Roadiz\Core\Entities\Tag;
 use RZ\Roadiz\Core\SearchEngine\NodeSourceSearchHandlerInterface;
+use RZ\Roadiz\Explorer\Event\NodeExplorerListEvent;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -149,6 +150,17 @@ class AjaxNodesExplorerController extends AbstractAjaxController
             'nodesCount' => $listManager->getItemCount(),
             'filters' => $listManager->getAssignation(),
         ];
+    }
+
+    /**
+     * Override default createEntityListManager method to allow more specific search criteria
+     * when searching for a specific NodeType.
+     */
+    public function createEntityListManager($entity, array $criteria = [], array $ordering = [])
+    {
+        /** @var NodeExplorerListEvent $event */
+        $event = $this->dispatchEvent(new NodeExplorerListEvent($entity, $criteria, $ordering));
+        return parent::createEntityListManager($event->getEntity(), $event->getCriteria(), $event->getOrdering());
     }
 
     /**
