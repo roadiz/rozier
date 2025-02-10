@@ -1,7 +1,4 @@
-{#
-This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
-#}
-{% set source = node.nodeSource|default(node.nodeSources.first) %}
+{% set source = node.nodeSources.first %}
 {% if source.title %}
     {% set name = source.title|replace({'${':'--'}) %} {# Remove VueJS placeholder marks #}
 {% else %}
@@ -10,8 +7,8 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
 {% set type = node.nodeType.name %}
 
 {% set classes = [
-    type|lower,
-    'nodetree-element'
+type|lower,
+'nodetree-element'
 ] %}
 
 {% set classes = classes|merge(['uk-nestable-item']) %}
@@ -55,7 +52,8 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
     {% endif %}
 {% endif %}
 
-<li style="--rz-accent-color: {{ node.nodeType.color }};" data-node-id="{{ node.id }}" class="{{ classes|join(' ') }}">
+
+<li data-node-id="{{ node.id }}" class="{{ classes|join(' ') }}">
     {% if not mainNodeTree and not nodeTree.isStackTree %}
         <span class="nodetree-list-item-color"></span>
     {% endif %}
@@ -67,10 +65,10 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
                 title="{{ node.nodeType.displayName }}"
                 data-uk-tooltip="{animation:true}"{%- endif -%}>
                 {% if not mainNodeTree and not nodeTree.isStackTree %}
-                    {% set thumbnail = nodeTree.getOneDisplayableDocument(node) %}
-                    {% if thumbnail %}
+                    {% set thumbnail = source.documentsByFields.first.document %}
+                    {% if thumbnail and (thumbnail.image or thumbnail.svg) and not thumbnail.private %}
                         <figure class="nodetree-element-img">
-                            {{ thumbnail|display({"fit":"60x60", "quality": 70}) }}
+                            {{ thumbnail|display({"fit":"60x60", "quality":80}) }}
                         </figure>
                     {% endif %}
                 {% endif %}
@@ -106,8 +104,8 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
                     <a href="{{ path('nodesEditSourcePage', {
                         nodeId: node.id,
                         translationId: nodeTree.translation.id,
-                        referer: parent ? path('nodesEditSourcePage', {
-                            nodeId: parent.id,
+                        referer: node.parent ? path('nodesEditSourcePage', {
+                            nodeId: node.parent.id,
                             translationId: nodeTree.translation.id,
                         }) : null
                     }) }}">{{- name -}}</a>
@@ -116,15 +114,14 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
         {% endblock %}
 
         {% block nodetree_tags %}
-            {% if nodeTree.isStackTree %}
-                {% set tags = nodeTree.getTags(node) %}
-                {% if tags|length %}
-                    <div class="nodetree-tags">
-                        {% for tag in tags %}
-                            <a href="?tagId={{ tag.id }}" class="uk-badge"><i class="uk-icon-tag"></i> {{ tag.name|default(tag.tagName) -}}</a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+            {% if nodeTree.isStackTree and node.tags|length %}
+                <div class="nodetree-tags">
+                    {% for tag in node.tags %}
+                        {% set ttag = tag.translatedTagsByTranslation(nodeTree.translation) %}
+                        {% set tagName = ttag[0].name|default(tag.tagName) %}
+                        <a href="?tagId={{ tag.id }}" class="uk-badge"><i class="uk-icon-tag"></i> {{ tagName -}}</a>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endblock %}
 
@@ -154,7 +151,9 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
     {% if not mainNodeTree and not nodeTree.isStackTree %}
         {% set subListClasses = subListClasses|merge(['children-node-widget-list']) %}
     {% endif %}
-    {% if node.isHidingChildren or node.nodeType.isHidingNodes or not children %}
+    {% if node.isHidingChildren or
+        node.nodeType.isHidingNodes or
+        node.getChildren.count == 0 %}
         {% set subListClasses = subListClasses|merge(['empty']) %}
     {% endif %}
     {% apply spaceless %}
@@ -170,6 +169,7 @@ This template is using NodeTreeDto and TagTreeDto objects to render a node tree.
                         "parent":node,
                         "nodeTree":nodeTree,
                         "mainNodeTree":mainNodeTree,
+                        "nodeStatuses":nodeStatuses,
                         "level": level + 1,
                         'canReorder': (node.childrenOrder == 'position'),
                     } only %}

@@ -15,6 +15,10 @@ use Twig\Error\RuntimeError;
 class UsersSecurityController extends RozierApp
 {
     /**
+     * @param Request $request
+     * @param int $userId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function securityAction(Request $request, int $userId): Response
@@ -24,13 +28,13 @@ class UsersSecurityController extends RozierApp
         /** @var User|null $user */
         $user = $this->em()->find(User::class, $userId);
 
-        if (null === $user) {
+        if ($user === null) {
             throw new ResourceNotFoundException();
         }
 
         $this->assignation['user'] = $user;
         $form = $this->createForm(UserSecurityType::class, $user, [
-            'canChroot' => $this->isGranted('ROLE_SUPERADMIN'),
+            'canChroot' => $this->isGranted("ROLE_SUPERADMIN")
         ]);
         $form->handleRequest($request);
 
@@ -41,7 +45,7 @@ class UsersSecurityController extends RozierApp
                 ['%name%' => $user->getUsername()]
             );
 
-            $this->publishConfirmMessage($request, $msg, $user);
+            $this->publishConfirmMessage($request, $msg);
 
             /*
              * Force redirect to avoid resending form when refreshing page

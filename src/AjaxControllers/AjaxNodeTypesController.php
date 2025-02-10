@@ -5,28 +5,24 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
-use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Serializer\SerializerInterface;
+use Themes\Rozier\Models\NodeTypeModel;
 
-final class AjaxNodeTypesController extends AbstractAjaxController
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
+class AjaxNodeTypesController extends AbstractAjaxController
 {
-    public function __construct(
-        private readonly ExplorerItemFactoryInterface $explorerItemFactory,
-        SerializerInterface $serializer,
-    ) {
-        parent::__construct($serializer);
-    }
-
     /**
+     * @param Request $request
+     *
      * @return Response JSON response
      */
-    public function indexAction(Request $request): Response
+    public function indexAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $arrayFilter = [];
@@ -45,23 +41,26 @@ final class AjaxNodeTypesController extends AbstractAjaxController
         $nodeTypes = $listManager->getEntities();
         $documentsArray = $this->normalizeNodeType($nodeTypes);
 
-        return $this->createSerializedResponse([
+        $responseArray = [
             'status' => 'confirm',
             'statusCode' => 200,
             'nodeTypes' => $documentsArray,
             'nodeTypesCount' => count($nodeTypes),
-            'filters' => $listManager->getAssignation(),
-        ]);
+            'filters' => $listManager->getAssignation()
+        ];
+
+        return new JsonResponse(
+            $responseArray
+        );
     }
 
     /**
      * Get a NodeType list from an array of id.
      *
+     * @param Request $request
      * @return JsonResponse
-     *
-     * @throws NotSupported
      */
-    public function listAction(Request $request): Response
+    public function listAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
@@ -70,7 +69,7 @@ final class AjaxNodeTypesController extends AbstractAjaxController
         }
 
         $cleanNodeTypesName = array_filter($request->query->filter('names', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY,
+            'flags' => \FILTER_FORCE_ARRAY
         ]));
         $nodesArray = [];
 
@@ -78,31 +77,37 @@ final class AjaxNodeTypesController extends AbstractAjaxController
             /** @var EntityManager $em */
             $em = $this->em();
             $nodeTypes = $em->getRepository(NodeType::class)->findBy([
-                'name' => $cleanNodeTypesName,
+                'name' => $cleanNodeTypesName
             ]);
 
             // Sort array by ids given in request
             $nodesArray = $this->normalizeNodeType($nodeTypes);
         }
 
-        return $this->createSerializedResponse([
+        $responseArray = [
             'status' => 'confirm',
             'statusCode' => 200,
-            'items' => $nodesArray,
-        ]);
+            'items' => $nodesArray
+        ];
+
+        return new JsonResponse(
+            $responseArray
+        );
     }
 
     /**
      * Normalize response NodeType list result.
      *
-     * @param iterable<NodeType> $nodeTypes
+     * @param array<NodeType>|\Traversable<NodeType> $nodeTypes
+     * @return array
      */
-    private function normalizeNodeType(iterable $nodeTypes): array
+    private function normalizeNodeType($nodeTypes)
     {
         $nodeTypesArray = [];
 
+        /** @var NodeType $nodeType */
         foreach ($nodeTypes as $nodeType) {
-            $nodeModel = $this->explorerItemFactory->createForEntity($nodeType);
+            $nodeModel = new NodeTypeModel($nodeType);
             $nodeTypesArray[] = $nodeModel->toArray();
         }
 

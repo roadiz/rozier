@@ -4,33 +4,35 @@
             class="uk-sortable-list-item drawer-item type-label"
             v-if="item"
             @click.prevent="onAddItemButtonClick"
-            :class="{ 'has-thumbnail': !!thumbnailUrl, 'not-published': published === false  }">
+            :class="{ 'has-thumbnail': item.thumbnail, 'not-published': item.isPublished === false  }">
 
             <div class="uk-sortable-handle"></div>
-            <div class="border" :style="{ backgroundColor: color }"></div>
+            <div class="border" :style="{ backgroundColor: getColor() }"></div>
             <figure class="thumbnail"
-                    v-if="thumbnailUrl && !isThumbnailProcessable"
-                    :style="{ 'background-image': 'url(' + thumbnailUrl + ')' }"></figure>
+                    v-if="getThumbnail() && !item.thumbnail.processable"
+                    :style="{ 'background-image': 'url(' + getThumbnail() + ')' }"></figure>
             <figure class="thumbnail"
-                    v-else-if="thumbnailUrl && isThumbnailProcessable">
+                    v-else-if="getThumbnail() && item.thumbnail.processable">
                 <picture>
-                    <source :srcset="thumbnailUrl + '.webp'" type="image/webp" />
-                    <img :src="thumbnailUrl" :alt="name">
+                    <source :srcset="getThumbnail() + '.webp'" type="image/webp" />
+                    <img :src="getThumbnail()" :alt="name">
                 </picture>
             </figure>
             <div class="names">
-                <p class="parent-name" v-if="parentName">
-                    <template v-if="subParentName">
-                    <span class="sub">
-                        {{ subParentName }}
-                    </span>
+                <p class="parent-name">
+                    <template v-if="parentName">
+                        <template v-if="subParentName">
+                        <span class="sub">
+                            {{ subParentName }}
+                        </span>
+                        </template>
+                        <span class="direct">{{ parentName }}</span>
                     </template>
-                    <span class="direct">{{ parentName }}</span>
                 </p>
                 <span class="name">{{ name }}</span>
-                <input type="hidden" :name="inputName" :value="item.id" v-if="inputName && item && item.id" />
-                <div class="links" :class="editItemUrl ? '' : 'no-edit'">
-                    <ajax-link :href="editItemUrl" class="uk-button link uk-button-mini" v-if="editItemUrl">
+                <input type="hidden" :name="drawerName + '[' + index +']'" :value="item.id" />
+                <div class="links" :class="getEditItem() ? '' : 'no-edit'">
+                    <ajax-link :href="getEditItem() + getReferer()" class="uk-button link uk-button-mini" v-if="getEditItem()">
                         <i class="uk-icon-rz-pencil"></i>
                     </ajax-link><a href="#"
                                    class="uk-button uk-button-mini link uk-button-danger rz-no-ajax-link"
@@ -83,50 +85,6 @@
                 type: String
             }
         },
-        computed: {
-            published: function () {
-                return this.item.published
-            },
-            color: function () {
-                if (this.item.nodeType && this.item.nodeType.color) {
-                    return this.item.nodeType.color
-                } else if (this.item.color) {
-                    return this.item.color
-                }
-                return null
-            },
-            inputName () {
-                if (this.drawerName) {
-                    return this.drawerName + '[' + this.index + ']'
-                }
-            },
-            editItemUrl () {
-                if (this.editItem) {
-                    return this.editItem + this.referer
-                } else if (this.item.editItem) {
-                    return this.item.editItem + this.referer
-                }
-
-                return null
-            },
-            referer: function () {
-                return '?referer=' + window.location.pathname
-            },
-            thumbnailUrl: function () {
-                if (this.item.thumbnail && this.item.thumbnail.url) {
-                    return this.item.thumbnail.url
-                } else if (this.item.thumbnail) {
-                    return this.item.thumbnail
-                }
-                return null
-            },
-            isThumbnailProcessable: function () {
-                if (this.item.thumbnail && this.item.thumbnail.processable) {
-                    return this.item.thumbnail.processable
-                }
-                return false
-            }
-        },
         methods: {
             onAddItemButtonClick: function () {
                 // If document is in the explorer panel
@@ -137,6 +95,34 @@
             onRemoveItemButtonClick: function () {
                 // Call parent function to remove the document from widget
                 this.removeItem(this.item)
+            },
+            getColor: function () {
+                if (this.item.nodeType && this.item.nodeType.color) {
+                    return this.item.nodeType.color
+                } else if (this.item.color) {
+                    return this.item.color
+                }
+                return null
+            },
+            getEditItem () {
+                if (this.editItem) {
+                    return this.editItem
+                } else if (this.item.editItem) {
+                    return this.item.editItem
+                }
+
+                return null
+            },
+            getReferer: function () {
+                return '?referer=' + window.location.pathname
+            },
+            getThumbnail: function () {
+                if (this.item.thumbnail && this.item.thumbnail.url) {
+                    return this.item.thumbnail.url
+                } else if (this.item.thumbnail) {
+                    return this.item.thumbnail
+                }
+                return null
             }
         },
         components: {

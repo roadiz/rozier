@@ -6,7 +6,6 @@ namespace Themes\Rozier\Controllers\NodeTypes;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
-use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\CoreBundle\Message\DeleteNodeTypeMessage;
 use RZ\Roadiz\CoreBundle\Message\UpdateNodeTypeSchemaMessage;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -17,14 +16,18 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Themes\Rozier\Forms\NodeTypeType;
 use Themes\Rozier\RozierApp;
-use Twig\Error\RuntimeError;
+use Themes\Rozier\Utils\SessionListFilters;
 
+/**
+ * @package Themes\Rozier\Controllers\NodeTypes
+ */
 class NodeTypesController extends RozierApp
 {
-    public function __construct(
-        private readonly bool $allowNodeTypeEdition,
-        private readonly MessageBusInterface $messageBus,
-    ) {
+    private MessageBusInterface $messageBus;
+
+    public function __construct(MessageBusInterface $messageBus)
+    {
+        $this->messageBus = $messageBus;
     }
 
     public function indexAction(Request $request): Response
@@ -55,7 +58,12 @@ class NodeTypesController extends RozierApp
     }
 
     /**
-     * @throws RuntimeError
+     * Return an edition form for requested node-type.
+     *
+     * @param Request $request
+     * @param int     $nodeTypeId
+     *
+     * @return Response
      */
     public function editAction(Request $request, int $nodeTypeId): Response
     {
@@ -74,13 +82,14 @@ class NodeTypesController extends RozierApp
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->em()->flush();
+
                 $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
                 $msg = $this->getTranslator()->trans('nodeType.%name%.updated', ['%name%' => $nodeType->getName()]);
-                $this->publishConfirmMessage($request, $msg, $nodeType);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirectToRoute('nodeTypesEditPage', [
-                    'nodeTypeId' => $nodeTypeId,
+                    'nodeTypeId' => $nodeTypeId
                 ]);
             } catch (EntityAlreadyExistsException $e) {
                 $form->addError(new FormError($e->getMessage()));
@@ -94,37 +103,35 @@ class NodeTypesController extends RozierApp
     }
 
     /**
-     * @throws RuntimeError
+     * Return an creation form for requested node-type.
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
     public function addAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
         $nodeType = new NodeType();
 
-        $form = $this->createForm(NodeTypeType::class, $nodeType, [
-            'disabled' => !$this->allowNodeTypeEdition,
-        ]);
+        $form = $this->createForm(NodeTypeType::class, $nodeType);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$this->allowNodeTypeEdition) {
-                $form->addError(new FormError('You cannot create a node-type in production mode.'));
-            } else {
-                try {
-                    $this->em()->persist($nodeType);
-                    $this->em()->flush();
+            try {
+                $this->em()->persist($nodeType);
+                $this->em()->flush();
 
-                    $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
+                $this->messageBus->dispatch(new Envelope(new UpdateNodeTypeSchemaMessage($nodeType->getId())));
 
-                    $msg = $this->getTranslator()->trans('nodeType.%name%.created', ['%name%' => $nodeType->getName()]);
-                    $this->publishConfirmMessage($request, $msg, $nodeType);
+                $msg = $this->getTranslator()->trans('nodeType.%name%.created', ['%name%' => $nodeType->getName()]);
+                $this->publishConfirmMessage($request, $msg);
 
-                    return $this->redirectToRoute('nodeTypesEditPage', [
-                        'nodeTypeId' => $nodeType->getId(),
-                    ]);
-                } catch (EntityAlreadyExistsException $e) {
-                    $form->addError(new FormError($e->getMessage()));
-                }
+                return $this->redirectToRoute('nodeTypesEditPage', [
+                    'nodeTypeId' => $nodeType->getId()
+                ]);
+            } catch (EntityAlreadyExistsException $e) {
+                $form->addError(new FormError($e->getMessage()));
             }
         }
 
@@ -135,7 +142,10 @@ class NodeTypesController extends RozierApp
     }
 
     /**
-     * @throws RuntimeError
+     * @param Request $request
+     * @param int     $nodeTypeId
+     *
+     * @return Response
      */
     public function deleteAction(Request $request, int $nodeTypeId): Response
     {
@@ -148,25 +158,20 @@ class NodeTypesController extends RozierApp
             throw $this->createNotFoundException();
         }
 
-        $form = $this->createForm(FormType::class, options: [
-            'disabled' => !$this->allowNodeTypeEdition,
-        ]);
+        $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
-        if (!$this->allowNodeTypeEdition) {
-            $form->addError(new FormError('You cannot delete a node-type in production mode.'));
-        } elseif ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $this->messageBus->dispatch(new Envelope(new DeleteNodeTypeMessage($nodeType->getId())));
 
             $msg = $this->getTranslator()->trans('nodeType.%name%.deleted', ['%name%' => $nodeType->getName()]);
-            $this->publishConfirmMessage($request, $msg, $nodeType);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->redirectToRoute('nodeTypesHomePage');
         }
 
         $this->assignation['form'] = $form->createView();
         $this->assignation['nodeType'] = $nodeType;
-        $this->assignation['disabled'] = !$this->allowNodeTypeEdition;
 
         return $this->render('@RoadizRozier/node-types/delete.html.twig', $this->assignation);
     }

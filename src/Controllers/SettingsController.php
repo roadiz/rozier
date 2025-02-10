@@ -15,7 +15,6 @@ use RZ\Roadiz\CoreBundle\Event\Setting\SettingUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
 use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Form\SettingType;
-use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -24,19 +23,26 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
 class SettingsController extends RozierApp
 {
-    public function __construct(
-        private readonly FormFactoryInterface $formFactory,
-        private readonly FormErrorSerializer $formErrorSerializer,
-    ) {
+    private FormFactoryInterface $formFactory;
+    private FormErrorSerializer $formErrorSerializer;
+
+    public function __construct(FormFactoryInterface $formFactory, FormErrorSerializer $formErrorSerializer)
+    {
+        $this->formFactory = $formFactory;
+        $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
      * List every setting.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
@@ -51,6 +57,10 @@ class SettingsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $settingGroupId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function byGroupAction(Request $request, int $settingGroupId): Response
@@ -60,7 +70,7 @@ class SettingsController extends RozierApp
         /** @var SettingGroup|null $settingGroup */
         $settingGroup = $this->em()->find(SettingGroup::class, $settingGroupId);
 
-        if (null === $settingGroup) {
+        if ($settingGroup === null) {
             throw new ResourceNotFoundException();
         }
 
@@ -73,7 +83,13 @@ class SettingsController extends RozierApp
         return $this->render('@RoadizRozier/settings/list.html.twig', $this->assignation);
     }
 
-    protected function commonSettingList(Request $request, ?SettingGroup $settingGroup = null): ?Response
+    /**
+     * @param Request $request
+     * @param SettingGroup|null $settingGroup
+     *
+     * @return Response|null
+     */
+    protected function commonSettingList(Request $request, SettingGroup $settingGroup = null): ?Response
     {
         $criteria = [];
         if (null !== $settingGroup) {
@@ -100,13 +116,6 @@ class SettingsController extends RozierApp
         $this->assignation['filters'] = $listManager->getAssignation();
         $settings = $listManager->getEntities();
         $this->assignation['settings'] = [];
-        $isJson =
-            $request->isXmlHttpRequest()
-            || 'json' === $request->getRequestFormat('html')
-            || \in_array(
-                'application/json',
-                $request->getAcceptableContentTypes()
-            );
 
         /** @var Setting $setting */
         foreach ($settings as $setting) {
@@ -124,9 +133,9 @@ class SettingsController extends RozierApp
                             'setting.%name%.updated',
                             ['%name%' => $setting->getName()]
                         );
-                        $this->publishConfirmMessage($request, $msg, $setting);
+                        $this->publishConfirmMessage($request, $msg);
 
-                        if ($isJson) {
+                        if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
                             return new JsonResponse([
                                 'status' => 'success',
                                 'message' => $msg,
@@ -153,7 +162,7 @@ class SettingsController extends RozierApp
                     /*
                      * Do not publish any message, it may lead to flushing invalid form
                      */
-                    if ($isJson) {
+                    if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
                         return new JsonResponse([
                             'status' => 'failed',
                             'errors' => $errors,
@@ -163,7 +172,7 @@ class SettingsController extends RozierApp
             }
 
             $document = null;
-            if (AbstractField::DOCUMENTS_T == $setting->getType()) {
+            if ($setting->getType() == AbstractField::DOCUMENTS_T) {
                 $document = $this->getSettingsBag()->getDocument($setting->getName());
             }
 
@@ -180,6 +189,10 @@ class SettingsController extends RozierApp
     /**
      * Return an edition form for requested setting.
      *
+     * @param Request $request
+     * @param int $settingId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $settingId): Response
@@ -188,14 +201,14 @@ class SettingsController extends RozierApp
         /** @var Setting|null $setting */
         $setting = $this->em()->find(Setting::class, $settingId);
 
-        if (null === $setting) {
+        if ($setting === null) {
             throw $this->createNotFoundException();
         }
 
         $this->assignation['setting'] = $setting;
 
         $form = $this->createForm(SettingType::class, $setting, [
-            'shortEdit' => false,
+            'shortEdit' => false
         ]);
         $form->handleRequest($request);
 
@@ -205,8 +218,7 @@ class SettingsController extends RozierApp
                 $this->dispatchEvent(new SettingUpdatedEvent($setting));
                 $this->em()->flush();
                 $msg = $this->getTranslator()->trans('setting.%name%.updated', ['%name%' => $setting->getName()]);
-                $this->publishConfirmMessage($request, $msg, $setting);
-
+                $this->publishConfirmMessage($request, $msg);
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
@@ -236,6 +248,9 @@ class SettingsController extends RozierApp
     /**
      * Return a creation form for requested setting.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function addAction(Request $request): Response
@@ -258,7 +273,7 @@ class SettingsController extends RozierApp
                 $this->em()->persist($setting);
                 $this->em()->flush();
                 $msg = $this->getTranslator()->trans('setting.%name%.created', ['%name%' => $setting->getName()]);
-                $this->publishConfirmMessage($request, $msg, $setting);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirectToRoute('settingsHomePage');
             } catch (EntityAlreadyExistsException $e) {
@@ -274,6 +289,10 @@ class SettingsController extends RozierApp
     /**
      * Return a deletion form for requested setting.
      *
+     * @param Request $request
+     * @param int $settingId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $settingId): Response
@@ -300,7 +319,7 @@ class SettingsController extends RozierApp
                 $this->em()->flush();
 
                 $msg = $this->getTranslator()->trans('setting.%name%.deleted', ['%name%' => $setting->getName()]);
-                $this->publishConfirmMessage($request, $msg, $setting);
+                $this->publishConfirmMessage($request, $msg);
 
                 /*
                  * Force redirect to avoid resending form when refreshing page

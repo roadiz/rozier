@@ -6,13 +6,49 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
+use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
+use RZ\Roadiz\Documents\Renderer\RendererInterface;
+use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Themes\Rozier\Models\DocumentModel;
 
-final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerController
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
+class AjaxDocumentsExplorerController extends AbstractAjaxController
 {
-    public function indexAction(Request $request): JsonResponse
+    private RendererInterface $renderer;
+    private DocumentUrlGeneratorInterface $documentUrlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
+    private EmbedFinderFactory $embedFinderFactory;
+
+    public function __construct(
+        RendererInterface $renderer,
+        DocumentUrlGeneratorInterface $documentUrlGenerator,
+        UrlGeneratorInterface $urlGenerator,
+        EmbedFinderFactory $embedFinderFactory
+    ) {
+        $this->renderer = $renderer;
+        $this->documentUrlGenerator = $documentUrlGenerator;
+        $this->urlGenerator = $urlGenerator;
+        $this->embedFinderFactory = $embedFinderFactory;
+    }
+
+    public static array $thumbnailArray = [
+        "fit" => "40x40",
+        "quality" => 50,
+        "inline" => false,
+    ];
+    /**
+     * @param Request $request
+     *
+     * @return Response JSON response
+     */
+    public function indexAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -24,10 +60,11 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
         ];
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
-            $folder = $this->em()->find(
-                Folder::class,
-                $request->get('folderId')
-            );
+            $folder = $this->em()
+                        ->find(
+                            Folder::class,
+                            $request->get('folderId')
+                        );
 
             $arrayFilter['folders'] = [$folder];
         }
@@ -38,12 +75,11 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
             Document::class,
             $arrayFilter,
             [
-                'createdAt' => 'DESC',
+                'createdAt' => 'DESC'
             ]
         );
         $listManager->setDisplayingNotPublishedNodes(true);
-        // Use a factor of 12 for a better grid display
-        $listManager->setItemPerPage(36);
+        $listManager->setItemPerPage(30);
         $listManager->handle();
 
         $documents = $listManager->getEntities();
@@ -60,19 +96,22 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
             $responseArray['filters'] = array_merge($responseArray['filters'], [
-                'folderId' => $request->get('folderId'),
+                'folderId' => $request->get('folderId')
             ]);
         }
 
-        return $this->createSerializedResponse(
+        return new JsonResponse(
             $responseArray
         );
     }
 
     /**
      * Get a Document list from an array of id.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function listAction(Request $request): JsonResponse
+    public function listAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
@@ -80,7 +119,7 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
             throw new InvalidParameterException('Ids should be provided within an array');
         }
         $cleanDocumentIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY,
+            'flags' => \FILTER_FORCE_ARRAY
         ]));
         $documentsArray = [];
 
@@ -95,25 +134,37 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
             $documentsArray = $this->normalizeDocuments($documents);
         }
 
-        return $this->createSerializedResponse([
+        $responseArray = [
             'status' => 'confirm',
             'statusCode' => 200,
             'documents' => $documentsArray,
-            'trans' => $this->getTrans(),
-        ]);
+            'trans' => $this->getTrans()
+        ];
+
+        return new JsonResponse(
+            $responseArray
+        );
     }
 
     /**
      * Normalize response Document list result.
      *
-     * @param iterable<Document> $documents
+     * @param array<Document>|\Traversable<Document> $documents
+     * @return array
      */
-    private function normalizeDocuments(iterable $documents): array
+    private function normalizeDocuments($documents)
     {
         $documentsArray = [];
 
+        /** @var Document $doc */
         foreach ($documents as $doc) {
-            $documentModel = $this->explorerItemFactory->createForEntity($doc);
+            $documentModel = new DocumentModel(
+                $doc,
+                $this->renderer,
+                $this->documentUrlGenerator,
+                $this->urlGenerator,
+                $this->embedFinderFactory
+            );
             $documentsArray[] = $documentModel->toArray();
         }
 
@@ -122,14 +173,16 @@ final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerControll
 
     /**
      * Get an array of translations.
+     *
+     * @return array
      */
-    private function getTrans(): array
+    private function getTrans()
     {
         return [
             'editDocument' => $this->getTranslator()->trans('edit.document'),
             'unlinkDocument' => $this->getTranslator()->trans('unlink.document'),
             'linkDocument' => $this->getTranslator()->trans('link.document'),
-            'moreItems' => $this->getTranslator()->trans('more.documents'),
+            'moreItems' => $this->getTranslator()->trans('more.documents')
         ];
     }
 }

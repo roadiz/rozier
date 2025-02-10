@@ -14,6 +14,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 {
+    /**
+     * @inheritDoc
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
@@ -24,6 +27,10 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
         $resolver->setDefault('multiple', true);
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $configuration = $this->getFieldConfiguration($options);
@@ -37,6 +44,10 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 
     /**
      * Pass data to form twig template.
+     *
+     * @param FormView $view
+     * @param FormInterface $form
+     * @param array $options
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
@@ -44,9 +55,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 
         $configuration = $this->getFieldConfiguration($options);
         $displayableData = [];
-        /** @var callable $callable */
-        $callable = [$options['nodeSource'], $options['nodeTypeField']->getGetterName()];
-        $entities = call_user_func($callable);
+
+        $entities = call_user_func([$options['nodeSource'], $options['nodeTypeField']->getGetterName()]);
 
         if ($entities instanceof \Traversable) {
             /** @var PersistableInterface $entity */
@@ -58,9 +68,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
                     'id' => $entity->getId(),
                     'classname' => $configuration['classname'],
                 ];
-                $displayableCallable = [$entity, $configuration['displayable']];
-                if (\is_callable($displayableCallable)) {
-                    $data['name'] = call_user_func($displayableCallable);
+                if (is_callable([$entity, $configuration['displayable']])) {
+                    $data['name'] = call_user_func([$entity, $configuration['displayable']]);
                 }
                 $displayableData[] = $data;
             }
@@ -72,9 +81,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
                 'id' => $entities->getId(),
                 'classname' => $configuration['classname'],
             ];
-            $displayableCallable = [$entities, $configuration['displayable']];
-            if (\is_callable($displayableCallable)) {
-                $data['name'] = call_user_func($displayableCallable);
+            if (is_callable([$entities, $configuration['displayable']])) {
+                $data['name'] = call_user_func([$entities, $configuration['displayable']]);
             }
             $displayableData[] = $data;
         }
@@ -82,6 +90,9 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
         $view->vars['data'] = $displayableData;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'join';

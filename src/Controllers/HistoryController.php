@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Monolog\Logger;
+use RZ\Roadiz\CoreBundle\Entity\Log;
 use RZ\Roadiz\CoreBundle\Entity\User;
-use RZ\Roadiz\CoreBundle\Logger\Entity\Log;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
@@ -19,19 +19,22 @@ use Twig\Error\RuntimeError;
 class HistoryController extends RozierApp
 {
     public static array $levelToHuman = [
-        Logger::EMERGENCY => 'emergency',
-        Logger::CRITICAL => 'critical',
-        Logger::ALERT => 'alert',
-        Logger::ERROR => 'error',
-        Logger::WARNING => 'warning',
-        Logger::NOTICE => 'notice',
-        Logger::INFO => 'info',
-        Logger::DEBUG => 'debug',
+        Log::EMERGENCY => "emergency",
+        Log::CRITICAL => "critical",
+        Log::ALERT => "alert",
+        Log::ERROR => "error",
+        Log::WARNING => "warning",
+        Log::NOTICE => "notice",
+        Log::INFO => "info",
+        Log::DEBUG => "debug",
     ];
 
     /**
      * List all logs action.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
@@ -60,17 +63,21 @@ class HistoryController extends RozierApp
     /**
      * List user logs action.
      *
+     * @param Request $request
+     * @param int $userId
+     *
+     * @return Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function userAction(Request $request, int|string $userId): Response
+    public function userAction(Request $request, int $userId): Response
     {
         $this->denyAccessUnlessGranted(['ROLE_BACKEND_USER', 'ROLE_ACCESS_LOGS']);
 
         if (
             !($this->isGranted(['ROLE_ACCESS_USERS', 'ROLE_ACCESS_LOGS'])
-            || ($this->getUser() instanceof User && $this->getUser()->getId() === $userId))
+            || ($this->getUser() instanceof User && $this->getUser()->getId() == $userId))
         ) {
             throw $this->createAccessDeniedException("You don't have access to this page: ROLE_ACCESS_USERS");
         }
@@ -87,7 +94,7 @@ class HistoryController extends RozierApp
          */
         $listManager = $this->createEntityListManager(
             Log::class,
-            ['userId' => $user->getId()],
+            ['user' => $user],
             ['datetime' => 'DESC']
         );
         $listManager->setDisplayingNotPublishedNodes(true);

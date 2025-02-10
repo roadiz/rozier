@@ -69,6 +69,7 @@
         {% include '@RoadizRozier/widgets/nodeTree/nodeTree.html.twig' with {
             "nodeTree":specificNodeTree,
             "node":specificNodeTree.getRootNode,
+            "nodeStatuses":nodeStatuses,
         } only %}
     </article>
     {% if node %}

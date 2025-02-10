@@ -7,28 +7,40 @@ namespace Themes\Rozier\Forms\Node;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\NodeTypeTransformer;
-use RZ\Roadiz\CoreBundle\Form\NodeStatesType;
 use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Event\SubmitEvent;
+use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Event\PostSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\Event\SubmitEvent;
 
+/**
+ * @package Themes\Rozier\Forms\Node
+ */
 class AddNodeType extends AbstractType
 {
     protected ManagerRegistry $managerRegistry;
 
+    /**
+     * @param ManagerRegistry $managerRegistry
+     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('title', TextType::class, [
@@ -39,12 +51,12 @@ class AddNodeType extends AbstractType
                 new NotNull(),
                 new NotBlank(),
                 new Length([
-                    'max' => 255,
-                ]),
+                    'max' => 255
+                ])
             ],
         ]);
 
-        if (true === $options['showNodeType']) {
+        if ($options['showNodeType'] === true) {
             $builder->add('nodeType', NodeTypesType::class, [
                 'label' => 'nodeType',
                 'constraints' => [
@@ -74,9 +86,15 @@ class AddNodeType extends AbstractType
             'label' => 'hiding-children',
             'required' => false,
         ])
-        ->add('status', NodeStatesType::class, [
+        ->add('status', ChoiceType::class, [
             'label' => 'node.status',
             'required' => true,
+            'choices' => [
+                Node::getStatusLabel(Node::DRAFT) => Node::DRAFT,
+                Node::getStatusLabel(Node::PENDING) => Node::PENDING,
+                Node::getStatusLabel(Node::PUBLISHED) => Node::PUBLISHED,
+                Node::getStatusLabel(Node::ARCHIVED) => Node::ARCHIVED,
+            ],
         ]);
 
         $builder->addEventListener(FormEvents::SUBMIT, function (SubmitEvent $event) {
@@ -99,11 +117,17 @@ class AddNodeType extends AbstractType
         });
     }
 
+    /**
+     * @return string
+     */
     public function getBlockPrefix(): string
     {
         return 'childnode';
     }
 
+    /**
+     * @param OptionsResolver $resolver
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

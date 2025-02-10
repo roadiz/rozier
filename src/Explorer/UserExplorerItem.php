@@ -10,36 +10,50 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class UserExplorerItem extends AbstractExplorerItem
 {
-    public function __construct(
-        private readonly User $user,
-        private readonly UrlGeneratorInterface $urlGenerator,
-    ) {
+    private User $user;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(User $user, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->user = $user;
+        $this->urlGenerator = $urlGenerator;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getId(): int|string
     {
         return $this->user->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getAlternativeDisplayable(): ?string
     {
         return $this->user->getEmail();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getDisplayable(): string
     {
         $fullName = trim(
-            ($this->user->getFirstName() ?? '').
-            ' '.
+            ($this->user->getFirstName() ?? '') .
+            ' ' .
             ($this->user->getLastName() ?? '')
         );
-        if ('' !== $fullName) {
+        if ($fullName !== '') {
             return $fullName;
         }
-
         return $this->user->getUsername();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getOriginal(): User
     {
         return $this->user;
@@ -48,7 +62,7 @@ final class UserExplorerItem extends AbstractExplorerItem
     protected function getEditItemPath(): ?string
     {
         return $this->urlGenerator->generate('usersEditPage', [
-            'id' => $this->user->getId(),
+            'userId' => $this->user->getId()
         ]);
     }
 }

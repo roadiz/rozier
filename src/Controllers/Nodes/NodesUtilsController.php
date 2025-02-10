@@ -9,30 +9,39 @@ use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeDuplicatedEvent;
 use RZ\Roadiz\CoreBundle\Node\NodeDuplicator;
 use RZ\Roadiz\CoreBundle\Node\NodeNamePolicyInterface;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 
+/**
+ * @package Themes\Rozier\Controllers\Nodes
+ */
 class NodesUtilsController extends RozierApp
 {
-    public function __construct(private readonly NodeNamePolicyInterface $nodeNamePolicy)
+    private NodeNamePolicyInterface $nodeNamePolicy;
+
+    /**
+     * @param NodeNamePolicyInterface $nodeNamePolicy
+     */
+    public function __construct(NodeNamePolicyInterface $nodeNamePolicy)
     {
+        $this->nodeNamePolicy = $nodeNamePolicy;
     }
 
     /**
-     * Duplicate node by ID.
+     * Duplicate node by ID
+     *
+     * @param Request $request
+     * @param int     $nodeId
+     *
+     * @return Response
      */
-    public function duplicateAction(Request $request, int $nodeId): Response
+    public function duplicateAction(Request $request, int $nodeId)
     {
-        /** @var Node|null $existingNode */
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+
+        /** @var Node $existingNode */
         $existingNode = $this->em()->find(Node::class, $nodeId);
-
-        if (null === $existingNode) {
-            throw $this->createNotFoundException();
-        }
-
-        $this->denyAccessUnlessGranted(NodeVoter::DUPLICATE, $existingNode);
 
         try {
             $duplicator = new NodeDuplicator(
@@ -48,28 +57,27 @@ class NodesUtilsController extends RozierApp
             $this->dispatchEvent(new NodeCreatedEvent($newNode));
             $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
-            $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
+            $msg = $this->getTranslator()->trans("duplicated.node.%name%", [
                 '%name%' => $existingNode->getNodeName(),
             ]);
 
-            $this->publishConfirmMessage($request, $msg, $newNode->getNodeSources()->first() ?: $newNode);
+            $this->publishConfirmMessage($request, $msg, $newNode->getNodeSources()->first());
 
             return $this->redirectToRoute(
                 'nodesEditPage',
-                ['nodeId' => $newNode->getId()]
+                ["nodeId" => $newNode->getId()]
             );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
-                $this->getTranslator()->trans('impossible.duplicate.node.%name%', [
+                $this->getTranslator()->trans("impossible.duplicate.node.%name%", [
                     '%name%' => $existingNode->getNodeName(),
-                ]),
-                $existingNode
+                ])
             );
 
             return $this->redirectToRoute(
                 'nodesEditPage',
-                ['nodeId' => $existingNode->getId()]
+                ["nodeId" => $existingNode->getId()]
             );
         }
     }
