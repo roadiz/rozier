@@ -19,16 +19,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 {
-    protected NodesSourcesHandler $nodesSourcesHandler;
-
-    /**
-     * @param ManagerRegistry $managerRegistry
-     * @param NodesSourcesHandler $nodesSourcesHandler
-     */
-    public function __construct(ManagerRegistry $managerRegistry, NodesSourcesHandler $nodesSourcesHandler)
-    {
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        private readonly NodesSourcesHandler $nodesSourcesHandler
+    ) {
         parent::__construct($managerRegistry);
-        $this->nodesSourcesHandler = $nodesSourcesHandler;
     }
 
     /**
@@ -88,9 +83,9 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 
         $event->setData($this->managerRegistry
             ->getRepository(Document::class)
-            ->findByNodeSourceAndField(
+            ->findByNodeSourceAndFieldName(
                 $nodeSource,
-                $nodeTypeField
+                $nodeTypeField->getName()
             ));
     }
 

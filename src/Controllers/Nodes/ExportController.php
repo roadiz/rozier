@@ -17,14 +17,8 @@ use Themes\Rozier\RozierApp;
 
 class ExportController extends RozierApp
 {
-    private NodeSourceXlsxSerializer $xlsxSerializer;
-
-    /**
-     * @param NodeSourceXlsxSerializer $xlsxSerializer
-     */
-    public function __construct(NodeSourceXlsxSerializer $xlsxSerializer)
+    public function __construct(private readonly NodeSourceXlsxSerializer $xlsxSerializer)
     {
-        $this->xlsxSerializer = $xlsxSerializer;
     }
 
     /**
@@ -40,9 +34,6 @@ class ExportController extends RozierApp
      */
     public function exportAllXlsxAction(Request $request, int $translationId, ?int $parentNodeId = null): Response
     {
-        /*
-         * Get translation
-         */
         $translation = $this->em()
             ->find(Translation::class, $translationId);
 
@@ -75,7 +66,7 @@ class ExportController extends RozierApp
             ->findBy($criteria, $order);
 
         $this->xlsxSerializer->setOnlyTexts(true);
-        $this->xlsxSerializer->addUrls($request, $this->getSettingsBag()->get('force_locale'));
+        $this->xlsxSerializer->addUrls();
         $xlsx = $this->xlsxSerializer->serialize($sources);
 
         $response = new Response(
