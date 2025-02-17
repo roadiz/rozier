@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
+use Exception;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Message\UpdateNodeTypeSchemaMessage;
@@ -22,11 +23,15 @@ class NodeTypeFieldsController extends RozierApp
 {
     public function __construct(
         private readonly bool $allowNodeTypeEdition,
-        private readonly MessageBusInterface $messageBus,
+        private readonly MessageBusInterface $messageBus
     ) {
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeTypeId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function listAction(Request $request, int $nodeTypeId): Response
@@ -36,7 +41,7 @@ class NodeTypeFieldsController extends RozierApp
         /** @var NodeType|null $nodeType */
         $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
-        if (null === $nodeType) {
+        if ($nodeType === null) {
             throw new ResourceNotFoundException();
         }
 
@@ -49,6 +54,10 @@ class NodeTypeFieldsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeTypeFieldId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $nodeTypeFieldId): Response
@@ -58,7 +67,7 @@ class NodeTypeFieldsController extends RozierApp
         /** @var NodeTypeField|null $field */
         $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
-        if (null === $field) {
+        if ($field === null) {
             throw new ResourceNotFoundException();
         }
 
@@ -96,6 +105,10 @@ class NodeTypeFieldsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeTypeId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function addAction(Request $request, int $nodeTypeId): Response
@@ -106,7 +119,7 @@ class NodeTypeFieldsController extends RozierApp
         /** @var NodeType|null $nodeType */
         $nodeType = $this->em()->find(NodeType::class, $nodeTypeId);
 
-        if (null === $nodeType) {
+        if ($nodeType === null) {
             throw new ResourceNotFoundException();
         }
 
@@ -121,7 +134,7 @@ class NodeTypeFieldsController extends RozierApp
         $this->assignation['field'] = $field;
 
         $form = $this->createForm(NodeTypeFieldType::class, $field, [
-            'disabled' => !$this->allowNodeTypeEdition,
+            'disabled' => !$this->allowNodeTypeEdition
         ]);
         $form->handleRequest($request);
 
@@ -148,7 +161,7 @@ class NodeTypeFieldsController extends RozierApp
                             'nodeTypeId' => $nodeTypeId,
                         ]
                     );
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $form->addError(new FormError($e->getMessage()));
                 }
             }
@@ -160,6 +173,10 @@ class NodeTypeFieldsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeTypeFieldId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $nodeTypeFieldId): Response
@@ -169,7 +186,7 @@ class NodeTypeFieldsController extends RozierApp
         /** @var NodeTypeField|null $field */
         $field = $this->em()->find(NodeTypeField::class, $nodeTypeFieldId);
 
-        if (null === $field) {
+        if ($field === null) {
             throw new ResourceNotFoundException();
         }
 

@@ -2,43 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Themes\Rozier\Explorer;
+namespace Themes\Rozier\Models;
 
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final class TagExplorerItem extends AbstractExplorerItem
+final class TagModel implements ModelInterface
 {
     public function __construct(
         private readonly Tag $tag,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly UrlGeneratorInterface $urlGenerator
     ) {
     }
 
-    protected function getEditItemPath(): ?string
-    {
-        return $this->urlGenerator->generate('tagsEditPage', [
-            'tagId' => $this->tag->getId(),
-        ]);
-    }
-
-    protected function getColor(): ?string
-    {
-        return $this->tag->getColor();
-    }
-
-    public function getId(): string|int
-    {
-        return $this->tag->getId();
-    }
-
-    public function getAlternativeDisplayable(): ?string
-    {
-        return $this->getTagParents($this->tag);
-    }
-
-    public function getDisplayable(): string
+    public function toArray(): array
     {
         $firstTrans = $this->tag->getTranslatedTags()->first();
         $name = $this->tag->getTagName();
@@ -47,14 +24,25 @@ final class TagExplorerItem extends AbstractExplorerItem
             $name = $firstTrans->getName();
         }
 
-        return $name;
+        $result = [
+            'id' => $this->tag->getId(),
+            'name' => $name,
+            'tagName' => $this->tag->getTagName(),
+            'color' => $this->tag->getColor(),
+            'parent' => $this->getTagParents($this->tag),
+            'editUrl' => $this->urlGenerator->generate('tagsEditPage', [
+                'tagId' => $this->tag->getId()
+            ]),
+        ];
+
+        return $result;
     }
 
-    public function getOriginal(): Tag
-    {
-        return $this->tag;
-    }
-
+    /**
+     * @param Tag $tag
+     * @param bool $slash
+     * @return string
+     */
     private function getTagParents(Tag $tag, bool $slash = false): string
     {
         $result = '';
@@ -69,7 +57,7 @@ final class TagExplorerItem extends AbstractExplorerItem
                 $name = $firstTrans->getName();
             }
 
-            $result = $superParent.$name;
+            $result = $superParent . $name;
 
             if ($slash) {
                 $result .= ' / ';

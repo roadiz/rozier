@@ -21,7 +21,12 @@ class NodesUtilsController extends RozierApp
     }
 
     /**
-     * Duplicate node by ID.
+     * Duplicate node by ID
+     *
+     * @param Request $request
+     * @param int     $nodeId
+     *
+     * @return Response
      */
     public function duplicateAction(Request $request, int $nodeId): Response
     {
@@ -48,7 +53,7 @@ class NodesUtilsController extends RozierApp
             $this->dispatchEvent(new NodeCreatedEvent($newNode));
             $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
 
-            $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
+            $msg = $this->getTranslator()->trans("duplicated.node.%name%", [
                 '%name%' => $existingNode->getNodeName(),
             ]);
 
@@ -56,12 +61,12 @@ class NodesUtilsController extends RozierApp
 
             return $this->redirectToRoute(
                 'nodesEditPage',
-                ['nodeId' => $newNode->getId()]
+                ["nodeId" => $newNode->getId()]
             );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
-                $this->getTranslator()->trans('impossible.duplicate.node.%name%', [
+                $this->getTranslator()->trans("impossible.duplicate.node.%name%", [
                     '%name%' => $existingNode->getNodeName(),
                 ]),
                 $existingNode
@@ -69,7 +74,7 @@ class NodesUtilsController extends RozierApp
 
             return $this->redirectToRoute(
                 'nodesEditPage',
-                ['nodeId' => $existingNode->getId()]
+                ["nodeId" => $existingNode->getId()]
             );
         }
     }

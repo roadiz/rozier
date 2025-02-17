@@ -19,19 +19,22 @@ use Twig\Error\RuntimeError;
 class HistoryController extends RozierApp
 {
     public static array $levelToHuman = [
-        Logger::EMERGENCY => 'emergency',
-        Logger::CRITICAL => 'critical',
-        Logger::ALERT => 'alert',
-        Logger::ERROR => 'error',
-        Logger::WARNING => 'warning',
-        Logger::NOTICE => 'notice',
-        Logger::INFO => 'info',
-        Logger::DEBUG => 'debug',
+        Logger::EMERGENCY => "emergency",
+        Logger::CRITICAL => "critical",
+        Logger::ALERT => "alert",
+        Logger::ERROR => "error",
+        Logger::WARNING => "warning",
+        Logger::NOTICE => "notice",
+        Logger::INFO => "info",
+        Logger::DEBUG => "debug",
     ];
 
     /**
      * List all logs action.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
@@ -60,6 +63,10 @@ class HistoryController extends RozierApp
     /**
      * List user logs action.
      *
+     * @param Request $request
+     * @param int|string $userId
+     *
+     * @return Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException

@@ -22,12 +22,16 @@ class GroupsUtilsController extends RozierApp
 {
     public function __construct(
         private readonly SerializerInterface $serializer,
-        private readonly GroupsImporter $groupsImporter,
+        private readonly GroupsImporter $groupsImporter
     ) {
     }
 
     /**
      * Export all Group data and roles in a Json file (.json).
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
     public function exportAllAction(Request $request): Response
     {
@@ -45,7 +49,7 @@ class GroupsUtilsController extends RozierApp
             ),
             Response::HTTP_OK,
             [
-                'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-all-'.date('YmdHis').'.json'),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-all-' . date("YmdHis") . '.json'),
             ],
             true
         );
@@ -53,6 +57,11 @@ class GroupsUtilsController extends RozierApp
 
     /**
      * Export a Group in a Json file (.json).
+     *
+     * @param Request $request
+     * @param int     $id
+     *
+     * @return Response
      */
     public function exportAction(Request $request, int $id): Response
     {
@@ -72,7 +81,7 @@ class GroupsUtilsController extends RozierApp
             ),
             Response::HTTP_OK,
             [
-                'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-'.$existingGroup->getName().'-'.date('YmdHis').'.json'),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'group-' . $existingGroup->getName() . '-' . date("YmdHis") . '.json'),
             ],
             true
         );
@@ -81,6 +90,9 @@ class GroupsUtilsController extends RozierApp
     /**
      * Import a Json file (.rzt) containing Group datas and roles.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function importJsonFileAction(Request $request): Response
@@ -92,9 +104,9 @@ class GroupsUtilsController extends RozierApp
         $form->handleRequest($request);
 
         if (
-            $form->isSubmitted()
-            && $form->isValid()
-            && !empty($form['group_file'])
+            $form->isSubmitted() &&
+            $form->isValid() &&
+            !empty($form['group_file'])
         ) {
             /** @var UploadedFile $file */
             $file = $form['group_file']->getData();
@@ -128,6 +140,9 @@ class GroupsUtilsController extends RozierApp
         return $this->render('@RoadizRozier/groups/import.html.twig', $this->assignation);
     }
 
+    /**
+     * @return FormInterface
+     */
     private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()

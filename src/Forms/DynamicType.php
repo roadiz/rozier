@@ -11,16 +11,24 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DynamicType extends AbstractType
 {
+    /**
+     * {@inheritdoc}
+     */
     public function getParent(): ?string
     {
         return TextareaType::class;
     }
-
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'dynamic';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -29,8 +37,8 @@ class DynamicType extends AbstractType
                 'class' => 'dynamic_textarea',
             ],
             'constraints' => [
-                new ValidYaml(),
-            ],
+                new ValidYaml()
+            ]
         ]);
     }
 }
