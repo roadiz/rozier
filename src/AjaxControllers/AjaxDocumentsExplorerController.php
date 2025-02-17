@@ -6,31 +6,12 @@ namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
-use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
-use RZ\Roadiz\Documents\Renderer\RendererInterface;
-use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Themes\Rozier\Models\DocumentModel;
 
-class AjaxDocumentsExplorerController extends AbstractAjaxController
+final class AjaxDocumentsExplorerController extends AbstractAjaxExplorerController
 {
-    public function __construct(
-        private readonly RendererInterface $renderer,
-        private readonly DocumentUrlGeneratorInterface $documentUrlGenerator,
-        private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly EmbedFinderFactory $embedFinderFactory
-    ) {
-    }
-
-    public static array $thumbnailArray = [
-        "fit" => "40x40",
-        "quality" => 50,
-        "inline" => false,
-    ];
-
     public function indexAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
@@ -43,11 +24,10 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
         ];
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
-            $folder = $this->em()
-                        ->find(
-                            Folder::class,
-                            $request->get('folderId')
-                        );
+            $folder = $this->em()->find(
+                Folder::class,
+                $request->get('folderId')
+            );
 
             $arrayFilter['folders'] = [$folder];
         }
@@ -58,11 +38,12 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
             Document::class,
             $arrayFilter,
             [
-                'createdAt' => 'DESC'
+                'createdAt' => 'DESC',
             ]
         );
         $listManager->setDisplayingNotPublishedNodes(true);
-        $listManager->setItemPerPage(30);
+        // Use a factor of 12 for a better grid display
+        $listManager->setItemPerPage(36);
         $listManager->handle();
 
         $documents = $listManager->getEntities();
@@ -79,20 +60,17 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
         if ($request->query->has('folderId') && $request->get('folderId') > 0) {
             $responseArray['filters'] = array_merge($responseArray['filters'], [
-                'folderId' => $request->get('folderId')
+                'folderId' => $request->get('folderId'),
             ]);
         }
 
-        return new JsonResponse(
+        return $this->createSerializedResponse(
             $responseArray
         );
     }
 
     /**
      * Get a Document list from an array of id.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function listAction(Request $request): JsonResponse
     {
@@ -102,7 +80,7 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
             throw new InvalidParameterException('Ids should be provided within an array');
         }
         $cleanDocumentIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY
+            'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $documentsArray = [];
 
@@ -117,37 +95,25 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
             $documentsArray = $this->normalizeDocuments($documents);
         }
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
             'documents' => $documentsArray,
-            'trans' => $this->getTrans()
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'trans' => $this->getTrans(),
+        ]);
     }
 
     /**
      * Normalize response Document list result.
      *
-     * @param array<Document>|\Traversable<Document> $documents
-     * @return array
+     * @param iterable<Document> $documents
      */
-    private function normalizeDocuments($documents)
+    private function normalizeDocuments(iterable $documents): array
     {
         $documentsArray = [];
 
-        /** @var Document $doc */
         foreach ($documents as $doc) {
-            $documentModel = new DocumentModel(
-                $doc,
-                $this->renderer,
-                $this->documentUrlGenerator,
-                $this->urlGenerator,
-                $this->embedFinderFactory
-            );
+            $documentModel = $this->explorerItemFactory->createForEntity($doc);
             $documentsArray[] = $documentModel->toArray();
         }
 
@@ -156,16 +122,14 @@ class AjaxDocumentsExplorerController extends AbstractAjaxController
 
     /**
      * Get an array of translations.
-     *
-     * @return array
      */
-    private function getTrans()
+    private function getTrans(): array
     {
         return [
             'editDocument' => $this->getTranslator()->trans('edit.document'),
             'unlinkDocument' => $this->getTranslator()->trans('unlink.document'),
             'linkDocument' => $this->getTranslator()->trans('link.document'),
-            'moreItems' => $this->getTranslator()->trans('more.documents')
+            'moreItems' => $this->getTranslator()->trans('more.documents'),
         ];
     }
 }
