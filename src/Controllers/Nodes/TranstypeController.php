@@ -24,6 +24,10 @@ class TranstypeController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeId
+     *
+     * @return Response
      * @throws RuntimeError
      * @throws \Exception
      */

@@ -18,11 +18,18 @@ class TranstypeType extends AbstractType
 {
     protected ManagerRegistry $managerRegistry;
 
+    /**
+     * @param ManagerRegistry $managerRegistry
+     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add(
@@ -39,11 +46,17 @@ class TranstypeType extends AbstractType
         );
     }
 
+    /**
+     * @return string
+     */
     public function getBlockPrefix(): string
     {
         return 'transtype';
     }
 
+    /**
+     * @param OptionsResolver $resolver
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -61,6 +74,10 @@ class TranstypeType extends AbstractType
         $resolver->setAllowedTypes('currentType', NodeType::class);
     }
 
+    /**
+     * @param NodeType $currentType
+     * @return array
+     */
     protected function getAvailableTypes(NodeType $currentType): array
     {
         $qb = $this->managerRegistry->getManager()->createQueryBuilder();

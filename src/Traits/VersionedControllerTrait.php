@@ -17,12 +17,16 @@ trait VersionedControllerTrait
 {
     protected bool $isReadOnly = false;
 
+    /**
+     * @return bool
+     */
     public function isReadOnly(): bool
     {
         return $this->isReadOnly;
     }
 
     /**
+     * @param bool $isReadOnly
      * @return self
      */
     public function setIsReadOnly(bool $isReadOnly)
@@ -40,8 +44,8 @@ trait VersionedControllerTrait
         $versionNumber = $request->get('version', null);
 
         if (
-            \is_numeric($versionNumber)
-            && intval($versionNumber) > 0
+            \is_numeric($versionNumber) &&
+            intval($versionNumber) > 0
         ) {
             try {
                 $versionNumber = intval($versionNumber);

@@ -28,6 +28,9 @@ class TranslationsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
@@ -48,7 +51,7 @@ class TranslationsController extends RozierApp
         /** @var Translation $translation */
         foreach ($translations as $translation) {
             // Make default forms
-            $form = $this->createNamedFormBuilder('default_trans_'.$translation->getId(), $translation)->getForm();
+            $form = $this->createNamedFormBuilder('default_trans_' . $translation->getId(), $translation)->getForm();
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var TranslationHandler $handler */
@@ -57,7 +60,6 @@ class TranslationsController extends RozierApp
                 $msg = $this->getTranslator()->trans('translation.%name%.made_default', ['%name%' => $translation->getName()]);
                 $this->publishConfirmMessage($request, $msg, $translation);
                 $this->dispatchEvent(new TranslationUpdatedEvent($translation));
-
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
@@ -76,6 +78,10 @@ class TranslationsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $translationId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $translationId): Response
@@ -85,7 +91,7 @@ class TranslationsController extends RozierApp
         /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
 
-        if (null === $translation) {
+        if ($translation === null) {
             throw new ResourceNotFoundException();
         }
 
@@ -100,7 +106,6 @@ class TranslationsController extends RozierApp
             $this->publishConfirmMessage($request, $msg, $translation);
 
             $this->dispatchEvent(new TranslationUpdatedEvent($translation));
-
             /*
              * Force redirect to avoid resending form when refreshing page
              */
@@ -116,6 +121,9 @@ class TranslationsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function addAction(Request $request): Response
@@ -136,7 +144,6 @@ class TranslationsController extends RozierApp
             $this->publishConfirmMessage($request, $msg, $translation);
 
             $this->dispatchEvent(new TranslationCreatedEvent($translation));
-
             /*
              * Force redirect to avoid resending form when refreshing page
              */
@@ -149,6 +156,10 @@ class TranslationsController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $translationId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $translationId): Response

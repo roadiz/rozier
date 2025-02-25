@@ -25,6 +25,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
+use ZipArchive;
 
 class NodeTypesUtilsController extends RozierApp
 {
@@ -32,12 +33,17 @@ class NodeTypesUtilsController extends RozierApp
         private readonly SerializerInterface $serializer,
         private readonly NodeTypes $nodeTypesBag,
         private readonly NodeTypesImporter $nodeTypesImporter,
-        private readonly MessageBusInterface $messageBus,
+        private readonly MessageBusInterface $messageBus
     ) {
     }
 
     /**
      * Export a Json file containing NodeType data and fields.
+     *
+     * @param Request $request
+     * @param int     $nodeTypeId
+     *
+     * @return JsonResponse
      */
     public function exportJsonFileAction(Request $request, int $nodeTypeId): JsonResponse
     {
@@ -58,13 +64,15 @@ class NodeTypesUtilsController extends RozierApp
             ),
             Response::HTTP_OK,
             [
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $nodeType->getName().'.json'),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $nodeType->getName() . '.json'),
             ],
             true
         );
     }
 
     /**
+     * @param Request $request
+     * @return BinaryFileResponse
      * @throws RuntimeError
      */
     public function exportDocumentationAction(Request $request): BinaryFileResponse
@@ -73,14 +81,14 @@ class NodeTypesUtilsController extends RozierApp
 
         $documentationGenerator = new DocumentationGenerator($this->nodeTypesBag, $this->getTranslator());
 
-        $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s').'.zip');
+        $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
         if (false === $tmpfname) {
             throw new RuntimeError('Unable to create temporary file.');
         }
 
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
-        $zipArchive = new \ZipArchive();
-        $zipArchive->open($tmpfname, \ZipArchive::CREATE);
+        $zipArchive = new ZipArchive();
+        $zipArchive->open($tmpfname, ZipArchive::CREATE);
 
         $zipArchive->addFromString(
             '_sidebar.md',
@@ -105,13 +113,18 @@ class NodeTypesUtilsController extends RozierApp
         $response = new BinaryFileResponse($tmpfname);
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            'documentation-'.date('Y-m-d-H-i-s').'.zip'
+            'documentation-' . date('Y-m-d-H-i-s') . '.zip'
         );
         $response->deleteFileAfterSend(true);
 
         return $response;
     }
 
+    /**
+     * @param Request $request
+     *
+     * @return Response
+     */
     public function exportTypeScriptDeclarationAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
@@ -120,19 +133,15 @@ class NodeTypesUtilsController extends RozierApp
             new DeclarationGeneratorFactory($this->nodeTypesBag)
         );
 
-        $fileName = 'roadiz-app-'.date('Ymd-His').'.d.ts';
+        $fileName = 'roadiz-app-' . date('Ymd-His') . '.d.ts';
         $response = new Response($documentationGenerator->getContents(), Response::HTTP_OK, [
             'Content-type' => 'application/x-typescript',
-            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
         ]);
         $response->prepare($request);
-
         return $response;
     }
 
-    /**
-     * @deprecated nodeTypes will be static in future Roadiz versions
-     */
     public function exportAllAction(Request $request): BinaryFileResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
@@ -141,18 +150,18 @@ class NodeTypesUtilsController extends RozierApp
             ->getRepository(NodeType::class)
             ->findAll();
 
-        $zipArchive = new \ZipArchive();
-        $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s').'.zip');
+        $zipArchive = new ZipArchive();
+        $tmpfname = tempnam(sys_get_temp_dir(), date('Y-m-d-H-i-s') . '.zip');
         if (false === $tmpfname) {
             throw new RuntimeError('Unable to create temporary file.');
         }
         unlink($tmpfname); // Deprecated: ZipArchive::open(): Using empty file as ZipArchive is deprecated
-        $zipArchive->open($tmpfname, \ZipArchive::CREATE);
+        $zipArchive->open($tmpfname, ZipArchive::CREATE);
 
         /** @var NodeType $nodeType */
         foreach ($nodeTypes as $nodeType) {
             $zipArchive->addFromString(
-                $nodeType->getName().'.json',
+                $nodeType->getName() . '.json',
                 $this->serializer->serialize(
                     $nodeType,
                     'json',
@@ -165,7 +174,7 @@ class NodeTypesUtilsController extends RozierApp
         $response = new BinaryFileResponse($tmpfname);
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            'nodetypes-'.date('Y-m-d-H-i-s').'.zip'
+            'nodetypes-' . date('Y-m-d-H-i-s') . '.zip'
         );
         $response->deleteFileAfterSend(true);
 
@@ -175,8 +184,9 @@ class NodeTypesUtilsController extends RozierApp
     /**
      * Import a Json file (.json) containing NodeType datas and fields.
      *
-     * @deprecated nodeTypes will be static in future Roadiz versions
+     * @param Request $request
      *
+     * @return Response
      * @throws RuntimeError
      */
     public function importJsonFileAction(Request $request): Response
@@ -188,9 +198,9 @@ class NodeTypesUtilsController extends RozierApp
         $form->handleRequest($request);
 
         if (
-            $form->isSubmitted()
-            && $form->isValid()
-            && !empty($form['node_type_file'])
+            $form->isSubmitted() &&
+            $form->isValid() &&
+            !empty($form['node_type_file'])
         ) {
             $file = $form['node_type_file']->getData();
 
@@ -222,6 +232,9 @@ class NodeTypesUtilsController extends RozierApp
         return $this->render('@RoadizRozier/node-types/import.html.twig', $this->assignation);
     }
 
+    /**
+     * @return FormInterface
+     */
     private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()

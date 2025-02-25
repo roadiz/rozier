@@ -7,8 +7,8 @@ namespace Themes\Rozier\Controllers;
 use Doctrine\Common\Cache\CacheProvider;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
-use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\CoreBundle\Importer\RolesImporter;
+use RZ\Roadiz\CoreBundle\Entity\Role;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -22,12 +22,17 @@ class RolesUtilsController extends RozierApp
 {
     public function __construct(
         private readonly SerializerInterface $serializer,
-        private readonly RolesImporter $rolesImporter,
+        private readonly RolesImporter $rolesImporter
     ) {
     }
 
     /**
-     * Export a Role in a Json file.
+     * Export a Role in a Json file
+     *
+     * @param Request $request
+     * @param int $id
+     *
+     * @return Response
      */
     public function exportAction(Request $request, int $id): Response
     {
@@ -48,7 +53,7 @@ class RolesUtilsController extends RozierApp
             ),
             Response::HTTP_OK,
             [
-                'Content-Disposition' => sprintf('attachment; filename="%s"', 'role-'.$existingRole->getName().'-'.date('YmdHis').'.json'),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'role-' . $existingRole->getName() . '-' . date("YmdHis") . '.json'),
             ],
             true
         );
@@ -57,6 +62,9 @@ class RolesUtilsController extends RozierApp
     /**
      * Import a Json file containing Roles.
      *
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function importJsonFileAction(Request $request): Response
@@ -67,9 +75,9 @@ class RolesUtilsController extends RozierApp
         $form->handleRequest($request);
 
         if (
-            $form->isSubmitted()
-            && $form->isValid()
-            && !empty($form['role_file'])
+            $form->isSubmitted() &&
+            $form->isValid() &&
+            !empty($form['role_file'])
         ) {
             $file = $form['role_file']->getData();
 
@@ -109,6 +117,9 @@ class RolesUtilsController extends RozierApp
         return $this->render('@RoadizRozier/roles/import.html.twig', $this->assignation);
     }
 
+    /**
+     * @return FormInterface
+     */
     private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()
