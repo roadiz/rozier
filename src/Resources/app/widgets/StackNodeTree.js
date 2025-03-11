@@ -5,7 +5,6 @@ import NodeTreeContextActions from '../components/trees/NodeTreeContextActions'
 export default class StackNodeTree {
     constructor() {
         this.$page = $('.stack-tree').eq(0)
-        this.currentRequest = null
         this.$quickAddNodeButtons = this.$page.find('.stack-tree-quick-creation a')
         this.$nodeTree = this.$page.find('.root-tree').eq(0)
 
@@ -54,7 +53,7 @@ export default class StackNodeTree {
         }
     }
 
-    async quickAddNode(nodeTypeId, parentNodeId, tagId = undefined) {
+    async quickAddNode(nodeTypeName, parentNodeId, tagId = undefined) {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await fetch(window.Rozier.routes.nodesQuickAddAjax, {
@@ -65,7 +64,7 @@ export default class StackNodeTree {
                     body: new URLSearchParams({
                         _token: window.Rozier.ajaxToken,
                         _action: 'quickAddNode',
-                        nodeTypeId: nodeTypeId,
+                        nodeTypeName: nodeTypeName,
                         parentNodeId: parentNodeId,
                         translationId: this.getTranslationId(),
                         tagId: tagId || null,
@@ -90,11 +89,11 @@ export default class StackNodeTree {
     async onQuickAddClick(event) {
         event.preventDefault()
         let $link = $(event.currentTarget)
-        let nodeTypeId = parseInt($link.attr('data-children-node-type'))
+        let nodeTypeName = $link.attr('data-children-node-type')
         let parentNodeId = parseInt($link.attr('data-children-parent-node'))
         let tagId = undefined
 
-        if (nodeTypeId <= 0 || parentNodeId <= 0) {
+        if (nodeTypeName === '' || parentNodeId <= 0) {
             return false
         }
 
@@ -103,7 +102,7 @@ export default class StackNodeTree {
         }
 
         try {
-            await this.quickAddNode(nodeTypeId, parentNodeId, tagId)
+            await this.quickAddNode(nodeTypeName, parentNodeId, tagId)
             await Promise.all([window.Rozier.refreshMainNodeTree(), this.refreshNodeTree(parentNodeId, tagId, 1)])
             await window.Rozier.getMessages()
         } catch (data) {

@@ -4,62 +4,47 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\CoreBundle\Bag\DecoratedNodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Themes\Rozier\Models\NodeTypeModel;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-class AjaxNodeTypesController extends AbstractAjaxController
+final class AjaxNodeTypesController extends AbstractAjaxController
 {
-    /**
-     * @param Request $request
-     *
-     * @return Response JSON response
-     */
-    public function indexAction(Request $request): Response
+    public function __construct(
+        private readonly DecoratedNodeTypes $nodeTypesBag,
+        private readonly ExplorerItemFactoryInterface $explorerItemFactory,
+        ManagerRegistry $managerRegistry,
+        SerializerInterface $serializer,
+        TranslatorInterface $translator,
+    ) {
+        parent::__construct($managerRegistry, $serializer, $translator);
+    }
+
+    public function indexAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-        $arrayFilter = [];
-
-        /*
-         * Manage get request to filter list
-         */
-        $listManager = $this->createEntityListManager(
-            NodeType::class,
-            $arrayFilter
-        );
-        $listManager->setDisplayingNotPublishedNodes(true);
-        $listManager->setItemPerPage(30);
-        $listManager->handle();
-
-        $nodeTypes = $listManager->getEntities();
+        $nodeTypes = $this->nodeTypesBag->all();
         $documentsArray = $this->normalizeNodeType($nodeTypes);
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
             'nodeTypes' => $documentsArray,
             'nodeTypesCount' => count($nodeTypes),
-            'filters' => $listManager->getAssignation()
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'filters' => [],
+        ]);
     }
 
     /**
      * Get a NodeType list from an array of id.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     * @throws NotSupported
      */
-    public function listAction(Request $request): Response
+    public function listAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
@@ -68,45 +53,36 @@ class AjaxNodeTypesController extends AbstractAjaxController
         }
 
         $cleanNodeTypesName = array_filter($request->query->filter('names', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY
+            'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $nodesArray = [];
 
         if (count($cleanNodeTypesName)) {
-            /** @var EntityManager $em */
-            $em = $this->em();
-            $nodeTypes = $em->getRepository(NodeType::class)->findBy([
-                'name' => $cleanNodeTypesName
-            ]);
-
+            $nodeTypes = array_values(array_filter(array_map(function ($name) {
+                return $this->nodeTypesBag->get($name);
+            }, $cleanNodeTypesName)));
             // Sort array by ids given in request
             $nodesArray = $this->normalizeNodeType($nodeTypes);
         }
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
-            'items' => $nodesArray
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'items' => $nodesArray,
+        ]);
     }
 
     /**
      * Normalize response NodeType list result.
      *
-     * @param array<NodeType>|\Traversable<NodeType> $nodeTypes
-     * @return array
+     * @param iterable<NodeType> $nodeTypes
      */
     private function normalizeNodeType(iterable $nodeTypes): array
     {
         $nodeTypesArray = [];
 
-        /** @var NodeType $nodeType */
         foreach ($nodeTypes as $nodeType) {
-            $nodeModel = new NodeTypeModel($nodeType);
+            $nodeModel = $this->explorerItemFactory->createForEntity($nodeType);
             $nodeTypesArray[] = $nodeModel->toArray();
         }
 

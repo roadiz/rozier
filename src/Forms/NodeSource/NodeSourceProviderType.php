@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Psr\Container\ContainerInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
-use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerProvider;
-use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderLocator;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\ProviderDataTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -19,14 +17,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldType
 {
-    public function __construct(ManagerRegistry $managerRegistry, private readonly ContainerInterface $container)
-    {
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        private readonly ExplorerProviderLocator $explorerProviderLocator,
+    ) {
         parent::__construct($managerRegistry);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
@@ -41,14 +38,11 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             if ($nodeTypeField->isMultipleProvider()) {
                 return true;
             }
+
             return false;
         });
     }
 
-    /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $configuration = $this->getFieldConfiguration($options);
@@ -56,33 +50,13 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
         $builder->addModelTransformer(
             new ProviderDataTransformer(
                 $options['nodeTypeField'],
-                $this->getProvider($configuration, $options)
+                $this->explorerProviderLocator->getProvider($configuration['classname'])
             )
         );
     }
 
-    protected function getProvider(array $configuration, array $options): ExplorerProviderInterface
-    {
-        if ($this->container->has($configuration['classname'])) {
-            $provider = $this->container->get($configuration['classname']);
-        } else {
-            /** @var ExplorerProviderInterface $provider */
-            $provider = new $configuration['classname']();
-        }
-
-        if ($provider instanceof AbstractExplorerProvider) {
-            $provider->setContainer($this->container);
-        }
-
-        return $provider;
-    }
-
     /**
      * Pass data to form twig template.
-     *
-     * @param FormView $view
-     * @param FormInterface $form
-     * @param array $options
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
@@ -95,7 +69,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             $providerOptions = [];
         }
 
-        $provider = $this->getProvider($configuration, $options);
+        $provider = $this->explorerProviderLocator->getProvider($configuration['classname']);
 
         $displayableData = [];
         /** @var callable $callable */
@@ -131,9 +105,6 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBlockPrefix(): string
     {
         return 'provider';

@@ -19,16 +19,10 @@ use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-class CustomFormType extends AbstractType
+final class CustomFormType extends AbstractType
 {
-    protected Security $security;
-
-    /**
-     * @param Security $security
-     */
-    public function __construct(Security $security)
+    public function __construct(private readonly Security $security)
     {
-        $this->security = $security;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -66,7 +60,7 @@ class CustomFormType extends AbstractType
                 'label' => 'customForm.retentionTime',
                 'help' => 'customForm.retentionTime.help',
                 'required' => false,
-                'placeholder' =>  'customForm.retentionTime.always',
+                'placeholder' => 'customForm.retentionTime.always',
                 'choices' => [
                     'customForm.retentionTime.one_week' => 'P7D',
                     'customForm.retentionTime.two_weeks' => 'P14D',
@@ -75,13 +69,13 @@ class CustomFormType extends AbstractType
                     'customForm.retentionTime.six_months' => 'P6M',
                     'customForm.retentionTime.one_year' => 'P1Y',
                     'customForm.retentionTime.two_years' => 'P2Y',
-                ]
+                ],
             ]);
         }
         $builder->add('open', CheckboxType::class, [
-                'label' => 'customForm.open',
-                'required' => false,
-            ])
+            'label' => 'customForm.open',
+            'required' => false,
+        ])
             ->add('closeDate', DateTimeType::class, [
                 'label' => 'customForm.closeDate',
                 'required' => false,

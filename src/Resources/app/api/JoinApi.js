@@ -10,8 +10,16 @@ import request from 'axios'
 export function getJoinsByIds({ ids = [], filters }) {
     const postData = {
         _token: window.RozierRoot.ajaxToken,
-        ids: ids,
-        nodeTypeFieldId: filters.nodeTypeField,
+        filters: filters,
+        nodeTypeFieldName: filters.nodeTypeField,
+        nodeTypeName: filters.nodeTypeName,
+    }
+    /*
+     * We need to send the ids as an object with keys as string
+     * when Varnish is enabled, the query string is sorted
+     */
+    for (let i = 0; i < ids.length; i++) {
+        postData['ids[' + i + ']'] = ids[i]
     }
 
     return request({
@@ -47,7 +55,8 @@ export function getJoins({ searchTerms, preFilters, filters, filterExplorerSelec
     const postData = {
         _token: window.RozierRoot.ajaxToken,
         _action: 'toggleExplorer',
-        nodeTypeFieldId: preFilters ? preFilters.nodeTypeField : null,
+        nodeTypeFieldName: preFilters ? preFilters.nodeTypeField : null,
+        nodeTypeName: preFilters.nodeTypeName,
         search: searchTerms,
         page: 1,
     }
