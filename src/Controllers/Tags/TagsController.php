@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
@@ -18,34 +16,27 @@ use RZ\Roadiz\CoreBundle\Event\Tag\TagDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Tag\TagUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
 use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
 use RZ\Roadiz\Utils\StringHandler;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Forms\TagTranslationType;
 use Themes\Rozier\Forms\TagType;
+use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\VersionedControllerTrait;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
+use Twig\Error\RuntimeError;
 
-#[AsController]
-final class TagsController extends AbstractController
+class TagsController extends RozierApp
 {
     use VersionedControllerTrait;
 
@@ -54,48 +45,43 @@ final class TagsController extends AbstractController
         private readonly FormErrorSerializer $formErrorSerializer,
         private readonly HandlerFactoryInterface $handlerFactory,
         private readonly TreeWidgetFactory $treeWidgetFactory,
-        private readonly EntityListManagerFactoryInterface $entityListManagerFactory,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LogTrail $logTrail,
     ) {
     }
 
-    protected function getDoctrine(): ManagerRegistry
-    {
-        return $this->managerRegistry;
-    }
-
-    protected function createNamedFormBuilder(string $name = 'form', mixed $data = null, array $options = []): FormBuilderInterface
-    {
-        return $this->formFactory->createNamedBuilder($name, FormType::class, $data, $options);
-    }
-
+    /**
+     * List every tags.
+     */
     public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $assignation = [];
-        $listManager = $this->entityListManagerFactory->createAdminEntityListManager(
+        /*
+         * Manage get request to filter list
+         */
+        $listManager = $this->createEntityListManager(
             Tag::class
         );
         $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->handle();
 
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['tags'] = $listManager->getEntities();
+
         if ($this->isGranted('ROLE_ACCESS_TAGS_DELETE')) {
+            /*
+             * Handle bulk delete form
+             */
             $deleteTagsForm = $this->buildBulkDeleteForm($request->getRequestUri());
-            $assignation['deleteTagsForm'] = $deleteTagsForm->createView();
+            $this->assignation['deleteTagsForm'] = $deleteTagsForm->createView();
         }
 
-        $assignation['filters'] = $listManager->getAssignation();
-        $assignation['tags'] = $listManager->getEntities();
-
-        return $this->render('@RoadizRozier/tags/list.html.twig', $assignation);
+        return $this->render('@RoadizRozier/tags/list.html.twig', $this->assignation);
     }
 
     /**
      * Return an edition form for current translated tag.
+     *
+     * @throws RuntimeError
      */
     public function editTranslatedAction(Request $request, int $tagId, ?int $translationId = null): Response
     {
@@ -103,10 +89,10 @@ final class TagsController extends AbstractController
 
         if (null === $translationId) {
             /** @var Translation|null $translation */
-            $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         } else {
             /** @var Translation|null $translation */
-            $translation = $this->managerRegistry->getRepository(Translation::class)->find($translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
 
         if (null === $translation) {
@@ -118,10 +104,10 @@ final class TagsController extends AbstractController
          * that is initialized before calling route method.
          */
         /** @var Tag|null $tag */
-        $tag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         /** @var TagTranslation|null $tagTranslation */
-        $tagTranslation = $this->managerRegistry->getRepository(TagTranslation::class)
+        $tagTranslation = $this->em()->getRepository(TagTranslation::class)
             ->findOneBy(['translation' => $translation, 'tag' => $tag]);
 
         if (null === $tag) {
@@ -132,7 +118,7 @@ final class TagsController extends AbstractController
             /*
              * If translation does not exist, we created it.
              */
-            $this->managerRegistry->getManager()->refresh($tag);
+            $this->em()->refresh($tag);
             $baseTranslation = $tag->getTranslatedTags()->first();
             $tagTranslation = new TagTranslation($tag, $translation);
             if (false !== $baseTranslation) {
@@ -140,17 +126,15 @@ final class TagsController extends AbstractController
             } else {
                 $tagTranslation->setName('tag_'.$tag->getId());
             }
-            $this->managerRegistry->getManager()->persist($tagTranslation);
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->persist($tagTranslation);
+            $this->em()->flush();
         }
-
-        $assignation = [];
 
         /*
          * Versioning
          */
         if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
-            if (null !== $response = $this->handleVersions($request, $tagTranslation, $assignation)) {
+            if (null !== $response = $this->handleVersions($request, $tagTranslation)) {
                 return $response;
             }
         }
@@ -181,18 +165,18 @@ final class TagsController extends AbstractController
                         $tag->setTagName($tagTranslation->getName());
                     }
                 }
-                $this->managerRegistry->getManager()->flush();
+                $this->em()->flush();
                 /*
                  * Dispatch event
                  */
-                $this->eventDispatcher->dispatch(
+                $this->dispatchEvent(
                     new TagUpdatedEvent($tag)
                 );
 
-                $msg = $this->translator->trans('tag.%name%.updated', [
+                $msg = $this->getTranslator()->trans('tag.%name%.updated', [
                     '%name%' => $tagTranslation->getName(),
                 ]);
-                $this->logTrail->publishConfirmMessage($request, $msg, $tag);
+                $this->publishConfirmMessage($request, $msg, $tag);
 
                 /*
                  * Force redirect to avoid resending form when refreshing page
@@ -216,120 +200,146 @@ final class TagsController extends AbstractController
                 return new JsonResponse([
                     'status' => 'fail',
                     'errors' => $errors,
-                    'message' => $this->translator->trans('form_has_errors.check_you_fields'),
+                    'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
                 ], Response::HTTP_BAD_REQUEST);
             }
         }
         /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->managerRegistry->getRepository(Translation::class);
+        $translationRepository = $this->em()->getRepository(Translation::class);
 
-        return $this->render('@RoadizRozier/tags/edit.html.twig', [
-            ...$assignation,
-            'tag' => $tag,
-            'translation' => $translation,
-            'translatedTag' => $tagTranslation,
-            'available_translations' => $translationRepository->findAll(),
-            'translations' => $translationRepository->findAvailableTranslationsForTag($tag),
-            'form' => $form->createView(),
-            'readOnly' => $this->isReadOnly,
-        ]);
+        $this->assignation['tag'] = $tag;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['translatedTag'] = $tagTranslation;
+        $this->assignation['available_translations'] = $translationRepository->findAll();
+        $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForTag($tag);
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['readOnly'] = $this->isReadOnly;
+
+        return $this->render('@RoadizRozier/tags/edit.html.twig', $this->assignation);
     }
 
     protected function tagNameExists(string $name): bool
     {
-        $entity = $this->managerRegistry->getRepository(Tag::class)->findOneByTagName($name);
+        $entity = $this->em()->getRepository(Tag::class)->findOneByTagName($name);
 
         return null !== $entity;
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function bulkDeleteAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS_DELETE');
 
-        if (empty($request->get('deleteForm')['tagsIds'])) {
-            throw new ResourceNotFoundException();
-        }
+        if (!empty($request->get('deleteForm')['tagsIds'])) {
+            $tagsIds = trim($request->get('deleteForm')['tagsIds']);
+            $tagsIds = explode(',', $tagsIds);
+            array_filter($tagsIds);
 
-        $tagsIds = trim($request->get('deleteForm')['tagsIds']);
-        $tagsIds = explode(',', $tagsIds);
-        array_filter($tagsIds);
+            $tags = $this->em()
+                ->getRepository(Tag::class)
+                ->findBy([
+                    'id' => $tagsIds,
+                ]);
 
-        $tags = $this->managerRegistry->getRepository(Tag::class)
-            ->findBy([
-                'id' => $tagsIds,
-            ]);
+            if (count($tags) > 0) {
+                $form = $this->buildBulkDeleteForm(
+                    $request->get('deleteForm')['referer'],
+                    $tagsIds
+                );
+                $form->handleRequest($request);
 
-        if (count($tags) > 0) {
-            throw new ResourceNotFoundException();
-        }
+                if ($form->isSubmitted() && $form->isValid()) {
+                    $msg = $this->bulkDeleteTags($form->getData());
 
-        $form = $this->buildBulkDeleteForm(
-            $request->get('deleteForm')['referer'],
-            $tagsIds
-        );
-        $form->handleRequest($request);
+                    $this->publishConfirmMessage($request, $msg);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $msg = $this->bulkDeleteTags($form->getData());
+                    if (!empty($form->getData()['referer'])) {
+                        return $this->redirect($form->getData()['referer']);
+                    } else {
+                        return $this->redirectToRoute('tagsHomePage');
+                    }
+                }
 
-            $this->logTrail->publishConfirmMessage($request, $msg);
+                $this->assignation['tags'] = $tags;
+                $this->assignation['form'] = $form->createView();
 
-            if (!empty($form->getData()['referer'])) {
-                return $this->redirect($form->getData()['referer']);
-            } else {
-                return $this->redirectToRoute('tagsHomePage');
+                if (!empty($request->get('deleteForm')['referer'])) {
+                    $this->assignation['referer'] = $request->get('deleteForm')['referer'];
+                }
+
+                return $this->render('@RoadizRozier/tags/bulkDelete.html.twig', $this->assignation);
             }
         }
 
-        $assignation = [];
-        $assignation['tags'] = $tags;
-        $assignation['form'] = $form->createView();
-
-        if (!empty($request->get('deleteForm')['referer'])) {
-            $assignation['referer'] = $request->get('deleteForm')['referer'];
-        }
-
-        return $this->render('@RoadizRozier/tags/bulkDelete.html.twig', $assignation);
+        throw new ResourceNotFoundException();
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function addAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
-
-        if (null === $translation) {
-            throw new ResourceNotFoundException();
-        }
-
         $tag = new Tag();
-        $form = $this->createForm(TagType::class, $tag);
-        $form->handleRequest($request);
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $tag = $this->createTag($tag, $translation);
+        if (null !== $translation) {
+            $this->assignation['tag'] = $tag;
+            $form = $this->createForm(TagType::class, $tag);
+            $form->handleRequest($request);
 
-            $msg = $this->translator->trans('tag.%name%.created', ['%name%' => $tag->getTagName()]);
-            $this->logTrail->publishConfirmMessage($request, $msg, $tag);
+            if ($form->isSubmitted() && $form->isValid()) {
+                /*
+                 * Get latest position to add tags after.
+                 */
+                $latestPosition = $this->em()
+                    ->getRepository(Tag::class)
+                    ->findLatestPositionInParent();
+                $tag->setPosition($latestPosition + 1);
 
-            return $this->redirectToRoute('tagsHomePage');
+                $this->em()->persist($tag);
+                $this->em()->flush();
+
+                $translatedTag = new TagTranslation($tag, $translation);
+                $this->em()->persist($translatedTag);
+                $this->em()->flush();
+
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(new TagCreatedEvent($tag));
+
+                $msg = $this->getTranslator()->trans('tag.%name%.created', ['%name%' => $tag->getTagName()]);
+                $this->publishConfirmMessage($request, $msg, $tag);
+
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute('tagsHomePage');
+            }
+
+            $this->assignation['form'] = $form->createView();
+
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
-        return $this->render('@RoadizRozier/tags/add.html.twig', [
-            'form' => $form->createView(),
-            'tag' => $tag,
-            'translation' => $translation,
-        ]);
+        throw new ResourceNotFoundException();
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function editSettingsAction(Request $request, int $tagId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         /** @var Tag|null $tag */
-        $tag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         if (null === $tag) {
             throw new ResourceNotFoundException();
@@ -347,14 +357,14 @@ final class TagsController extends AbstractController
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $this->managerRegistry->getManager()->flush();
+                $this->em()->flush();
                 /*
                  * Dispatch event
                  */
-                $this->eventDispatcher->dispatch(new TagUpdatedEvent($tag));
+                $this->dispatchEvent(new TagUpdatedEvent($tag));
 
-                $msg = $this->translator->trans('tag.%name%.updated', ['%name%' => $tag->getTagName()]);
-                $this->logTrail->publishConfirmMessage($request, $msg, $tag);
+                $msg = $this->getTranslator()->trans('tag.%name%.updated', ['%name%' => $tag->getTagName()]);
+                $this->publishConfirmMessage($request, $msg, $tag);
 
                 /*
                  * Force redirect to avoid resending form when refreshing page
@@ -373,193 +383,206 @@ final class TagsController extends AbstractController
                 return new JsonResponse([
                     'status' => 'fail',
                     'errors' => $errors,
-                    'message' => $this->translator->trans('form_has_errors.check_you_fields'),
-                ], Response::HTTP_BAD_REQUEST);
+                    'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
+                ], JsonResponse::HTTP_BAD_REQUEST);
             }
         }
 
-        return $this->render('@RoadizRozier/tags/settings.html.twig', [
-            'tag' => $tag,
-            'form' => $form->createView(),
-            'translation' => $translation,
-        ]);
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['tag'] = $tag;
+        $this->assignation['translation'] = $translation;
+
+        return $this->render('@RoadizRozier/tags/settings.html.twig', $this->assignation);
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function treeAction(Request $request, int $tagId, ?int $translationId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
-        if (null === $tag) {
-            throw new ResourceNotFoundException();
-        }
-
-        $this->managerRegistry->getManager()->refresh($tag);
+        $tag = $this->em()
+            ->find(Tag::class, $tagId);
+        $this->em()->refresh($tag);
 
         if (null !== $translationId) {
-            $translation = $this->managerRegistry
+            $translation = $this->em()
                 ->getRepository(Translation::class)
                 ->findOneBy(['id' => $translationId]);
         } else {
-            $translation = $this->managerRegistry
-                ->getRepository(Translation::class)
-                ->findDefault();
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
-        $widget = $this->treeWidgetFactory->createTagTree($tag, $translation);
+        if (null !== $tag) {
+            $widget = $this->treeWidgetFactory->createTagTree($tag, $translation);
+            $this->assignation['tag'] = $tag;
+            $this->assignation['translation'] = $translation;
+            $this->assignation['specificTagTree'] = $widget;
+        }
 
-        return $this->render('@RoadizRozier/tags/tree.html.twig', [
-            'tag' => $tag,
-            'translation' => $translation,
-            'specificTagTree' => $widget,
-        ]);
+        return $this->render('@RoadizRozier/tags/tree.html.twig', $this->assignation);
     }
 
     /**
      * Return a deletion form for requested tag.
+     *
+     * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $tagId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS_DELETE');
 
         /** @var Tag $tag */
-        $tag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
         if (
-            null === $tag
-            || $tag->isLocked()
+            null !== $tag
+            && !$tag->isLocked()
         ) {
-            throw new ResourceNotFoundException();
+            $this->assignation['tag'] = $tag;
+
+            $form = $this->buildDeleteForm($tag);
+            $form->handleRequest($request);
+
+            if (
+                $form->isSubmitted()
+                && $form->isValid()
+                && $form->getData()['tagId'] == $tag->getId()
+            ) {
+                /*
+                 * Dispatch event
+                 */
+                $this->dispatchEvent(new TagDeletedEvent($tag));
+
+                $this->em()->remove($tag);
+                $this->em()->flush();
+
+                $msg = $this->getTranslator()->trans('tag.%name%.deleted', [
+                    '%name%' => $tag->getTranslatedTags()->first() ?
+                        $tag->getTranslatedTags()->first()->getName() :
+                        $tag->getTagName(),
+                ]);
+                $this->publishConfirmMessage($request, $msg, $tag);
+
+                /*
+                 * Force redirect to avoid resending form when refreshing page
+                 */
+                return $this->redirectToRoute('tagsHomePage');
+            }
+
+            $this->assignation['form'] = $form->createView();
+
+            return $this->render('@RoadizRozier/tags/delete.html.twig', $this->assignation);
         }
 
-        $form = $this->buildDeleteForm($tag);
-        $form->handleRequest($request);
-
-        if (
-            $form->isSubmitted()
-            && $form->isValid()
-            && $form->getData()['tagId'] == $tag->getId()
-        ) {
-            $this->eventDispatcher->dispatch(new TagDeletedEvent($tag));
-
-            $this->managerRegistry->getManager()->remove($tag);
-            $this->managerRegistry->getManager()->flush();
-
-            $msg = $this->translator->trans('tag.%name%.deleted', [
-                '%name%' => $tag->getTranslatedTags()->first() ?
-                    $tag->getTranslatedTags()->first()->getName() :
-                    $tag->getTagName(),
-            ]);
-            $this->logTrail->publishConfirmMessage($request, $msg, $tag);
-
-            return $this->redirectToRoute('tagsHomePage');
-        }
-
-        return $this->render('@RoadizRozier/tags/delete.html.twig', [
-            'tag' => $tag,
-            'form' => $form->createView(),
-        ]);
+        throw new ResourceNotFoundException();
     }
 
+    /**
+     * Handle tag creation pages.
+     *
+     * @throws RuntimeError
+     */
     public function addChildAction(Request $request, int $tagId, ?int $translationId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
+        $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
         if (null !== $translationId) {
-            $translation = $this->managerRegistry->getRepository(Translation::class)->find($translationId);
+            $translation = $this->em()->find(Translation::class, $translationId);
         }
-        $parentTag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $parentTag = $this->em()->find(Tag::class, $tagId);
         $tag = new Tag();
         $tag->setParent($parentTag);
 
         if (
-            null === $translation
-            || null === $parentTag
+            null !== $translation
+            && null !== $parentTag
         ) {
-            throw new ResourceNotFoundException();
-        }
+            $form = $this->createForm(TagType::class, $tag);
+            $form->handleRequest($request);
 
-        $form = $this->createForm(TagType::class, $tag);
-        $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                try {
+                    /*
+                     * Get latest position to add tags after.
+                     */
+                    $latestPosition = $this->em()
+                        ->getRepository(Tag::class)
+                        ->findLatestPositionInParent($parentTag);
+                    $tag->setPosition($latestPosition + 1);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $tag = $this->createTag($tag, $translation, $parentTag);
+                    $this->em()->persist($tag);
+                    $this->em()->flush();
 
-                $msg = $this->translator->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
-                $this->logTrail->publishConfirmMessage($request, $msg, $tag);
+                    $translatedTag = new TagTranslation($tag, $translation);
+                    $this->em()->persist($translatedTag);
+                    $this->em()->flush();
+                    /*
+                     * Dispatch event
+                     */
+                    $this->dispatchEvent(new TagCreatedEvent($tag));
 
-                return $this->redirectToRoute(
-                    'tagsEditPage',
-                    ['tagId' => $tag->getId()]
-                );
-            } catch (EntityAlreadyExistsException $e) {
-                $form->addError(new FormError($e->getMessage()));
+                    $msg = $this->getTranslator()->trans('child.tag.%name%.created', ['%name%' => $tag->getTagName()]);
+                    $this->publishConfirmMessage($request, $msg, $tag);
+
+                    return $this->redirectToRoute(
+                        'tagsEditPage',
+                        ['tagId' => $tag->getId()]
+                    );
+                } catch (EntityAlreadyExistsException $e) {
+                    $form->addError(new FormError($e->getMessage()));
+                }
             }
+
+            $this->assignation['translation'] = $translation;
+            $this->assignation['form'] = $form->createView();
+            $this->assignation['parentTag'] = $parentTag;
+
+            return $this->render('@RoadizRozier/tags/add.html.twig', $this->assignation);
         }
 
-        return $this->render('@RoadizRozier/tags/add.html.twig', [
-            'form' => $form->createView(),
-            'tag' => $tag,
-            'parentTag' => $parentTag,
-            'translation' => $translation,
-        ]);
+        throw new ResourceNotFoundException();
     }
 
+    /**
+     * Handle tag nodes page.
+     *
+     * @throws RuntimeError
+     */
     public function editNodesAction(Request $request, int $tagId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $tag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $tag = $this->em()->find(Tag::class, $tagId);
 
-        if (null === $tag) {
-            throw new ResourceNotFoundException();
+        if (null !== $tag) {
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
+
+            $this->assignation['tag'] = $tag;
+
+            /*
+             * Manage get request to filter list
+             */
+            $listManager = $this->createEntityListManager(
+                Node::class,
+                [
+                    'tags' => $tag,
+                ]
+            );
+            $listManager->setDisplayingNotPublishedNodes(true);
+            $listManager->handle();
+
+            $this->assignation['filters'] = $listManager->getAssignation();
+            $this->assignation['nodes'] = $listManager->getEntities();
+            $this->assignation['translation'] = $translation;
+
+            return $this->render('@RoadizRozier/tags/nodes.html.twig', $this->assignation);
         }
 
-        $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
-
-        /*
-         * Manage get request to filter list
-         */
-        $listManager = $this->entityListManagerFactory->createAdminEntityListManager(
-            Node::class,
-            [
-                'tags' => $tag,
-            ]
-        );
-        $listManager->setDisplayingNotPublishedNodes(true);
-        $listManager->handle();
-
-        return $this->render('@RoadizRozier/tags/nodes.html.twig', [
-            'tag' => $tag,
-            'filters' => $listManager->getAssignation(),
-            'nodes' => $listManager->getEntities(),
-            'translation' => $translation,
-        ]);
-    }
-
-    private function createTag(Tag $tag, TranslationInterface $translation, ?Tag $parentTag = null): Tag
-    {
-        /*
-         * Get latest position to add tags after.
-         */
-        $latestPosition = $this->managerRegistry
-            ->getRepository(Tag::class)
-            ->findLatestPositionInParent($parentTag);
-        $tag->setPosition($latestPosition + 1);
-
-        $this->managerRegistry->getManager()->persist($tag);
-        $this->managerRegistry->getManager()->flush();
-
-        $translatedTag = new TagTranslation($tag, $translation);
-        $this->managerRegistry->getManager()->persist($translatedTag);
-        $this->managerRegistry->getManager()->flush();
-
-        $this->eventDispatcher->dispatch(new TagCreatedEvent($tag));
-
-        return $tag;
+        throw new ResourceNotFoundException();
     }
 
     private function buildDeleteForm(Tag $tag): FormInterface
@@ -602,63 +625,67 @@ final class TagsController extends AbstractController
 
     private function bulkDeleteTags(array $data): string
     {
-        if (empty($data['tagsIds'])) {
-            return $this->translator->trans('wrong.request');
+        if (!empty($data['tagsIds'])) {
+            $tagsIds = trim($data['tagsIds']);
+            $tagsIds = explode(',', $tagsIds);
+            array_filter($tagsIds);
+
+            $tags = $this->em()
+                ->getRepository(Tag::class)
+                ->findBy([
+                    'id' => $tagsIds,
+                    // Removed locked tags from bulk deletion
+                    'locked' => false,
+                ]);
+
+            /** @var Tag $tag */
+            foreach ($tags as $tag) {
+                /** @var TagHandler $handler */
+                $handler = $this->handlerFactory->getHandler($tag);
+                $handler->removeWithChildrenAndAssociations();
+            }
+
+            $this->em()->flush();
+
+            return $this->getTranslator()->trans('tags.bulk.deleted');
         }
 
-        $tagsIds = trim($data['tagsIds']);
-        $tagsIds = explode(',', $tagsIds);
-        array_filter($tagsIds);
-
-        $tags = $this->managerRegistry->getRepository(Tag::class)
-            ->findBy([
-                'id' => $tagsIds,
-                // Removed locked tags from bulk deletion
-                'locked' => false,
-            ]);
-
-        foreach ($tags as $tag) {
-            /** @var TagHandler $handler */
-            $handler = $this->handlerFactory->getHandler($tag);
-            $handler->removeWithChildrenAndAssociations();
-        }
-
-        $this->managerRegistry->getManager()->flush();
-
-        return $this->translator->trans('tags.bulk.deleted');
+        return $this->getTranslator()->trans('wrong.request');
     }
 
     protected function onPostUpdate(PersistableInterface $entity, Request $request): void
     {
-        if (!$entity instanceof TagTranslation) {
-            return;
+        if ($entity instanceof TagTranslation) {
+            $this->em()->flush();
+            /*
+             * Dispatch event
+             */
+            $this->dispatchEvent(
+                new TagUpdatedEvent($entity->getTag())
+            );
+
+            $msg = $this->getTranslator()->trans('tag.%name%.updated', [
+                '%name%' => $entity->getName(),
+            ]);
+            $this->publishConfirmMessage($request, $msg, $entity);
         }
-
-        $this->managerRegistry->getManager()->flush();
-        $this->eventDispatcher->dispatch(
-            new TagUpdatedEvent($entity->getTag())
-        );
-
-        $msg = $this->translator->trans('tag.%name%.updated', [
-            '%name%' => $entity->getName(),
-        ]);
-        $this->logTrail->publishConfirmMessage($request, $msg, $entity);
     }
 
     protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
     {
-        if (!$entity instanceof TagTranslation) {
-            return null;
+        if ($entity instanceof TagTranslation) {
+            /** @var Translation $translation */
+            $translation = $entity->getTranslation();
+
+            return $this->redirectToRoute(
+                'tagsEditTranslatedPage',
+                [
+                    'tagId' => $entity->getTag()->getId(),
+                    'translationId' => $translation->getId(),
+                ]
+            );
         }
 
-        $translation = $entity->getTranslation();
-
-        return $this->redirectToRoute(
-            'tagsEditTranslatedPage',
-            [
-                'tagId' => $entity->getTag()->getId(),
-                'translationId' => $translation->getId(),
-            ]
-        );
+        return null;
     }
 }

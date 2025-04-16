@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CoreBundle\Bag\DecoratedNodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,17 +18,15 @@ class TranstypeType extends AbstractType
 {
     protected ManagerRegistry $managerRegistry;
 
-    public function __construct(
-        ManagerRegistry $managerRegistry,
-        private readonly DecoratedNodeTypes $nodeTypesBag,
-    ) {
+    public function __construct(ManagerRegistry $managerRegistry)
+    {
         $this->managerRegistry = $managerRegistry;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add(
-            'nodeTypeName',
+            'nodeTypeId',
             ChoiceType::class,
             [
                 'choices' => $this->getAvailableTypes($options['currentType']),
@@ -65,12 +63,24 @@ class TranstypeType extends AbstractType
 
     protected function getAvailableTypes(NodeType $currentType): array
     {
-        $nodeTypes = $this->nodeTypesBag->all();
+        $qb = $this->managerRegistry->getManager()->createQueryBuilder();
+        $qb->select('n')
+           ->from(NodeType::class, 'n')
+           ->where($qb->expr()->neq('n.id', $currentType->getId()))
+           ->orderBy('n.displayName', 'ASC');
 
-        $result = array_values(array_filter(array_map(static function (NodeType $nodeType) use ($currentType) {
-            return ($nodeType->getDisplayName() !== $currentType->getDisplayName()) ? $nodeType->getDisplayName() : null;
-        }, $nodeTypes)));
+        try {
+            $types = $qb->getQuery()->getResult();
 
-        return array_combine($result, $result);
+            $choices = [];
+            /** @var NodeType $type */
+            foreach ($types as $type) {
+                $choices[$type->getDisplayName()] = $type->getId();
+            }
+
+            return $choices;
+        } catch (NoResultException $e) {
+            return [];
+        }
     }
 }

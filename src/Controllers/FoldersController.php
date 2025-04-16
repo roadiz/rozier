@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\FolderTranslation;
@@ -12,49 +11,38 @@ use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Folder\FolderUpdatedEvent;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
 use RZ\Roadiz\Documents\DocumentArchiver;
 use RZ\Roadiz\Utils\StringHandler;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Forms\FolderTranslationType;
 use Themes\Rozier\Forms\FolderType;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class FoldersController extends AbstractController
+class FoldersController extends RozierApp
 {
-    public function __construct(
-        private readonly DocumentArchiver $documentArchiver,
-        private readonly EntityListManagerFactoryInterface $entityListManagerFactory,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly LogTrail $logTrail,
-        private readonly EventDispatcherInterface $dispatcher,
-    ) {
+    public function __construct(private readonly DocumentArchiver $documentArchiver)
+    {
     }
 
     public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $listManager = $this->entityListManagerFactory->createAdminEntityListManager(
+        $listManager = $this->createEntityListManager(
             Folder::class
         );
+        $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->handle();
 
-        return $this->render('@RoadizRozier/folders/list.html.twig', [
-            'filters' => $listManager->getAssignation(),
-            'folders' => $listManager->getEntities(),
-        ]);
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['folders'] = $listManager->getEntities();
+
+        return $this->render('@RoadizRozier/folders/list.html.twig', $this->assignation);
     }
 
     /**
@@ -69,7 +57,7 @@ final class FoldersController extends AbstractController
         $folder = new Folder();
 
         if (null !== $parentFolderId) {
-            $parentFolder = $this->managerRegistry->getRepository(Folder::class)->find($parentFolderId);
+            $parentFolder = $this->em()->find(Folder::class, $parentFolderId);
             if (null !== $parentFolder) {
                 $folder->setParent($parentFolder);
             }
@@ -80,36 +68,35 @@ final class FoldersController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 /** @var Translation $translation */
-                $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
+                $translation = $this->em()->getRepository(Translation::class)->findDefault();
                 $folderTranslation = new FolderTranslation($folder, $translation);
-                $manager = $this->managerRegistry->getManager();
-                $manager->persist($folder);
-                $manager->persist($folderTranslation);
+                $this->em()->persist($folder);
+                $this->em()->persist($folderTranslation);
 
-                $manager->flush();
+                $this->em()->flush();
 
-                $msg = $this->translator->trans(
+                $msg = $this->getTranslator()->trans(
                     'folder.%name%.created',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg, $folder);
 
                 /*
                  * Dispatch event
                  */
-                $this->dispatcher->dispatch(
+                $this->dispatchEvent(
                     new FolderCreatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage(), $folder);
             }
 
             return $this->redirectToRoute('foldersHomePage');
         }
 
-        return $this->render('@RoadizRozier/folders/add.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/folders/add.html.twig', $this->assignation);
     }
 
     /**
@@ -122,7 +109,7 @@ final class FoldersController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->managerRegistry->getRepository(Folder::class)->find($folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         if (null === $folder || $folder->isLocked()) {
             throw new ResourceNotFoundException('Folder does not exist or is locked');
@@ -133,32 +120,31 @@ final class FoldersController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $manager = $this->managerRegistry->getManager();
-                $manager->remove($folder);
-                $manager->flush();
-                $msg = $this->translator->trans(
+                $this->em()->remove($folder);
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
                     'folder.%name%.deleted',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg, $folder);
 
                 /*
                  * Dispatch event
                  */
-                $this->dispatcher->dispatch(
+                $this->dispatchEvent(
                     new FolderDeletedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage(), $folder);
             }
 
             return $this->redirectToRoute('foldersHomePage');
         }
 
-        return $this->render('@RoadizRozier/folders/delete.html.twig', [
-            'form' => $form->createView(),
-            'folder' => $folder,
-        ]);
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['folder'] = $folder;
+
+        return $this->render('@RoadizRozier/folders/delete.html.twig', $this->assignation);
     }
 
     /**
@@ -171,14 +157,14 @@ final class FoldersController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->managerRegistry->getRepository(Folder::class)->find($folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         if (null === $folder) {
             throw new ResourceNotFoundException();
         }
 
         /** @var Translation $translation */
-        $translation = $this->managerRegistry
+        $translation = $this->em()
             ->getRepository(Translation::class)
             ->findDefault();
 
@@ -187,30 +173,30 @@ final class FoldersController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->managerRegistry->getManager()->flush();
-                $msg = $this->translator->trans(
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
                     'folder.%name%.updated',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg, $folder);
                 /*
                  * Dispatch event
                  */
-                $this->dispatcher->dispatch(
+                $this->dispatchEvent(
                     new FolderUpdatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage(), $folder);
             }
 
             return $this->redirectToRoute('foldersEditPage', ['folderId' => $folderId]);
         }
 
-        return $this->render('@RoadizRozier/folders/edit.html.twig', [
-            'folder' => $folder,
-            'translation' => $translation,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['folder'] = $folder;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['translation'] = $translation;
+
+        return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
     }
 
     /**
@@ -221,22 +207,20 @@ final class FoldersController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->managerRegistry->getRepository(Translation::class);
+        $translationRepository = $this->em()->getRepository(Translation::class);
 
         /** @var Folder|null $folder */
-        $folder = $this->managerRegistry->getRepository(Folder::class)->find($folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         /** @var Translation|null $translation */
-        $translation = $this->managerRegistry->getRepository(Translation::class)->find($translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if (null === $folder || null === $translation) {
             throw new ResourceNotFoundException();
         }
 
-        $manager = $this->managerRegistry->getManager();
-
         /** @var FolderTranslation|null $folderTranslation */
-        $folderTranslation = $this->managerRegistry
+        $folderTranslation = $this->em()
             ->getRepository(FolderTranslation::class)
             ->findOneBy([
                 'folder' => $folder,
@@ -245,7 +229,7 @@ final class FoldersController extends AbstractController
 
         if (null === $folderTranslation) {
             $folderTranslation = new FolderTranslation($folder, $translation);
-            $manager->persist($folderTranslation);
+            $this->em()->persist($folderTranslation);
         }
 
         $form = $this->createForm(FolderTranslationType::class, $folderTranslation);
@@ -268,20 +252,20 @@ final class FoldersController extends AbstractController
                     }
                 }
 
-                $manager->flush();
-                $msg = $this->translator->trans(
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans(
                     'folder.%name%.updated',
                     ['%name%' => $folder->getFolderName()]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $folder);
+                $this->publishConfirmMessage($request, $msg, $folder);
                 /*
                  * Dispatch event
                  */
-                $this->dispatcher->dispatch(
+                $this->dispatchEvent(
                     new FolderUpdatedEvent($folder)
                 );
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $folder);
+                $this->publishErrorMessage($request, $e->getMessage(), $folder);
             }
 
             return $this->redirectToRoute('foldersEditTranslationPage', [
@@ -290,18 +274,18 @@ final class FoldersController extends AbstractController
             ]);
         }
 
-        return $this->render('@RoadizRozier/folders/edit.html.twig', [
-            'folder' => $folder,
-            'translation' => $translation,
-            'form' => $form->createView(),
-            'available_translations' => $translationRepository->findAll(),
-            'translations' => $translationRepository->findAvailableTranslationsForFolder($folder),
-        ]);
+        $this->assignation['folder'] = $folder;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['available_translations'] = $translationRepository->findAll();
+        $this->assignation['translations'] = $translationRepository->findAvailableTranslationsForFolder($folder);
+
+        return $this->render('@RoadizRozier/folders/edit.html.twig', $this->assignation);
     }
 
     protected function folderNameExists(string $name): bool
     {
-        $entity = $this->managerRegistry->getRepository(Folder::class)->findOneByFolderName($name);
+        $entity = $this->em()->getRepository(Folder::class)->findOneByFolderName($name);
 
         return null !== $entity;
     }
@@ -314,13 +298,13 @@ final class FoldersController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
         /** @var Folder|null $folder */
-        $folder = $this->managerRegistry->getRepository(Folder::class)->find($folderId);
+        $folder = $this->em()->find(Folder::class, $folderId);
 
         if (null === $folder) {
             throw new ResourceNotFoundException();
         }
 
-        $documents = $this->managerRegistry
+        $documents = $this->em()
             ->getRepository(Document::class)
             ->findBy([
                 'folders' => [$folder],

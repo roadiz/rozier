@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\NotSupported;
 use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,6 +46,8 @@ final class AjaxCustomFormsExplorerController extends AbstractAjaxExplorerContro
 
     /**
      * Get a CustomForm list from an array of id.
+     *
+     * @throws NotSupported
      */
     public function listAction(Request $request): Response
     {
@@ -59,7 +63,9 @@ final class AjaxCustomFormsExplorerController extends AbstractAjaxExplorerContro
         $customFormsArray = [];
 
         if (count($cleanCustomFormsIds)) {
-            $customForms = $this->managerRegistry->getRepository(CustomForm::class)->findBy([
+            /** @var EntityManager $em */
+            $em = $this->em();
+            $customForms = $em->getRepository(CustomForm::class)->findBy([
                 'id' => $cleanCustomFormsIds,
             ]);
             // Sort array by ids given in request
