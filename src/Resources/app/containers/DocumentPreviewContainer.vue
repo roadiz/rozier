@@ -4,10 +4,10 @@
             <div class="document-preview-widget__wrapper" @click.prevent="onClick">
                 <div class="document-preview-widget__information">
                     <div class="info">
-                        {{ document.classname }}
+                        {{ document.filename }}
                     </div>
-                    <div class="info" v-if="document.displayable !== document.classname">
-                        {{ document.displayable }}
+                    <div class="info" v-if="document.name !== document.filename">
+                        {{ document.name }}
                     </div>
                     <div class="info" v-if="document.embedPlatform">
                         {{ document.embedPlatform }}
@@ -18,7 +18,7 @@
                 </div>
                 <div class="document-preview-widget__container"
                      :class="containerClass">
-                    <div v-html="document.previewHtml"></div>
+                    <div v-html="document.preview_html"></div>
                 </div>
             </div>
         </div>

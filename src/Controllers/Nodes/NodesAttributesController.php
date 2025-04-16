@@ -29,11 +29,16 @@ class NodesAttributesController extends RozierApp
 {
     public function __construct(
         private readonly FormFactoryInterface $formFactory,
-        private readonly FormErrorSerializer $formErrorSerializer,
+        private readonly FormErrorSerializer $formErrorSerializer
     ) {
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeId
+     * @param int $translationId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $nodeId, int $translationId): Response
@@ -69,9 +74,9 @@ class NodesAttributesController extends RozierApp
         }
 
         $isJson =
-            $request->isXmlHttpRequest()
-            || 'json' === $request->getRequestFormat('html')
-            || \in_array(
+            $request->isXmlHttpRequest() ||
+            $request->getRequestFormat('html') === 'json' ||
+            \in_array(
                 'application/json',
                 $request->getAcceptableContentTypes()
             );
@@ -88,7 +93,7 @@ class NodesAttributesController extends RozierApp
         );
         /** @var AttributeValue $attributeValue */
         foreach ($attributeValues as $attributeValue) {
-            $name = $node->getNodeName().'_attribute_'.$attributeValue->getId();
+            $name = $node->getNodeName() . '_attribute_' . $attributeValue->getId();
             $attributeValueTranslation = $attributeValue->getAttributeValueTranslation($translation);
             if (null === $attributeValueTranslation) {
                 $attributeValueTranslation = new AttributeValueTranslation();
@@ -127,7 +132,6 @@ class NodesAttributesController extends RozierApp
                             'message' => $msg,
                         ], Response::HTTP_ACCEPTED);
                     }
-
                     return $this->redirectToRoute('nodesEditAttributesPage', [
                         'nodeId' => $node->getId(),
                         'translationId' => $translation->getId(),
@@ -176,10 +180,16 @@ class NodesAttributesController extends RozierApp
         if ($nodeType instanceof NodeType) {
             return $nodeType->isAttributable();
         }
-
         return false;
     }
 
+    /**
+     * @param Request     $request
+     * @param Node        $node
+     * @param Translation $translation
+     *
+     * @return RedirectResponse|null
+     */
     protected function handleAddAttributeForm(Request $request, Node $node, Translation $translation): ?RedirectResponse
     {
         if (!$this->isAttributable($node)) {
@@ -222,13 +232,19 @@ class NodesAttributesController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeId
+     * @param int $translationId
+     * @param int $attributeValueId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
         /** @var AttributeValue|null $item */
         $item = $this->em()->find(AttributeValue::class, $attributeValueId);
-        if (null === $item) {
+        if ($item === null) {
             throw $this->createNotFoundException('AttributeValue does not exist.');
         }
         /** @var Translation|null $translation */
@@ -289,6 +305,11 @@ class NodesAttributesController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeId
+     * @param int $translationId
+     * @param int $attributeValueId
+     * @return Response
      * @throws RuntimeError
      */
     public function resetAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
@@ -298,9 +319,9 @@ class NodesAttributesController extends RozierApp
             ->getRepository(AttributeValueTranslation::class)
             ->findOneBy([
                 'attributeValue' => $attributeValueId,
-                'translation' => $translationId,
+                'translation' => $translationId
             ]);
-        if (null === $item) {
+        if ($item === null) {
             throw $this->createNotFoundException('AttributeValueTranslation does not exist.');
         }
         /** @var Translation|null $translation */

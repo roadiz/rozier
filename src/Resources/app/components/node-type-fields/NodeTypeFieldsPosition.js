@@ -30,7 +30,6 @@
 import $ from 'jquery'
 
 /**
- * @deprecated nodeTypes will be static in future Roadiz versions
  * Node type fields position
  */
 export default class NodeTypeFieldsPosition {

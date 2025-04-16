@@ -13,8 +13,9 @@ use Twig\Error\RuntimeError;
 class DashboardController extends RozierApp
 {
     /**
-     * @return Response $response
+     * @param Request $request
      *
+     * @return Response $response
      * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
@@ -26,6 +27,7 @@ class DashboardController extends RozierApp
         $this->assignation['latestLogs'] = $this->em()
              ->getRepository(Log::class)
              ->findLatestByNodesSources(8);
+
 
         return $this->render('@RoadizRozier/dashboard/index.html.twig', $this->assignation);
     }

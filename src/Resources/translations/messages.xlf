@@ -102,9 +102,6 @@
             <trans-unit xml:space="preserve" id="100"><source>defaultValues</source></trans-unit>
             <trans-unit xml:space="preserve" id="customFormField.defaultValues"><source>customFormField.defaultValues</source></trans-unit>
             <trans-unit xml:space="preserve" id="nodeTypeField.defaultValues"><source>nodeTypeField.defaultValues</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups"><source>nodeTypeField.normalizationContextGroups</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups.help"><source>nodeTypeField.normalizationContextGroups.help</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups.help"><source>nodeTypeField.serializationGroups.help</source></trans-unit>
             <trans-unit xml:space="preserve" id="101"><source>enter_values_comma_separated</source></trans-unit>
             <trans-unit xml:space="preserve" id="102"><source>node.%name%.translated</source></trans-unit>
             <trans-unit xml:space="preserve" id="103"><source>node_source.%node_source%.updated.%translation%</source></trans-unit>
@@ -1154,7 +1151,6 @@
 
             <trans-unit xml:space="preserve" id="export_format.rzn"><source>export_format.rzn</source></trans-unit>
             <trans-unit xml:space="preserve" id="export_format.excel.%language%"><source>export_format.excel.%language%</source></trans-unit>
-            <trans-unit xml:space="preserve" id="export_format.csv.%language%"><source>export_format.csv.%language%</source></trans-unit>
 
             <!-- Bulk tags -->
             <trans-unit xml:space="preserve" id="delete.tags"><source>delete.tags</source></trans-unit>
@@ -1201,7 +1197,6 @@
             <trans-unit xml:space="preserve" id="document.is_only_external"><source>document.is_only_external</source><note>Warning message displayed when document does not have any file locally.</note></trans-unit>
 
             <trans-unit xml:space="preserve" id="reachable"><source>reachable</source><note>For node-types, defines if produced nodes will be reachable with an URL or not (eg. just content blocks).</note></trans-unit>
-            <trans-unit xml:space="preserve" id="You cannot delete a node-type in production mode."><source>You cannot delete a node-type in production mode.</source><note>For node-types, a notice when env is prod to prevent editing node-type schema in production.</note></trans-unit>
             <trans-unit xml:space="preserve" id="yaml.type"><source>yaml.type</source></trans-unit>
 
             <trans-unit xml:space="preserve" id="manage.redirections"><source>manage.redirections</source><note>Redirection section button label</note></trans-unit>

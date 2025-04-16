@@ -19,7 +19,11 @@ class TagsUtilsController extends RozierApp
     }
 
     /**
-     * Export a Tag in a Json file.
+     * Export a Tag in a Json file
+     *
+     * @param Request $request
+     * @param int $tagId
+     * @return JsonResponse
      */
     public function exportAction(Request $request, int $tagId): JsonResponse
     {
@@ -37,7 +41,7 @@ class TagsUtilsController extends RozierApp
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-'.$existingTag->getTagName().'-'.date('YmdHis').'.json'
+                    'tag-' . $existingTag->getTagName() . '-' . date("YmdHis")  . '.json'
                 ),
             ],
             true
@@ -45,7 +49,12 @@ class TagsUtilsController extends RozierApp
     }
 
     /**
-     * Export a Tag in a Json file.
+     * Export a Tag in a Json file
+     *
+     * @param Request $request
+     * @param int $tagId
+     *
+     * @return JsonResponse
      */
     public function exportAllAction(Request $request, int $tagId): JsonResponse
     {
@@ -53,7 +62,7 @@ class TagsUtilsController extends RozierApp
 
         $existingTags = $this->em()
                               ->getRepository(Tag::class)
-                              ->findBy(['parent' => null]);
+                              ->findBy(["parent" => null]);
 
         return new JsonResponse(
             $this->serializer->serialize(
@@ -65,7 +74,7 @@ class TagsUtilsController extends RozierApp
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-all-'.date('YmdHis').'.json'
+                    'tag-all-' . date("YmdHis") . '.json'
                 ),
             ],
             true

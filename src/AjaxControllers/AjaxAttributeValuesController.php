@@ -21,6 +21,9 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
      * Handle AJAX edition requests for NodeTypeFields
      * such as coming from widgets.
      *
+     * @param Request $request
+     * @param int     $attributeValueId
+     *
      * @return Response JSON response
      */
     public function editAction(Request $request, int $attributeValueId): Response
@@ -33,8 +36,13 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
         /** @var AttributeValue|null $attributeValue */
         $attributeValue = $this->em()->find(AttributeValue::class, (int) $attributeValueId);
 
-        if (null === $attributeValue) {
-            throw $this->createNotFoundException($this->getTranslator()->trans('attribute_value.%attributeValueId%.not_exists', ['%attributeValueId%' => $attributeValueId]));
+        if ($attributeValue === null) {
+            throw $this->createNotFoundException($this->getTranslator()->trans(
+                'attribute_value.%attributeValueId%.not_exists',
+                [
+                    '%attributeValueId%' => $attributeValueId
+                ]
+            ));
         }
 
         $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $attributeValue->getAttributable());
@@ -71,7 +79,6 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
             }
             $attributeValue->setPosition($afterAttributeValue->getPosition() + 0.5);
             $this->em()->flush();
-
             return [
                 'statusCode' => '200',
                 'status' => 'success',
@@ -89,7 +96,6 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
             }
             $attributeValue->setPosition($beforeAttributeValue->getPosition() - 0.5);
             $this->em()->flush();
-
             return [
                 'statusCode' => '200',
                 'status' => 'success',

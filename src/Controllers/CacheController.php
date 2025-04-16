@@ -16,7 +16,7 @@ final class CacheController extends RozierApp
 {
     public function __construct(
         private readonly CacheClearerInterface $cacheClearer,
-        private readonly LoggerInterface $logger,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -47,12 +47,16 @@ final class CacheController extends RozierApp
              */
             return $this->redirectToRoute('adminHomePage');
         }
+        $this->prepareBaseAssignation();
         $this->assignation['form'] = $form->createView();
 
         return $this->render('@RoadizRozier/cache/deleteDoctrine.html.twig', $this->assignation);
     }
 
     /**
+     * @param Request $request
+     *
+     * @return Response
      * @throws \Twig\Error\RuntimeError
      */
     public function deleteAssetsCache(Request $request): Response
@@ -73,6 +77,7 @@ final class CacheController extends RozierApp
             return $this->redirectToRoute('adminHomePage');
         }
 
+        $this->prepareBaseAssignation();
         $this->assignation['form'] = $form->createView();
 
         return $this->render('@RoadizRozier/cache/deleteAssets.html.twig', $this->assignation);
