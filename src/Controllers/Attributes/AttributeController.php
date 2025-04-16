@@ -21,14 +21,18 @@ use Twig\Error\RuntimeError;
 
 class AttributeController extends AbstractAdminWithBulkController
 {
+    private AttributeImporter $attributeImporter;
+
     public function __construct(
-        private readonly AttributeImporter $attributeImporter,
+        AttributeImporter $attributeImporter,
         FormFactoryInterface $formFactory,
         SerializerInterface $serializer,
         UrlGeneratorInterface $urlGenerator
     ) {
         parent::__construct($formFactory, $serializer, $urlGenerator);
+        $this->attributeImporter = $attributeImporter;
     }
+
 
     /**
      * @inheritDoc
@@ -157,21 +161,13 @@ class AttributeController extends AbstractAdminWithBulkController
             $file = $form->get('file')->getData();
 
             if ($file->isValid()) {
-                $serializedData = \file_get_contents($file->getPathname());
+                $serializedData = file_get_contents($file->getPathname());
                 if (false === $serializedData) {
                     throw new \RuntimeException('Cannot read uploaded file.');
                 }
 
                 $this->attributeImporter->import($serializedData);
                 $this->em()->flush();
-
-                $msg = $this->getTranslator()->trans(
-                    '%namespace%.imported',
-                    [
-                        '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
-                    ]
-                );
-                $this->publishConfirmMessage($request, $msg);
                 return $this->redirectToRoute('attributesHomePage');
             }
             $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));

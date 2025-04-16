@@ -10,10 +10,13 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class SettingExplorerItem extends AbstractExplorerItem
 {
-    public function __construct(
-        private readonly Setting $setting,
-        private readonly UrlGeneratorInterface $urlGenerator
-    ) {
+    private Setting $setting;
+    private UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(Setting $setting, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->setting = $setting;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**

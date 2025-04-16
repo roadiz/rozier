@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
+use DateTime;
+use IteratorAggregate;
+use PhpOffice\PhpSpreadsheet\Exception;
 use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
@@ -16,6 +18,7 @@ use RZ\Roadiz\CoreBundle\Form\ExtendedBooleanType;
 use RZ\Roadiz\CoreBundle\Form\NodeStatesType;
 use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use RZ\Roadiz\CoreBundle\Form\SeparatorType;
+use RZ\Roadiz\CoreBundle\Xlsx\XlsxExporter;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -26,14 +29,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Themes\Rozier\Forms\NodeSource\NodeSourceType;
 use Themes\Rozier\RozierApp;
@@ -44,142 +44,160 @@ class SearchController extends RozierApp
     protected bool $pagination = true;
     protected ?int $itemPerPage = null;
 
-    public function __construct(
-        protected readonly ManagerRegistry $managerRegistry,
-        protected readonly FormFactoryInterface $formFactory,
-        protected readonly SerializerInterface $serializer,
-        protected readonly array $csvEncoderOptions,
-    ) {
-    }
-
+    /**
+     * @param mixed $var
+     * @return bool
+     */
     public function isBlank(mixed $var): bool
     {
         return empty($var) && !is_numeric($var);
     }
 
+    /**
+     * @param mixed $var
+     * @return bool
+     */
     public function notBlank(mixed $var): bool
     {
         return !$this->isBlank($var);
     }
 
-    protected function appendDateTimeCriteria(array &$data, string $fieldName): array
+    /**
+     * @param array  $data
+     * @param string $fieldName
+     *
+     * @return array
+     */
+    protected function appendDateTimeCriteria(array &$data, string $fieldName)
     {
         $date = $data[$fieldName]['compareDatetime'];
-        if ($date instanceof \DateTime) {
+        if ($date instanceof DateTime) {
             $date = $date->format('Y-m-d H:i:s');
         }
         $data[$fieldName] = [
             $data[$fieldName]['compareOp'],
             $date,
         ];
-
         return $data;
     }
 
-    protected function processCriteria(array $data, string $prefix = ''): array
+    /**
+     * @param array $data
+     * @param string $prefix
+     * @return mixed
+     */
+    protected function processCriteria($data, string $prefix = "")
     {
-        if (!empty($data[$prefix.'nodeName'])) {
-            if (!isset($data[$prefix.'nodeName_exact']) || true !== $data[$prefix.'nodeName_exact']) {
-                $data[$prefix.'nodeName'] = ['LIKE', '%'.$data[$prefix.'nodeName'].'%'];
+        if (!empty($data[$prefix . "nodeName"])) {
+            if (isset($data[$prefix . "nodeName_exact"]) && $data[$prefix . "nodeName_exact"] === true) {
+                $data[$prefix . "nodeName"] = $data[$prefix . "nodeName"];
+            } else {
+                $data[$prefix . "nodeName"] = ["LIKE", "%" . $data[$prefix . "nodeName"] . "%"];
             }
         }
 
-        if (key_exists($prefix.'nodeName_exact', $data)) {
-            unset($data[$prefix.'nodeName_exact']);
+        if (key_exists($prefix . "nodeName_exact", $data)) {
+            unset($data[$prefix . "nodeName_exact"]);
         }
 
-        if (isset($data[$prefix.'parent']) && !$this->isBlank($data[$prefix.'parent'])) {
-            if ('null' == $data[$prefix.'parent'] || 0 == $data[$prefix.'parent']) {
-                $data[$prefix.'parent'] = null;
+        if (isset($data[$prefix . 'parent']) && !$this->isBlank($data[$prefix . "parent"])) {
+            if ($data[$prefix . "parent"] == "null" || $data[$prefix . "parent"] == 0) {
+                $data[$prefix . "parent"] = null;
             }
         }
 
-        if (isset($data[$prefix.'visible'])) {
-            $data[$prefix.'visible'] = (bool) $data[$prefix.'visible'];
+        if (isset($data[$prefix . 'visible'])) {
+            $data[$prefix . 'visible'] = (bool) $data[$prefix . 'visible'];
         }
 
-        if (isset($data[$prefix.'createdAt'])) {
-            $this->appendDateTimeCriteria($data, $prefix.'createdAt');
+        if (isset($data[$prefix . 'createdAt'])) {
+            $this->appendDateTimeCriteria($data, $prefix . 'createdAt');
         }
 
-        if (isset($data[$prefix.'updatedAt'])) {
-            $this->appendDateTimeCriteria($data, $prefix.'updatedAt');
+        if (isset($data[$prefix . 'updatedAt'])) {
+            $this->appendDateTimeCriteria($data, $prefix . 'updatedAt');
         }
 
-        if (isset($data[$prefix.'limitResult'])) {
+        if (isset($data[$prefix . "limitResult"])) {
             $this->pagination = false;
-            $this->itemPerPage = (int) $data[$prefix.'limitResult'];
-            unset($data[$prefix.'limitResult']);
+            $this->itemPerPage = (int) $data[$prefix . "limitResult"];
+            unset($data[$prefix . "limitResult"]);
         }
 
         /*
          * no need to prefix tags
          */
-        if (isset($data['tags'])) {
-            $data['tags'] = array_map('trim', explode(',', $data['tags']));
-            foreach ($data['tags'] as $key => $value) {
-                $data['tags'][$key] = $this->managerRegistry->getRepository(Tag::class)->findByPath($value);
+        if (isset($data["tags"])) {
+            $data["tags"] = array_map('trim', explode(',', $data["tags"]));
+            foreach ($data["tags"] as $key => $value) {
+                $data["tags"][$key] = $this->em()->getRepository(Tag::class)->findByPath($value);
             }
-            array_filter($data['tags']);
-        }
-
-        return $data;
-    }
-
-    protected function processCriteriaNodetype(array $data, NodeType $nodetype): array
-    {
-        $fields = $nodetype->getFields();
-        foreach ($data as $key => $value) {
-            if ('title' === $key) {
-                $data['title'] = ['LIKE', '%'.$value.'%'];
-                if (isset($data[$key.'_exact'])) {
-                    if (true === $data[$key.'_exact']) {
-                        $data['title'] = $value;
-                    }
-                }
-            } elseif ('publishedAt' === $key) {
-                $this->appendDateTimeCriteria($data, 'publishedAt');
-            } else {
-                /** @var NodeTypeField $field */
-                foreach ($fields as $field) {
-                    if ($key == $field->getName()) {
-                        if (
-                            AbstractField::MARKDOWN_T === $field->getType()
-                            || AbstractField::STRING_T === $field->getType()
-                            || AbstractField::YAML_T === $field->getType()
-                            || AbstractField::JSON_T === $field->getType()
-                            || AbstractField::TEXT_T === $field->getType()
-                            || AbstractField::EMAIL_T === $field->getType()
-                            || AbstractField::CSS_T === $field->getType()
-                        ) {
-                            $data[$field->getVarName()] = ['LIKE', '%'.$value.'%'];
-                            if (isset($data[$key.'_exact']) && true === $data[$key.'_exact']) {
-                                $data[$field->getVarName()] = $value;
-                            }
-                        } elseif (AbstractField::BOOLEAN_T === $field->getType()) {
-                            $data[$field->getVarName()] = (bool) $value;
-                        } elseif (AbstractField::MULTIPLE_T === $field->getType()) {
-                            $data[$field->getVarName()] = implode(',', $value);
-                        } elseif (AbstractField::DATETIME_T === $field->getType()) {
-                            $this->appendDateTimeCriteria($data, $key);
-                        } elseif (AbstractField::DATE_T === $field->getType()) {
-                            $this->appendDateTimeCriteria($data, $key);
-                        }
-                    }
-                }
-            }
-            if (key_exists($key.'_exact', $data)) {
-                unset($data[$key.'_exact']);
-            }
+            array_filter($data["tags"]);
         }
 
         return $data;
     }
 
     /**
+     * @param array|\Traversable $data
+     * @param NodeType $nodetype
+     * @return mixed
+     */
+    protected function processCriteriaNodetype($data, NodeType $nodetype)
+    {
+        $fields = $nodetype->getFields();
+        foreach ($data as $key => $value) {
+            if ($key === 'title') {
+                $data['title'] = ["LIKE", "%" . $value . "%"];
+                if (isset($data[$key . '_exact'])) {
+                    if ($data[$key . '_exact'] === true) {
+                        $data['title'] = $value;
+                    }
+                }
+            } elseif ($key === 'publishedAt') {
+                $this->appendDateTimeCriteria($data, 'publishedAt');
+            } else {
+                /** @var NodeTypeField $field */
+                foreach ($fields as $field) {
+                    if ($key == $field->getName()) {
+                        if (
+                            $field->getType() === AbstractField::MARKDOWN_T
+                            || $field->getType() === AbstractField::STRING_T
+                            || $field->getType() === AbstractField::YAML_T
+                            || $field->getType() === AbstractField::JSON_T
+                            || $field->getType() === AbstractField::TEXT_T
+                            || $field->getType() === AbstractField::EMAIL_T
+                            || $field->getType() === AbstractField::CSS_T
+                        ) {
+                            $data[$field->getVarName()] = ["LIKE", "%" . $value . "%"];
+                            if (isset($data[$key . '_exact']) && $data[$key . '_exact'] === true) {
+                                $data[$field->getVarName()] = $value;
+                            }
+                        } elseif ($field->getType() === AbstractField::BOOLEAN_T) {
+                            $data[$field->getVarName()] = (bool) $value;
+                        } elseif ($field->getType() === AbstractField::MULTIPLE_T) {
+                            $data[$field->getVarName()] = implode(",", $value);
+                        } elseif ($field->getType() === AbstractField::DATETIME_T) {
+                            $this->appendDateTimeCriteria($data, $key);
+                        } elseif ($field->getType() === AbstractField::DATE_T) {
+                            $this->appendDateTimeCriteria($data, $key);
+                        }
+                    }
+                }
+            }
+            if (key_exists($key . '_exact', $data)) {
+                unset($data[$key . '_exact']);
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
      * @throws RuntimeError
      */
-    public function searchNodeAction(Request $request): Response
+    public function searchNodeAction(Request $request)
     {
         $builder = $this->buildSimpleForm('');
         $form = $this->addButtons($builder)->getForm();
@@ -193,7 +211,6 @@ class SearchController extends RozierApp
 
         if (null !== $response = $this->handleNodeTypeForm($nodeTypeForm)) {
             $response->prepare($request);
-
             return $response->send();
         }
 
@@ -201,8 +218,8 @@ class SearchController extends RozierApp
             $data = [];
             foreach ($form->getData() as $key => $value) {
                 if (
-                    (!is_array($value) && $this->notBlank($value))
-                    || (is_array($value) && isset($value['compareDatetime']))
+                    (!is_array($value) && $this->notBlank($value)) ||
+                    (is_array($value) && isset($value["compareDatetime"]))
                 ) {
                     $data[$key] = $value;
                 }
@@ -215,7 +232,7 @@ class SearchController extends RozierApp
             $listManager->setDisplayingNotPublishedNodes(true);
             $listManager->setDisplayingAllNodesStatuses(true);
 
-            if (false === $this->pagination) {
+            if ($this->pagination === false) {
                 $listManager->setItemPerPage($this->itemPerPage ?? 999);
                 $listManager->disablePagination();
             }
@@ -233,17 +250,24 @@ class SearchController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @param int $nodetypeId
+     *
+     * @return null|RedirectResponse|Response
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      * @throws RuntimeError
      */
-    public function searchNodeSourceAction(Request $request, int $nodetypeId): Response
+    public function searchNodeSourceAction(Request $request, int $nodetypeId)
     {
         /** @var NodeType|null $nodetype */
-        $nodetype = $this->managerRegistry->getRepository(NodeType::class)->find($nodetypeId);
+        $nodetype = $this->em()->find(NodeType::class, $nodetypeId);
 
-        $builder = $this->buildSimpleForm('__node__');
+        $builder = $this->buildSimpleForm("__node__");
         $this->extendForm($builder, $nodetype);
         $this->addButtons($builder, true);
 
+        /** @var Form $form */
         $form = $builder->getForm();
         $form->handleRequest($request);
 
@@ -268,16 +292,19 @@ class SearchController extends RozierApp
 
     /**
      * Build node-type selection form.
+     *
+     * @param int|null $nodetypeId
+     * @return FormBuilderInterface
      */
     protected function buildNodeTypeForm(?int $nodetypeId = null): FormBuilderInterface
     {
-        $builderNodeType = $this->formFactory->createNamedBuilder('nodeTypeForm', FormType::class, [], ['method' => 'get']);
+        $builderNodeType = $this->createNamedFormBuilder('nodeTypeForm', [], ["method" => "get"]);
         $builderNodeType->add(
-            'nodetype',
+            "nodetype",
             NodeTypesType::class,
             [
                 'label' => 'nodeType',
-                'placeholder' => 'ignore',
+                'placeholder' => "ignore",
                 'required' => false,
                 'data' => $nodetypeId,
                 'showInvisible' => true,
@@ -287,7 +314,13 @@ class SearchController extends RozierApp
         return $builderNodeType;
     }
 
-    protected function addButtons(FormBuilderInterface $builder, bool $export = false): FormBuilderInterface
+    /**
+     * @param FormBuilderInterface $builder
+     * @param bool $exportXlsx
+     *
+     * @return FormBuilderInterface
+     */
+    protected function addButtons(FormBuilderInterface $builder, bool $exportXlsx = false): FormBuilderInterface
     {
         $builder->add('search', SubmitType::class, [
             'label' => 'search.a.node',
@@ -296,7 +329,7 @@ class SearchController extends RozierApp
             ],
         ]);
 
-        if ($export) {
+        if ($exportXlsx) {
             $builder->add('export', SubmitType::class, [
                 'label' => 'export.all.nodesSource',
                 'attr' => [
@@ -308,7 +341,12 @@ class SearchController extends RozierApp
         return $builder;
     }
 
-    protected function handleNodeTypeForm(FormInterface $nodeTypeForm): ?RedirectResponse
+    /**
+     * @param FormInterface $nodeTypeForm
+     *
+     * @return null|RedirectResponse
+     */
+    protected function handleNodeTypeForm(FormInterface $nodeTypeForm)
     {
         if ($nodeTypeForm->isSubmitted() && $nodeTypeForm->isValid()) {
             if (empty($nodeTypeForm->getData()['nodetype'])) {
@@ -317,7 +355,7 @@ class SearchController extends RozierApp
                 return $this->redirectToRoute(
                     'searchNodeSourcePage',
                     [
-                        'nodetypeId' => $nodeTypeForm->getData()['nodetype'],
+                        "nodetypeId" => $nodeTypeForm->getData()['nodetype'],
                     ]
                 );
             }
@@ -326,91 +364,132 @@ class SearchController extends RozierApp
         return null;
     }
 
+    /**
+     * @param FormInterface $form
+     * @param NodeType $nodetype
+     *
+     * @return null|Response
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
     protected function handleNodeForm(FormInterface $form, NodeType $nodetype): ?Response
     {
-        if (!$form->isSubmitted() || !$form->isValid()) {
-            return null;
-        }
-        $data = [];
-        foreach ($form->getData() as $key => $value) {
-            if (
-                (!is_array($value) && $this->notBlank($value))
-                || (is_array($value) && isset($value['compareDatetime']))
-                || (is_array($value) && isset($value['compareDate']))
-                || (is_array($value) && [] != $value && !isset($value['compareOp']))
-            ) {
-                if (\is_string($key) & \str_contains($key, '__node__')) {
-                    /** @var string $newKey */
-                    $newKey = \str_replace('__node__', 'node.', $key);
-                    $data[$newKey] = $value;
-                } else {
-                    $data[$key] = $value;
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = [];
+            foreach ($form->getData() as $key => $value) {
+                if (
+                    (!is_array($value) && $this->notBlank($value))
+                    || (is_array($value) && isset($value["compareDatetime"]))
+                    || (is_array($value) && isset($value["compareDate"]))
+                    || (is_array($value) && $value != [] && !isset($value["compareOp"]))
+                ) {
+                    if (\is_string($key) & \str_contains($key, "__node__")) {
+                        /** @var string $newKey */
+                        $newKey = \str_replace("__node__", "node.", $key);
+                        $data[$newKey] = $value;
+                    } else {
+                        $data[$key] = $value;
+                    }
                 }
             }
-        }
-        $data = $this->processCriteria($data, 'node.');
-        $data = $this->processCriteriaNodetype($data, $nodetype);
+            $data = $this->processCriteria($data, "node.");
+            $data = $this->processCriteriaNodetype($data, $nodetype);
 
-        $listManager = $this->createEntityListManager(
-            $nodetype->getSourceEntityFullQualifiedClassName(),
-            $data
-        );
-        $listManager->setDisplayingNotPublishedNodes(true);
-        $listManager->setDisplayingAllNodesStatuses(true);
-        if (false === $this->pagination) {
-            $listManager->setItemPerPage($this->itemPerPage ?? 999);
-            $listManager->disablePagination();
-        }
-        $listManager->handle();
-        $entities = $listManager->getEntities();
-        $nodes = [];
-        foreach ($entities as $nodesSource) {
-            if (!in_array($nodesSource->getNode(), $nodes)) {
-                $nodes[] = $nodesSource->getNode();
-            }
-        }
-        /*
-         * Export all entries into XLSX format
-         */
-        $button = $form->get('export');
-        if ($button instanceof ClickableInterface && $button->isClicked()) {
-            $filename = 'search-'.$nodetype->getName().'-'.date('YmdHis').'.csv';
-            $response = new StreamedResponse(function () use ($entities) {
-                echo $this->serializer->serialize($entities, 'csv', [
-                    ...$this->csvEncoderOptions,
-                    'groups' => [
-                        'nodes_sources',
-                        'urls',
-                        'tag_base',
-                        'document_display',
-                    ],
-                ]);
-            });
-            $response->headers->set('Content-Type', 'text/csv');
-            $response->headers->set(
-                'Content-Disposition',
-                $response->headers->makeDisposition(
-                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    $filename
-                )
+            $listManager = $this->createEntityListManager(
+                $nodetype->getSourceEntityFullQualifiedClassName(),
+                $data
             );
+            $listManager->setDisplayingNotPublishedNodes(true);
+            $listManager->setDisplayingAllNodesStatuses(true);
+            if ($this->pagination === false) {
+                $listManager->setItemPerPage($this->itemPerPage ?? 999);
+                $listManager->disablePagination();
+            }
+            $listManager->handle();
+            $entities = $listManager->getEntities();
+            $nodes = [];
+            foreach ($entities as $nodesSource) {
+                if (!in_array($nodesSource->getNode(), $nodes)) {
+                    $nodes[] = $nodesSource->getNode();
+                }
+            }
+            /*
+             * Export all entries into XLSX format
+             */
+            $button = $form->get('export');
+            if ($button instanceof ClickableInterface && $button->isClicked()) {
+                $response = new Response(
+                    $this->getXlsxResults($nodetype, $entities),
+                    Response::HTTP_OK,
+                    []
+                );
 
-            return $response;
+                $response->headers->set(
+                    'Content-Disposition',
+                    $response->headers->makeDisposition(
+                        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                        'search.xlsx'
+                    )
+                );
+
+                return $response;
+            }
+
+            $this->assignation['filters'] = $listManager->getAssignation();
+            $this->assignation['nodesSources'] = $entities;
+            $this->assignation['nodes'] = $nodes;
         }
-
-        $this->assignation['filters'] = $listManager->getAssignation();
-        $this->assignation['nodesSources'] = $entities;
-        $this->assignation['nodes'] = $nodes;
 
         return null;
     }
 
+    /**
+     * @param NodeType $nodetype
+     * @param array|IteratorAggregate $entities
+     *
+     * @return string
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    protected function getXlsxResults(NodeType $nodetype, $entities): string
+    {
+        $fields = $nodetype->getFields();
+        $keys = [];
+        $answers = [];
+        $keys[] = "title";
+        /** @var NodeTypeField $field */
+        foreach ($fields as $field) {
+            if (!$field->isVirtual() && !$field->isCollection()) {
+                $keys[] = $field->getName();
+            }
+        }
+        foreach ($entities as $idx => $nodesSource) {
+            $array = [];
+            foreach ($keys as $key) {
+                $getter = 'get' . str_replace('_', '', ucwords($key));
+                $tmp = $nodesSource->$getter();
+                if (is_array($tmp)) {
+                    $tmp = implode(',', $tmp);
+                }
+                $array[] = $tmp;
+            }
+            $answers[$idx] = $array;
+        }
+
+        $exporter = new XlsxExporter($this->getTranslator());
+        return $exporter->exportXlsx($answers, $keys);
+    }
+
+    /**
+     * @param string $prefix
+     * @return FormBuilderInterface
+     */
     protected function buildSimpleForm(string $prefix = ''): FormBuilderInterface
     {
         /** @var FormBuilder $builder */
-        $builder = $this->createFormBuilder([], ['method' => 'get']);
+        $builder = $this->createFormBuilder([], ["method" => "get"]);
 
-        $builder->add($prefix.'status', NodeStatesType::class, [
+        $builder->add($prefix . 'status', NodeStatesType::class, [
             'label' => 'node.status',
             'required' => false,
         ]);
@@ -423,37 +502,37 @@ class SearchController extends RozierApp
                     'class' => 'form-col-status-group',
                 ],
             ])
-            ->add($prefix.'visible', ExtendedBooleanType::class, [
+            ->add($prefix . 'visible', ExtendedBooleanType::class, [
                 'label' => 'visible',
             ])
-            ->add($prefix.'locked', ExtendedBooleanType::class, [
+            ->add($prefix . 'locked', ExtendedBooleanType::class, [
                 'label' => 'locked',
             ])
-            ->add($prefix.'sterile', ExtendedBooleanType::class, [
+            ->add($prefix . 'sterile', ExtendedBooleanType::class, [
                 'label' => 'sterile-status',
             ])
-            ->add($prefix.'hideChildren', ExtendedBooleanType::class, [
+            ->add($prefix . 'hideChildren', ExtendedBooleanType::class, [
                 'label' => 'hiding-children',
             ])
         );
         $builder->add(
-            $this->createTextSearchForm($builder, $prefix.'nodeName', 'nodeName')
+            $this->createTextSearchForm($builder, $prefix . 'nodeName', 'nodeName')
         );
-        $builder->add($prefix.'parent', TextType::class, [
-            'label' => 'node.id.parent',
-            'required' => false,
-        ])
-            ->add($prefix.'createdAt', CompareDatetimeType::class, [
+        $builder->add($prefix . 'parent', TextType::class, [
+                'label' => 'node.id.parent',
+                'required' => false,
+            ])
+            ->add($prefix . 'createdAt', CompareDatetimeType::class, [
                 'label' => 'created.at',
                 'inherit_data' => false,
                 'required' => false,
             ])
-            ->add($prefix.'updatedAt', CompareDatetimeType::class, [
+            ->add($prefix . 'updatedAt', CompareDatetimeType::class, [
                 'label' => 'updated.at',
                 'inherit_data' => false,
                 'required' => false,
             ])
-            ->add($prefix.'limitResult', NumberType::class, [
+            ->add($prefix . 'limitResult', NumberType::class, [
                 'label' => 'node.limit.result',
                 'required' => false,
                 'constraints' => [
@@ -476,40 +555,52 @@ class SearchController extends RozierApp
         return $builder;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param string               $formName
+     * @param string               $label
+     *
+     * @return FormBuilderInterface
+     */
     protected function createTextSearchForm(
         FormBuilderInterface $builder,
         string $formName,
-        string $label,
+        string $label
     ): FormBuilderInterface {
-        return $builder->create($formName.'_group', FormType::class, [
-            'label' => false,
-            'inherit_data' => true,
-            'mapped' => false,
-            'attr' => [
-                'class' => 'form-col-search-group',
-            ],
-        ])
+        return $builder->create($formName . '_group', FormType::class, [
+                'label' => false,
+                'inherit_data' => true,
+                'mapped' => false,
+                'attr' => [
+                    'class' => 'form-col-search-group',
+                ],
+            ])
             ->add($formName, TextType::class, [
                 'label' => $label,
                 'required' => false,
             ])
-            ->add($formName.'_exact', CheckboxType::class, [
+            ->add($formName . '_exact', CheckboxType::class, [
                 'label' => 'exact_search',
                 'required' => false,
             ])
         ;
     }
 
-    private function extendForm(FormBuilderInterface $builder, NodeType $nodetype): void
+    /**
+     * @param FormBuilderInterface $builder
+     * @param NodeType $nodetype
+     * @return FormBuilderInterface
+     */
+    private function extendForm(FormBuilderInterface $builder, NodeType $nodetype): FormBuilderInterface
     {
         $fields = $nodetype->getFields();
 
         $builder->add(
-            'nodetypefield',
+            "nodetypefield",
             SeparatorType::class,
             [
                 'label' => 'nodetypefield',
-                'attr' => ['class' => 'label-separator'],
+                'attr' => ["class" => "label-separator"],
             ]
         );
         $builder->add(
@@ -517,7 +608,7 @@ class SearchController extends RozierApp
         );
         if ($nodetype->isPublishable()) {
             $builder->add(
-                'publishedAt',
+                "publishedAt",
                 CompareDatetimeType::class,
                 [
                     'label' => 'publishedAt',
@@ -526,8 +617,10 @@ class SearchController extends RozierApp
             );
         }
 
+
+        /** @var NodeTypeField $field */
         foreach ($fields as $field) {
-            $option = ['label' => $field->getLabel()];
+            $option = ["label" => $field->getLabel()];
             $option['required'] = false;
             if ($field->isVirtual()) {
                 continue;
@@ -536,56 +629,56 @@ class SearchController extends RozierApp
              * Prevent searching on complex fields
              */
             if (
-                $field->isMultipleProvider()
-                || $field->isSingleProvider()
-                || $field->isCollection()
-                || $field->isManyToMany()
-                || $field->isManyToOne()
+                $field->isMultipleProvider() ||
+                $field->isSingleProvider() ||
+                $field->isCollection() ||
+                $field->isManyToMany() ||
+                $field->isManyToOne()
             ) {
                 continue;
             }
 
-            if (AbstractField::ENUM_T === $field->getType()) {
+            if ($field->getType() === AbstractField::ENUM_T) {
                 $choices = explode(',', $field->getDefaultValues() ?? '');
                 $choices = array_map('trim', $choices);
                 $choices = array_combine(array_values($choices), array_values($choices));
                 $type = ChoiceType::class;
                 $option['placeholder'] = 'ignore';
                 $option['required'] = false;
-                $option['expanded'] = false;
+                $option["expanded"] = false;
                 if (count($choices) < 4) {
-                    $option['expanded'] = true;
+                    $option["expanded"] = true;
                 }
-                $option['choices'] = $choices;
-            } elseif (AbstractField::MULTIPLE_T === $field->getType()) {
+                $option["choices"] = $choices;
+            } elseif ($field->getType() === AbstractField::MULTIPLE_T) {
                 $choices = explode(',', $field->getDefaultValues() ?? '');
                 $choices = array_map('trim', $choices);
                 $choices = array_combine(array_values($choices), array_values($choices));
                 $type = ChoiceType::class;
-                $option['choices'] = $choices;
+                $option["choices"] = $choices;
                 $option['placeholder'] = 'ignore';
                 $option['required'] = false;
-                $option['multiple'] = true;
-                $option['expanded'] = false;
+                $option["multiple"] = true;
+                $option["expanded"] = false;
                 if (count($choices) < 4) {
-                    $option['expanded'] = true;
+                    $option["expanded"] = true;
                 }
-            } elseif (AbstractField::DATETIME_T === $field->getType()) {
+            } elseif ($field->getType() === AbstractField::DATETIME_T) {
                 $type = CompareDatetimeType::class;
-            } elseif (AbstractField::DATE_T === $field->getType()) {
+            } elseif ($field->getType() === AbstractField::DATE_T) {
                 $type = CompareDateType::class;
             } else {
                 $type = NodeSourceType::getFormTypeFromFieldType($field);
             }
 
             if (
-                AbstractField::MARKDOWN_T === $field->getType()
-                || AbstractField::STRING_T === $field->getType()
-                || AbstractField::TEXT_T === $field->getType()
-                || AbstractField::EMAIL_T === $field->getType()
-                || AbstractField::JSON_T === $field->getType()
-                || AbstractField::YAML_T === $field->getType()
-                || AbstractField::CSS_T === $field->getType()
+                $field->getType() === AbstractField::MARKDOWN_T ||
+                $field->getType() === AbstractField::STRING_T ||
+                $field->getType() === AbstractField::TEXT_T ||
+                $field->getType() === AbstractField::EMAIL_T ||
+                $field->getType() === AbstractField::JSON_T ||
+                $field->getType() === AbstractField::YAML_T ||
+                $field->getType() === AbstractField::CSS_T
             ) {
                 $builder->add(
                     $this->createTextSearchForm($builder, $field->getVarName(), $field->getLabel())
@@ -594,5 +687,6 @@ class SearchController extends RozierApp
                 $builder->add($field->getVarName(), $type, $option);
             }
         }
+        return $builder;
     }
 }

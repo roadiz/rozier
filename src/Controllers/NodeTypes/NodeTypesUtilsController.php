@@ -29,12 +29,21 @@ use ZipArchive;
 
 class NodeTypesUtilsController extends RozierApp
 {
+    private SerializerInterface $serializer;
+    private NodeTypes $nodeTypesBag;
+    private NodeTypesImporter $nodeTypesImporter;
+    private MessageBusInterface $messageBus;
+
     public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly NodeTypes $nodeTypesBag,
-        private readonly NodeTypesImporter $nodeTypesImporter,
-        private readonly MessageBusInterface $messageBus
+        SerializerInterface $serializer,
+        NodeTypes $nodeTypesBag,
+        NodeTypesImporter $nodeTypesImporter,
+        MessageBusInterface $messageBus
     ) {
+        $this->serializer = $serializer;
+        $this->nodeTypesBag = $nodeTypesBag;
+        $this->nodeTypesImporter = $nodeTypesImporter;
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -72,6 +81,7 @@ class NodeTypesUtilsController extends RozierApp
 
     /**
      * @param Request $request
+     *
      * @return BinaryFileResponse
      * @throws RuntimeError
      */
@@ -142,6 +152,10 @@ class NodeTypesUtilsController extends RozierApp
         return $response;
     }
 
+    /**
+     * @param Request $request
+     * @return BinaryFileResponse
+     */
     public function exportAllAction(Request $request): BinaryFileResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODETYPES');
