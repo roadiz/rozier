@@ -135,8 +135,14 @@
         padding:0;
         border:none;
         background: #3a3a3a;
-        .translate(100%, 0);
         z-index:9;
+
+        transform: translateX(100%);
+        transition: transform ease-in-out 0.33s;
+
+        &.open {
+            transform: translateX(0);
+        }
     }
 }
 
@@ -187,7 +193,10 @@
 
 .user-actions-menu {
     text-align: center;
-    padding: 20px 0 10px 0;
+
+    @media (min-width: @screen-sm-min) {
+        padding: 20px 0 10px 0;
+    }
 
     h3, p {
         font-size: @default-font-size;
