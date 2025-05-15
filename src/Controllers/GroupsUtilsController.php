@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CoreBundle\Entity\Group;
 use RZ\Roadiz\CoreBundle\Importer\GroupsImporter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -16,20 +15,14 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class GroupsUtilsController extends AbstractController
+class GroupsUtilsController extends RozierApp
 {
     public function __construct(
         private readonly SerializerInterface $serializer,
         private readonly GroupsImporter $groupsImporter,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly LogTrail $logTrail,
     ) {
     }
 
@@ -40,15 +33,15 @@ final class GroupsUtilsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
-        $groups = $this->managerRegistry
+        $existingGroup = $this->em()
                               ->getRepository(Group::class)
                               ->findAll();
 
         return new JsonResponse(
             $this->serializer->serialize(
-                $groups,
+                $existingGroup,
                 'json',
-                ['groups' => ['group:export']]
+                SerializationContext::create()->setGroups(['group'])
             ),
             Response::HTTP_OK,
             [
@@ -65,7 +58,7 @@ final class GroupsUtilsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
-        $existingGroup = $this->managerRegistry->getRepository(Group::class)->find($id);
+        $existingGroup = $this->em()->find(Group::class, $id);
 
         if (null === $existingGroup) {
             throw $this->createNotFoundException();
@@ -75,7 +68,7 @@ final class GroupsUtilsController extends AbstractController
             $this->serializer->serialize(
                 [$existingGroup], // need to wrap in array
                 'json',
-                ['groups' => ['group:export']]
+                SerializationContext::create()->setGroups(['group'])
             ),
             Response::HTTP_OK,
             [
@@ -95,6 +88,7 @@ final class GroupsUtilsController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_GROUPS');
 
         $form = $this->buildImportJsonFileForm();
+
         $form->handleRequest($request);
 
         if (
@@ -113,25 +107,25 @@ final class GroupsUtilsController extends AbstractController
 
                 if (null !== \json_decode($serializedData)) {
                     $this->groupsImporter->import($serializedData);
-                    $this->managerRegistry->getManager()->flush();
+                    $this->em()->flush();
 
-                    $msg = $this->translator->trans('group.imported.updated');
-                    $this->logTrail->publishConfirmMessage($request, $msg);
+                    $msg = $this->getTranslator()->trans('group.imported.updated');
+                    $this->publishConfirmMessage($request, $msg);
 
                     // redirect even if its null
                     return $this->redirectToRoute(
                         'groupsHomePage'
                     );
                 }
-                $form->addError(new FormError($this->translator->trans('file.format.not_valid')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {
-                $form->addError(new FormError($this->translator->trans('file.not_uploaded')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));
             }
         }
 
-        return $this->render('@RoadizRozier/groups/import.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/groups/import.html.twig', $this->assignation);
     }
 
     private function buildImportJsonFileForm(): FormInterface

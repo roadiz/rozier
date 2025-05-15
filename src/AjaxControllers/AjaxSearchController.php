@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
@@ -16,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AjaxSearchController extends AbstractAjaxController
 {
@@ -25,17 +23,18 @@ final class AjaxSearchController extends AbstractAjaxController
     public function __construct(
         private readonly Security $security,
         private readonly ExplorerItemFactoryInterface $explorerItemFactory,
-        ManagerRegistry $managerRegistry,
         SerializerInterface $serializer,
-        TranslatorInterface $translator,
     ) {
-        parent::__construct($managerRegistry, $serializer, $translator);
+        parent::__construct($serializer);
     }
 
     /**
-     * Handle AJAX edition requests for Node such as coming from node-tree widgets.
+     * Handle AJAX edition requests for Node
+     * such as coming from node-tree widgets.
+     *
+     * @return Response JSON response
      */
-    public function searchAction(Request $request): JsonResponse
+    public function searchAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted(NodeVoter::SEARCH);
 
@@ -43,9 +42,10 @@ final class AjaxSearchController extends AbstractAjaxController
             throw new BadRequestHttpException('searchTerms parameter is missing.');
         }
 
-        $searchHandler = new GlobalNodeSourceSearchHandler($this->managerRegistry->getManager());
+        $searchHandler = new GlobalNodeSourceSearchHandler($this->em());
         $searchHandler->setDisplayNonPublishedNodes(true);
 
+        /** @var array $nodesSources */
         $nodesSources = $searchHandler->getNodeSourcesBySearchTerm(
             $request->get('searchTerms'),
             self::RESULT_COUNT

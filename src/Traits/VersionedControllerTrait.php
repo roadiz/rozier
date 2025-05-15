@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
 
-use Doctrine\Persistence\ManagerRegistry;
 use Gedmo\Exception\UnexpectedValueException;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\UserLogEntry;
 use RZ\Roadiz\CoreBundle\Repository\UserLogEntryRepository;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -25,16 +23,16 @@ trait VersionedControllerTrait
     }
 
     /**
-     * @return $this
+     * @return self
      */
-    public function setIsReadOnly(bool $isReadOnly): self
+    public function setIsReadOnly(bool $isReadOnly)
     {
         $this->isReadOnly = $isReadOnly;
 
         return $this;
     }
 
-    protected function handleVersions(Request $request, PersistableInterface $entity, array &$assignation): ?Response
+    protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
     {
         /** @var UserLogEntryRepository $repo */
         $repo = $this->getDoctrine()->getRepository(UserLogEntry::class);
@@ -49,11 +47,11 @@ trait VersionedControllerTrait
                 $versionNumber = intval($versionNumber);
                 $repo->revert($entity, $versionNumber);
                 $this->isReadOnly = true;
-                $assignation['currentVersionNumber'] = $versionNumber;
+                $this->assignation['currentVersionNumber'] = $versionNumber;
                 /** @var UserLogEntry $log */
                 foreach ($logs as $log) {
                     if ($log->getVersion() === $versionNumber) {
-                        $assignation['currentVersion'] = $log;
+                        $this->assignation['currentVersion'] = $log;
                     }
                 }
                 $revertForm = $this->createNamedFormBuilder('revertVersion')
@@ -61,19 +59,20 @@ trait VersionedControllerTrait
                     ->getForm();
                 $revertForm->handleRequest($request);
 
+                $this->assignation['revertForm'] = $revertForm->createView();
+
                 if ($revertForm->isSubmitted() && $revertForm->isValid()) {
-                    $this->getDoctrine()->getManager()->persist($entity);
+                    $this->em()->persist($entity);
                     $this->onPostUpdate($entity, $request);
 
                     return $this->getPostUpdateRedirection($entity);
                 }
-                $assignation['revertForm'] = $revertForm->createView();
             } catch (UnexpectedValueException $e) {
                 throw new ResourceNotFoundException();
             }
         }
 
-        $assignation['versions'] = $logs;
+        $this->assignation['versions'] = $logs;
 
         return null;
     }
@@ -81,11 +80,4 @@ trait VersionedControllerTrait
     abstract protected function onPostUpdate(PersistableInterface $entity, Request $request): void;
 
     abstract protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response;
-
-    /**
-     * @deprecated
-     */
-    abstract protected function getDoctrine(): ManagerRegistry;
-
-    abstract protected function createNamedFormBuilder(string $name = 'form', mixed $data = null, array $options = []): FormBuilderInterface;
 }

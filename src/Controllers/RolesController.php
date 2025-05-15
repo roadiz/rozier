@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\Forms\RoleType;
 
-final class RolesController extends AbstractAdminController
+class RolesController extends AbstractAdminController
 {
     protected function supports(PersistableInterface $item): bool
     {

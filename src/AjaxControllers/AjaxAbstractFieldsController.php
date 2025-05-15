@@ -4,30 +4,26 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
-use RZ\Roadiz\CoreBundle\Entity\AbstractField;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
     public function __construct(
         protected readonly HandlerFactoryInterface $handlerFactory,
-        ManagerRegistry $managerRegistry,
         SerializerInterface $serializer,
-        TranslatorInterface $translator,
     ) {
-        parent::__construct($managerRegistry, $serializer, $translator);
+        parent::__construct($serializer);
     }
 
     protected function findEntity(int|string $entityId): ?AbstractField
     {
-        return $this->managerRegistry->getRepository($this->getEntityClass())->find((int) $entityId);
+        return $this->em()->find($this->getEntityClass(), (int) $entityId);
     }
 
     /**
@@ -65,15 +61,15 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
             }
             $field->setPosition($afterField->getPosition() + 0.5);
             // Apply position update before cleaning
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->flush();
             $handler = $this->handlerFactory->getHandler($field);
             $handler->cleanPositions();
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->flush();
 
             return [
                 'statusCode' => '200',
                 'status' => 'success',
-                'responseText' => $this->translator->trans('field.%name%.updated', [
+                'responseText' => $this->getTranslator()->trans('field.%name%.updated', [
                     '%name%' => $field->getName(),
                 ]),
             ];
@@ -85,15 +81,15 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
             }
             $field->setPosition($beforeField->getPosition() - 0.5);
             // Apply position update before cleaning
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->flush();
             $handler = $this->handlerFactory->getHandler($field);
             $handler->cleanPositions();
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->flush();
 
             return [
                 'statusCode' => '200',
                 'status' => 'success',
-                'responseText' => $this->translator->trans('field.%name%.updated', [
+                'responseText' => $this->getTranslator()->trans('field.%name%.updated', [
                     '%name%' => $field->getName(),
                 ]),
             ];

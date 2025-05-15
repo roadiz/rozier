@@ -4,30 +4,44 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
-use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderLocator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
-/*
- * This class will be final in Roadiz v2.6+
- */
 class AjaxExplorerProviderController extends AbstractAjaxController
 {
     public function __construct(
-        private readonly ExplorerProviderLocator $explorerProviderLocator,
-        ManagerRegistry $managerRegistry,
+        private readonly ContainerInterface $psrContainer,
         SerializerInterface $serializer,
-        TranslatorInterface $translator,
     ) {
-        parent::__construct($managerRegistry, $serializer, $translator);
+        parent::__construct($serializer);
     }
 
+    /**
+     * @param class-string<ExplorerProviderInterface> $providerClass
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    protected function getProvider(string $providerClass): ExplorerProviderInterface
+    {
+        if ($this->psrContainer->has($providerClass)) {
+            return $this->psrContainer->get($providerClass);
+        }
+
+        return new $providerClass();
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     protected function getProviderFromRequest(Request $request): ExplorerProviderInterface
     {
         /** @var class-string<ExplorerProviderInterface>|null $providerClass */
@@ -45,9 +59,13 @@ class AjaxExplorerProviderController extends AbstractAjaxController
             throw new InvalidParameterException('providerClass is not a valid ExplorerProviderInterface class.');
         }
 
-        return $this->explorerProviderLocator->getProvider($providerClass);
+        return $this->getProvider($providerClass);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function indexAction(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
@@ -85,6 +103,9 @@ class AjaxExplorerProviderController extends AbstractAjaxController
 
     /**
      * Get a Node list from an array of id.
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function listAction(Request $request): JsonResponse
     {

@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 use Themes\Rozier\Forms\GroupType;
 use Twig\Error\RuntimeError;
 
-final class GroupsController extends AbstractAdminController
+class GroupsController extends AbstractAdminController
 {
     protected function supports(PersistableInterface $item): bool
     {

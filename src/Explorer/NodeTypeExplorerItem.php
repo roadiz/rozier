@@ -18,7 +18,7 @@ final class NodeTypeExplorerItem extends AbstractExplorerItem
 
     public function getId(): string|int
     {
-        return $this->nodeType->getName();
+        return $this->nodeType->getId();
     }
 
     public function getAlternativeDisplayable(): ?string
@@ -44,7 +44,7 @@ final class NodeTypeExplorerItem extends AbstractExplorerItem
     protected function getEditItemPath(): ?string
     {
         return $this->urlGenerator->generate('nodeTypesEditPage', [
-            'nodeTypeName' => $this->nodeType->getName(),
+            'nodeTypeId' => $this->nodeType->getId(),
         ]);
     }
 

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Logger;
 use RZ\Roadiz\CoreBundle\Entity\User;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Logger\Entity\Log;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-#[AsController]
-final class HistoryController extends AbstractController
+/**
+ * Display CMS logs.
+ */
+class HistoryController extends RozierApp
 {
     public static array $levelToHuman = [
         Logger::EMERGENCY => 'emergency',
@@ -29,14 +29,10 @@ final class HistoryController extends AbstractController
         Logger::DEBUG => 'debug',
     ];
 
-    public function __construct(
-        private readonly EntityListManagerFactoryInterface $entityListManagerFactory,
-        private readonly ManagerRegistry $managerRegistry,
-    ) {
-    }
-
     /**
      * List all logs action.
+     *
+     * @throws RuntimeError
      */
     public function indexAction(Request $request): Response
     {
@@ -45,7 +41,7 @@ final class HistoryController extends AbstractController
         /*
          * Manage get request to filter list
          */
-        $listManager = $this->entityListManagerFactory->createAdminEntityListManager(
+        $listManager = $this->createEntityListManager(
             Log::class,
             [],
             ['datetime' => 'DESC']
@@ -54,15 +50,19 @@ final class HistoryController extends AbstractController
         $listManager->setDisplayingAllNodesStatuses(true);
         $listManager->handle();
 
-        return $this->render('@RoadizRozier/history/list.html.twig', [
-            'logs' => $listManager->getEntities(),
-            'levels' => self::$levelToHuman,
-            'filters' => $listManager->getAssignation(),
-        ]);
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['logs'] = $listManager->getEntities();
+        $this->assignation['levels'] = static::$levelToHuman;
+
+        return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
     }
 
     /**
      * List user logs action.
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function userAction(Request $request, int|string $userId): Response
     {
@@ -76,7 +76,7 @@ final class HistoryController extends AbstractController
         }
 
         /** @var User|null $user */
-        $user = $this->managerRegistry->getRepository(User::class)->find($userId);
+        $user = $this->em()->find(User::class, $userId);
 
         if (null === $user) {
             throw new ResourceNotFoundException();
@@ -85,7 +85,7 @@ final class HistoryController extends AbstractController
         /*
          * Manage get request to filter list
          */
-        $listManager = $this->entityListManagerFactory->createAdminEntityListManager(
+        $listManager = $this->createEntityListManager(
             Log::class,
             ['userId' => $user->getId()],
             ['datetime' => 'DESC']
@@ -95,11 +95,11 @@ final class HistoryController extends AbstractController
         $listManager->setItemPerPage(30);
         $listManager->handle();
 
-        return $this->render('@RoadizRozier/history/list.html.twig', [
-            'user' => $user,
-            'logs' => $listManager->getEntities(),
-            'levels' => self::$levelToHuman,
-            'filters' => $listManager->getAssignation(),
-        ]);
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['logs'] = $listManager->getEntities();
+        $this->assignation['levels'] = static::$levelToHuman;
+        $this->assignation['user'] = $user;
+
+        return $this->render('@RoadizRozier/history/list.html.twig', $this->assignation);
     }
 }

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Container\ContainerInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
-use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderLocator;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\ProviderDataTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -17,10 +18,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldType
 {
-    public function __construct(
-        ManagerRegistry $managerRegistry,
-        private readonly ExplorerProviderLocator $explorerProviderLocator,
-    ) {
+    public function __construct(ManagerRegistry $managerRegistry, private readonly ContainerInterface $container)
+    {
         parent::__construct($managerRegistry);
     }
 
@@ -50,9 +49,21 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
         $builder->addModelTransformer(
             new ProviderDataTransformer(
                 $options['nodeTypeField'],
-                $this->explorerProviderLocator->getProvider($configuration['classname'])
+                $this->getProvider($configuration, $options)
             )
         );
+    }
+
+    protected function getProvider(array $configuration, array $options): ExplorerProviderInterface
+    {
+        if ($this->container->has($configuration['classname'])) {
+            $provider = $this->container->get($configuration['classname']);
+        } else {
+            /** @var ExplorerProviderInterface $provider */
+            $provider = new $configuration['classname']();
+        }
+
+        return $provider;
     }
 
     /**
@@ -69,7 +80,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             $providerOptions = [];
         }
 
-        $provider = $this->explorerProviderLocator->getProvider($configuration['classname']);
+        $provider = $this->getProvider($configuration, $options);
 
         $displayableData = [];
         /** @var callable $callable */

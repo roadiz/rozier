@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\EntityHandler\FolderHandler;
@@ -13,17 +12,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AjaxFoldersController extends AbstractAjaxController
 {
     public function __construct(
         private readonly HandlerFactoryInterface $handlerFactory,
-        ManagerRegistry $managerRegistry,
         SerializerInterface $serializer,
-        TranslatorInterface $translator,
     ) {
-        parent::__construct($managerRegistry, $serializer, $translator);
+        parent::__construct($serializer);
     }
 
     /*
@@ -35,10 +31,10 @@ final class AjaxFoldersController extends AbstractAjaxController
         $this->validateRequest($request);
         $this->denyAccessUnlessGranted('ROLE_ACCESS_DOCUMENTS');
 
-        $folder = $this->managerRegistry->getRepository(Folder::class)->find((int) $folderId);
+        $folder = $this->em()->find(Folder::class, (int) $folderId);
 
         if (null === $folder) {
-            throw $this->createNotFoundException($this->translator->trans('folder.does_not_exist'));
+            throw $this->createNotFoundException($this->getTranslator()->trans('folder.does_not_exist'));
         }
 
         if ('updatePosition' !== $request->get('_action')) {
@@ -51,7 +47,7 @@ final class AjaxFoldersController extends AbstractAjaxController
             [
                 'statusCode' => '200',
                 'status' => 'success',
-                'responseText' => $this->translator->trans('folder.%name%.updated', [
+                'responseText' => $this->getTranslator()->trans('folder.%name%.updated', [
                     '%name%' => $folder->getName(),
                 ]),
             ],
@@ -67,7 +63,7 @@ final class AjaxFoldersController extends AbstractAjaxController
             $responseArray = [];
 
             $pattern = strip_tags($request->get('search'));
-            $folders = $this->managerRegistry
+            $folders = $this->em()
                         ->getRepository(Folder::class)
                         ->searchBy(
                             $pattern,
@@ -86,7 +82,7 @@ final class AjaxFoldersController extends AbstractAjaxController
             );
         }
 
-        throw $this->createNotFoundException($this->translator->trans('no.folder.found'));
+        throw $this->createNotFoundException($this->getTranslator()->trans('no.folder.found'));
     }
 
     protected function updatePosition(array $parameters, Folder $folder): void
@@ -100,7 +96,7 @@ final class AjaxFoldersController extends AbstractAjaxController
             && $parameters['newParent'] > 0
         ) {
             /** @var Folder $parent */
-            $parent = $this->managerRegistry->getRepository(Folder::class)->find((int) $parameters['newParent']);
+            $parent = $this->em()->find(Folder::class, (int) $parameters['newParent']);
 
             if (null !== $parent) {
                 $folder->setParent($parent);
@@ -117,7 +113,7 @@ final class AjaxFoldersController extends AbstractAjaxController
             && $parameters['nextFolderId'] > 0
         ) {
             /** @var Folder $nextFolder */
-            $nextFolder = $this->managerRegistry->getRepository(Folder::class)->find((int) $parameters['nextFolderId']);
+            $nextFolder = $this->em()->find(Folder::class, (int) $parameters['nextFolderId']);
             if (null !== $nextFolder) {
                 $folder->setPosition($nextFolder->getPosition() - 0.5);
             }
@@ -126,18 +122,19 @@ final class AjaxFoldersController extends AbstractAjaxController
             && $parameters['prevFolderId'] > 0
         ) {
             /** @var Folder $prevFolder */
-            $prevFolder = $this->managerRegistry->getRepository(Folder::class)->find((int) $parameters['prevFolderId']);
+            $prevFolder = $this->em()
+                ->find(Folder::class, (int) $parameters['prevFolderId']);
             if (null !== $prevFolder) {
                 $folder->setPosition($prevFolder->getPosition() + 0.5);
             }
         }
         // Apply position update before cleaning
-        $this->managerRegistry->getManager()->flush();
+        $this->em()->flush();
 
         /** @var FolderHandler $handler */
         $handler = $this->handlerFactory->getHandler($folder);
         $handler->cleanPositions();
 
-        $this->managerRegistry->getManager()->flush();
+        $this->em()->flush();
     }
 }

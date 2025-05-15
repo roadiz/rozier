@@ -5,42 +5,34 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers\Nodes;
 
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\ListManager\QueryBuilderListManager;
 use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\CoreBundle\Logger\Entity\Log;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class HistoryController extends AbstractController
+class HistoryController extends RozierApp
 {
-    public function __construct(
-        private readonly ManagerRegistry $managerRegistry,
-    ) {
-    }
-
     /**
      * @throws RuntimeError
      */
     public function historyAction(Request $request, int $nodeId): Response
     {
         /** @var Node|null $node */
-        $node = $this->managerRegistry->getRepository(Node::class)->find($nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException();
         }
         $this->denyAccessUnlessGranted(NodeVoter::READ_LOGS, $node);
 
-        $qb = $this->managerRegistry
+        $qb = $this->em()
             ->getRepository(Log::class)
             ->getAllRelatedToNodeQueryBuilder($node);
 
@@ -54,15 +46,18 @@ final class HistoryController extends AbstractController
         });
         $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->setDisplayingAllNodesStatuses(true);
+        /*
+         * Stored in session
+         */
         $sessionListFilter = new SessionListFilters('user_history_item_per_page');
         $sessionListFilter->handleItemPerPage($request, $listManager);
         $listManager->handle();
 
-        return $this->render('@RoadizRozier/nodes/history.html.twig', [
-            'node' => $node,
-            'entries' => $listManager->getEntities(),
-            'filters' => $listManager->getAssignation(),
-            'translation' => $this->managerRegistry->getRepository(Translation::class)->findDefault(),
-        ]);
+        $this->assignation['node'] = $node;
+        $this->assignation['translation'] = $this->em()->getRepository(Translation::class)->findDefault();
+        $this->assignation['entries'] = $listManager->getEntities();
+        $this->assignation['filters'] = $listManager->getAssignation();
+
+        return $this->render('@RoadizRozier/nodes/history.html.twig', $this->assignation);
     }
 }

@@ -10,7 +10,7 @@ use RZ\Roadiz\CoreBundle\Form\AttributeGroupType;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 
-final class AttributeGroupController extends AbstractAdminController
+class AttributeGroupController extends AbstractAdminController
 {
     protected function supports(PersistableInterface $item): bool
     {
