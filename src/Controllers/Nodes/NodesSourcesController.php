@@ -13,7 +13,6 @@ use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
 use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use RZ\Roadiz\CoreBundle\TwigExtension\JwtExtension;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormError;
@@ -34,17 +33,29 @@ class NodesSourcesController extends RozierApp
 {
     use VersionedControllerTrait;
 
-    public function __construct(
-        private readonly JwtExtension $jwtExtension,
-        private readonly FormErrorSerializer $formErrorSerializer,
-    ) {
+    private JwtExtension $jwtExtension;
+    private FormErrorSerializer $formErrorSerializer;
+
+    public function __construct(JwtExtension $jwtExtension, FormErrorSerializer $formErrorSerializer)
+    {
+        $this->jwtExtension = $jwtExtension;
+        $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
      * Return an edition form for requested node.
+     *
+     * @param Request $request
+     * @param int     $nodeId
+     * @param int     $translationId
+     *
+     * @return Response
+     * @throws RuntimeError
      */
     public function editSourceAction(Request $request, int $nodeId, int $translationId): Response
     {
+        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId);
+
         /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
 
@@ -62,8 +73,6 @@ class NodesSourcesController extends RozierApp
             throw new ResourceNotFoundException('Node does not exist');
         }
 
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_CONTENT, $gNode);
-
         /** @var NodesSources|null $source */
         $source = $this->em()
                        ->getRepository(NodesSources::class)
@@ -79,7 +88,7 @@ class NodesSourcesController extends RozierApp
 
         $node = $source->getNode();
 
-        /*
+        /**
          * Versioning
          */
         if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
@@ -100,16 +109,12 @@ class NodesSourcesController extends RozierApp
             ]
         );
         $form->handleRequest($request);
-        $isJsonRequest =
-            $request->isXmlHttpRequest()
-            || \in_array('application/json', $request->getAcceptableContentTypes())
-        ;
 
         if ($form->isSubmitted()) {
             if ($form->isValid() && !$this->isReadOnly) {
                 $this->onPostUpdate($source, $request);
 
-                if (!$isJsonRequest) {
+                if (!$request->isXmlHttpRequest()) {
                     return $this->getPostUpdateRedirection($source);
                 }
 
@@ -119,31 +124,31 @@ class NodesSourcesController extends RozierApp
                     $previewUrl = $this->generateUrl($source, [
                         'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
                     $previewUrl = $this->generateUrl($source, [
                         'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
                         '_preview' => 1,
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 } else {
                     $previewUrl = $this->generateUrl($source, [
                         '_preview' => 1,
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ]);
                 }
 
                 if ($this->getSettingsBag()->get('custom_public_scheme')) {
                     $publicUrl = $this->generateUrl($source, [
                         'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 } else {
                     $publicUrl = $this->generateUrl($source, [
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ]);
                 }
 
@@ -162,9 +167,8 @@ class NodesSourcesController extends RozierApp
             /*
              * Handle errors when Ajax POST requests
              */
-            if ($isJsonRequest) {
+            if ($request->isXmlHttpRequest()) {
                 $errors = $this->formErrorSerializer->getErrorsAsArray($form);
-
                 return new JsonResponse([
                     'status' => 'fail',
                     'errors' => $errors,
@@ -190,6 +194,10 @@ class NodesSourcesController extends RozierApp
     /**
      * Return a remove form for requested nodeSource.
      *
+     * @param Request $request
+     * @param int     $nodeSourceId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function removeAction(Request $request, int $nodeSourceId): Response
@@ -199,9 +207,11 @@ class NodesSourcesController extends RozierApp
         if (null === $ns) {
             throw new ResourceNotFoundException('Node source does not exist');
         }
-        $this->denyAccessUnlessGranted(NodeVoter::DELETE, $ns);
+        /** @var Node $node */
         $node = $ns->getNode();
         $this->em()->refresh($ns->getNode());
+
+        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $node->getId());
 
         /*
          * Prevent deleting last node-source available in node.
@@ -228,6 +238,7 @@ class NodesSourcesController extends RozierApp
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var Node $node */
             $node = $ns->getNode();
             /*
              * Dispatch event
@@ -237,26 +248,22 @@ class NodesSourcesController extends RozierApp
             $this->em()->remove($ns);
             $this->em()->flush();
 
-            $ns = $node->getNodeSources()->first() ?: null;
-
-            if (null === $ns) {
-                throw new ResourceNotFoundException('No more node-source available for this node.');
-            }
+            $ns = $node->getNodeSources()->first();
 
             $msg = $this->getTranslator()->trans('node_source.%node_source%.deleted.%translation%', [
                 '%node_source%' => $node->getNodeName(),
                 '%translation%' => $ns->getTranslation()->getName(),
             ]);
 
-            $this->publishConfirmMessage($request, $msg, $node);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
-                ['nodeId' => $node->getId(), 'translationId' => $ns->getTranslation()->getId()]
+                ['nodeId' => $node->getId(), "translationId" => $ns->getTranslation()->getId()]
             );
         }
 
-        $this->assignation['nodeSource'] = $ns;
+        $this->assignation["nodeSource"] = $ns;
         $this->assignation['form'] = $form->createView();
 
         return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', $this->assignation);
@@ -291,12 +298,11 @@ class NodesSourcesController extends RozierApp
 
         /** @var Translation $translation */
         $translation = $entity->getTranslation();
-
         return $this->redirectToRoute(
             'nodesEditSourcePage',
             [
                 'nodeId' => $entity->getNode()->getId(),
-                'translationId' => $translation->getId(),
+                'translationId' => $translation->getId()
             ]
         );
     }

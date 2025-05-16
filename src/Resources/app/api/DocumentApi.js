@@ -10,13 +10,7 @@ export function getDocumentsByIds({ ids = [] }) {
     const postData = {
         _token: window.RozierRoot.ajaxToken,
         _action: 'documentsByIds',
-    }
-    /*
-     * We need to send the ids as an object with keys as string
-     * when Varnish is enabled, the query string is sorted
-     */
-    for (let i = 0; i < ids.length; i++) {
-        postData['ids[' + i + ']'] = ids[i]
+        ids: ids,
     }
 
     return request({
@@ -35,6 +29,7 @@ export function getDocumentsByIds({ ids = [] }) {
             }
         })
         .catch((error) => {
+            // TODO
             // Log request error or display a message
             throw new Error(error.response.data.humanMessage)
         })
@@ -82,6 +77,7 @@ export function getDocuments({ searchTerms, filters, filterExplorerSelection, mo
             }
         })
         .catch((error) => {
+            // TODO
             // Log request error or display a message
             throw new Error(error)
         })

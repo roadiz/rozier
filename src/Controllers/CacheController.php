@@ -14,10 +14,15 @@ use Themes\Rozier\RozierApp;
 
 final class CacheController extends RozierApp
 {
+    private LoggerInterface $logger;
+    private CacheClearerInterface $cacheClearer;
+
     public function __construct(
-        private readonly CacheClearerInterface $cacheClearer,
-        private readonly LoggerInterface $logger,
+        CacheClearerInterface $cacheClearer,
+        LoggerInterface $logger
     ) {
+        $this->logger = $logger;
+        $this->cacheClearer = $cacheClearer;
     }
 
     public function deleteDoctrineCache(Request $request): Response
@@ -47,12 +52,16 @@ final class CacheController extends RozierApp
              */
             return $this->redirectToRoute('adminHomePage');
         }
+
         $this->assignation['form'] = $form->createView();
 
         return $this->render('@RoadizRozier/cache/deleteDoctrine.html.twig', $this->assignation);
     }
 
     /**
+     * @param Request $request
+     *
+     * @return Response
      * @throws \Twig\Error\RuntimeError
      */
     public function deleteAssetsCache(Request $request): Response

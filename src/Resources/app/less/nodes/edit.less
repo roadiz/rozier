@@ -15,12 +15,12 @@
     .box-sizing();
     width:24px;
     height:24px;
-    border-radius: 20px;
+    .rounded(20px);
     line-height:20px;
     background-color:#E0E0E0;
-    transition: background-color ease 0.35s;
+    .transition(background-color ease 0.35s);
     cursor: pointer;
-    color: var(--global-title-color);
+    color: @black-title;
 
     .uk-icon-rz-infos{
         -webkit-font-smoothing: none;
@@ -28,7 +28,7 @@
     }
     &:hover {
         background-color: darken(#E0E0E0, 10%);
-        color: var(--global-title-color);
+        color: @black-title;
     }
 }
 
@@ -79,9 +79,9 @@
         a {
             border-radius: 0px;
             background-color: #e5e5e5;
-            border: 1px solid var(--global-border-color);
+            border: 1px solid #bfbfbf;
             border-left: 0 none;
-            font-size: @default-font-size;
+            font-size: 12px;
             line-height: 25px;
             padding: 1px 13px 0px;
 
@@ -113,8 +113,8 @@
         }
         &.uk-active {
             & > a {
-                background-color: var(--rz-accent-color-darker);
-                border-color: var(--rz-accent-color-darker);
+                background-color: #666666;
+                border-color: #666666;
                 box-shadow: none;
             }
         }

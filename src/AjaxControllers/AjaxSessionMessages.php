@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 
-final class AjaxSessionMessages extends AbstractAjaxController
+class AjaxSessionMessages extends AbstractAjaxController
 {
     public function getMessagesAction(Request $request): JsonResponse
     {
@@ -17,7 +17,7 @@ final class AjaxSessionMessages extends AbstractAjaxController
 
         $responseArray = [
             'statusCode' => Response::HTTP_OK,
-            'status' => 'success',
+            'status'    => 'success'
         ];
 
         if ($request->hasPreviousSession()) {
@@ -26,7 +26,6 @@ final class AjaxSessionMessages extends AbstractAjaxController
                 $responseArray['messages'] = $session->getFlashBag()->all();
             }
         }
-
         return new JsonResponse(
             $responseArray
         );

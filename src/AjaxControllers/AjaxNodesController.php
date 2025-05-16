@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Psr\Log\LoggerInterface;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
@@ -18,46 +19,58 @@ use RZ\Roadiz\CoreBundle\Node\NodeDuplicator;
 use RZ\Roadiz\CoreBundle\Node\NodeMover;
 use RZ\Roadiz\CoreBundle\Node\NodeNamePolicyInterface;
 use RZ\Roadiz\CoreBundle\Node\UniqueNodeGenerator;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Workflow\Registry;
 
-final class AjaxNodesController extends AbstractAjaxController
+/**
+ * @package Themes\Rozier\AjaxControllers
+ */
+class AjaxNodesController extends AbstractAjaxController
 {
+    private NodeNamePolicyInterface $nodeNamePolicy;
+    private LoggerInterface $logger;
+    private NodeMover $nodeMover;
+    private NodeChrootResolver $nodeChrootResolver;
+    private Registry $workflowRegistry;
+    private UniqueNodeGenerator $uniqueNodeGenerator;
+
     public function __construct(
-        private readonly NodeNamePolicyInterface $nodeNamePolicy,
-        private readonly LoggerInterface $logger,
-        private readonly NodeMover $nodeMover,
-        private readonly NodeChrootResolver $nodeChrootResolver,
-        private readonly Registry $workflowRegistry,
-        private readonly UniqueNodeGenerator $uniqueNodeGenerator,
-        SerializerInterface $serializer,
+        NodeNamePolicyInterface $nodeNamePolicy,
+        LoggerInterface $logger,
+        NodeMover $nodeMover,
+        NodeChrootResolver $nodeChrootResolver,
+        Registry $workflowRegistry,
+        UniqueNodeGenerator $uniqueNodeGenerator
     ) {
-        parent::__construct($serializer);
+        $this->nodeNamePolicy = $nodeNamePolicy;
+        $this->logger = $logger;
+        $this->nodeMover = $nodeMover;
+        $this->nodeChrootResolver = $nodeChrootResolver;
+        $this->workflowRegistry = $workflowRegistry;
+        $this->uniqueNodeGenerator = $uniqueNodeGenerator;
     }
 
-    public function getTagsAction(Request $request, int $nodeId): JsonResponse
+    /**
+     * @param  Request $request
+     * @param  int $nodeId
+     * @return JsonResponse
+     */
+    public function getTagsAction(Request $request, int $nodeId)
     {
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $tags = [];
-        /** @var Node|null $node */
+        /** @var Node $node */
         $node = $this->em()->find(Node::class, (int) $nodeId);
-        if (null === $node) {
-            throw $this->createNotFoundException('Node not found');
-        }
-
-        $this->denyAccessUnlessGranted(NodeVoter::READ, $node);
 
         /** @var Tag $tag */
         foreach ($node->getTags() as $tag) {
             $tags[] = $tag->getFullPath();
         }
 
-        return $this->createSerializedResponse(
+        return new JsonResponse(
             $tags
         );
     }
@@ -66,69 +79,84 @@ final class AjaxNodesController extends AbstractAjaxController
      * Handle AJAX edition requests for Node
      * such as coming from node-tree widgets.
      *
+     * @param Request $request
+     * @param int     $nodeId
+     *
      * @return Response JSON response
      */
-    public function editAction(Request $request, int|string $nodeId): Response
+    public function editAction(Request $request, $nodeId)
     {
+        /*
+         * Validate
+         */
         $this->validateRequest($request);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, (int) $nodeId);
 
-        if (null === $node) {
-            throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', ['%nodeId%' => $nodeId]));
-        }
-        /*
-         * Get the right update method against "_action" parameter
-         */
-        switch ($request->get('_action')) {
-            case 'updatePosition':
-                $this->denyAccessUnlessGranted(NodeVoter::EDIT_SETTING, $node);
-                $this->updatePosition($request->request->all(), $node);
+        if ($node !== null) {
+            $responseArray = null;
+
+            /*
+             * Get the right update method against "_action" parameter
+             */
+            switch ($request->get('_action')) {
+                case 'updatePosition':
+                    $this->updatePosition($request->request->all(), $node);
+                    break;
+                case 'duplicate':
+                    $duplicator = new NodeDuplicator(
+                        $node,
+                        $this->em(),
+                        $this->nodeNamePolicy
+                    );
+                    $newNode = $duplicator->duplicate();
+                    /*
+                     * Dispatch event
+                     */
+                    $this->dispatchEvent(new NodeCreatedEvent($newNode));
+                    $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
+
+                    $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
+                        '%name%' => $node->getNodeName(),
+                    ]);
+                    $this->logger->info($msg, ['source' => $newNode->getNodeSources()->first()]);
+
+                    $responseArray = [
+                        'statusCode' => '200',
+                        'status' => 'success',
+                        'responseText' => $msg,
+                    ];
+                    break;
+            }
+
+            if ($responseArray === null) {
                 $responseArray = [
                     'statusCode' => '200',
                     'status' => 'success',
-                    'responseText' => $this->getTranslator()->trans('node.%name%.was_moved', [
+                    'responseText' => $this->getTranslator()->trans('node.%name%.updated', [
                         '%name%' => $node->getNodeName(),
                     ]),
                 ];
-                break;
-            case 'duplicate':
-                $this->denyAccessUnlessGranted(NodeVoter::DUPLICATE, $node);
-                $duplicator = new NodeDuplicator(
-                    $node,
-                    $this->em(),
-                    $this->nodeNamePolicy
-                );
-                $newNode = $duplicator->duplicate();
-                /*
-                 * Dispatch event
-                 */
-                $this->dispatchEvent(new NodeCreatedEvent($newNode));
-                $this->dispatchEvent(new NodeDuplicatedEvent($newNode));
+            }
 
-                $msg = $this->getTranslator()->trans('duplicated.node.%name%', [
-                    '%name%' => $node->getNodeName(),
-                ]);
-                $this->logger->info($msg, ['entity' => $newNode->getNodeSources()->first()]);
-
-                $responseArray = [
-                    'statusCode' => '200',
-                    'status' => 'success',
-                    'responseText' => $msg,
-                ];
-                break;
-            default:
-                throw new BadRequestHttpException('Action is not defined.');
+            return new JsonResponse(
+                $responseArray,
+                Response::HTTP_PARTIAL_CONTENT
+            );
         }
 
-        return new JsonResponse(
-            $responseArray,
-            Response::HTTP_PARTIAL_CONTENT
-        );
+        throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', [
+            '%nodeId%' => $nodeId,
+        ]));
     }
 
-    protected function updatePosition(array $parameters, Node $node): void
+    /**
+     * @param array $parameters
+     * @param Node  $node
+     */
+    protected function updatePosition($parameters, Node $node): void
     {
         if ($node->isLocked()) {
             throw new BadRequestHttpException('Locked node cannot be moved.');
@@ -167,59 +195,70 @@ final class AjaxNodesController extends AbstractAjaxController
             $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
         }
 
-        $msg = $this->getTranslator()->trans('node.%name%.was_moved', [
-            '%name%' => $node->getNodeName(),
-        ]);
-        $this->logger->info($msg, ['entity' => $node->getNodeSources()->first() ?: $node]);
-
         $this->em()->flush();
     }
 
+    /**
+     * @param array     $parameters
+     *
+     * @return Node|null
+     */
     protected function parseParentNode(array $parameters): ?Node
     {
         if (
-            !empty($parameters['newParent'])
-            && is_numeric($parameters['newParent'])
-            && $parameters['newParent'] > 0
+            !empty($parameters['newParent']) &&
+            is_numeric($parameters['newParent']) &&
+            $parameters['newParent'] > 0
         ) {
             return $this->em()->find(Node::class, (int) $parameters['newParent']);
         } elseif (null !== $this->getUser()) {
             // If user is jailed in a node, prevent moving nodes out.
             return $this->nodeChrootResolver->getChroot($this->getUser());
         }
-
         return null;
     }
 
+    /**
+     * @param array $parameters
+     * @param float $default
+     *
+     * @return float
+     */
     protected function parsePosition(array $parameters, float $default = 0.0): float
     {
         if (key_exists('nextNodeId', $parameters) && (int) $parameters['nextNodeId'] > 0) {
             /** @var Node $nextNode */
             $nextNode = $this->em()->find(Node::class, (int) $parameters['nextNodeId']);
-            if (null !== $nextNode) {
+            if ($nextNode !== null) {
                 return $nextNode->getPosition() - 0.5;
             }
         } elseif (key_exists('prevNodeId', $parameters) && $parameters['prevNodeId'] > 0) {
             /** @var Node $prevNode */
             $prevNode = $this->em()->find(Node::class, (int) $parameters['prevNodeId']);
-            if (null !== $prevNode) {
+            if ($prevNode !== null) {
                 return $prevNode->getPosition() + 0.5;
             }
-        } elseif (key_exists('firstPosition', $parameters) && true === (bool) $parameters['firstPosition']) {
+        } elseif (key_exists('firstPosition', $parameters) && (bool) $parameters['firstPosition'] === true) {
             return -0.5;
-        } elseif (key_exists('lastPosition', $parameters) && true === (bool) $parameters['lastPosition']) {
+        } elseif (key_exists('lastPosition', $parameters) && (bool) $parameters['lastPosition'] === true) {
             return 99999999;
         }
-
         return $default;
     }
 
     /**
      * Update node's status.
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function statusesAction(Request $request): JsonResponse
     {
         $this->validateRequest($request);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         if ($request->get('nodeId', 0) <= 0) {
             throw new BadRequestHttpException($this->getTranslator()->trans('node.id.not_specified'));
@@ -228,10 +267,10 @@ final class AjaxNodesController extends AbstractAjaxController
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, (int) $request->get('nodeId'));
         if (null === $node) {
-            throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', ['%nodeId%' => $request->get('nodeId')]));
+            throw $this->createNotFoundException($this->getTranslator()->trans('node.%nodeId%.not_exists', [
+                '%nodeId%' => $request->get('nodeId'),
+            ]));
         }
-
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_STATUS, $node);
 
         $availableStatuses = [
             'visible' => 'setVisible',
@@ -240,8 +279,8 @@ final class AjaxNodesController extends AbstractAjaxController
             'sterile' => 'setSterile',
         ];
 
-        if ('nodeChangeStatus' == $request->get('_action') && '' != $request->get('statusName')) {
-            if ('status' === $request->get('statusName')) {
+        if ("nodeChangeStatus" == $request->get('_action') && "" != $request->get('statusName')) {
+            if ($request->get('statusName') === 'status') {
                 return $this->changeNodeStatus($node, $request->get('statusValue'));
             }
 
@@ -257,7 +296,7 @@ final class AjaxNodesController extends AbstractAjaxController
                  * If set locked to true,
                  * need to disable dynamic nodeName
                  */
-                if ('locked' == $request->get('statusName') && true === $value) {
+                if ($request->get('statusName') == 'locked' && $value === true) {
                     $node->setDynamicNodeName(false);
                 }
 
@@ -266,19 +305,19 @@ final class AjaxNodesController extends AbstractAjaxController
                 /*
                  * Dispatch event
                  */
-                if ('visible' === $request->get('statusName')) {
+                if ($request->get('statusName') === 'visible') {
                     $msg = $this->getTranslator()->trans('node.%name%.visibility_changed_to.%visible%', [
                         '%name%' => $node->getNodeName(),
                         '%visible%' => $node->isVisible() ? $this->getTranslator()->trans('visible') : $this->getTranslator()->trans('invisible'),
                     ]);
-                    $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+                    $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
                     $this->dispatchEvent(new NodeVisibilityChangedEvent($node));
                 } else {
                     $msg = $this->getTranslator()->trans('node.%name%.%field%.updated', [
                         '%name%' => $node->getNodeName(),
                         '%field%' => $request->get('statusName'),
                     ]);
-                    $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+                    $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
                 }
                 $this->dispatchEvent(new NodeUpdatedEvent($node));
                 $this->em()->flush();
@@ -291,7 +330,9 @@ final class AjaxNodesController extends AbstractAjaxController
                     'value' => $value,
                 ];
             } else {
-                throw new BadRequestHttpException($this->getTranslator()->trans('node.has_no.field.%field%', ['%field%' => $request->get('statusName')]));
+                throw new BadRequestHttpException($this->getTranslator()->trans('node.has_no.field.%field%', [
+                    '%field%' => $request->get('statusName'),
+                ]));
             }
         } else {
             throw new BadRequestHttpException('Status field name is invalid.');
@@ -303,6 +344,12 @@ final class AjaxNodesController extends AbstractAjaxController
         );
     }
 
+    /**
+     * @param Node   $node
+     * @param string $transition
+     *
+     * @return JsonResponse
+     */
     protected function changeNodeStatus(Node $node, string $transition): JsonResponse
     {
         $request = $this->getRequest();
@@ -312,9 +359,9 @@ final class AjaxNodesController extends AbstractAjaxController
         $this->em()->flush();
         $msg = $this->getTranslator()->trans('node.%name%.status_changed_to.%status%', [
             '%name%' => $node->getNodeName(),
-            '%status%' => $node->getStatus()->trans($this->getTranslator()),
+            '%status%' => $this->getTranslator()->trans(Node::getStatusLabel($node->getStatus())),
         ]);
-        $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+        $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
         return new JsonResponse(
             [
@@ -328,15 +375,19 @@ final class AjaxNodesController extends AbstractAjaxController
         );
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function quickAddAction(Request $request): JsonResponse
     {
         /*
          * Validate
          */
         $this->validateRequest($request);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
         try {
-            // Access security is handled by UniqueNodeGenerator
             $source = $this->uniqueNodeGenerator->generateFromRequest($request);
 
             /*

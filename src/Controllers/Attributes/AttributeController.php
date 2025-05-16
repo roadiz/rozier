@@ -11,103 +11,133 @@ use RZ\Roadiz\CoreBundle\Form\AttributeImportType;
 use RZ\Roadiz\CoreBundle\Form\AttributeType;
 use RZ\Roadiz\CoreBundle\Importer\AttributeImporter;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Themes\Rozier\Controllers\AbstractAdminWithBulkController;
-use Twig\Error\RuntimeError;
+use Themes\Rozier\Controllers\AbstractAdminController;
 
-class AttributeController extends AbstractAdminWithBulkController
+class AttributeController extends AbstractAdminController
 {
+    private AttributeImporter $attributeImporter;
+
     public function __construct(
-        private readonly AttributeImporter $attributeImporter,
-        FormFactoryInterface $formFactory,
+        AttributeImporter $attributeImporter,
         SerializerInterface $serializer,
-        UrlGeneratorInterface $urlGenerator,
+        UrlGeneratorInterface $urlGenerator
     ) {
-        parent::__construct($formFactory, $serializer, $urlGenerator);
+        parent::__construct($serializer, $urlGenerator);
+        $this->attributeImporter = $attributeImporter;
     }
 
+
+    /**
+     * @inheritDoc
+     */
     protected function supports(PersistableInterface $item): bool
     {
         return $item instanceof Attribute;
     }
 
-    protected function getBulkDeleteRouteName(): ?string
-    {
-        return 'attributesBulkDeletePage';
-    }
-
+    /**
+     * @inheritDoc
+     */
     protected function getNamespace(): string
     {
         return 'attribute';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function createEmptyItem(Request $request): PersistableInterface
     {
         $item = new Attribute();
         $item->setCode('new_attribute');
-
         return $item;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getTemplateFolder(): string
     {
         return '@RoadizRozier/attributes';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getRequiredRole(): string
     {
         return 'ROLE_ACCESS_ATTRIBUTES';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getRequiredDeletionRole(): string
     {
         return 'ROLE_ACCESS_ATTRIBUTES_DELETE';
     }
 
+
+    /**
+     * @inheritDoc
+     */
     protected function getEntityClass(): string
     {
         return Attribute::class;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getFormType(): string
     {
         return AttributeType::class;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getDefaultOrder(Request $request): array
     {
-        return [
-            'weight' => 'DESC',
-            'code' => 'ASC',
-        ];
+        return ['code' => 'ASC'];
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getDefaultRouteName(): string
     {
         return 'attributesHomePage';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getEditRouteName(): string
     {
         return 'attributesEditPage';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getEntityName(PersistableInterface $item): string
     {
         if ($item instanceof Attribute) {
             return $item->getCode();
         }
-        throw new \InvalidArgumentException('Item should be instance of '.$this->getEntityClass());
+        throw new \InvalidArgumentException('Item should be instance of ' . $this->getEntityClass());
     }
 
     /**
-     * @throws RuntimeError
+     * @param Request $request
+     * @return Response
      */
-    public function importAction(Request $request): Response
+    public function importAction(Request $request)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES');
 
@@ -119,22 +149,10 @@ class AttributeController extends AbstractAdminWithBulkController
             $file = $form->get('file')->getData();
 
             if ($file->isValid()) {
-                $serializedData = \file_get_contents($file->getPathname());
-                if (false === $serializedData) {
-                    throw new \RuntimeException('Cannot read uploaded file.');
-                }
+                $serializedData = file_get_contents($file->getPathname());
 
                 $this->attributeImporter->import($serializedData);
                 $this->em()->flush();
-
-                $msg = $this->getTranslator()->trans(
-                    '%namespace%.imported',
-                    [
-                        '%namespace%' => $this->getTranslator()->trans($this->getNamespace()),
-                    ]
-                );
-                $this->publishConfirmMessage($request, $msg);
-
                 return $this->redirectToRoute('attributesHomePage');
             }
             $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));

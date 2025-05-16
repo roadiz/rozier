@@ -5,7 +5,7 @@ import $ from 'jquery'
  */
 export default class YamlEditor {
     /**
-     * @param {jQuery} $textarea
+     * @param $textarea
      * @param index
      */
     constructor($textarea, index) {
@@ -59,16 +59,19 @@ export default class YamlEditor {
         this.init()
     }
 
+    /**
+     * Init
+     */
     init() {
         if (this.$textarea.length) {
             this.editor.on('change', this.textareaChange)
             this.editor.on('focus', this.textareaFocus)
             this.editor.on('blur', this.textareaBlur)
 
-            window.requestAnimationFrame(() => {
+            window.setTimeout(() => {
                 $('[data-uk-switcher]').on('show.uk.switcher', this.forceEditorUpdate)
                 this.forceEditorUpdate()
-            })
+            }, 300)
         }
     }
 

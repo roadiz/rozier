@@ -20,7 +20,7 @@
             {{ form_widget(form) }}
             <fieldset data-uk-margin>
                 {% apply spaceless %}
-                <button data-action-save="#edit-user-form" class="uk-button uk-button-success rz-action-save" type="submit">
+                <button data-action-save="#edit-user-form" class="uk-button uk-button-primary rz-action-save" type="submit">
                     <span class="icon-container"><i class="uk-icon-rz-save-mini"></i></span>
                     <span class="label"><span class="label-text">{% trans %}save{% endtrans %}</span></span>
                 </button>
@@ -42,15 +42,15 @@
                 {% endif %}
                 <tr>
                     <td><strong>{% trans %}user.last-login{% endtrans %}</strong></td>
-                    <td>{{- user.lastLogin ?
-                        user.lastLogin|format_datetime('full', 'medium', locale=app.request.locale) :
-                        'never'|trans -}}</td>
+                    <td>{{ user.lastLogin|format_datetime('full', 'medium', locale=app.request.locale) }}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans %}user.password-requested-at{% endtrans %}</strong></td>
-                    <td>{{- user.passwordRequestedAt ?
-                        user.passwordRequestedAt|format_datetime('full', 'medium', locale=app.request.locale) :
-                        'never.requested'|trans -}}</td>
+                    {% if user.passwordRequestedAt %}
+                    <td>{{ user.passwordRequestedAt|format_datetime('full', 'medium', locale=app.request.locale) }}</td>
+                    {% else %}
+                    <td>{% trans %}never.requested{% endtrans %}</td>
+                    {% endif %}
                 </tr>
             </table>
         </div>

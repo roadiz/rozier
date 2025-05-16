@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
+use RZ\Roadiz\CoreBundle\Entity\Node;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,46 +21,56 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
      * Handle AJAX edition requests for NodeTypeFields
      * such as coming from widgets.
      *
+     * @param Request $request
+     * @param int     $attributeValueId
+     *
      * @return Response JSON response
      */
     public function editAction(Request $request, int $attributeValueId): Response
     {
-        /*
-         * Validate
-         */
         $this->validateRequest($request, 'POST', false);
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
 
         /** @var AttributeValue|null $attributeValue */
         $attributeValue = $this->em()->find(AttributeValue::class, (int) $attributeValueId);
 
-        if (null === $attributeValue) {
-            throw $this->createNotFoundException($this->getTranslator()->trans('attribute_value.%attributeValueId%.not_exists', ['%attributeValueId%' => $attributeValueId]));
+        if ($attributeValue !== null) {
+            $responseArray = [];
+            /*
+             * Get the right update method against "_action" parameter
+             */
+            switch ($request->get('_action')) {
+                case 'updatePosition':
+                    $responseArray = $this->updatePosition($request->request->all(), $attributeValue);
+                    break;
+            }
+
+            return new JsonResponse(
+                $responseArray,
+                Response::HTTP_PARTIAL_CONTENT
+            );
         }
 
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $attributeValue->getAttributable());
-
-        $responseArray = [];
-        /*
-         * Get the right update method against "_action" parameter
-         */
-        switch ($request->get('_action')) {
-            case 'updatePosition':
-                $responseArray = $this->updatePosition($request->request->all(), $attributeValue);
-                break;
-        }
-
-        return new JsonResponse(
-            $responseArray,
-            Response::HTTP_PARTIAL_CONTENT
-        );
+        throw $this->createNotFoundException($this->getTranslator()->trans(
+            'attribute_value.%attributeValueId%.not_exists',
+            [
+                '%attributeValueId%' => $attributeValueId
+            ]
+        ));
     }
 
-    protected function updatePosition(array $parameters, AttributeValue $attributeValue): array
+    /**
+     * @param array         $parameters
+     * @param AttributeValue $attributeValue
+     *
+     * @return array
+     */
+    protected function updatePosition($parameters, AttributeValue $attributeValue): array
     {
         $attributable = $attributeValue->getAttributable();
         $details = [
             '%name%' => $attributeValue->getAttribute()->getLabelOrCode(),
-            '%nodeName%' => $attributable->getNodeName(),
+            '%nodeName%' => $attributable instanceof Node ? $attributable->getNodeName() : '',
         ];
 
         if (!empty($parameters['afterAttributeValueId']) && is_numeric($parameters['afterAttributeValueId'])) {
@@ -71,7 +81,6 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
             }
             $attributeValue->setPosition($afterAttributeValue->getPosition() + 0.5);
             $this->em()->flush();
-
             return [
                 'statusCode' => '200',
                 'status' => 'success',
@@ -89,7 +98,6 @@ final class AjaxAttributeValuesController extends AbstractAjaxController
             }
             $attributeValue->setPosition($beforeAttributeValue->getPosition() - 0.5);
             $this->em()->flush();
-
             return [
                 'statusCode' => '200',
                 'status' => 'success',

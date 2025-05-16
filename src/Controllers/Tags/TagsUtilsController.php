@@ -12,16 +12,30 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Themes\Rozier\RozierApp;
 
+/**
+ * @package Themes\Rozier\Controllers\Tags
+ */
 class TagsUtilsController extends RozierApp
 {
-    public function __construct(private readonly SerializerInterface $serializer)
+    private SerializerInterface $serializer;
+
+    /**
+     * @param SerializerInterface $serializer
+     */
+    public function __construct(SerializerInterface $serializer)
     {
+        $this->serializer = $serializer;
     }
 
     /**
-     * Export a Tag in a Json file.
+     * Export a Tag in a Json file
+     *
+     * @param Request $request
+     * @param int     $tagId
+     *
+     * @return Response
      */
-    public function exportAction(Request $request, int $tagId): JsonResponse
+    public function exportAction(Request $request, int $tagId)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
@@ -33,11 +47,11 @@ class TagsUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['tag', 'position'])
             ),
-            Response::HTTP_OK,
+            JsonResponse::HTTP_OK,
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-'.$existingTag->getTagName().'-'.date('YmdHis').'.json'
+                    'tag-' . $existingTag->getTagName() . '-' . date("YmdHis")  . '.json'
                 ),
             ],
             true
@@ -45,15 +59,20 @@ class TagsUtilsController extends RozierApp
     }
 
     /**
-     * Export a Tag in a Json file.
+     * Export a Tag in a Json file
+     *
+     * @param Request $request
+     * @param int $tagId
+     *
+     * @return Response
      */
-    public function exportAllAction(Request $request, int $tagId): JsonResponse
+    public function exportAllAction(Request $request, int $tagId)
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
         $existingTags = $this->em()
                               ->getRepository(Tag::class)
-                              ->findBy(['parent' => null]);
+                              ->findBy(["parent" => null]);
 
         return new JsonResponse(
             $this->serializer->serialize(
@@ -61,11 +80,11 @@ class TagsUtilsController extends RozierApp
                 'json',
                 SerializationContext::create()->setGroups(['tag', 'position'])
             ),
-            Response::HTTP_OK,
+            JsonResponse::HTTP_OK,
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-all-'.date('YmdHis').'.json'
+                    'tag-all-' . date("YmdHis") . '.json'
                 ),
             ],
             true

@@ -9,7 +9,7 @@ use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Node\NodeTranstyper;
-use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -17,18 +17,33 @@ use Themes\Rozier\Forms\TranstypeType;
 use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
+/**
+ * @package Themes\Rozier\Controllers\Nodes
+ */
 class TranstypeController extends RozierApp
 {
-    public function __construct(private readonly NodeTranstyper $nodeTranstyper)
+    private NodeTranstyper $nodeTranstyper;
+
+    /**
+     * @param NodeTranstyper $nodeTranstyper
+     */
+    public function __construct(NodeTranstyper $nodeTranstyper)
     {
+        $this->nodeTranstyper = $nodeTranstyper;
     }
 
     /**
+     * @param Request $request
+     * @param int $nodeId
+     *
+     * @return RedirectResponse|Response
      * @throws RuntimeError
      * @throws \Exception
      */
-    public function transtypeAction(Request $request, int $nodeId): Response
+    public function transtypeAction(Request $request, int $nodeId)
     {
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
         $this->em()->refresh($node);
@@ -36,11 +51,6 @@ class TranstypeController extends RozierApp
         if (null === $node) {
             throw new ResourceNotFoundException();
         }
-
-        /*
-         * Transtype is only available for higher rank users
-         */
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_SETTING, $node);
 
         $form = $this->createForm(TranstypeType::class, null, [
             'currentType' => $node->getNodeType(),
@@ -81,15 +91,13 @@ class TranstypeController extends RozierApp
                 '%node%' => $node->getNodeName(),
                 '%type%' => $newNodeType->getName(),
             ]);
-            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
 
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $node->getNodeSources()->first() ?
-                        $node->getNodeSources()->first()->getTranslation()->getId() :
-                        null,
+                    'translationId' => $node->getNodeSources()->first()->getTranslation()->getId(),
                 ]
             );
         }

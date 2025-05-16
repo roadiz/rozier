@@ -12,20 +12,21 @@ use RZ\Roadiz\CoreBundle\Webhook\Exception\TooManyWebhookTriggeredException;
 use RZ\Roadiz\CoreBundle\Webhook\WebhookDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final class WebhookController extends AbstractAdminWithBulkController
+final class WebhookController extends AbstractAdminController
 {
+    private WebhookDispatcher $webhookDispatcher;
+
     public function __construct(
-        private readonly WebhookDispatcher $webhookDispatcher,
-        FormFactoryInterface $formFactory,
+        WebhookDispatcher $webhookDispatcher,
         SerializerInterface $serializer,
-        UrlGeneratorInterface $urlGenerator,
+        UrlGeneratorInterface $urlGenerator
     ) {
-        parent::__construct($formFactory, $serializer, $urlGenerator);
+        parent::__construct($serializer, $urlGenerator);
+        $this->webhookDispatcher = $webhookDispatcher;
     }
 
     public function triggerAction(Request $request, string $id): Response
@@ -56,7 +57,7 @@ final class WebhookController extends AbstractAdminWithBulkController
                         '%seconds%' => $item->getThrottleSeconds(),
                     ]
                 );
-                $this->publishConfirmMessage($request, $msg, $item);
+                $this->publishConfirmMessage($request, $msg);
 
                 return $this->redirect($this->urlGenerator->generate(
                     $this->getDefaultRouteName(),
@@ -64,7 +65,7 @@ final class WebhookController extends AbstractAdminWithBulkController
                 ));
             } catch (TooManyWebhookTriggeredException $e) {
                 $form->addError(new FormError('webhook.too_many_triggered_in_period', null, [
-                    '%time%' => $e->getDoNotTriggerBefore()->format('H:i:s'),
+                    '%time%' => $e->getDoNotTriggerBefore()->format('H:i:s')
                 ], null, $e));
             }
         }
@@ -73,7 +74,7 @@ final class WebhookController extends AbstractAdminWithBulkController
         $this->assignation['item'] = $item;
 
         return $this->render(
-            $this->getTemplateFolder().'/trigger.html.twig',
+            $this->getTemplateFolder() . '/trigger.html.twig',
             $this->assignation,
             null,
             $this->getTemplateNamespace()
@@ -130,12 +131,6 @@ final class WebhookController extends AbstractAdminWithBulkController
         if ($item instanceof Webhook) {
             return (string) $item;
         }
-
         return '';
-    }
-
-    protected function getBulkDeleteRouteName(): ?string
-    {
-        return 'webhooksBulkDeletePage';
     }
 }

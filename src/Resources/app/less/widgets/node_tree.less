@@ -37,7 +37,7 @@
         &:hover {
 
             & > .uk-nestable-panel > .nodetree-contextualmenu {
-                opacity: 1;
+                .opacity(1);
             }
 
             .nodetree-bulk-selection {
@@ -54,7 +54,7 @@
         @media screen and (min-width: 992px) {
             position: relative;
             vertical-align: middle;
-            padding: 0 10px 0 0; // do not add vertical padding, it will break the vertical align
+            padding: 5px 10px 5px 0;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -65,7 +65,7 @@
         position: absolute;
         right: 22px;
         top: 5px;
-        opacity: 0;
+        .opacity(0);
 
         .uk-icon-caret-down {
             font-size: 10px;

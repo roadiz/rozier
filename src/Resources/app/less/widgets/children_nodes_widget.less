@@ -5,6 +5,7 @@
 /* -------- VARS -------- */
 @children-nodes-border: #cbcbcb;
 @children-nodes-btn-bg: #ededed;
+@children-nodes-btn-border: #bfbfbf;
 @children-nodes-btn-color: #2d2d2d;
 @children-node-height: 42px;
 
@@ -18,7 +19,7 @@
     border: 1px solid @children-nodes-border;
 
     & > .children-nodes-tree {
-        background: var(--contrasted-bg);
+        background: #fff;
     }
 
     .uk-form-label {
@@ -38,7 +39,7 @@
         & > .non-nestable-list-item,
         & > .uk-nestable-item {
             padding: 0;
-            border-top: 1px solid var(--global-border-lighter-color);
+            border-top: 1px solid #E2E2E2;
 
             &:first-child {
                 padding: 0;
@@ -56,7 +57,7 @@
     .uk-button {
         background: @children-nodes-btn-bg;
         margin-right: 8px;
-        border: 1px solid var(--global-border-color);
+        border: 1px solid @children-nodes-btn-border;
         color: @children-nodes-btn-color;
 
         &:last-child {
@@ -64,7 +65,7 @@
         }
 
         &:hover {
-            border-color: var(--global-border-color-15);
+            border-color: darken(@children-nodes-btn-border, 15%);
             background-color: darken(@children-nodes-btn-bg, 10%);
             color: darken(@children-nodes-btn-color, 15%);
         }
@@ -97,11 +98,11 @@
                 height: auto;
                 padding: 8px 20px 7px 33px;
                 line-height: 17px;
-                border-bottom: 1px solid var(--global-border-color);
+                border-bottom: 1px solid @children-nodes-btn-border;
 
                 .uk-icon-rz-plus-simple {
                     position: absolute;
-                    top: 8px;
+                    top: 4px;
                     left: 10px;
                 }
 
@@ -127,9 +128,11 @@
         &.uk-open {
             & > .uk-button {
                 background-color: #F7F7F7;
-                border-bottom: 1px dashed var(--global-border-color);
+                border-bottom: 1px dashed @children-nodes-btn-border;;
             }
         }
+
+        margin: 10px;
     }
 }
 
@@ -175,7 +178,7 @@
         left: 1px;
         width: @children-node-height - 15;
         height: @children-node-height - 15;
-        border-radius: 100px;
+        .rounded(100px);
         overflow: hidden;
         z-index: 5;
 
@@ -186,7 +189,7 @@
         }
     }
     .unpublished-node .nodetree-element-img {
-        border-radius: 2px;
+        .rounded(2px);
         .transform(rotate(45deg));
         top: 9px;
         left: 4px;
@@ -212,7 +215,7 @@
     & > .non-nestable-list-item,
     & > .uk-nestable-item {
         position: relative;
-        background: var(--contrasted-bg);
+        background: #fff;
 
         [data-nestable-action="toggle"] {
             right: 5px;
@@ -248,7 +251,6 @@
             bottom: 0;
             left: 0;
             width: 4px;
-            background-color: var(--rz-accent-color);
         }
 
         .uk-nestable-panel {
@@ -297,7 +299,7 @@
                 height: @children-node-height - 15px;
                 top: 6px;
                 background-color: #CCCCCC;
-                border: 1px solid var(--rz-accent-color);
+                border: 1px solid #C2C2C2;
                 z-index: 1;
             }
 
@@ -308,7 +310,7 @@
                     left: 3px;
                     width: @children-node-height / 2;
                     height: @children-node-height / 2;
-                    border-radius: 3px;
+                    .rounded(3px);
                     z-index: 1;
                 }
             }
@@ -335,10 +337,10 @@
                     content: "";
                     font-family: FontAwesome;
                     color: @item-color;
-                    font-size: @default-font-size;
-                    border-radius: 100%;
-                    background-color: var(--contrasted-bg);
-                    border: 1px solid var(--rz-accent-color);
+                    font-size: 12px;
+                    .rounded(100%);
+                    background-color: white;
+                    border: 1px solid #a0a0a0;
                     width: @children-node-height / 2;
                     height: @children-node-height / 2;
                     display: inline-block;
@@ -352,7 +354,7 @@
                 &.unpublished-node {
                     .icon-stack-folder,
                     .uk-icon-folder {
-                        border-radius: 15%;
+                        .rounded(15%);
                         top: 10px;
                         width: (@children-node-height / 2) - 3;
                         height: (@children-node-height / 2) - 3;
@@ -369,9 +371,9 @@
                             content: "";
                             font-family: FontAwesome;
                             color: @item-color;
-                            font-size: @default-font-size;
-                            border-radius: 100%;
-                            background-color: var(--rz-accent-color);
+                            font-size: 12px;
+                            .rounded(100%);
+                            background-color: #a0a0a0;
                             width: 8px;
                             height: 8px;
                             top: 50%;
@@ -384,7 +386,7 @@
                     .icon-stack-folder {
                         &-final {
                             &:after {
-                                border-radius: 15%;
+                                .rounded(15%);
                             }
                         }
                     }
@@ -489,7 +491,7 @@
                 .uk-nestable-panel {
                     margin-left: @children-node-height - (15px - 2);
                     background: #F4F4F4;
-                    border-top: 1px solid var(--global-border-lighter-color);
+                    border-top: 1px solid #e2e2e2;
 
                     &:before {
                         position: absolute;
@@ -498,7 +500,7 @@
                         right: 0;
                         left: 0;
                         height: 1px;
-                        background: var(--contrasted-bg);
+                        background: #fff;
                     }
                 }
 

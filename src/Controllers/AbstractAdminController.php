@@ -8,32 +8,46 @@ use Doctrine\Persistence\ObjectRepository;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use Symfony\Component\Form\Exception\InvalidConfigurationException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Contracts\EventDispatcher\Event;
 use Themes\Rozier\RozierApp;
+use Themes\Rozier\Utils\SessionListFilters;
 
 abstract class AbstractAdminController extends RozierApp
 {
     public const ITEM_PER_PAGE = 20;
 
-    public function __construct(
-        protected readonly SerializerInterface $serializer,
-        protected readonly UrlGeneratorInterface $urlGenerator,
-    ) {
+    protected SerializerInterface $serializer;
+    protected UrlGeneratorInterface $urlGenerator;
+
+    /**
+     * @param SerializerInterface $serializer
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(SerializerInterface $serializer, UrlGeneratorInterface $urlGenerator)
+    {
+        $this->serializer = $serializer;
+        $this->urlGenerator = $urlGenerator;
     }
 
+    /**
+     * @return string
+     */
     protected function getThemeDirectory(): string
     {
         return RozierApp::getThemeDir();
     }
 
+    /**
+     * @return string
+     */
     protected function getTemplateNamespace(): string
     {
         return '@RoadizRozier';
@@ -54,37 +68,14 @@ abstract class AbstractAdminController extends RozierApp
         return $this->em()->getRepository($this->getEntityClass());
     }
 
-    protected function getRequiredDeletionRole(): string
-    {
-        return $this->getRequiredRole();
-    }
-
-    protected function getRequiredListingRole(): string
-    {
-        return $this->getRequiredRole();
-    }
-
-    protected function getRequiredCreationRole(): string
-    {
-        return $this->getRequiredRole();
-    }
-
-    protected function getRequiredEditionRole(): string
-    {
-        return $this->getRequiredRole();
-    }
-
-    protected function getRequiredExportRole(): string
-    {
-        return $this->getRequiredRole();
-    }
-
     /**
+     * @param Request $request
+     * @return Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function defaultAction(Request $request): ?Response
+    public function defaultAction(Request $request)
     {
-        $this->denyAccessUnlessGranted($this->getRequiredListingRole());
+        $this->denyAccessUnlessGranted($this->getRequiredRole());
         $this->additionalAssignation($request);
 
         $elm = $this->createEntityListManager(
@@ -96,7 +87,7 @@ abstract class AbstractAdminController extends RozierApp
         /*
          * Stored item per pages in session
          */
-        $sessionListFilter = new SessionListFilters($this->getNamespace().'_item_per_page');
+        $sessionListFilter = new SessionListFilters($this->getNamespace() . '_item_per_page');
         $sessionListFilter->handleItemPerPage($request, $elm);
         $elm->handle();
 
@@ -104,7 +95,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->assignation['filters'] = $elm->getAssignation();
 
         return $this->render(
-            $this->getTemplateFolder().'/list.html.twig',
+            $this->getTemplateFolder() . '/list.html.twig',
             $this->assignation,
             null,
             $this->getTemplateNamespace()
@@ -112,11 +103,13 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param Request $request
+     * @return RedirectResponse|Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function addAction(Request $request): ?Response
+    public function addAction(Request $request)
     {
-        $this->denyAccessUnlessGranted($this->getRequiredCreationRole());
+        $this->denyAccessUnlessGranted($this->getRequiredRole());
         $this->additionalAssignation($request);
 
         $item = $this->createEmptyItem($request);
@@ -142,10 +135,10 @@ abstract class AbstractAdminController extends RozierApp
                 '%namespace%.%item%.was_created',
                 [
                     '%item%' => $this->getEntityName($item),
-                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace()),
+                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
                 ]
             );
-            $this->publishConfirmMessage($request, $msg, $item);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->getPostSubmitResponse($item, true, $request);
         }
@@ -154,7 +147,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->assignation['item'] = $item;
 
         return $this->render(
-            $this->getTemplateFolder().'/add.html.twig',
+            $this->getTemplateFolder() . '/add.html.twig',
             $this->assignation,
             null,
             $this->getTemplateNamespace()
@@ -162,13 +155,14 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param Request $request
      * @param int|string $id Numeric ID or UUID
-     *
+     * @return Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function editAction(Request $request, $id): ?Response
+    public function editAction(Request $request, $id)
     {
-        $this->denyAccessUnlessGranted($this->getRequiredEditionRole());
+        $this->denyAccessUnlessGranted($this->getRequiredRole());
         $this->additionalAssignation($request);
 
         /** @var mixed|object|null $item */
@@ -202,10 +196,10 @@ abstract class AbstractAdminController extends RozierApp
                 '%namespace%.%item%.was_updated',
                 [
                     '%item%' => $this->getEntityName($item),
-                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace()),
+                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
                 ]
             );
-            $this->publishConfirmMessage($request, $msg, $item);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->getPostSubmitResponse($item, false, $request);
         }
@@ -214,7 +208,7 @@ abstract class AbstractAdminController extends RozierApp
         $this->assignation['item'] = $item;
 
         return $this->render(
-            $this->getTemplateFolder().'/edit.html.twig',
+            $this->getTemplateFolder() . '/edit.html.twig',
             $this->assignation,
             null,
             $this->getTemplateNamespace()
@@ -223,7 +217,7 @@ abstract class AbstractAdminController extends RozierApp
 
     public function exportAction(Request $request): JsonResponse
     {
-        $this->denyAccessUnlessGranted($this->getRequiredExportRole());
+        $this->denyAccessUnlessGranted($this->getRequiredRole());
         $this->additionalAssignation($request);
 
         $items = $this->getRepository()->findAll();
@@ -247,11 +241,12 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param Request $request
      * @param int|string $id Numeric ID or UUID
-     *
+     * @return RedirectResponse|Response|null
      * @throws \Twig\Error\RuntimeError
      */
-    public function deleteAction(Request $request, $id): ?Response
+    public function deleteAction(Request $request, $id)
     {
         $this->denyAccessUnlessGranted($this->getRequiredDeletionRole());
         $this->additionalAssignation($request);
@@ -286,10 +281,10 @@ abstract class AbstractAdminController extends RozierApp
                 '%namespace%.%item%.was_deleted',
                 [
                     '%item%' => $this->getEntityName($item),
-                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace()),
+                    '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
                 ]
             );
-            $this->publishConfirmMessage($request, $msg, $item);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->getPostDeleteResponse($item);
         }
@@ -298,28 +293,50 @@ abstract class AbstractAdminController extends RozierApp
         $this->assignation['item'] = $item;
 
         return $this->render(
-            $this->getTemplateFolder().'/delete.html.twig',
+            $this->getTemplateFolder() . '/delete.html.twig',
             $this->assignation,
             null,
             $this->getTemplateNamespace()
         );
     }
 
+    /**
+     * @param PersistableInterface $item
+     * @return bool
+     */
     abstract protected function supports(PersistableInterface $item): bool;
 
     /**
-     * @return string namespace is used for composing messages and translations
+     * @return string Namespace is used for composing messages and translations.
      */
     abstract protected function getNamespace(): string;
 
+    /**
+     * @param Request $request
+     * @return PersistableInterface
+     */
     abstract protected function createEmptyItem(Request $request): PersistableInterface;
 
+    /**
+     * @return string
+     */
     abstract protected function getTemplateFolder(): string;
 
+    /**
+     * @return string
+     */
     abstract protected function getRequiredRole(): string;
 
     /**
-     * @return class-string<PersistableInterface>
+     * @return string
+     */
+    protected function getRequiredDeletionRole(): string
+    {
+        return $this->getRequiredRole();
+    }
+
+    /**
+     * @return class-string
      */
     abstract protected function getEntityClass(): string;
 
@@ -329,6 +346,7 @@ abstract class AbstractAdminController extends RozierApp
     abstract protected function getFormType(): string;
 
     /**
+     * @param Request $request
      * @return class-string
      */
     protected function getFormTypeFromRequest(Request $request): string
@@ -340,7 +358,6 @@ abstract class AbstractAdminController extends RozierApp
             if (!class_exists($type)) {
                 throw new InvalidConfigurationException(\sprintf('Route uses non-existent %s form type class.', $type));
             }
-
             return (string) $type;
         }
 
@@ -348,16 +365,27 @@ abstract class AbstractAdminController extends RozierApp
         return $this->getFormType();
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     protected function getDefaultCriteria(Request $request): array
     {
         return [];
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     protected function getDefaultOrder(Request $request): array
     {
         return [];
     }
 
+    /**
+     * @return string
+     */
     abstract protected function getDefaultRouteName(): string;
 
     /**
@@ -368,42 +396,39 @@ abstract class AbstractAdminController extends RozierApp
         return [];
     }
 
+    /**
+     * @return string
+     */
     abstract protected function getEditRouteName(): string;
 
+    /**
+     * @param PersistableInterface $item
+     * @param bool $forceDefaultEditRoute
+     * @param Request|null $request
+     * @return Response
+     */
     protected function getPostSubmitResponse(
         PersistableInterface $item,
         bool $forceDefaultEditRoute = false,
-        ?Request $request = null,
+        ?Request $request = null
     ): Response {
-        if (null === $request) {
-            // Redirect to default route if no request provided
-            return $this->redirect($this->urlGenerator->generate(
-                $this->getEditRouteName(),
-                $this->getEditRouteParameters($item)
-            ));
-        }
-
-        $route = $request->attributes->get('_route');
-        $referrer = $request->query->get('referer');
-
         /*
          * Force redirect to avoid resending form when refreshing page
          */
         if (
-            \is_string($referrer)
-            && '' !== $referrer
-            && (new UnicodeString($referrer))->trim()->startsWith('/')
+            null !== $request && $request->query->has('referer') &&
+            (new UnicodeString($request->query->get('referer')))->startsWith('/')
         ) {
-            return $this->redirect($referrer);
+            return $this->redirect($request->query->get('referer'));
         }
 
         /*
          * Try to redirect to same route as defined in Request attribute
          */
         if (
-            false === $forceDefaultEditRoute
-            && \is_string($route)
-            && '' !== $route
+            false === $forceDefaultEditRoute &&
+            null !== $request &&
+            null !== $route = $request->attributes->get('_route')
         ) {
             return $this->redirect($this->urlGenerator->generate(
                 $route,
@@ -417,13 +442,21 @@ abstract class AbstractAdminController extends RozierApp
         ));
     }
 
+    /**
+     * @param PersistableInterface $item
+     * @return array
+     */
     protected function getEditRouteParameters(PersistableInterface $item): array
     {
         return [
-            'id' => $item->getId(),
+            'id' => $item->getId()
         ];
     }
 
+    /**
+     * @param PersistableInterface $item
+     * @return Response
+     */
     protected function getPostDeleteResponse(PersistableInterface $item): Response
     {
         return $this->redirect($this->urlGenerator->generate(
@@ -433,37 +466,29 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
-     * @template T of object|Event
-     *
-     * @param T|iterable<T>|array<int, T>|null $event
-     *
-     * @return T|iterable<T>|array<int, T>|null
+     * @param Event|Event[]|mixed|null $event
+     * @return object|object[]|null
      */
-    protected function dispatchSingleOrMultipleEvent(mixed $event): object|array|null
+    protected function dispatchSingleOrMultipleEvent($event)
     {
         if (null === $event) {
             return null;
         }
         if ($event instanceof Event) {
-            // @phpstan-ignore-next-line
             return $this->dispatchEvent($event);
         }
-        if (\is_iterable($event)) {
+        if (is_iterable($event)) {
             $events = [];
-            /** @var T|null $singleEvent */
             foreach ($event as $singleEvent) {
-                $returningEvent = $this->dispatchSingleOrMultipleEvent($singleEvent);
-                if ($returningEvent instanceof Event) {
-                    $events[] = $returningEvent;
-                }
+                $events[] = $this->dispatchSingleOrMultipleEvent($singleEvent);
             }
-
             return $events;
         }
         throw new \InvalidArgumentException('Event must be null, Event or array of Event');
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createCreateEvent(PersistableInterface $item)
@@ -472,6 +497,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createPostCreateEvent(PersistableInterface $item)
@@ -480,6 +506,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createUpdateEvent(PersistableInterface $item)
@@ -488,6 +515,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createPostUpdateEvent(PersistableInterface $item)
@@ -496,6 +524,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createDeleteEvent(PersistableInterface $item)
@@ -504,6 +533,7 @@ abstract class AbstractAdminController extends RozierApp
     }
 
     /**
+     * @param PersistableInterface $item
      * @return Event|Event[]|null
      */
     protected function createPostDeleteEvent(PersistableInterface $item)
@@ -511,8 +541,15 @@ abstract class AbstractAdminController extends RozierApp
         return null;
     }
 
+    /**
+     * @param PersistableInterface $item
+     * @return string
+     */
     abstract protected function getEntityName(PersistableInterface $item): string;
 
+    /**
+     * @param PersistableInterface $item
+     */
     protected function denyAccessUnlessItemGranted(PersistableInterface $item): void
     {
         // Do nothing
