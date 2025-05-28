@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Themes\Rozier\Models;
 
 /**
- * @package Themes\Rozier\Models
+ * @deprecated use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface instead
  */
 interface ModelInterface
 {
     /**
      * Return a structured array of data.
-     *
-     * @return array
      */
-    public function toArray();
+    public function toArray(): array;
 }

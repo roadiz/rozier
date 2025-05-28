@@ -10,20 +10,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
 abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 {
-    private HandlerFactoryInterface $handlerFactory;
-
-    /**
-     * @param HandlerFactoryInterface $handlerFactory
-     */
-    public function __construct(HandlerFactoryInterface $handlerFactory)
-    {
-        $this->handlerFactory = $handlerFactory;
+    public function __construct(
+        protected readonly HandlerFactoryInterface $handlerFactory,
+        SerializerInterface $serializer,
+    ) {
+        parent::__construct($serializer);
     }
 
     protected function findEntity(int|string $entityId): ?AbstractField
@@ -33,40 +28,20 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
 
     /**
      * Handle actions for any abstract fields.
-     *
-     * @param Request       $request
-     * @param AbstractField|null $field
-     *
-     * @return null|Response
      */
-    protected function handleFieldActions(Request $request, AbstractField $field = null)
+    protected function handleFieldActions(Request $request, ?AbstractField $field = null): ?Response
     {
-        /*
-         * Validate
-         */
         $this->validateRequest($request);
 
-        if ($field !== null) {
-            $responseArray = null;
-
+        if (null !== $field) {
             /*
              * Get the right update method against "_action" parameter
              */
-            switch ($request->get('_action')) {
-                case 'updatePosition':
-                    $responseArray = $this->updatePosition($request->request->all(), $field);
-                    break;
+            if ('updatePosition' !== $request->get('_action')) {
+                throw new BadRequestHttpException('Action does not exist');
             }
 
-            if ($responseArray === null) {
-                $responseArray = [
-                    'statusCode' => '200',
-                    'status' => 'success',
-                    'responseText' => $this->getTranslator()->trans('field.%name%.updated', [
-                        '%name%' => $field->getName(),
-                    ]),
-                ];
-            }
+            $responseArray = $this->updatePosition($request->request->all(), $field);
 
             return new JsonResponse(
                 $responseArray,
@@ -77,13 +52,7 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
         return null;
     }
 
-    /**
-     * @param array $parameters
-     * @param AbstractField|null $field
-     *
-     * @return array
-     */
-    protected function updatePosition(array $parameters, AbstractField $field = null): array
+    protected function updatePosition(array $parameters, ?AbstractField $field = null): array
     {
         if (!empty($parameters['afterFieldId']) && is_numeric($parameters['afterFieldId'])) {
             $afterField = $this->findEntity((int) $parameters['afterFieldId']);
@@ -96,6 +65,7 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
             $handler = $this->handlerFactory->getHandler($field);
             $handler->cleanPositions();
             $this->em()->flush();
+
             return [
                 'statusCode' => '200',
                 'status' => 'success',
@@ -115,6 +85,7 @@ abstract class AjaxAbstractFieldsController extends AbstractAjaxController
             $handler = $this->handlerFactory->getHandler($field);
             $handler->cleanPositions();
             $this->em()->flush();
+
             return [
                 'statusCode' => '200',
                 'status' => 'success',

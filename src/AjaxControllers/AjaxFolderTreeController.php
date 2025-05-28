@@ -7,19 +7,17 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\SerializerInterface;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxFolderTreeController extends AbstractAjaxController
+final class AjaxFolderTreeController extends AbstractAjaxController
 {
-    private TreeWidgetFactory $treeWidgetFactory;
-
-    public function __construct(TreeWidgetFactory $treeWidgetFactory)
-    {
-        $this->treeWidgetFactory = $treeWidgetFactory;
+    public function __construct(
+        private readonly TreeWidgetFactory $treeWidgetFactory,
+        SerializerInterface $serializer,
+    ) {
+        parent::__construct($serializer);
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -30,7 +28,7 @@ class AjaxFolderTreeController extends AbstractAjaxController
         /** @var FolderTreeWidget|null $folderTree */
         $folderTree = null;
 
-        switch ($request->get("_action")) {
+        switch ($request->get('_action')) {
             /*
              * Inner folder edit for folderTree
              */
@@ -50,9 +48,9 @@ class AjaxFolderTreeController extends AbstractAjaxController
                 $this->assignation['mainFolderTree'] = false;
 
                 break;
-            /*
-             * Main panel tree folderTree
-             */
+                /*
+                 * Main panel tree folderTree
+                 */
             case 'requestMainFolderTree':
                 $parent = null;
                 $folderTree = $this->treeWidgetFactory->createFolderTree($parent, $translation);
@@ -62,14 +60,10 @@ class AjaxFolderTreeController extends AbstractAjaxController
 
         $this->assignation['folderTree'] = $folderTree;
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'statusCode' => '200',
             'status' => 'success',
             'folderTree' => $this->getTwig()->render('@RoadizRozier/widgets/folderTree/folderTree.html.twig', $this->assignation),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+        ]);
     }
 }

@@ -9,10 +9,13 @@ use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
 use RZ\Roadiz\CoreBundle\Entity\AttributeValueTranslation;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
+use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueTranslationType;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueType;
+use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,28 +27,17 @@ use Twig\Error\RuntimeError;
 
 class NodesAttributesController extends RozierApp
 {
-    private FormFactoryInterface $formFactory;
-
-    /**
-     * @param FormFactoryInterface $formFactory
-     */
-    public function __construct(FormFactoryInterface $formFactory)
-    {
-        $this->formFactory = $formFactory;
+    public function __construct(
+        private readonly FormFactoryInterface $formFactory,
+        private readonly FormErrorSerializer $formErrorSerializer,
+    ) {
     }
 
     /**
-     * @param Request $request
-     * @param int $nodeId
-     * @param int $translationId
-     *
-     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $nodeId, int $translationId): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODE_ATTRIBUTES');
-
         /** @var Translation|null $translation */
         $translation = $this->em()->find(Translation::class, $translationId);
         /** @var Node|null $node */
@@ -54,6 +46,8 @@ class NodesAttributesController extends RozierApp
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
 
         /** @var NodesSources|null $nodeSource */
         $nodeSource = $this->em()
@@ -66,15 +60,35 @@ class NodesAttributesController extends RozierApp
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
+        if (!$this->isAttributable($node)) {
+            throw $this->createNotFoundException('Node type is not attributable');
+        }
+
         if (null !== $response = $this->handleAddAttributeForm($request, $node, $translation)) {
             return $response;
         }
 
+        $isJson =
+            $request->isXmlHttpRequest()
+            || 'json' === $request->getRequestFormat('html')
+            || \in_array(
+                'application/json',
+                $request->getAcceptableContentTypes()
+            );
+
         $this->assignation['attribute_value_translation_forms'] = [];
-        $attributeValues = $node->getAttributeValues();
+        $nodeType = $node->getNodeType();
+        $orderByWeight = false;
+        if ($nodeType instanceof NodeType) {
+            $orderByWeight = $nodeType->isSortingAttributesByWeight();
+        }
+        $attributeValues = $this->em()->getRepository(AttributeValue::class)->findByAttributable(
+            $node,
+            $orderByWeight
+        );
         /** @var AttributeValue $attributeValue */
         foreach ($attributeValues as $attributeValue) {
-            $name = $node->getNodeName() . '_attribute_' . $attributeValue->getId();
+            $name = $node->getNodeName().'_attribute_'.$attributeValue->getId();
             $attributeValueTranslation = $attributeValue->getAttributeValueTranslation($translation);
             if (null === $attributeValueTranslation) {
                 $attributeValueTranslation = new AttributeValueTranslation();
@@ -107,27 +121,28 @@ class NodesAttributesController extends RozierApp
                     );
                     $this->publishConfirmMessage($request, $msg, $nodeSource);
 
-                    if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
+                    if ($isJson) {
                         return new JsonResponse([
                             'status' => 'success',
                             'message' => $msg,
-                        ], JsonResponse::HTTP_ACCEPTED);
+                        ], Response::HTTP_ACCEPTED);
                     }
+
                     return $this->redirectToRoute('nodesEditAttributesPage', [
                         'nodeId' => $node->getId(),
                         'translationId' => $translation->getId(),
                     ]);
                 } else {
-                    $errors = $this->getErrorsAsArray($attributeValueTranslationForm);
+                    $errors = $this->formErrorSerializer->getErrorsAsArray($attributeValueTranslationForm);
                     /*
                      * Handle errors when Ajax POST requests
                      */
-                    if ($request->isXmlHttpRequest() || $request->getRequestFormat('html') === 'json') {
+                    if ($isJson) {
                         return new JsonResponse([
                             'status' => 'fail',
                             'errors' => $errors,
                             'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
-                        ], JsonResponse::HTTP_BAD_REQUEST);
+                        ], Response::HTTP_BAD_REQUEST);
                     }
                     foreach ($errors as $error) {
                         $this->publishErrorMessage($request, $error);
@@ -140,6 +155,7 @@ class NodesAttributesController extends RozierApp
 
         $this->assignation['source'] = $nodeSource;
         $this->assignation['translation'] = $translation;
+        $this->assignation['order_by_weight'] = $orderByWeight;
         $availableTranslations = $this->em()
             ->getRepository(Translation::class)
             ->findAvailableTranslationsForNode($node);
@@ -154,15 +170,21 @@ class NodesAttributesController extends RozierApp
         return $this->em()->getRepository(Attribute::class)->countBy([]) > 0;
     }
 
-    /**
-     * @param Request     $request
-     * @param Node        $node
-     * @param Translation $translation
-     *
-     * @return RedirectResponse|null
-     */
+    protected function isAttributable(Node $node): bool
+    {
+        $nodeType = $node->getNodeType();
+        if ($nodeType instanceof NodeType) {
+            return $nodeType->isAttributable();
+        }
+
+        return false;
+    }
+
     protected function handleAddAttributeForm(Request $request, Node $node, Translation $translation): ?RedirectResponse
     {
+        if (!$this->isAttributable($node)) {
+            return null;
+        }
         if (!$this->hasAttributes()) {
             return null;
         }
@@ -200,20 +222,13 @@ class NodesAttributesController extends RozierApp
     }
 
     /**
-     * @param Request $request
-     * @param int     $nodeId
-     * @param int     $translationId
-     * @param int     $attributeValueId
-     *
-     * @return Response
+     * @throws RuntimeError
      */
-    public function deleteAction(Request $request, $nodeId, $translationId, $attributeValueId): Response
+    public function deleteAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
-
         /** @var AttributeValue|null $item */
         $item = $this->em()->find(AttributeValue::class, $attributeValueId);
-        if ($item === null) {
+        if (null === $item) {
             throw $this->createNotFoundException('AttributeValue does not exist.');
         }
         /** @var Translation|null $translation */
@@ -224,6 +239,8 @@ class NodesAttributesController extends RozierApp
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
 
         /** @var NodesSources|null $nodeSource */
         $nodeSource = $this->em()
@@ -251,9 +268,9 @@ class NodesAttributesController extends RozierApp
                         '%nodeName%' => $nodeSource->getTitle(),
                     ]
                 );
-                $this->publishConfirmMessage($request, $msg);
+                $this->publishConfirmMessage($request, $msg, $item);
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage());
+                $this->publishErrorMessage($request, $e->getMessage(), $item);
             }
 
             return $this->redirectToRoute('nodesEditAttributesPage', [
@@ -272,24 +289,18 @@ class NodesAttributesController extends RozierApp
     }
 
     /**
-     * @param Request $request
-     * @param int $nodeId
-     * @param int $translationId
-     * @param int $attributeValueId
-     * @return Response
+     * @throws RuntimeError
      */
     public function resetAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_ATTRIBUTES_DELETE');
-
         /** @var AttributeValueTranslation|null $item */
         $item = $this->em()
             ->getRepository(AttributeValueTranslation::class)
             ->findOneBy([
                 'attributeValue' => $attributeValueId,
-                'translation' => $translationId
+                'translation' => $translationId,
             ]);
-        if ($item === null) {
+        if (null === $item) {
             throw $this->createNotFoundException('AttributeValueTranslation does not exist.');
         }
         /** @var Translation|null $translation */
@@ -300,6 +311,8 @@ class NodesAttributesController extends RozierApp
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
 
         /** @var NodesSources|null $nodeSource */
         $nodeSource = $this->em()
@@ -327,9 +340,9 @@ class NodesAttributesController extends RozierApp
                         '%nodeName%' => $nodeSource->getTitle(),
                     ]
                 );
-                $this->publishConfirmMessage($request, $msg);
+                $this->publishConfirmMessage($request, $msg, $item);
             } catch (\RuntimeException $e) {
-                $this->publishErrorMessage($request, $e->getMessage());
+                $this->publishErrorMessage($request, $e->getMessage(), $item);
             }
 
             return $this->redirectToRoute('nodesEditAttributesPage', [

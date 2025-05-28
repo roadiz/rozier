@@ -10,17 +10,21 @@ use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Entity\User;
 use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
+use RZ\Roadiz\CoreBundle\Enum\NodeStatus;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodePathChangedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUndeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Node\NodeUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Exception\EntityAlreadyExistsException;
+use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
 use RZ\Roadiz\CoreBundle\Node\Exception\SameNodeUrlException;
 use RZ\Roadiz\CoreBundle\Node\NodeFactory;
 use RZ\Roadiz\CoreBundle\Node\NodeMover;
+use RZ\Roadiz\CoreBundle\Node\NodeOffspringResolverInterface;
 use RZ\Roadiz\CoreBundle\Node\UniqueNodeGenerator;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
+use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
@@ -32,59 +36,27 @@ use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Workflow\Registry;
 use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\NodesTrait;
-use Themes\Rozier\Utils\SessionListFilters;
 use Twig\Error\RuntimeError;
 
-/**
- * @package Themes\Rozier\Controllers\Nodes
- */
-class NodesController extends RozierApp
+final class NodesController extends RozierApp
 {
     use NodesTrait;
 
-    private NodeChrootResolver $nodeChrootResolver;
-    private NodeMover $nodeMover;
-    private Registry $workflowRegistry;
-    private HandlerFactoryInterface $handlerFactory;
-    private UniqueNodeGenerator $uniqueNodeGenerator;
-    private NodeFactory $nodeFactory;
     /**
-     * @var class-string<AbstractType>
-     */
-    private string $nodeFormTypeClass;
-    /**
-     * @var class-string<AbstractType>
-     */
-    private string $addNodeFormTypeClass;
-
-    /**
-     * @param NodeChrootResolver $nodeChrootResolver
-     * @param NodeMover $nodeMover
-     * @param Registry $workflowRegistry
-     * @param HandlerFactoryInterface $handlerFactory
-     * @param UniqueNodeGenerator $uniqueNodeGenerator
-     * @param NodeFactory $nodeFactory
      * @param class-string<AbstractType> $nodeFormTypeClass
      * @param class-string<AbstractType> $addNodeFormTypeClass
      */
     public function __construct(
-        NodeChrootResolver $nodeChrootResolver,
-        NodeMover $nodeMover,
-        Registry $workflowRegistry,
-        HandlerFactoryInterface $handlerFactory,
-        UniqueNodeGenerator $uniqueNodeGenerator,
-        NodeFactory $nodeFactory,
-        string $nodeFormTypeClass,
-        string $addNodeFormTypeClass
+        private readonly NodeChrootResolver $nodeChrootResolver,
+        private readonly NodeMover $nodeMover,
+        private readonly Registry $workflowRegistry,
+        private readonly HandlerFactoryInterface $handlerFactory,
+        private readonly UniqueNodeGenerator $uniqueNodeGenerator,
+        private readonly NodeFactory $nodeFactory,
+        private readonly NodeOffspringResolverInterface $nodeOffspringResolver,
+        private readonly string $nodeFormTypeClass,
+        private readonly string $addNodeFormTypeClass,
     ) {
-        $this->nodeChrootResolver = $nodeChrootResolver;
-        $this->nodeMover = $nodeMover;
-        $this->workflowRegistry = $workflowRegistry;
-        $this->handlerFactory = $handlerFactory;
-        $this->nodeFormTypeClass = $nodeFormTypeClass;
-        $this->addNodeFormTypeClass = $addNodeFormTypeClass;
-        $this->uniqueNodeGenerator = $uniqueNodeGenerator;
-        $this->nodeFactory = $nodeFactory;
     }
 
     protected function getNodeFactory(): NodeFactory
@@ -94,12 +66,6 @@ class NodesController extends RozierApp
 
     /**
      * List every node.
-     *
-     * @param Request $request
-     * @param string|null $filter
-     *
-     * @return Response
-     * @throws RuntimeError
      */
     public function indexAction(Request $request, ?string $filter = null): Response
     {
@@ -113,25 +79,25 @@ class NodesController extends RozierApp
             case 'draft':
                 $this->assignation['mainFilter'] = $filter;
                 $arrayFilter = [
-                    'status' => Node::DRAFT,
+                    'status' => NodeStatus::DRAFT,
                 ];
                 break;
             case 'pending':
                 $this->assignation['mainFilter'] = $filter;
                 $arrayFilter = [
-                    'status' => Node::PENDING,
+                    'status' => NodeStatus::PENDING,
                 ];
                 break;
             case 'archived':
                 $this->assignation['mainFilter'] = $filter;
                 $arrayFilter = [
-                    'status' => Node::ARCHIVED,
+                    'status' => NodeStatus::ARCHIVED,
                 ];
                 break;
             case 'deleted':
                 $this->assignation['mainFilter'] = $filter;
                 $arrayFilter = [
-                    'status' => Node::DELETED,
+                    'status' => NodeStatus::DELETED,
                 ];
                 break;
             default:
@@ -141,7 +107,7 @@ class NodesController extends RozierApp
         }
 
         if (null !== $user) {
-            $arrayFilter["chroot"] = $this->nodeChrootResolver->getChroot($user);
+            $arrayFilter['chroot'] = $this->nodeChrootResolver->getChroot($user);
         }
 
         /*
@@ -179,22 +145,17 @@ class NodesController extends RozierApp
     /**
      * Return an edition form for requested node.
      *
-     * @param Request $request
-     * @param int $nodeId
-     * @param int|null $translationId
-     *
-     * @return Response
      * @throws RuntimeError
      */
     public function editAction(Request $request, int $nodeId, ?int $translationId = null): Response
     {
-        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_SETTING', $nodeId);
-
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_SETTING, $node);
 
         $this->em()->refresh($node);
         /*
@@ -213,7 +174,8 @@ class NodesController extends RozierApp
                             '%type%' => $type->getDisplayName(),
                         ]
                     );
-                    $this->publishConfirmMessage($request, $msg);
+                    $this->publishConfirmMessage($request, $msg, $node);
+
                     return $this->redirectToRoute(
                         'nodesEditPage',
                         ['nodeId' => $node->getId()]
@@ -254,7 +216,8 @@ class NodesController extends RozierApp
                 $msg = $this->getTranslator()->trans('node.%name%.updated', [
                     '%name%' => $node->getNodeName(),
                 ]);
-                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+
                 return $this->redirectToRoute(
                     'nodesEditPage',
                     ['nodeId' => $node->getId()]
@@ -281,21 +244,15 @@ class NodesController extends RozierApp
         return $this->render('@RoadizRozier/nodes/edit.html.twig', $this->assignation);
     }
 
-    /**
-     * @param Request $request
-     * @param int $nodeId
-     * @param int $typeId
-     * @return Response
-     */
     public function removeStackTypeAction(Request $request, int $nodeId, int $typeId): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
-
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_SETTING, $node);
+
         /** @var NodeType|null $type */
         $type = $this->em()->find(NodeType::class, $typeId);
         if (null === $type) {
@@ -312,7 +269,7 @@ class NodesController extends RozierApp
                 '%type%' => $type->getDisplayName(),
             ]
         );
-        $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+        $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: null);
 
         return $this->redirectToRoute('nodesEditPage', ['nodeId' => $node->getId()]);
     }
@@ -320,13 +277,7 @@ class NodesController extends RozierApp
     /**
      * Handle node creation pages.
      *
-     * @param Request $request
-     * @param int     $nodeTypeId
-     * @param int|null $translationId
-     *
-     * @return Response
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws RuntimeError
      */
     public function addAction(Request $request, int $nodeTypeId, ?int $translationId = null): Response
     {
@@ -334,21 +285,23 @@ class NodesController extends RozierApp
 
         /** @var NodeType|null $type */
         $type = $this->em()->find(NodeType::class, $nodeTypeId);
-        if ($type === null) {
+        if (null === $type) {
             throw new ResourceNotFoundException(sprintf('Node-type #%s does not exist.', $nodeTypeId));
         }
 
         /** @var Translation|null $translation */
         $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
-        if ($translationId !== null) {
+        if (null !== $translationId) {
             $translation = $this->em()->find(Translation::class, $translationId);
         }
-        if ($translation === null) {
+        if (null === $translation) {
             throw new ResourceNotFoundException(sprintf('Translation #%s does not exist.', $translationId));
         }
 
-        $node = new Node($type);
+        $node = new Node();
+        $node->setNodeType($type);
+        $node->setTtl($type->getDefaultTtl());
 
         $chroot = $this->nodeChrootResolver->getChroot($this->getUser());
         if (null !== $chroot) {
@@ -374,13 +327,13 @@ class NodesController extends RozierApp
                     'node.%name%.created',
                     ['%name%' => $node->getNodeName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: null);
 
                 return $this->redirectToRoute(
                     'nodesEditSourcePage',
                     [
                         'nodeId' => $node->getId(),
-                        'translationId' => $translation->getId()
+                        'translationId' => $translation->getId(),
                     ]
                 );
             } catch (EntityAlreadyExistsException $e) {
@@ -401,20 +354,10 @@ class NodesController extends RozierApp
     /**
      * Handle node creation pages.
      *
-     * @param Request $request
-     * @param int|null $nodeId
-     * @param int|null $translationId
-     *
-     * @return Response
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Twig\Error\RuntimeError
+     * @throws RuntimeError
      */
     public function addChildAction(Request $request, ?int $nodeId = null, ?int $translationId = null): Response
     {
-        // include CHRoot to enable creating node in it
-        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES', $nodeId, true);
-
         /** @var Translation|null $translation */
         $translation = $this->em()->getRepository(Translation::class)->findDefault();
 
@@ -428,15 +371,19 @@ class NodesController extends RozierApp
         }
 
         if (null === $translation) {
-            throw new ResourceNotFoundException(sprintf('Translation does not exist'));
+            throw new ResourceNotFoundException('Translation does not exist');
         }
 
         if (null !== $nodeId && $nodeId > 0) {
-            /** @var Node $parentNode */
-            $parentNode = $this->em()
-                ->find(Node::class, $nodeId);
+            /** @var Node|null $parentNode */
+            $parentNode = $this->em()->find(Node::class, $nodeId);
+            if (null === $parentNode) {
+                throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
+            }
+            $this->denyAccessUnlessGranted(NodeVoter::CREATE, $parentNode);
         } else {
             $parentNode = null;
+            $this->denyAccessUnlessGranted(NodeVoter::CREATE_AT_ROOT);
         }
 
         $node = new Node();
@@ -463,13 +410,13 @@ class NodesController extends RozierApp
                     'child_node.%name%.created',
                     ['%name%' => $node->getNodeName()]
                 );
-                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+                $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: null);
 
                 return $this->redirectToRoute(
                     'nodesEditSourcePage',
                     [
                         'nodeId' => $node->getId(),
-                        'translationId' => $translation->getId()
+                        'translationId' => $translation->getId(),
                     ]
                 );
             } catch (EntityAlreadyExistsException $e) {
@@ -488,18 +435,12 @@ class NodesController extends RozierApp
     }
 
     /**
-     * Return an deletion form for requested node.
+     * Return a deletion form for requested node.
      *
-     * @param Request $request
-     * @param int $nodeId
-     *
-     * @return Response
-     * @throws \Twig\Error\RuntimeError
+     * @throws RuntimeError
      */
     public function deleteAction(Request $request, int $nodeId): Response
     {
-        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $nodeId);
-
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
 
@@ -507,14 +448,17 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
 
+        $this->denyAccessUnlessGranted(NodeVoter::DELETE, $node);
+
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'delete')) {
-            $this->publishErrorMessage($request, sprintf('Node #%s cannot be deleted.', $nodeId));
+            $this->publishErrorMessage($request, sprintf('Node #%s cannot be deleted.', $nodeId), $node);
+
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId(),
                 ]
             );
         }
@@ -524,9 +468,9 @@ class NodesController extends RozierApp
         $form->handleRequest($request);
 
         if (
-            $form->isSubmitted() &&
-            $form->isValid() &&
-            $form->getData()['nodeId'] == $node->getId()
+            $form->isSubmitted()
+            && $form->isValid()
+            && $form->getData()['nodeId'] == $node->getId()
         ) {
             /** @var Node|null $parent */
             $parent = $node->getParent();
@@ -544,53 +488,50 @@ class NodesController extends RozierApp
                 'node.%name%.deleted',
                 ['%name%' => $node->getNodeName()]
             );
-            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
 
+            $referrer = $request->query->get('referer');
             if (
-                $request->query->has('referer') &&
-                (new UnicodeString($request->query->get('referer')))->startsWith('/')
+                \is_string($referrer)
+                && (new UnicodeString($referrer))->trim()->startsWith('/')
             ) {
-                return $this->redirect($request->query->get('referer'));
+                return $this->redirect($referrer);
             }
             if (null !== $parent) {
                 return $this->redirectToRoute(
                     'nodesEditSourcePage',
                     [
                         'nodeId' => $parent->getId(),
-                        'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                        'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId(),
                     ]
                 );
             }
+
             return $this->redirectToRoute('nodesHomePage');
         }
         $this->assignation['form'] = $form->createView();
+
         return $this->render('@RoadizRozier/nodes/delete.html.twig', $this->assignation);
     }
 
     /**
      * Empty trash action.
      *
-     * @param Request $request
-     *
-     * @return Response
-     * @throws \Twig\Error\RuntimeError
+     * @throws RuntimeError
      */
     public function emptyTrashAction(Request $request): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES_DELETE');
+        $this->denyAccessUnlessGranted(NodeVoter::EMPTY_TRASH);
 
         $form = $this->buildEmptyTrashForm();
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $criteria = ['status' => Node::DELETED];
+            $criteria = ['status' => NodeStatus::DELETED];
             /** @var Node|null $chroot */
             $chroot = $this->nodeChrootResolver->getChroot($this->getUser());
-            if ($chroot !== null) {
-                /** @var NodeHandler $nodeHandler */
-                $nodeHandler = $this->handlerFactory->getHandler($chroot);
-                $ids = $nodeHandler->getAllOffspringId();
-                $criteria["parent"] = $ids;
+            if (null !== $chroot) {
+                $criteria['parent'] = $this->nodeOffspringResolver->getAllOffspringIds($chroot);
             }
 
             $nodes = $this->em()
@@ -624,16 +565,10 @@ class NodesController extends RozierApp
     /**
      * Return an deletion form for requested node.
      *
-     * @param Request $request
-     * @param int $nodeId
-     *
-     * @return Response
-     * @throws \Twig\Error\RuntimeError
+     * @throws RuntimeError
      */
     public function undeleteAction(Request $request, int $nodeId): Response
     {
-        $this->validateNodeAccessForRole('ROLE_ACCESS_NODES_DELETE', $nodeId);
-
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
 
@@ -641,14 +576,17 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
 
+        $this->denyAccessUnlessGranted(NodeVoter::DELETE, $node);
+
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'undelete')) {
-            $this->publishErrorMessage($request, sprintf('Node #%s cannot be undeleted.', $nodeId));
+            $this->publishErrorMessage($request, sprintf('Node #%s cannot be undeleted.', $nodeId), $node);
+
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId(),
                 ]
             );
         }
@@ -669,7 +607,8 @@ class NodesController extends RozierApp
                 'node.%name%.undeleted',
                 ['%name%' => $node->getNodeName()]
             );
-            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first());
+            $this->publishConfirmMessage($request, $msg, $node->getNodeSources()->first() ?: $node);
+
             /*
              * Force redirect to avoid resending form when refreshing page
              */
@@ -683,10 +622,6 @@ class NodesController extends RozierApp
         return $this->render('@RoadizRozier/nodes/undelete.html.twig', $this->assignation);
     }
 
-    /**
-     * @param Request $request
-     * @return RedirectResponse
-     */
     public function generateAndAddNodeAction(Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
@@ -704,7 +639,7 @@ class NodesController extends RozierApp
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $source->getNode()->getId(),
-                    'translationId' => $translation->getId()
+                    'translationId' => $translation->getId(),
                 ]
             );
         } catch (\Exception $e) {
@@ -712,29 +647,29 @@ class NodesController extends RozierApp
             throw new ResourceNotFoundException($msg);
         }
     }
+
     /**
-     * @param  Request $request
-     * @param  int $nodeId
-     * @return Response
+     * @throws RuntimeError
      */
     public function publishAllAction(Request $request, int $nodeId): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES_STATUS');
         /** @var Node|null $node */
         $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $node) {
             throw new ResourceNotFoundException(sprintf('Node #%s does not exist.', $nodeId));
         }
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_STATUS, $node);
 
         $workflow = $this->workflowRegistry->get($node);
         if (!$workflow->can($node, 'publish')) {
-            $this->publishErrorMessage($request, sprintf('Node #%s cannot be published.', $nodeId));
+            $this->publishErrorMessage($request, sprintf('Node #%s cannot be published.', $nodeId), $node);
+
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
                 [
                     'nodeId' => $node->getId(),
-                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId()
+                    'translationId' => $this->em()->getRepository(Translation::class)->findDefault()->getId(),
                 ]
             );
         }
@@ -748,11 +683,13 @@ class NodesController extends RozierApp
             $this->em()->flush();
 
             $msg = $this->getTranslator()->trans('node.offspring.published');
-            $this->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg, $node);
 
             return $this->redirectToRoute('nodesEditSourcePage', [
                 'nodeId' => $nodeId,
-                'translationId' => $node->getNodeSources()->first()->getTranslation()->getId(),
+                'translationId' => $node->getNodeSources()->first() ?
+                    $node->getNodeSources()->first()->getTranslation()->getId() :
+                    null,
             ]);
         }
 

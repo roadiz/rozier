@@ -5,24 +5,28 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\NotSupported;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Themes\Rozier\Models\NodeTypeModel;
+use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxNodeTypesController extends AbstractAjaxController
+final class AjaxNodeTypesController extends AbstractAjaxController
 {
+    public function __construct(
+        private readonly ExplorerItemFactoryInterface $explorerItemFactory,
+        SerializerInterface $serializer,
+    ) {
+        parent::__construct($serializer);
+    }
+
     /**
-     * @param Request $request
-     *
      * @return Response JSON response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
         $arrayFilter = [];
@@ -41,26 +45,23 @@ class AjaxNodeTypesController extends AbstractAjaxController
         $nodeTypes = $listManager->getEntities();
         $documentsArray = $this->normalizeNodeType($nodeTypes);
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
             'nodeTypes' => $documentsArray,
             'nodeTypesCount' => count($nodeTypes),
-            'filters' => $listManager->getAssignation()
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'filters' => $listManager->getAssignation(),
+        ]);
     }
 
     /**
      * Get a NodeType list from an array of id.
      *
-     * @param Request $request
      * @return JsonResponse
+     *
+     * @throws NotSupported
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
 
@@ -69,7 +70,7 @@ class AjaxNodeTypesController extends AbstractAjaxController
         }
 
         $cleanNodeTypesName = array_filter($request->query->filter('names', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY
+            'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $nodesArray = [];
 
@@ -77,37 +78,31 @@ class AjaxNodeTypesController extends AbstractAjaxController
             /** @var EntityManager $em */
             $em = $this->em();
             $nodeTypes = $em->getRepository(NodeType::class)->findBy([
-                'name' => $cleanNodeTypesName
+                'name' => $cleanNodeTypesName,
             ]);
 
             // Sort array by ids given in request
             $nodesArray = $this->normalizeNodeType($nodeTypes);
         }
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
-            'items' => $nodesArray
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'items' => $nodesArray,
+        ]);
     }
 
     /**
      * Normalize response NodeType list result.
      *
-     * @param array<NodeType>|\Traversable<NodeType> $nodeTypes
-     * @return array
+     * @param iterable<NodeType> $nodeTypes
      */
-    private function normalizeNodeType($nodeTypes)
+    private function normalizeNodeType(iterable $nodeTypes): array
     {
         $nodeTypesArray = [];
 
-        /** @var NodeType $nodeType */
         foreach ($nodeTypes as $nodeType) {
-            $nodeModel = new NodeTypeModel($nodeType);
+            $nodeModel = $this->explorerItemFactory->createForEntity($nodeType);
             $nodeTypesArray[] = $nodeModel->toArray();
         }
 

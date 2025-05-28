@@ -14,27 +14,15 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/**
- * @package RZ\Roadiz\CMS\Forms\NodeSource
- */
 final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 {
-    protected NodesSourcesHandler $nodesSourcesHandler;
-
-    /**
-     * @param ManagerRegistry $managerRegistry
-     * @param NodesSourcesHandler $nodesSourcesHandler
-     */
-    public function __construct(ManagerRegistry $managerRegistry, NodesSourcesHandler $nodesSourcesHandler)
-    {
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        private readonly NodesSourcesHandler $nodesSourcesHandler,
+    ) {
         parent::__construct($managerRegistry);
-        $this->nodesSourcesHandler = $nodesSourcesHandler;
     }
 
-    /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(
@@ -48,9 +36,6 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
         ;
     }
 
-    /**
-     * @param OptionsResolver $resolver
-     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
@@ -68,17 +53,11 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBlockPrefix(): string
     {
         return 'documents';
     }
 
-    /**
-     * @param FormEvent $event
-     */
     public function onPreSetData(FormEvent $event): void
     {
         /** @var NodesSources $nodeSource */
@@ -88,15 +67,13 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
 
         $event->setData($this->managerRegistry
             ->getRepository(Document::class)
-            ->findByNodeSourceAndField(
+            ->findByNodeSourceAndFieldName(
                 $nodeSource,
-                $nodeTypeField
+                $nodeTypeField->getName()
             ));
     }
 
     /**
-     * @param FormEvent $event
-     *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
@@ -118,11 +95,11 @@ final class NodeSourceDocumentType extends AbstractNodeSourceFieldType
                 /** @var Document|null $tempDoc */
                 $tempDoc = $manager->find(Document::class, (int) $documentId);
 
-                if ($tempDoc !== null) {
+                if (null !== $tempDoc) {
                     $this->nodesSourcesHandler->addDocumentForField($tempDoc, $nodeTypeField, false, $position);
-                    $position++;
+                    ++$position;
                 } else {
-                    throw new \RuntimeException('Document #' . $documentId . ' was not found during relationship creation.');
+                    throw new \RuntimeException('Document #'.$documentId.' was not found during relationship creation.');
                 }
             }
         }

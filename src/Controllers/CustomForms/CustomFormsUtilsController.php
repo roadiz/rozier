@@ -4,82 +4,67 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\CustomForms;
 
+use Doctrine\Persistence\ManagerRegistry;
 use PhpOffice\PhpSpreadsheet\Exception;
-use RZ\Roadiz\CoreBundle\Entity\CustomForm;
-use RZ\Roadiz\CoreBundle\Entity\CustomFormAnswer;
 use RZ\Roadiz\CoreBundle\CustomForm\CustomFormAnswerSerializer;
-use RZ\Roadiz\CoreBundle\Xlsx\XlsxExporter;
+use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\RozierApp;
 
-/**
- * @package Themes\Rozier\Controllers
- */
 class CustomFormsUtilsController extends RozierApp
 {
-    private CustomFormAnswerSerializer $customFormAnswerSerializer;
-
-    /**
-     * @param CustomFormAnswerSerializer $customFormAnswerSerializer
-     */
-    public function __construct(CustomFormAnswerSerializer $customFormAnswerSerializer)
-    {
-        $this->customFormAnswerSerializer = $customFormAnswerSerializer;
+    public function __construct(
+        private readonly ManagerRegistry $managerRegistry,
+        private readonly TranslatorInterface $translator,
+        private readonly CustomFormAnswerSerializer $customFormAnswerSerializer,
+        private readonly SerializerInterface $serializer,
+        private readonly array $csvEncoderOptions,
+    ) {
     }
 
     /**
-     * Export all custom form's answer in a Xlsx file (.rzt).
+     * Export all custom form's answers in a CSV file.
      *
-     * @param Request $request
-     * @param int $id
-     *
-     * @return Response
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     public function exportAction(Request $request, int $id): Response
     {
-        /** @var CustomForm|null $customForm */
-        $customForm = $this->em()->find(CustomForm::class, $id);
+        $customForm = $this->managerRegistry->getRepository(CustomForm::class)->find($id);
         if (null === $customForm) {
             throw $this->createNotFoundException();
         }
 
         $answers = $customForm->getCustomFormAnswers();
-
-        /**
-         * @var int $key
-         * @var CustomFormAnswer $answer
-         */
+        $answersArray = [];
         foreach ($answers as $key => $answer) {
-            $array = array_merge(
-                [$answer->getIp(), $answer->getSubmittedAt()],
-                $this->customFormAnswerSerializer->toSimpleArray($answer)
-            );
-            $answers[$key] = $array;
+            $answersArray[$key] = $this->customFormAnswerSerializer->toSimpleArray($answer);
         }
 
-        $keys = ["ip", "submitted.date"];
-
         $fields = $customForm->getFieldsLabels();
-        $keys = array_merge($keys, $fields);
+        $keys = [
+            'ip',
+            'submitted.date',
+            ...$fields,
+        ];
 
-        $exporter = new XlsxExporter($this->getTranslator());
-        $xlsx = $exporter->exportXlsx($answers, $keys);
-
-        $response = new Response(
-            $xlsx,
-            Response::HTTP_OK,
-            []
-        );
-
+        $response = new StreamedResponse(function () use ($answersArray, $keys) {
+            echo $this->serializer->serialize($answersArray, 'csv', [
+                ...$this->csvEncoderOptions,
+                'csv_headers' => $keys,
+            ]);
+        });
+        $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set(
             'Content-Disposition',
             $response->headers->makeDisposition(
                 ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $customForm->getName() . '.xlsx'
+                $customForm->getName().'.csv'
             )
         );
 
@@ -89,19 +74,12 @@ class CustomFormsUtilsController extends RozierApp
     }
 
     /**
-     * Duplicate custom form by ID
-     *
-     * @param Request $request
-     * @param int $id
-     *
-     * @return Response
+     * Duplicate custom form by ID.
      */
     public function duplicateAction(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
-        /** @var CustomForm|null $existingCustomForm */
-        $existingCustomForm = $this->em()->find(CustomForm::class, $id);
-
+        $existingCustomForm = $this->managerRegistry->getRepository(CustomForm::class)->find($id);
         if (null === $existingCustomForm) {
             throw $this->createNotFoundException();
         }
@@ -110,7 +88,7 @@ class CustomFormsUtilsController extends RozierApp
             $newCustomForm = clone $existingCustomForm;
             $newCustomForm->setCreatedAt(new \DateTime());
             $newCustomForm->setUpdatedAt(new \DateTime());
-            $em = $this->em();
+            $em = $this->managerRegistry->getManager();
 
             foreach ($newCustomForm->getFields() as $field) {
                 $em->persist($field);
@@ -119,28 +97,29 @@ class CustomFormsUtilsController extends RozierApp
             $em->persist($newCustomForm);
             $em->flush();
 
-            $msg = $this->getTranslator()->trans("duplicated.custom.form.%name%", [
+            $msg = $this->translator->trans('duplicated.custom.form.%name%', [
                 '%name%' => $existingCustomForm->getDisplayName(),
             ]);
 
-            $this->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg, $newCustomForm);
 
             return $this->redirectToRoute(
                 'customFormsEditPage',
-                ["id" => $newCustomForm->getId()]
+                ['id' => $newCustomForm->getId()]
             );
         } catch (\Exception $e) {
             $this->publishErrorMessage(
                 $request,
-                $this->getTranslator()->trans("impossible.duplicate.custom.form.%name%", [
+                $this->translator->trans('impossible.duplicate.custom.form.%name%', [
                     '%name%' => $existingCustomForm->getDisplayName(),
-                ])
+                ]),
+                $newCustomForm
             );
-            $this->publishErrorMessage($request, $e->getMessage());
+            $this->publishErrorMessage($request, $e->getMessage(), $existingCustomForm);
 
             return $this->redirectToRoute(
                 'customFormsEditPage',
-                ["id" => $existingCustomForm->getId()]
+                ['id' => $existingCustomForm->getId()]
             );
         }
     }

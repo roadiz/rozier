@@ -5,34 +5,18 @@ declare(strict_types=1);
 namespace Themes\Rozier\AjaxControllers;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\NotSupported;
 use RZ\Roadiz\CoreBundle\Entity\CustomForm;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Themes\Rozier\Models\CustomFormModel;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxCustomFormsExplorerController extends AbstractAjaxController
+final class AjaxCustomFormsExplorerController extends AbstractAjaxExplorerController
 {
-    private UrlGeneratorInterface $urlGenerator;
-
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    public function indexAction(Request $request): JsonResponse
     {
-        $this->urlGenerator = $urlGenerator;
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return Response JSON response
-     */
-    public function indexAction(Request $request)
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
 
         $arrayFilter = [];
         /*
@@ -51,35 +35,30 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
 
         $customFormsArray = $this->normalizeCustomForms($customForms);
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
             'customForms' => $customFormsArray,
             'customFormsCount' => count($customForms),
             'filters' => $listManager->getAssignation(),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+        ]);
     }
 
     /**
      * Get a CustomForm list from an array of id.
      *
-     * @param Request $request
-     * @return JsonResponse
+     * @throws NotSupported
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request): Response
     {
         if (!$request->query->has('ids')) {
             throw new InvalidParameterException('Ids should be provided within an array');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+        $this->denyAccessUnlessGranted('ROLE_ACCESS_CUSTOMFORMS');
 
         $cleanCustomFormsIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY
+            'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $customFormsArray = [];
 
@@ -94,30 +73,24 @@ class AjaxCustomFormsExplorerController extends AbstractAjaxController
             $customFormsArray = $this->normalizeCustomForms($customForms);
         }
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
-            'forms' => $customFormsArray
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'forms' => $customFormsArray,
+        ]);
     }
 
     /**
      * Normalize response CustomForm list result.
      *
-     * @param array<CustomForm>|\Traversable<CustomForm> $customForms
-     * @return array
+     * @param iterable<CustomForm> $customForms
      */
-    private function normalizeCustomForms($customForms)
+    private function normalizeCustomForms(iterable $customForms): array
     {
         $customFormsArray = [];
 
-        /** @var CustomForm $customForm */
         foreach ($customForms as $customForm) {
-            $customFormModel = new CustomFormModel($customForm, $this->urlGenerator, $this->getTranslator());
+            $customFormModel = $this->explorerItemFactory->createForEntity($customForm);
             $customFormsArray[] = $customFormModel->toArray();
         }
 

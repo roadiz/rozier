@@ -11,19 +11,19 @@ use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\SerializerInterface;
 use Themes\Rozier\Widgets\NodeTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxNodeTreeController extends AbstractAjaxController
+final class AjaxNodeTreeController extends AbstractAjaxController
 {
     public function __construct(
-        private NodeChrootResolver $nodeChrootResolver,
-        private TreeWidgetFactory $treeWidgetFactory,
-        private NodeTypes $nodeTypesBag
+        private readonly NodeChrootResolver $nodeChrootResolver,
+        private readonly TreeWidgetFactory $treeWidgetFactory,
+        private readonly NodeTypes $nodeTypesBag,
+        SerializerInterface $serializer,
     ) {
+        parent::__construct($serializer);
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -35,7 +35,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
         $nodeTree = null;
         $linkedTypes = [];
 
-        switch ($request->get("_action")) {
+        switch ($request->get('_action')) {
             /*
              * Inner node edit for nodeTree
              */
@@ -55,8 +55,8 @@ class AjaxNodeTreeController extends AbstractAjaxController
                 $nodeTree = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
                 if (
-                    $request->get('tagId') &&
-                    $request->get('tagId') > 0
+                    $request->get('tagId')
+                    && $request->get('tagId') > 0
                 ) {
                     $filterTag = $this->em()
                                         ->find(
@@ -77,7 +77,7 @@ class AjaxNodeTreeController extends AbstractAjaxController
                     }, $linkedTypes));
 
                     $nodeTree->setAdditionalCriteria([
-                        'nodeType' => $linkedTypes
+                        'nodeType' => $linkedTypes,
                     ]);
                 }
 
@@ -87,16 +87,16 @@ class AjaxNodeTreeController extends AbstractAjaxController
                     $nodeTree->setStackTree(true);
                 }
                 break;
-            /*
-             * Main panel tree nodeTree
-             */
+                /*
+                 * Main panel tree nodeTree
+                 */
             case 'requestMainNodeTree':
                 $parent = null;
                 if (null !== $this->getUser()) {
                     $parent = $this->nodeChrootResolver->getChroot($this->getUser());
                 }
 
-                $nodeTree = $this->treeWidgetFactory->createNodeTree($parent, $translation);
+                $nodeTree = $this->treeWidgetFactory->createRootNodeTree($parent, $translation);
                 $this->assignation['mainNodeTree'] = true;
                 break;
         }
@@ -105,17 +105,13 @@ class AjaxNodeTreeController extends AbstractAjaxController
         // Need to expose linkedTypes to add data-attributes on widget again
         $this->assignation['linkedTypes'] = $linkedTypes;
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'statusCode' => '200',
             'status' => 'success',
             'linkedTypes' => array_map(function (NodeType $nodeType) {
                 return $nodeType->getName();
             }, $linkedTypes),
             'nodeTree' => trim($this->getTwig()->render('@RoadizRozier/widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+        ]);
     }
 }

@@ -10,45 +10,31 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class SettingExplorerItem extends AbstractExplorerItem
 {
-    private Setting $setting;
-    private UrlGeneratorInterface $urlGenerator;
-
-    public function __construct(Setting $setting, UrlGeneratorInterface $urlGenerator)
-    {
-        $this->setting = $setting;
-        $this->urlGenerator = $urlGenerator;
+    public function __construct(
+        private readonly Setting $setting,
+        private readonly UrlGeneratorInterface $urlGenerator,
+    ) {
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): int|string
     {
         return $this->setting->getId() ?? throw new \RuntimeException('Entity must have an ID');
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getAlternativeDisplayable(): ?string
     {
         if (null !== $this->setting->getSettingGroup()) {
             return $this->setting->getSettingGroup()->getName();
         }
+
         return '';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getDisplayable(): string
     {
         return $this->setting->getName();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getOriginal(): Setting
     {
         return $this->setting;
@@ -57,7 +43,7 @@ final class SettingExplorerItem extends AbstractExplorerItem
     protected function getEditItemPath(): ?string
     {
         return $this->urlGenerator->generate('settingsEditPage', [
-            'settingId' => $this->setting->getId()
+            'settingId' => $this->setting->getId(),
         ]);
     }
 }

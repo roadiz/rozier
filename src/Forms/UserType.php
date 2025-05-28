@@ -12,17 +12,14 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/**
- * @package Themes\Rozier\Forms
- */
 class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('email', EmailType::class, [
-                'label' => 'email',
-                'empty_data' => '',
-            ])
+            'label' => 'email',
+            'empty_data' => '',
+        ])
             ->add('username', TextType::class, [
                 'label' => 'username',
                 'empty_data' => '',
@@ -48,7 +45,7 @@ class UserType extends AbstractType
             'data_class' => User::class,
             'attr' => [
                 'class' => 'uk-form user-form',
-            ]
+            ],
         ]);
     }
 }

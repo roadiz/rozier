@@ -7,16 +7,17 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\SerializerInterface;
 use Themes\Rozier\Widgets\TagTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxTagTreeController extends AbstractAjaxController
+final class AjaxTagTreeController extends AbstractAjaxController
 {
-    public function __construct(private TreeWidgetFactory $treeWidgetFactory)
-    {
+    public function __construct(
+        private readonly TreeWidgetFactory $treeWidgetFactory,
+        SerializerInterface $serializer,
+    ) {
+        parent::__construct($serializer);
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -27,7 +28,7 @@ class AjaxTagTreeController extends AbstractAjaxController
         /** @var TagTreeWidget|null $tagTree */
         $tagTree = null;
 
-        switch ($request->get("_action")) {
+        switch ($request->get('_action')) {
             /*
              * Inner tag edit for tagTree
              */
@@ -47,9 +48,9 @@ class AjaxTagTreeController extends AbstractAjaxController
                 $this->assignation['mainTagTree'] = false;
 
                 break;
-            /*
-             * Main panel tree tagTree
-             */
+                /*
+                 * Main panel tree tagTree
+                 */
             case 'requestMainTagTree':
                 $parent = null;
                 $tagTree = $this->treeWidgetFactory->createTagTree($parent, $translation);
@@ -59,14 +60,10 @@ class AjaxTagTreeController extends AbstractAjaxController
 
         $this->assignation['tagTree'] = $tagTree;
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'statusCode' => '200',
             'status' => 'success',
             'tagTree' => $this->getTwig()->render('@RoadizRozier/widgets/tagTree/tagTree.html.twig', $this->assignation),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+        ]);
     }
 }
