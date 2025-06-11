@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
@@ -14,6 +13,7 @@ use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Enum\NodeStatus;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
 use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
+use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use RZ\Roadiz\CoreBundle\SearchEngine\ClientRegistry;
 use RZ\Roadiz\CoreBundle\SearchEngine\NodeSourceSearchHandlerInterface;
 use RZ\Roadiz\CoreBundle\SearchEngine\SolrSearchResultItem;
@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AjaxNodesExplorerController extends AbstractAjaxExplorerController
 {
@@ -32,9 +33,19 @@ final class AjaxNodesExplorerController extends AbstractAjaxExplorerController
         private readonly NodeTypes $nodeTypesBag,
         ExplorerItemFactoryInterface $explorerItemFactory,
         EventDispatcherInterface $eventDispatcher,
+        EntityListManagerFactoryInterface $entityListManagerFactory,
+        ManagerRegistry $managerRegistry,
         SerializerInterface $serializer,
+        TranslatorInterface $translator,
     ) {
-        parent::__construct($explorerItemFactory, $eventDispatcher, $serializer);
+        parent::__construct(
+            $explorerItemFactory,
+            $eventDispatcher,
+            $entityListManagerFactory,
+            $managerRegistry,
+            $serializer,
+            $translator
+        );
     }
 
     protected function getItemPerPage(): int
@@ -76,23 +87,25 @@ final class AjaxNodesExplorerController extends AbstractAjaxExplorerController
         ];
 
         if ($request->query->has('tagId') && $request->get('tagId') > 0) {
-            $tag = $this->em()
-                ->find(
-                    Tag::class,
-                    $request->get('tagId')
-                );
+            $tag = $this->managerRegistry->getRepository(Tag::class)->find($request->get('tagId'));
 
             $arrayFilter['tags'] = [$tag];
         }
 
-        if ($request->query->has('nodeTypes') && count($request->get('nodeTypes')) > 0) {
-            /** @var NodeType[] $nodeTypes */
-            $nodeTypes = array_filter(array_map(function ($nodeTypeName) {
-                return $this->nodeTypesBag->get(trim($nodeTypeName));
-            }, $request->get('nodeTypes')));
+        if ($request->query->has('nodeTypes')) {
+            $nodeTypesRequest = $request->get('nodeTypes');
+            if (\is_string($nodeTypesRequest) && '' !== trim($nodeTypesRequest)) {
+                $nodeTypesRequest = [$nodeTypesRequest];
+            }
+            if (\is_array($nodeTypesRequest) && count($nodeTypesRequest) > 0) {
+                /** @var NodeType[] $nodeTypes */
+                $nodeTypes = array_filter(array_map(function ($nodeTypeName) {
+                    return $this->nodeTypesBag->get(trim($nodeTypeName));
+                }, $nodeTypesRequest));
 
-            if (count($nodeTypes) > 0) {
-                $arrayFilter['nodeType'] = $nodeTypes;
+                if (count($nodeTypes) > 0) {
+                    $arrayFilter['nodeTypeName'] = array_map(fn (NodeType $nodeType) => $nodeType->getName(), $nodeTypes);
+                }
             }
         }
 
@@ -183,27 +196,19 @@ final class AjaxNodesExplorerController extends AbstractAjaxExplorerController
 
     /**
      * Get a Node list from an array of id.
-     *
-     * @throws NotSupported
      */
     public function listAction(Request $request): JsonResponse
     {
         // Only requires Search permission for nodes
         $this->denyAccessUnlessGranted(NodeVoter::SEARCH);
 
-        if (!$request->query->has('ids')) {
-            throw new InvalidParameterException('Ids should be provided within an array');
-        }
-
         $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
             'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $nodesArray = [];
 
-        if (count($cleanNodeIds)) {
-            /** @var EntityManager $em */
-            $em = $this->em();
-            $nodes = $em->getRepository(Node::class)
+        if (count($cleanNodeIds) > 0) {
+            $nodes = $this->managerRegistry->getRepository(Node::class)
                 ->setDisplayingNotPublishedNodes(true)
                 ->findBy([
                     'id' => $cleanNodeIds,
