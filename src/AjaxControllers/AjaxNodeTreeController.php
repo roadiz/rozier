@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
@@ -12,24 +11,16 @@ use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Widgets\NodeTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
-use Twig\Environment;
 
-final class AjaxNodeTreeController extends AbstractAjaxController
+class AjaxNodeTreeController extends AbstractAjaxController
 {
     public function __construct(
         private readonly NodeChrootResolver $nodeChrootResolver,
         private readonly TreeWidgetFactory $treeWidgetFactory,
-        private readonly NodeTypes $nodeTypesBag,
-        private readonly Environment $twig,
-        ManagerRegistry $managerRegistry,
-        SerializerInterface $serializer,
-        TranslatorInterface $translator,
+        private readonly NodeTypes $nodeTypesBag
     ) {
-        parent::__construct($managerRegistry, $serializer, $translator);
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -39,19 +30,19 @@ final class AjaxNodeTreeController extends AbstractAjaxController
 
         /** @var NodeTreeWidget|null $nodeTree */
         $nodeTree = null;
-        /** @var NodeType[] $linkedTypes */
         $linkedTypes = [];
-        $assignation = [];
 
-        switch ($request->get('_action')) {
+        switch ($request->get("_action")) {
             /*
              * Inner node edit for nodeTree
              */
             case 'requestNodeTree':
                 if ($request->get('parentNodeId') > 0) {
-                    $node = $this->managerRegistry
-                        ->getRepository(Node::class)
-                        ->find((int) $request->get('parentNodeId'));
+                    $node = $this->em()
+                                ->find(
+                                    Node::class,
+                                    (int) $request->get('parentNodeId')
+                                );
                 } elseif (null !== $this->getUser()) {
                     $node = $this->nodeChrootResolver->getChroot($this->getUser());
                 } else {
@@ -61,12 +52,14 @@ final class AjaxNodeTreeController extends AbstractAjaxController
                 $nodeTree = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
                 if (
-                    $request->get('tagId')
-                    && $request->get('tagId') > 0
+                    $request->get('tagId') &&
+                    $request->get('tagId') > 0
                 ) {
-                    $filterTag = $this->managerRegistry
-                        ->getRepository(Tag::class)
-                        ->find((int) $request->get('tagId'));
+                    $filterTag = $this->em()
+                                        ->find(
+                                            Tag::class,
+                                            (int) $request->get('tagId')
+                                        );
 
                     $nodeTree->setTag($filterTag);
                 }
@@ -74,30 +67,26 @@ final class AjaxNodeTreeController extends AbstractAjaxController
                 /*
                  * Filter view with only listed node-types
                  */
-                $linkedTypesNames = $request->get('linkedTypes', []);
-                if (is_array($linkedTypesNames) && count($linkedTypesNames) > 0) {
-                    /*
-                     * Linked types must be NodeType entities, not only string
-                     * to expose name and displayName to ajax responses.
-                     */
+                $linkedTypes = $request->get('linkedTypes', []);
+                if (is_array($linkedTypes) && count($linkedTypes) > 0) {
                     $linkedTypes = array_filter(array_map(function (string $typeName) {
                         return $this->nodeTypesBag->get($typeName);
-                    }, $linkedTypesNames));
+                    }, $linkedTypes));
 
                     $nodeTree->setAdditionalCriteria([
-                        'nodeTypeName' => $linkedTypesNames,
+                        'nodeType' => $linkedTypes
                     ]);
                 }
 
-                $assignation['mainNodeTree'] = false;
+                $this->assignation['mainNodeTree'] = false;
 
                 if (true === (bool) $request->get('stackTree')) {
                     $nodeTree->setStackTree(true);
                 }
                 break;
-                /*
-                 * Main panel tree nodeTree
-                 */
+            /*
+             * Main panel tree nodeTree
+             */
             case 'requestMainNodeTree':
                 $parent = null;
                 if (null !== $this->getUser()) {
@@ -105,19 +94,25 @@ final class AjaxNodeTreeController extends AbstractAjaxController
                 }
 
                 $nodeTree = $this->treeWidgetFactory->createRootNodeTree($parent, $translation);
-                $assignation['mainNodeTree'] = true;
+                $this->assignation['mainNodeTree'] = true;
                 break;
         }
 
-        $assignation['nodeTree'] = $nodeTree;
+        $this->assignation['nodeTree'] = $nodeTree;
         // Need to expose linkedTypes to add data-attributes on widget again
-        $assignation['linkedTypes'] = $linkedTypes;
+        $this->assignation['linkedTypes'] = $linkedTypes;
 
-        return $this->createSerializedResponse([
+        $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
-            'linkedTypes' => $linkedTypes,
-            'nodeTree' => trim($this->twig->render('@RoadizRozier/widgets/nodeTree/nodeTree.html.twig', $assignation)),
-        ]);
+            'linkedTypes' => array_map(function (NodeType $nodeType) {
+                return $nodeType->getName();
+            }, $linkedTypes),
+            'nodeTree' => trim($this->getTwig()->render('@RoadizRozier/widgets/nodeTree/nodeTree.html.twig', $this->assignation)),
+        ];
+
+        return new JsonResponse(
+            $responseArray
+        );
     }
 }

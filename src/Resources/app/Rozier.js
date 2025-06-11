@@ -69,7 +69,49 @@ export default class Rozier {
          * override default nestable settings in order to
          * store toggle state between reloads.
          */
-        this.setupCollapsedNestableState()
+        if (window.localStorage) {
+            this.collapsedNestableState = window.localStorage.getItem('collapsed.uk.nestable')
+            /*
+             * First login into backoffice
+             */
+            if (!this.collapsedNestableState) {
+                this.saveCollapsedNestableState(null)
+                this.collapsedNestableState = window.localStorage.getItem('collapsed.uk.nestable')
+            }
+            this.collapsedNestableState = JSON.parse(this.collapsedNestableState)
+
+            window.UIkit.on('beforeready.uk.dom', function () {
+                $.extend(window.UIkit.components.nestable.prototype, {
+                    collapseItem: function (li) {
+                        var lists = li.children(this.options._listClass)
+                        if (lists.length) {
+                            li.addClass(this.options.collapsedClass)
+                        }
+                        /*
+                         * Create new event on collapse
+                         */
+                        document.dispatchEvent(
+                            new CustomEvent('collapse.uk.nestable', {
+                                detail: li,
+                            })
+                        )
+                    },
+                })
+                $.extend(window.UIkit.components.nestable.prototype, {
+                    expandItem: function (li) {
+                        li.removeClass(this.options.collapsedClass)
+                        /*
+                         * Create new event on expand
+                         */
+                        document.dispatchEvent(
+                            new CustomEvent('expand.uk.nestable', {
+                                detail: li,
+                            })
+                        )
+                    },
+                })
+            })
+        }
 
         this.lazyload = new Lazyload()
         this.entriesPanel = new EntriesPanel()
@@ -120,54 +162,7 @@ export default class Rozier {
         bulkActions()
         window.addEventListener('pageshowend', () => {
             bulkActions()
-            this.syncCollapsedNestableState()
         })
-    }
-
-    setupCollapsedNestableState() {
-        if (window.localStorage) {
-            this.collapsedNestableState = window.localStorage.getItem('collapsed.uk.nestable')
-            /*
-             * First login into backoffice
-             */
-            if (!this.collapsedNestableState) {
-                this.saveCollapsedNestableState(null)
-                this.collapsedNestableState = window.localStorage.getItem('collapsed.uk.nestable')
-            }
-            this.collapsedNestableState = JSON.parse(this.collapsedNestableState)
-
-            window.UIkit.on('beforeready.uk.dom', function () {
-                $.extend(window.UIkit.components.nestable.prototype, {
-                    collapseItem: function (li) {
-                        var lists = li.children(this.options._listClass)
-                        if (lists.length) {
-                            li.addClass(this.options.collapsedClass)
-                        }
-                        /*
-                         * Create new event on collapse
-                         */
-                        document.dispatchEvent(
-                            new CustomEvent('collapse.uk.nestable', {
-                                detail: li,
-                            })
-                        )
-                    },
-                })
-                $.extend(window.UIkit.components.nestable.prototype, {
-                    expandItem: function (li) {
-                        li.removeClass(this.options.collapsedClass)
-                        /*
-                         * Create new event on expand
-                         */
-                        document.dispatchEvent(
-                            new CustomEvent('expand.uk.nestable', {
-                                detail: li,
-                            })
-                        )
-                    },
-                })
-            })
-        }
     }
 
     saveCollapsedNestableState(state = null) {
@@ -181,48 +176,46 @@ export default class Rozier {
         window.localStorage.setItem('collapsed.uk.nestable', JSON.stringify(state))
     }
 
-    syncCollapsedNestableState() {
-        this.collapsedNestableState.nodes.forEach((value) => {
-            const li = document.querySelectorAll('.uk-nestable-item[data-node-id="' + $.escapeSelector(value) + '"]')
-            li.forEach((element) => {
-                element.classList.add('uk-collapsed')
-            })
-        })
-        this.collapsedNestableState.tags.forEach((value) => {
-            const li = document.querySelectorAll('.uk-nestable-item[data-tag-id="' + $.escapeSelector(value) + '"]')
-            li.forEach((element) => {
-                element.classList.add('uk-collapsed')
-            })
-        })
-        this.collapsedNestableState.folders.forEach((value) => {
-            const li = document.querySelectorAll('.uk-nestable-item[data-folder-id="' + $.escapeSelector(value) + '"]')
-            li.forEach((element) => {
-                element.classList.add('uk-collapsed')
-            })
-        })
-    }
-
     /**
      * init nestable for ajax
+     * @return {[type]} [description]
      */
     initNestables() {
-        this.syncCollapsedNestableState()
+        this.collapsedNestableState.nodes.forEach((value) => {
+            const li = $('.uk-nestable-item[data-node-id="' + $.escapeSelector(value) + '"]')
+            if (li.length) {
+                li[0].classList.add('uk-collapsed')
+            }
+        })
+        this.collapsedNestableState.tags.forEach((value) => {
+            const li = $('.uk-nestable-item[data-tag-id="' + $.escapeSelector(value) + '"]')
+            if (li.length) {
+                li[0].classList.add('uk-collapsed')
+            }
+        })
+        this.collapsedNestableState.folders.forEach((value) => {
+            const li = $('.uk-nestable-item[data-folder-id="' + $.escapeSelector(value) + '"]')
+            if (li.length) {
+                li[0].classList.add('uk-collapsed')
+            }
+        })
 
-        document.querySelectorAll('.uk-nestable').forEach((element) => {
+        $('.uk-nestable').each((index, element) => {
+            let $tree = $(element)
             /*
              * make drag&drop only available on handle
              * very important for Touch based device which need to
              * scroll on trees.
              */
-            const options = {
+            let options = {
                 handleClass: 'uk-nestable-handle',
             }
 
-            if (element.classList.contains('nodetree')) {
+            if ($tree.hasClass('nodetree')) {
                 options.group = 'nodeTree'
-            } else if (element.classList.contains('tagtree')) {
+            } else if ($tree.hasClass('tagtree')) {
                 options.group = 'tagTree'
-            } else if (element.classList.contains('foldertree')) {
+            } else if ($tree.hasClass('foldertree')) {
                 options.group = 'folderTree'
             }
 

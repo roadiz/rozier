@@ -102,9 +102,6 @@
             <trans-unit xml:space="preserve" id="100"><source>defaultValues</source></trans-unit>
             <trans-unit xml:space="preserve" id="customFormField.defaultValues"><source>customFormField.defaultValues</source></trans-unit>
             <trans-unit xml:space="preserve" id="nodeTypeField.defaultValues"><source>nodeTypeField.defaultValues</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups"><source>nodeTypeField.normalizationContextGroups</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups.help"><source>nodeTypeField.normalizationContextGroups.help</source></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups.help"><source>nodeTypeField.serializationGroups.help</source></trans-unit>
             <trans-unit xml:space="preserve" id="101"><source>enter_values_comma_separated</source></trans-unit>
             <trans-unit xml:space="preserve" id="102"><source>node.%name%.translated</source></trans-unit>
             <trans-unit xml:space="preserve" id="103"><source>node_source.%node_source%.updated.%translation%</source></trans-unit>
@@ -1155,7 +1152,6 @@
 
             <trans-unit xml:space="preserve" id="export_format.rzn"><source>export_format.rzn</source></trans-unit>
             <trans-unit xml:space="preserve" id="export_format.excel.%language%"><source>export_format.excel.%language%</source></trans-unit>
-            <trans-unit xml:space="preserve" id="export_format.csv.%language%"><source>export_format.csv.%language%</source></trans-unit>
 
             <!-- Bulk tags -->
             <trans-unit xml:space="preserve" id="delete.tags"><source>delete.tags</source></trans-unit>
@@ -1202,8 +1198,6 @@
             <trans-unit xml:space="preserve" id="document.is_only_external"><source>document.is_only_external</source><note>Warning message displayed when document does not have any file locally.</note></trans-unit>
 
             <trans-unit xml:space="preserve" id="reachable"><source>reachable</source><note>For node-types, defines if produced nodes will be reachable with an URL or not (eg. just content blocks).</note></trans-unit>
-            <trans-unit xml:space="preserve" id="not_reachable"><source>not_reachable</source><note>Node-types will not be reachable from an URL.</note></trans-unit>
-            <trans-unit xml:space="preserve" id="You cannot delete a node-type in production mode."><source>You cannot delete a node-type in production mode.</source><note>For node-types, a notice when env is prod to prevent editing node-type schema in production.</note></trans-unit>
             <trans-unit xml:space="preserve" id="yaml.type"><source>yaml.type</source></trans-unit>
 
             <trans-unit xml:space="preserve" id="manage.redirections"><source>manage.redirections</source><note>Redirection section button label</note></trans-unit>
@@ -1342,7 +1336,6 @@
 
             <trans-unit xml:space="preserve" id="document.thumbnails"><source>document.thumbnails</source><note>Document : Input Label to display thumbnail documents when dealing with original.</note></trans-unit>
             <trans-unit xml:space="preserve" id="excludeFromSearch"><source>excludeFromSearch</source><note>Node type field : Input Label.</note></trans-unit>
-            <trans-unit xml:space="preserve" id="manage.decorators"><source>manage.decorators</source><note>Button label, for manage node-type-decorators</note></trans-unit>
             <trans-unit xml:space="preserve" id="export.documentation"><source>export.documentation</source><note>Button label, for exporting node-type Markdown documentation</note></trans-unit>
             <trans-unit xml:space="preserve" id="export.typescript_declaration"><source>export.typescript_declaration</source><note>Button label, for exporting node-types into a TypeScript declaration file.</note></trans-unit>
             <trans-unit xml:space="preserve" id="hide_roadiz_version"><source>hide_roadiz_version</source><note>Setting</note></trans-unit>
@@ -1382,28 +1375,6 @@
             <trans-unit xml:space="preserve" id="sortingAttributesByWeight"><source>sortingAttributesByWeight</source></trans-unit>
             <trans-unit xml:space="preserve" id="sort_attributes_by_weight_for_this_type"><source>sort_attributes_by_weight_for_this_type</source></trans-unit>
             <trans-unit xml:space="preserve" id="ip_address"><source>ip_address</source></trans-unit>
-
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator"><source>nodeTypeDecorator</source><note>Title, for list node-type-decorator</note></trans-unit>
-            <trans-unit xml:space="preserve" id="back_to.nodeTypeDecorators"><source>back_to.nodeTypeDecorators</source></trans-unit>
-            <trans-unit xml:space="preserve" id="delete.nodeTypeDecorator.%name%"><source>delete.nodeTypeDecorator.%name%</source></trans-unit>
-            <trans-unit xml:space="preserve" id="are_you_sure.delete.nodeTypeDecorator"><source>are_you_sure.delete.nodeTypeDecorator</source></trans-unit>
-            <trans-unit xml:space="preserve" id="add.a.nodeTypeDecorator"><source>add.a.nodeTypeDecorator</source><note>Button label, for add new node-type-decorators</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.path"><source>nodeTypeDecorator.path</source><note>Table column label for node-type-decorator path</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.entity"><source>nodeTypeDecorator.entity</source><note>Table column label for node-type-decorator entity based on path</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.without_field"><source>nodeTypeDecorator.without_field</source><note>Default value of node type decorator field select</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.field"><source>nodeTypeDecorator.field</source><note>Table column label for node-type-decorator field based on path</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property"><source>nodeTypeDecorator.property</source><note>Table column label for node-type-decorator property</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.value"><source>nodeTypeDecorator.value</source><note>Table column label for node-type-decorator value</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.display_name"><source>nodeTypeDecorator.property.display_name</source><note>Property value label for node type display name</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.description"><source>nodeTypeDecorator.property.description</source><note>Property value label for node type description</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.color"><source>nodeTypeDecorator.property.color</source><note>Property value label for node type color</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_label"><source>nodeTypeDecorator.property.field_label</source><note>Property value label for node type field label</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_universal"><source>nodeTypeDecorator.property.field_universal</source><note>Property value label for node type field universal</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_description"><source>nodeTypeDecorator.property.field_description</source><note>Property value label for node type field description</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_placeholder"><source>nodeTypeDecorator.property.field_placeholder</source><note>Property value label for node type field placeholder</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_visible"><source>nodeTypeDecorator.property.field_visible</source><note>Property value label for node type field visible</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_min_length"><source>nodeTypeDecorator.property.field_min_length</source><note>Property value label for node type field min_length</note></trans-unit>
-            <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_max_length"><source>nodeTypeDecorator.property.field_max_length</source><note>Property value label for node type field max_length</note></trans-unit>
         </body>
     </file>
 </xliff>

@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
+use RZ\Roadiz\Core\AbstractEntities\AbstractField;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\CoreBundle\Enum\FieldType;
 use RZ\Roadiz\CoreBundle\Form\CompareDatetimeType;
 use RZ\Roadiz\CoreBundle\Form\CompareDateType;
 use RZ\Roadiz\CoreBundle\Form\ExtendedBooleanType;
 use RZ\Roadiz\CoreBundle\Form\NodeStatesType;
 use RZ\Roadiz\CoreBundle\Form\NodeTypesType;
 use RZ\Roadiz\CoreBundle\Form\SeparatorType;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -36,31 +33,31 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Themes\Rozier\Forms\NodeSource\NodeSourceType;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class SearchController extends AbstractController
+class SearchController extends RozierApp
 {
+    protected bool $pagination = true;
+    protected ?int $itemPerPage = null;
+
     public function __construct(
-        protected readonly NodeTypes $nodeTypesBag,
         protected readonly ManagerRegistry $managerRegistry,
         protected readonly FormFactoryInterface $formFactory,
         protected readonly SerializerInterface $serializer,
-        protected readonly EntityListManagerFactoryInterface $entityListManagerFactory,
         protected readonly array $csvEncoderOptions,
     ) {
     }
 
-    protected function isBlank(mixed $var): bool
+    public function isBlank(mixed $var): bool
     {
         return empty($var) && !is_numeric($var);
     }
 
-    protected function notBlank(mixed $var): bool
+    public function notBlank(mixed $var): bool
     {
         return !$this->isBlank($var);
     }
@@ -79,12 +76,8 @@ final class SearchController extends AbstractController
         return $data;
     }
 
-    protected function processCriteria(
-        array $data,
-        bool &$pagination,
-        ?int &$itemPerPage,
-        string $prefix = '',
-    ): array {
+    protected function processCriteria(array $data, string $prefix = ''): array
+    {
         if (!empty($data[$prefix.'nodeName'])) {
             if (!isset($data[$prefix.'nodeName_exact']) || true !== $data[$prefix.'nodeName_exact']) {
                 $data[$prefix.'nodeName'] = ['LIKE', '%'.$data[$prefix.'nodeName'].'%'];
@@ -114,8 +107,8 @@ final class SearchController extends AbstractController
         }
 
         if (isset($data[$prefix.'limitResult'])) {
-            $pagination = false;
-            $itemPerPage = (int) $data[$prefix.'limitResult'];
+            $this->pagination = false;
+            $this->itemPerPage = (int) $data[$prefix.'limitResult'];
             unset($data[$prefix.'limitResult']);
         }
 
@@ -133,9 +126,9 @@ final class SearchController extends AbstractController
         return $data;
     }
 
-    protected function processCriteriaNodeType(array $data, NodeType $nodeType): array
+    protected function processCriteriaNodetype(array $data, NodeType $nodetype): array
     {
-        $fields = $nodeType->getFields();
+        $fields = $nodetype->getFields();
         foreach ($data as $key => $value) {
             if ('title' === $key) {
                 $data['title'] = ['LIKE', '%'.$value.'%'];
@@ -151,25 +144,25 @@ final class SearchController extends AbstractController
                 foreach ($fields as $field) {
                     if ($key == $field->getName()) {
                         if (
-                            FieldType::MARKDOWN_T === $field->getType()
-                            || FieldType::STRING_T === $field->getType()
-                            || FieldType::YAML_T === $field->getType()
-                            || FieldType::JSON_T === $field->getType()
-                            || FieldType::TEXT_T === $field->getType()
-                            || FieldType::EMAIL_T === $field->getType()
-                            || FieldType::CSS_T === $field->getType()
+                            AbstractField::MARKDOWN_T === $field->getType()
+                            || AbstractField::STRING_T === $field->getType()
+                            || AbstractField::YAML_T === $field->getType()
+                            || AbstractField::JSON_T === $field->getType()
+                            || AbstractField::TEXT_T === $field->getType()
+                            || AbstractField::EMAIL_T === $field->getType()
+                            || AbstractField::CSS_T === $field->getType()
                         ) {
                             $data[$field->getVarName()] = ['LIKE', '%'.$value.'%'];
                             if (isset($data[$key.'_exact']) && true === $data[$key.'_exact']) {
                                 $data[$field->getVarName()] = $value;
                             }
-                        } elseif (FieldType::BOOLEAN_T === $field->getType()) {
+                        } elseif (AbstractField::BOOLEAN_T === $field->getType()) {
                             $data[$field->getVarName()] = (bool) $value;
-                        } elseif (FieldType::MULTIPLE_T === $field->getType()) {
+                        } elseif (AbstractField::MULTIPLE_T === $field->getType()) {
                             $data[$field->getVarName()] = implode(',', $value);
-                        } elseif (FieldType::DATETIME_T === $field->getType()) {
+                        } elseif (AbstractField::DATETIME_T === $field->getType()) {
                             $this->appendDateTimeCriteria($data, $key);
-                        } elseif (FieldType::DATE_T === $field->getType()) {
+                        } elseif (AbstractField::DATE_T === $field->getType()) {
                             $this->appendDateTimeCriteria($data, $key);
                         }
                     }
@@ -191,9 +184,6 @@ final class SearchController extends AbstractController
         $builder = $this->buildSimpleForm('');
         $form = $this->addButtons($builder)->getForm();
         $form->handleRequest($request);
-        $assignation = [];
-        $pagination = true;
-        $itemPerPage = null;
 
         $builderNodeType = $this->buildNodeTypeForm();
 
@@ -217,48 +207,47 @@ final class SearchController extends AbstractController
                     $data[$key] = $value;
                 }
             }
-            $data = $this->processCriteria($data, $pagination, $itemPerPage);
-            $listManager = $this->entityListManagerFactory->createEntityListManager(
+            $data = $this->processCriteria($data);
+            $listManager = $this->createEntityListManager(
                 Node::class,
                 $data
             );
             $listManager->setDisplayingNotPublishedNodes(true);
             $listManager->setDisplayingAllNodesStatuses(true);
 
-            if (false === $pagination) {
-                $listManager->setItemPerPage($itemPerPage ?? 999);
+            if (false === $this->pagination) {
+                $listManager->setItemPerPage($this->itemPerPage ?? 999);
                 $listManager->disablePagination();
             }
             $listManager->handle();
 
-            $assignation['filters'] = $listManager->getAssignation();
-            $assignation['nodes'] = $listManager->getEntities();
+            $this->assignation['filters'] = $listManager->getAssignation();
+            $this->assignation['nodes'] = $listManager->getEntities();
         }
 
-        $assignation['form'] = $form->createView();
-        $assignation['nodeTypeForm'] = $nodeTypeForm->createView();
-        $assignation['filters']['searchDisable'] = true;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['nodeTypeForm'] = $nodeTypeForm->createView();
+        $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('@RoadizRozier/search/list.html.twig', $assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**
      * @throws RuntimeError
      */
-    public function searchNodeSourceAction(Request $request, string $nodeTypeName): Response
+    public function searchNodeSourceAction(Request $request, int $nodetypeId): Response
     {
-        $nodeType = $this->nodeTypesBag->get($nodeTypeName);
-        $assignation = [];
-        $pagination = true;
-        $itemPerPage = null;
+        /** @var NodeType|null $nodetype */
+        $nodetype = $this->managerRegistry->getRepository(NodeType::class)->find($nodetypeId);
+
         $builder = $this->buildSimpleForm('__node__');
-        $this->extendForm($builder, $nodeType);
+        $this->extendForm($builder, $nodetype);
         $this->addButtons($builder, true);
 
         $form = $builder->getForm();
         $form->handleRequest($request);
 
-        $builderNodeType = $this->buildNodeTypeForm($nodeTypeName);
+        $builderNodeType = $this->buildNodeTypeForm($nodetypeId);
         $nodeTypeForm = $builderNodeType->getForm();
         $nodeTypeForm->handleRequest($request);
 
@@ -266,21 +255,21 @@ final class SearchController extends AbstractController
             return $response;
         }
 
-        if (null !== $response = $this->handleNodeForm($form, $nodeType, $pagination, $itemPerPage, $assignation)) {
+        if (null !== $response = $this->handleNodeForm($form, $nodetype)) {
             return $response;
         }
 
-        $assignation['form'] = $form->createView();
-        $assignation['nodeType'] = $nodeType;
-        $assignation['filters']['searchDisable'] = true;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['nodeType'] = $nodetype;
+        $this->assignation['filters']['searchDisable'] = true;
 
-        return $this->render('@RoadizRozier/search/list.html.twig', $assignation);
+        return $this->render('@RoadizRozier/search/list.html.twig', $this->assignation);
     }
 
     /**
      * Build node-type selection form.
      */
-    protected function buildNodeTypeForm(?string $nodeTypeName = null): FormBuilderInterface
+    protected function buildNodeTypeForm(?int $nodetypeId = null): FormBuilderInterface
     {
         $builderNodeType = $this->formFactory->createNamedBuilder('nodeTypeForm', FormType::class, [], ['method' => 'get']);
         $builderNodeType->add(
@@ -290,7 +279,7 @@ final class SearchController extends AbstractController
                 'label' => 'nodeType',
                 'placeholder' => 'ignore',
                 'required' => false,
-                'data' => $nodeTypeName,
+                'data' => $nodetypeId,
                 'showInvisible' => true,
             ]
         );
@@ -328,7 +317,7 @@ final class SearchController extends AbstractController
                 return $this->redirectToRoute(
                     'searchNodeSourcePage',
                     [
-                        'nodeTypeName' => $nodeTypeForm->getData()['nodetype'],
+                        'nodetypeId' => $nodeTypeForm->getData()['nodetype'],
                     ]
                 );
             }
@@ -337,13 +326,8 @@ final class SearchController extends AbstractController
         return null;
     }
 
-    protected function handleNodeForm(
-        FormInterface $form,
-        NodeType $nodeType,
-        bool &$pagination,
-        ?int &$itemPerPage,
-        array &$assignation,
-    ): ?Response {
+    protected function handleNodeForm(FormInterface $form, NodeType $nodetype): ?Response
+    {
         if (!$form->isSubmitted() || !$form->isValid()) {
             return null;
         }
@@ -364,17 +348,17 @@ final class SearchController extends AbstractController
                 }
             }
         }
-        $data = $this->processCriteria($data, $pagination, $itemPerPage, 'node.');
-        $data = $this->processCriteriaNodeType($data, $nodeType);
+        $data = $this->processCriteria($data, 'node.');
+        $data = $this->processCriteriaNodetype($data, $nodetype);
 
-        $listManager = $this->entityListManagerFactory->createEntityListManager(
-            $nodeType->getSourceEntityFullQualifiedClassName(),
+        $listManager = $this->createEntityListManager(
+            $nodetype->getSourceEntityFullQualifiedClassName(),
             $data
         );
         $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->setDisplayingAllNodesStatuses(true);
-        if (false === $pagination) {
-            $listManager->setItemPerPage($itemPerPage ?? 999);
+        if (false === $this->pagination) {
+            $listManager->setItemPerPage($this->itemPerPage ?? 999);
             $listManager->disablePagination();
         }
         $listManager->handle();
@@ -390,7 +374,7 @@ final class SearchController extends AbstractController
          */
         $button = $form->get('export');
         if ($button instanceof ClickableInterface && $button->isClicked()) {
-            $filename = 'search-'.$nodeType->getName().'-'.date('YmdHis').'.csv';
+            $filename = 'search-'.$nodetype->getName().'-'.date('YmdHis').'.csv';
             $response = new StreamedResponse(function () use ($entities) {
                 echo $this->serializer->serialize($entities, 'csv', [
                     ...$this->csvEncoderOptions,
@@ -414,9 +398,9 @@ final class SearchController extends AbstractController
             return $response;
         }
 
-        $assignation['filters'] = $listManager->getAssignation();
-        $assignation['nodesSources'] = $entities;
-        $assignation['nodes'] = $nodes;
+        $this->assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['nodesSources'] = $entities;
+        $this->assignation['nodes'] = $nodes;
 
         return null;
     }
@@ -516,9 +500,9 @@ final class SearchController extends AbstractController
         ;
     }
 
-    private function extendForm(FormBuilderInterface $builder, NodeType $nodeType): void
+    private function extendForm(FormBuilderInterface $builder, NodeType $nodetype): void
     {
-        $fields = $nodeType->getFields();
+        $fields = $nodetype->getFields();
 
         $builder->add(
             'nodetypefield',
@@ -531,7 +515,7 @@ final class SearchController extends AbstractController
         $builder->add(
             $this->createTextSearchForm($builder, 'title', 'title')
         );
-        if ($nodeType->isPublishable()) {
+        if ($nodetype->isPublishable()) {
             $builder->add(
                 'publishedAt',
                 CompareDatetimeType::class,
@@ -561,8 +545,8 @@ final class SearchController extends AbstractController
                 continue;
             }
 
-            if (FieldType::ENUM_T === $field->getType()) {
-                $choices = $field->getDefaultValuesAsArray();
+            if (AbstractField::ENUM_T === $field->getType()) {
+                $choices = explode(',', $field->getDefaultValues() ?? '');
                 $choices = array_map('trim', $choices);
                 $choices = array_combine(array_values($choices), array_values($choices));
                 $type = ChoiceType::class;
@@ -573,8 +557,8 @@ final class SearchController extends AbstractController
                     $option['expanded'] = true;
                 }
                 $option['choices'] = $choices;
-            } elseif (FieldType::MULTIPLE_T === $field->getType()) {
-                $choices = $field->getDefaultValuesAsArray();
+            } elseif (AbstractField::MULTIPLE_T === $field->getType()) {
+                $choices = explode(',', $field->getDefaultValues() ?? '');
                 $choices = array_map('trim', $choices);
                 $choices = array_combine(array_values($choices), array_values($choices));
                 $type = ChoiceType::class;
@@ -586,22 +570,22 @@ final class SearchController extends AbstractController
                 if (count($choices) < 4) {
                     $option['expanded'] = true;
                 }
-            } elseif (FieldType::DATETIME_T === $field->getType()) {
+            } elseif (AbstractField::DATETIME_T === $field->getType()) {
                 $type = CompareDatetimeType::class;
-            } elseif (FieldType::DATE_T === $field->getType()) {
+            } elseif (AbstractField::DATE_T === $field->getType()) {
                 $type = CompareDateType::class;
             } else {
                 $type = NodeSourceType::getFormTypeFromFieldType($field);
             }
 
             if (
-                FieldType::MARKDOWN_T === $field->getType()
-                || FieldType::STRING_T === $field->getType()
-                || FieldType::TEXT_T === $field->getType()
-                || FieldType::EMAIL_T === $field->getType()
-                || FieldType::JSON_T === $field->getType()
-                || FieldType::YAML_T === $field->getType()
-                || FieldType::CSS_T === $field->getType()
+                AbstractField::MARKDOWN_T === $field->getType()
+                || AbstractField::STRING_T === $field->getType()
+                || AbstractField::TEXT_T === $field->getType()
+                || AbstractField::EMAIL_T === $field->getType()
+                || AbstractField::JSON_T === $field->getType()
+                || AbstractField::YAML_T === $field->getType()
+                || AbstractField::CSS_T === $field->getType()
             ) {
                 $builder->add(
                     $this->createTextSearchForm($builder, $field->getVarName(), $field->getLabel())
