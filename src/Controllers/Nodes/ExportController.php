@@ -9,15 +9,13 @@ use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
+use Themes\Rozier\RozierApp;
 
-#[AsController]
-final class ExportController extends AbstractController
+class ExportController extends RozierApp
 {
     public function __construct(
         private readonly ManagerRegistry $managerRegistry,
@@ -41,7 +39,7 @@ final class ExportController extends AbstractController
                 ->findDefault();
         }
         $criteria = ['translation' => $translation];
-        $order = ['node.nodeTypeName' => 'ASC'];
+        $order = ['node.nodeType' => 'ASC'];
         $filename = 'nodes-'.date('YmdHis').'.'.$translation->getLocale().'.csv';
 
         if (null !== $parentNodeId) {

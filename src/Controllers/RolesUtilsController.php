@@ -5,55 +5,25 @@ declare(strict_types=1);
 namespace Themes\Rozier\Controllers;
 
 use Doctrine\Common\Cache\CacheProvider;
-use Doctrine\Persistence\ManagerRegistry;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CoreBundle\Entity\Role;
 use RZ\Roadiz\CoreBundle\Importer\RolesImporter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class RolesUtilsController extends AbstractController
+class RolesUtilsController extends RozierApp
 {
     public function __construct(
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
         private readonly SerializerInterface $serializer,
-        private readonly LogTrail $logTrail,
         private readonly RolesImporter $rolesImporter,
     ) {
-    }
-
-    public function exportAllAction(Request $request): JsonResponse
-    {
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_ROLES');
-
-        $items = $this->managerRegistry->getRepository(Role::class)->findAll();
-
-        return new JsonResponse(
-            $this->serializer->serialize(
-                $items,
-                'json',
-                ['groups' => ['role:export']]
-            ),
-            Response::HTTP_OK,
-            [
-                'Content-Disposition' => sprintf(
-                    'attachment; filename="role_%s.json"',
-                    (new \DateTime())->format('YmdHi')
-                ),
-            ],
-            true
-        );
     }
 
     /**
@@ -64,7 +34,7 @@ final class RolesUtilsController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ACCESS_ROLES');
 
         /** @var Role|null $existingRole */
-        $existingRole = $this->managerRegistry->getRepository(Role::class)->find($id);
+        $existingRole = $this->em()->find(Role::class, $id);
 
         if (null === $existingRole) {
             throw $this->createNotFoundException();
@@ -74,11 +44,11 @@ final class RolesUtilsController extends AbstractController
             $this->serializer->serialize(
                 [$existingRole],
                 'json',
-                ['groups' => ['role:export']]
+                SerializationContext::create()->setGroups(['role'])
             ),
             Response::HTTP_OK,
             [
-                'Content-Disposition' => sprintf('attachment; filename="%s"', 'role-'.$existingRole->getRole().'-'.date('YmdHis').'.json'),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'role-'.$existingRole->getName().'-'.date('YmdHis').'.json'),
             ],
             true
         );
@@ -111,14 +81,13 @@ final class RolesUtilsController extends AbstractController
 
                 if (null !== \json_decode($serializedData)) {
                     if ($this->rolesImporter->import($serializedData)) {
-                        $msg = $this->translator->trans('role.imported');
-                        $this->logTrail->publishConfirmMessage($request, $msg);
+                        $msg = $this->getTranslator()->trans('role.imported');
+                        $this->publishConfirmMessage($request, $msg);
 
-                        $manager = $this->managerRegistry->getManagerForClass(Role::class);
-                        $manager->flush();
+                        $this->em()->flush();
 
                         // Clear result cache
-                        $cacheDriver = $manager->getConfiguration()->getResultCacheImpl();
+                        $cacheDriver = $this->em()->getConfiguration()->getResultCacheImpl();
                         if ($cacheDriver instanceof CacheProvider) {
                             $cacheDriver->deleteAll();
                         }
@@ -129,15 +98,15 @@ final class RolesUtilsController extends AbstractController
                         );
                     }
                 }
-                $form->addError(new FormError($this->translator->trans('file.format.not_valid')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {
-                $form->addError(new FormError($this->translator->trans('file.not_uploaded')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));
             }
         }
 
-        return $this->render('@RoadizRozier/roles/import.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/roles/import.html.twig', $this->assignation);
     }
 
     private function buildImportJsonFileForm(): FormInterface

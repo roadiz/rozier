@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
 
 /**
  * Extends common back-office controller, but add a request validation
  * to secure Ajax connexions.
  */
-abstract class AbstractAjaxController extends AbstractController
+abstract class AbstractAjaxController extends RozierApp
 {
-    public const AJAX_TOKEN_INTENTION = 'rozier_ajax';
-
     public function __construct(
-        protected readonly ManagerRegistry $managerRegistry,
         protected readonly SerializerInterface $serializer,
-        protected readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -38,15 +32,16 @@ abstract class AbstractAjaxController extends AbstractController
     {
         $translationId = $request->get('translationId', null);
         if (\is_numeric($translationId) && $translationId > 0) {
-            $translation = $this->managerRegistry
-                ->getRepository(Translation::class)
-                ->find($translationId);
+            $translation = $this->em()->find(
+                Translation::class,
+                $translationId
+            );
             if (null !== $translation) {
                 return $translation;
             }
         }
 
-        return $this->managerRegistry->getRepository(Translation::class)->findDefault();
+        return $this->em()->getRepository(Translation::class)->findDefault();
     }
 
     /**
@@ -101,7 +96,6 @@ abstract class AbstractAjaxController extends AbstractController
                 ['groups' => [
                     'document_display',
                     'explorer_thumbnail',
-                    'node_type:display',
                     'model',
                 ]]
             ),

@@ -19,10 +19,13 @@ use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-final class CustomFormType extends AbstractType
+class CustomFormType extends AbstractType
 {
-    public function __construct(private readonly Security $security)
+    protected Security $security;
+
+    public function __construct(Security $security)
     {
+        $this->security = $security;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

@@ -2,17 +2,17 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="./themes/Rozier/Resources/translations/messages.po" source-language="en" datatype="plaintext" target-language="en">
     <body>
-      <trans-unit xml:space="preserve" id="%namespace%.imported" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.imported">
         <source>%namespace%.imported</source>
-        <target state="final">Successful import for: %namespace%.</target>
+        <target state="translated">Successful import for: %namespace%.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="2" approved="yes">
         <source>node.%name%.updated</source>
         <target state="final">Node "%name%" has been updated.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="node.%name%.was_moved" approved="yes">
+      <trans-unit xml:space="preserve" id="node.%name%.was_moved">
         <source>node.%name%.was_moved</source>
-        <target state="final">Node "%name%" has been moved.</target>
+        <target state="translated">Node "%name%" has been moved.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="3" approved="yes">
         <source>node.%nodeId%.not_exists</source>
@@ -350,13 +350,13 @@
         <source>translation</source>
         <target state="final">Translation</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="source_translation" approved="yes">
+      <trans-unit xml:space="preserve" id="source_translation">
         <source>source_translation</source>
-        <target state="final">Source translation</target>
+        <target state="translated">Source translation</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="destination_translation" approved="yes">
+      <trans-unit xml:space="preserve" id="destination_translation">
         <source>destination_translation</source>
-        <target state="final">Destination translation</target>
+        <target state="translated">Destination translation</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="91" approved="yes">
         <source>metaTitle</source>
@@ -394,23 +394,23 @@
         <source>defaultValues</source>
         <target state="final">Default values</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="customFormField.defaultValues" approved="yes">
+      <trans-unit xml:space="preserve" id="customFormField.defaultValues">
         <source>customFormField.defaultValues</source>
-        <target state="final">Advanced field configuration</target>
+        <target state="translated">Advanced field configuration</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.defaultValues" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.defaultValues">
         <source>nodeTypeField.defaultValues</source>
-        <target state="final">Advanced field configuration</target>
+        <target state="translated">Advanced field configuration</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups">
         <source>nodeTypeField.normalizationContextGroups</source>
         <target state="final">Custom serialization context (groups)</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups.help" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.normalizationContextGroups.help">
         <source>nodeTypeField.normalizationContextGroups.help</source>
         <target state="final">Changes the serialization context for the contents of this field.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups.help" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups.help">
         <source>nodeTypeField.serializationGroups.help</source>
         <target state="final">
             Select the [serialization groups](https://docs.roadiz.io/en/latest/developer/api/serialization.html#serialization-groups) for which this field will be serialized.
@@ -495,9 +495,9 @@
         <source>nodeType.hidingNodes</source>
         <target state="final">Node-type hides its nodes</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.hidingNonReachableNodes" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeType.hidingNonReachableNodes">
         <source>nodeType.hidingNonReachableNodes</source>
-        <target state="final">Node-type hides its non-reachable nodes only</target>
+        <target state="translated">Node-type hides its non-reachable nodes only</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="125" approved="yes">
         <source>role.imported</source>
@@ -735,9 +735,9 @@
         <source>edit.group.%name%</source>
         <target state="final">%name%</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="186" approved="yes">
+      <trans-unit xml:space="preserve" id="186">
         <source>Welcome</source>
-        <target state="final">Welcome</target>
+        <target state="translated">Welcome</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="187" approved="yes">
         <source>edit.user.%name%</source>
@@ -967,9 +967,9 @@
         <source>add.node</source>
         <target state="final">Add node</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="244" approved="yes">
+      <trans-unit xml:space="preserve" id="244">
         <source>In</source>
-        <target state="final">In</target>
+        <target state="translated">In</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="245" approved="yes">
         <source>back_to.nodes</source>
@@ -1071,9 +1071,9 @@
         <source>add.setting</source>
         <target state="final">Add setting</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="270" approved="yes">
+      <trans-unit xml:space="preserve" id="270">
         <source>Delete</source>
-        <target state="final">Delete</target>
+        <target state="translated">Delete</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="271" approved="yes">
         <source>create.node</source>
@@ -1191,9 +1191,9 @@
         <source>dev_mode.activated</source>
         <target state="final">Dev mode On</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="maintenance_mode.activated" approved="yes">
+      <trans-unit xml:space="preserve" id="maintenance_mode.activated">
         <source>maintenance_mode.activated</source>
-        <target state="final">Maintenance mode On</target>
+        <target state="translated">Maintenance mode On</target>
         <note>Message to notify that site is under maintenance.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="300" approved="yes">
@@ -1408,9 +1408,9 @@
         <source>site.settings</source>
         <target state="final">Site settings</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="352" approved="yes">
+      <trans-unit xml:space="preserve" id="352">
         <source>Translate</source>
-        <target state="final">Translate</target>
+        <target state="translated">Translate</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="353" approved="yes">
         <source>are_you_sure.delete.node.and.data</source>
@@ -1500,9 +1500,9 @@
         <source>tag.color</source>
         <target state="final">Color</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="folder.color" approved="yes">
+      <trans-unit xml:space="preserve" id="folder.color">
         <source>folder.color</source>
-        <target state="final">Color</target>
+        <target state="translated">Color</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="374" approved="yes">
         <source>tag.tree</source>
@@ -1806,9 +1806,9 @@
         <source>country.type</source>
         <target state="final">Country (ISO 3166-1 alpha-2)</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="collection.type" approved="yes">
+      <trans-unit xml:space="preserve" id="collection.type">
         <source>collection.type</source>
-        <target state="final">Custom collection</target>
+        <target state="translated">Custom collection</target>
       </trans-unit>
       <!-- Dynamic button in nodeTree add.a.%nodeType% -->
       <trans-unit xml:space="preserve" id="445" approved="yes">
@@ -1985,19 +1985,19 @@
         <target state="final">Twitter URL</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="linkedin_url" approved="yes">
+      <trans-unit xml:space="preserve" id="linkedin_url">
         <source>linkedin_url</source>
-        <target state="final">LinkedIn Url</target>
+        <target state="translated">LinkedIn Url</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="youtube_url" approved="yes">
+      <trans-unit xml:space="preserve" id="youtube_url">
         <source>youtube_url</source>
-        <target state="final">Youtube Url</target>
+        <target state="translated">Youtube Url</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="googleplus_url" approved="yes">
+      <trans-unit xml:space="preserve" id="googleplus_url">
         <source>googleplus_url</source>
-        <target state="final">Google + Url</target>
+        <target state="translated">Google + Url</target>
         <note>Setting name for social page url.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="twitter_account" approved="yes">
@@ -2239,9 +2239,9 @@
         <source>document.translation.%name%.cannot_delete</source>
         <target state="final">Document “%name%” translation cannot be deleted.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="folder" approved="yes">
+      <trans-unit xml:space="preserve" id="folder">
         <source>folder</source>
-        <target state="final">Folder</target>
+        <target state="translated">Folder</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="folderTree" approved="yes">
         <source>folderTree</source>
@@ -2255,13 +2255,13 @@
         <source>add.child.folder</source>
         <target state="final">Add sub-folder</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="add.folder.%name%.child" approved="yes">
+      <trans-unit xml:space="preserve" id="add.folder.%name%.child">
         <source>add.folder.%name%.child</source>
-        <target state="final">Add a sub-folder in «%name%»</target>
+        <target state="translated">Add a sub-folder in «%name%»</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="folder.%name%.created" approved="yes">
+      <trans-unit xml:space="preserve" id="folder.%name%.created">
         <source>folder.%name%.created</source>
-        <target state="final">Le dossier « %name% » a été créé.</target>
+        <target state="translated">Le dossier « %name% » a été créé.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="edit.folder" approved="yes">
         <source>edit.folder</source>
@@ -2313,45 +2313,45 @@
         <source>nodeTypeField.maxLength</source>
         <target state="final">Max length</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="no_limit" approved="yes">
+      <trans-unit xml:space="preserve" id="no_limit">
         <source>no_limit</source>
-        <target state="final">No limit</target>
+        <target state="translated">No limit</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serialization" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.serialization">
         <source>nodeTypeField.serialization</source>
-        <target state="final">Serialization</target>
+        <target state="translated">Serialization</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.excludedFromSerialization" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.excludedFromSerialization">
         <source>nodeTypeField.excludedFromSerialization</source>
-        <target state="final">Exclude field from node-source serialization?</target>
+        <target state="translated">Exclude field from node-source serialization?</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationMaxDepth" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.serializationMaxDepth">
         <source>nodeTypeField.serializationMaxDepth</source>
-        <target state="final">Maximum serialization depth</target>
+        <target state="translated">Maximum serialization depth</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationExclusionExpression" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.serializationExclusionExpression">
         <source>nodeTypeField.serializationExclusionExpression</source>
-        <target state="final">Serialization exclusion expression</target>
+        <target state="translated">Serialization exclusion expression</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeTypeField.serializationGroups">
         <source>nodeTypeField.serializationGroups</source>
-        <target state="final">Custom serialization groups</target>
+        <target state="translated">Custom serialization groups</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization" approved="yes">
+      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization">
         <source>exclude_this_field_from_api_serialization</source>
-        <target state="final">Prevents this field to be serialized when a node-source is queried from API.</target>
+        <target state="translated">Prevents this field to be serialized when a node-source is queried from API.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="default_value" approved="yes">
+      <trans-unit xml:space="preserve" id="default_value">
         <source>default_value</source>
-        <target state="final">Default value</target>
+        <target state="translated">Default value</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization_if_expression_result_is_true" approved="yes">
+      <trans-unit xml:space="preserve" id="exclude_this_field_from_api_serialization_if_expression_result_is_true">
         <source>exclude_this_field_from_api_serialization_if_expression_result_is_true</source>
-        <target state="final">Prevents this field to be serialized only if given expression result is true. This requires a valid Symfony Expression Language string.</target>
+        <target state="translated">Prevents this field to be serialized only if given expression result is true. This requires a valid Symfony Expression Language string.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="enter_symfony_expression_language_with_object_as_var_name" approved="yes">
+      <trans-unit xml:space="preserve" id="enter_symfony_expression_language_with_object_as_var_name">
         <source>enter_symfony_expression_language_with_object_as_var_name</source>
-        <target state="final">Enter a Symfony Expression Language expression using "object" as root var name.</target>
+        <target state="translated">Enter a Symfony Expression Language expression using "object" as root var name.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="export.all.nodes" approved="yes">
         <source>export.all.nodes</source>
@@ -2469,9 +2469,9 @@
         <source>non_breaking.space</source>
         <target state="final">Non-breaking space</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="non_breaking.hyphen" approved="yes">
+      <trans-unit xml:space="preserve" id="non_breaking.hyphen">
         <source>non_breaking.hyphen</source>
-        <target state="final">Non-breaking hyphen</target>
+        <target state="translated">Non-breaking hyphen</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="forbidden.page" approved="yes">
         <source>forbidden.page</source>
@@ -2881,101 +2881,101 @@
         <source>bulk.actions</source>
         <target state="final">Bulk actions</target>
       </trans-unit>
-      <trans-unit id="bulk.delete" xml:space="preserve" approved="yes">
+      <trans-unit id="bulk.delete" xml:space="preserve">
         <source>bulk.delete</source>
-        <target state="final">Delete all selected</target>
+        <target state="translated">Delete all selected</target>
       </trans-unit>
-      <trans-unit id="bulk.publish" xml:space="preserve" approved="yes">
+      <trans-unit id="bulk.publish" xml:space="preserve">
         <source>bulk.publish</source>
-        <target state="final">Publish all selected</target>
+        <target state="translated">Publish all selected</target>
       </trans-unit>
-      <trans-unit id="bulk.unpublish" xml:space="preserve" approved="yes">
+      <trans-unit id="bulk.unpublish" xml:space="preserve">
         <source>bulk.unpublish</source>
-        <target state="final">Unpublish all selected</target>
+        <target state="translated">Unpublish all selected</target>
       </trans-unit>
-      <trans-unit id="no_attributes" xml:space="preserve" approved="yes">
+      <trans-unit id="no_attributes" xml:space="preserve">
         <source>no_attributes</source>
-        <target state="final">No attributes</target>
+        <target state="translated">No attributes</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_delete.attributes" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_delete.attributes" xml:space="preserve">
         <source>are_you_sure.bulk_delete.attributes</source>
-        <target state="final">Are you sure you want to delete all selected attributes?</target>
+        <target state="translated">Are you sure you want to delete all selected attributes?</target>
       </trans-unit>
-      <trans-unit id="attributes.bulk_delete.title" xml:space="preserve" approved="yes">
+      <trans-unit id="attributes.bulk_delete.title" xml:space="preserve">
         <source>attributes.bulk_delete.title</source>
-        <target state="final">Delete attributes</target>
+        <target state="translated">Delete attributes</target>
       </trans-unit>
-      <trans-unit id="no_webhooks" xml:space="preserve" approved="yes">
+      <trans-unit id="no_webhooks" xml:space="preserve">
         <source>no_webhooks</source>
-        <target state="final">No webhooks</target>
+        <target state="translated">No webhooks</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_delete.webhooks" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_delete.webhooks" xml:space="preserve">
         <source>are_you_sure.bulk_delete.webhooks</source>
-        <target state="final">Are you sure you want to delete all selected webhooks?</target>
+        <target state="translated">Are you sure you want to delete all selected webhooks?</target>
       </trans-unit>
-      <trans-unit id="webhooks.bulk_delete.title" xml:space="preserve" approved="yes">
+      <trans-unit id="webhooks.bulk_delete.title" xml:space="preserve">
         <source>webhooks.bulk_delete.title</source>
-        <target state="final">Delete webhooks</target>
+        <target state="translated">Delete webhooks</target>
       </trans-unit>
-      <trans-unit id="no_redirections" xml:space="preserve" approved="yes">
+      <trans-unit id="no_redirections" xml:space="preserve">
         <source>no_redirections</source>
-        <target state="final">No redirections</target>
+        <target state="translated">No redirections</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_delete.redirections" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_delete.redirections" xml:space="preserve">
         <source>are_you_sure.bulk_delete.redirections</source>
-        <target state="final">Are you sure you want to delete all selected redirections?</target>
+        <target state="translated">Are you sure you want to delete all selected redirections?</target>
       </trans-unit>
-      <trans-unit id="redirections.bulk_delete.title" xml:space="preserve" approved="yes">
+      <trans-unit id="redirections.bulk_delete.title" xml:space="preserve">
         <source>redirections.bulk_delete.title</source>
-        <target state="final">Delete selected redirections</target>
+        <target state="translated">Delete selected redirections</target>
       </trans-unit>
-      <trans-unit id="no_custom_forms" xml:space="preserve" approved="yes">
+      <trans-unit id="no_custom_forms" xml:space="preserve">
         <source>no_custom_forms</source>
-        <target state="final">No custom forms</target>
+        <target state="translated">No custom forms</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_delete.custom_forms" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_delete.custom_forms" xml:space="preserve">
         <source>are_you_sure.bulk_delete.custom_forms</source>
-        <target state="final">Are you sure you want to delete all selected custom forms?</target>
+        <target state="translated">Are you sure you want to delete all selected custom forms?</target>
       </trans-unit>
-      <trans-unit id="custom_forms.bulk_delete.title" xml:space="preserve" approved="yes">
+      <trans-unit id="custom_forms.bulk_delete.title" xml:space="preserve">
         <source>custom_forms.bulk_delete.title</source>
-        <target state="final">Delete selected custom forms</target>
+        <target state="translated">Delete selected custom forms</target>
       </trans-unit>
-      <trans-unit id="no_users" xml:space="preserve" approved="yes">
+      <trans-unit id="no_users" xml:space="preserve">
         <source>no_users</source>
-        <target state="final">No users</target>
+        <target state="translated">No users</target>
       </trans-unit>
-      <trans-unit id="bulk.enable" xml:space="preserve" approved="yes">
+      <trans-unit id="bulk.enable" xml:space="preserve">
         <source>bulk.enable</source>
-        <target state="final">Enable all</target>
+        <target state="translated">Enable all</target>
       </trans-unit>
-      <trans-unit id="bulk.disable" xml:space="preserve" approved="yes">
+      <trans-unit id="bulk.disable" xml:space="preserve">
         <source>bulk.disable</source>
-        <target state="final">Disable all</target>
+        <target state="translated">Disable all</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_delete.users" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_delete.users" xml:space="preserve">
         <source>are_you_sure.bulk_delete.users</source>
-        <target state="final">Are you sure you want to delete selected user accounts?</target>
+        <target state="translated">Are you sure you want to delete selected user accounts?</target>
       </trans-unit>
-      <trans-unit id="users.bulk_delete.title" xml:space="preserve" approved="yes">
+      <trans-unit id="users.bulk_delete.title" xml:space="preserve">
         <source>users.bulk_delete.title</source>
-        <target state="final">Delete selected users</target>
+        <target state="translated">Delete selected users</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_enable.users" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_enable.users" xml:space="preserve">
         <source>are_you_sure.bulk_enable.users</source>
-        <target state="final">Are you sure you want to enable selected user accounts?</target>
+        <target state="translated">Are you sure you want to enable selected user accounts?</target>
       </trans-unit>
-      <trans-unit id="users.bulk_enable.title" xml:space="preserve" approved="yes">
+      <trans-unit id="users.bulk_enable.title" xml:space="preserve">
         <source>users.bulk_enable.title</source>
-        <target state="final">Enable selected users</target>
+        <target state="translated">Enable selected users</target>
       </trans-unit>
-      <trans-unit id="are_you_sure.bulk_disable.users" xml:space="preserve" approved="yes">
+      <trans-unit id="are_you_sure.bulk_disable.users" xml:space="preserve">
         <source>are_you_sure.bulk_disable.users</source>
-        <target state="final">Are you sure you want to disable selected user accounts?</target>
+        <target state="translated">Are you sure you want to disable selected user accounts?</target>
       </trans-unit>
-      <trans-unit id="users.bulk_disable.title" xml:space="preserve" approved="yes">
+      <trans-unit id="users.bulk_disable.title" xml:space="preserve">
         <source>users.bulk_disable.title</source>
-        <target state="final">Disable selected users</target>
+        <target state="translated">Disable selected users</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="reset.marker" approved="yes">
         <source>reset.marker</source>
@@ -3137,25 +3137,25 @@
         <source>Bad credentials.</source>
         <target state="final">Bad credentials</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="Too many login attemps" approved="yes">
+      <trans-unit xml:space="preserve" id="Too many login attemps">
         <source>Too many login attemps, wait before trying again.</source>
-        <target state="final">Too many login attemps, wait before trying again.</target>
+        <target state="translated">Too many login attemps, wait before trying again.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="User account has expired." approved="yes">
+      <trans-unit xml:space="preserve" id="User account has expired.">
         <source>User account has expired.</source>
-        <target state="final">User account has expired.</target>
+        <target state="translated">User account has expired.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="User account is locked." approved="yes">
+      <trans-unit xml:space="preserve" id="User account is locked.">
         <source>User account is locked.</source>
-        <target state="final">User account is locked.</target>
+        <target state="translated">User account is locked.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="User credentials have expired." approved="yes">
+      <trans-unit xml:space="preserve" id="User credentials have expired.">
         <source>User credentials have expired.</source>
-        <target state="final">User credentials have expired.</target>
+        <target state="translated">User credentials have expired.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="User account is disabled." approved="yes">
+      <trans-unit xml:space="preserve" id="User account is disabled.">
         <source>User account is disabled.</source>
-        <target state="final">User account is disabled.</target>
+        <target state="translated">User account is disabled.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="change.nodes.status" approved="yes">
         <source>change.nodes.status</source>
@@ -3225,13 +3225,13 @@
         <source>nodeType.hiding_nodes</source>
         <target state="final">This type hides its node-tree</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeType.searchable" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeType.searchable">
         <source>nodeType.searchable</source>
-        <target state="final">Searchable?</target>
+        <target state="translated">Searchable?</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="allow_this_types_nodes_title_to_be_indexed_into_search_engine" approved="yes">
+      <trans-unit xml:space="preserve" id="allow_this_types_nodes_title_to_be_indexed_into_search_engine">
         <source>allow_this_types_nodes_title_to_be_indexed_into_search_engine</source>
-        <target state="final">Allows node-source title of this type to be indexed into search engine.</target>
+        <target state="translated">Allows node-source title of this type to be indexed into search engine.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="newsletter.%name%.created" approved="yes">
         <source>newsletter.%name%.created</source>
@@ -3609,9 +3609,9 @@
         <source>document.filepath</source>
         <target state="final">Absolute file path</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.imageAverageColor" approved="yes">
+      <trans-unit xml:space="preserve" id="document.imageAverageColor">
         <source>document.imageAverageColor</source>
-        <target state="final">Average color</target>
+        <target state="translated">Average color</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="download.document" approved="yes">
         <source>download.document</source>
@@ -3667,9 +3667,9 @@
         <source>This value should not be blank.</source>
         <target state="final">This value should not be blank</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="This value is not valid." approved="yes">
+      <trans-unit xml:space="preserve" id="This value is not valid.">
         <source>This value is not valid.</source>
-        <target state="final">This value is not valid.</target>
+        <target state="translated">This value is not valid.</target>
       </trans-unit>
       <!-- Font variantes -->
       <trans-unit xml:space="preserve" id="font_variant.regular" approved="yes">
@@ -3696,53 +3696,53 @@
         <source>font_variant.light.italic</source>
         <target state="final">Light italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.thin" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.thin">
         <source>font_variant.thin</source>
-        <target state="final">Thin</target>
+        <target state="translated">Thin</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.thin.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.thin.italic">
         <source>font_variant.thin.italic</source>
-        <target state="final">Thin italic</target>
+        <target state="translated">Thin italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.extra_light" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.extra_light">
         <source>font_variant.extra_light</source>
-        <target state="final">Extra light</target>
+        <target state="translated">Extra light</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.extra_light.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.extra_light.italic">
         <source>font_variant.extra_light.italic</source>
-        <target state="final">Extra light italic</target>
+        <target state="translated">Extra light italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.extra_bold" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.extra_bold">
         <source>font_variant.extra_bold</source>
-        <target state="final">Extra bold</target>
+        <target state="translated">Extra bold</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.extra_bold.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.extra_bold.italic">
         <source>font_variant.extra_bold.italic</source>
-        <target state="final">Extra bold italic</target>
+        <target state="translated">Extra bold italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.semi_bold" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.semi_bold">
         <source>font_variant.semi_bold</source>
-        <target state="final">Semi bold</target>
+        <target state="translated">Semi bold</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.semi_bold.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.semi_bold.italic">
         <source>font_variant.semi_bold.italic</source>
-        <target state="final">Semi bold italic</target>
+        <target state="translated">Semi bold italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.medium" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.medium">
         <source>font_variant.medium</source>
-        <target state="final">Medium</target>
+        <target state="translated">Medium</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.medium.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.medium.italic">
         <source>font_variant.medium.italic</source>
-        <target state="final">Medium italic</target>
+        <target state="translated">Medium italic</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.black" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.black">
         <source>font_variant.black</source>
-        <target state="final">Black</target>
+        <target state="translated">Black</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="font_variant.black.italic" approved="yes">
+      <trans-unit xml:space="preserve" id="font_variant.black.italic">
         <source>font_variant.black.italic</source>
-        <target state="final">Black italic</target>
+        <target state="translated">Black italic</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="update.roadiz" approved="yes">
         <source>update.roadiz</source>
@@ -3880,9 +3880,9 @@
         <source>tagName.alreadyExists</source>
         <target state="final">This tag name is already used</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="tagName.%name%.alreadyExists" approved="yes">
+      <trans-unit xml:space="preserve" id="tagName.%name%.alreadyExists">
         <source>tagName.%name%.alreadyExists</source>
-        <target state="final">Tag with %name% already exists.</target>
+        <target state="translated">Tag with %name% already exists.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="nodeTypeField.name.alreadyExists" approved="yes">
         <source>nodeTypeField.name.alreadyExists</source>
@@ -4004,9 +4004,9 @@
         <source>embedId.does_not_exist</source>
         <target state="final">Embed media ID does not exist.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="youtube_needs_a_key" approved="yes">
+      <trans-unit xml:space="preserve" id="youtube_needs_a_key">
         <source>YoutubeEmbedFinder needs a Google server key.</source>
-        <target state="final">YoutubeEmbedFinder needs a Google server key.</target>
+        <target state="translated">YoutubeEmbedFinder needs a Google server key.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="edit.user_details.%name%" approved="yes">
         <source>edit.user_details.%name%</source>
@@ -4094,9 +4094,9 @@
         <source>export_format.excel.%language%</source>
         <target state="final">Excel file format (%language%)</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="export_format.csv.%language%" approved="yes">
+      <trans-unit xml:space="preserve" id="export_format.csv.%language%">
         <source>export_format.csv.%language%</source>
-        <target state="final">CSV file (%language%)</target>
+        <target state="translated">CSV file (%language%)</target>
       </trans-unit>
       <!-- Bulk tags -->
       <trans-unit xml:space="preserve" id="delete.tags" approved="yes">
@@ -4225,30 +4225,25 @@
         <source>document.filesize</source>
         <target state="final">File size</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.duration" approved="yes">
+      <trans-unit xml:space="preserve" id="document.duration">
         <source>document.duration</source>
-        <target state="final">Duration (in seconds)</target>
+        <target state="translated">Duration (in seconds)</target>
         <note>Label for timed documents duration (in seconds)</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.media_not_found_or_private" approved="yes">
+      <trans-unit xml:space="preserve" id="document.media_not_found_or_private">
         <source>document.media_not_found_or_private</source>
-        <target state="final">Media cannot be found or it is flagged as private</target>
+        <target state="translated">Media cannot be found or it is flagged as private</target>
         <note>Error message when external media request fails with NotFound response.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.is_only_external" approved="yes">
+      <trans-unit xml:space="preserve" id="document.is_only_external">
         <source>document.is_only_external</source>
-        <target state="final">Document is not linked to any local file.</target>
+        <target state="translated">Document is not linked to any local file.</target>
         <note>Warning message displayed when document does not have any file locally.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="reachable" approved="yes">
         <source>reachable</source>
         <target state="final">Reachable</target>
         <note>For node-types, defines if produced nodes will be reachable with an URL or not (eg. just content blocks).</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="not_reachable" approved="yes">
-        <source>not_reachable</source>
-        <target state="final">Not reachable</target>
-        <note>Node-types will not be reachable from an URL.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="You cannot delete a node-type in production mode." approved="yes">
         <source>You cannot delete a node-type in production mode.</source>
@@ -4259,219 +4254,219 @@
         <source>yaml.type</source>
         <target state="final">YAML code</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="manage.redirections" approved="yes">
+      <trans-unit xml:space="preserve" id="manage.redirections">
         <source>manage.redirections</source>
-        <target state="final">Redirections</target>
+        <target state="translated">Redirections</target>
         <note>Redirection section button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="delete.redirection" approved="yes">
+      <trans-unit xml:space="preserve" id="delete.redirection">
         <source>delete.redirection</source>
-        <target state="final">Delete redirection</target>
+        <target state="translated">Delete redirection</target>
         <note>Delete redirection page title</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="are_you_sure.delete.redirection" approved="yes">
+      <trans-unit xml:space="preserve" id="are_you_sure.delete.redirection">
         <source>are_you_sure.delete.redirection</source>
-        <target state="final">Are you sure you want to delete this redirection?</target>
+        <target state="translated">Are you sure you want to delete this redirection?</target>
         <note>Delete redirection page confirmation message</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="add.a.redirection" approved="yes">
+      <trans-unit xml:space="preserve" id="add.a.redirection">
         <source>add.a.redirection</source>
-        <target state="final">Add a redirection</target>
+        <target state="translated">Add a redirection</target>
         <note>Add redirection page title</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="back_to.redirections" approved="yes">
+      <trans-unit xml:space="preserve" id="back_to.redirections">
         <source>back_to.redirections</source>
-        <target state="final">Back to redirections</target>
+        <target state="translated">Back to redirections</target>
         <note>Back button label for redirections</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="edit.redirection" approved="yes">
+      <trans-unit xml:space="preserve" id="edit.redirection">
         <source>edit.redirection</source>
-        <target state="final">Edit redirection</target>
+        <target state="translated">Edit redirection</target>
         <note>Edit redirection page title</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.query" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.query">
         <source>redirection.query</source>
-        <target state="final">Query</target>
+        <target state="translated">Query</target>
         <note>Redirection field which stands for the query: the URL to listen for a redirection</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.redirect_uri" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.redirect_uri">
         <source>redirection.redirect_uri</source>
-        <target state="final">Destination URI</target>
+        <target state="translated">Destination URI</target>
         <note>Redirection field which stands for the redirect URI: the destination URI</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.type" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.type">
         <source>redirection.type</source>
-        <target state="final">Redirection type</target>
+        <target state="translated">Redirection type</target>
         <note>Redirection field which stands for HTTP code: 301 or 302</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.moved_permanently" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.moved_permanently">
         <source>redirection.moved_permanently</source>
-        <target state="final">Moved permanently</target>
+        <target state="translated">Moved permanently</target>
         <note>Redirection type description for 301 Moved Permanently</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.moved_temporarily" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.moved_temporarily">
         <source>redirection.moved_temporarily</source>
-        <target state="final">Moved temporarily</target>
+        <target state="translated">Moved temporarily</target>
         <note>Redirection type description for 302 Moved Temporarily</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="redirection.use_count" approved="yes">
+      <trans-unit xml:space="preserve" id="redirection.use_count">
         <source>redirection.use_count</source>
-        <target state="final">Usage count</target>
+        <target state="translated">Usage count</target>
         <note>Redirection usage count</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="login_image" approved="yes">
+      <trans-unit xml:space="preserve" id="login_image">
         <source>login_image</source>
-        <target state="final">Login page background image</target>
+        <target state="translated">Login page background image</target>
         <note>Global parameter to customize login screen background image</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="publishedAt" approved="yes">
+      <trans-unit xml:space="preserve" id="publishedAt">
         <source>publishedAt</source>
-        <target state="final">Publication date and time</target>
+        <target state="translated">Publication date and time</target>
         <note>Field label for node-source publication date and time.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="publishable" approved="yes">
+      <trans-unit xml:space="preserve" id="publishable">
         <source>publishable</source>
-        <target state="final">Date and time publishable</target>
+        <target state="translated">Date and time publishable</target>
         <note>Field label for node-type publishable status.</note>
       </trans-unit>
       <!-- Node form help messages -->
-      <trans-unit xml:space="preserve" id="this_node_type_will_be_available_for_creating_root_nodes" approved="yes">
+      <trans-unit xml:space="preserve" id="this_node_type_will_be_available_for_creating_root_nodes">
         <source>this_node_type_will_be_available_for_creating_root_nodes</source>
-        <target state="final">This node-type will be available for creating nodes at root level.</target>
+        <target state="translated">This node-type will be available for creating nodes at root level.</target>
         <note>Help message to explain node-type "visible" field.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="enables_published_at_field_for_time_based_publication" approved="yes">
+      <trans-unit xml:space="preserve" id="enables_published_at_field_for_time_based_publication">
         <source>enables_published_at_field_for_time_based_publication</source>
-        <target state="final">This node-type will have a publication date and time.</target>
+        <target state="translated">This node-type will have a publication date and time.</target>
         <note>Help message to explain node-type "publishedAt" field.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="mark_this_typed_nodes_as_reachable_with_an_url" approved="yes">
+      <trans-unit xml:space="preserve" id="mark_this_typed_nodes_as_reachable_with_an_url">
         <source>mark_this_typed_nodes_as_reachable_with_an_url</source>
-        <target state="final">This node-type will be reachable with a public URL.</target>
+        <target state="translated">This node-type will be reachable with a public URL.</target>
         <note>Help message to explain node-type "reachable" field.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="this_node_type_will_hide_all_children_nodes" approved="yes">
+      <trans-unit xml:space="preserve" id="this_node_type_will_hide_all_children_nodes">
         <source>this_node_type_will_hide_all_children_nodes</source>
-        <target state="final">This node-type will hide all its children nodes.</target>
+        <target state="translated">This node-type will hide all its children nodes.</target>
         <note>Help message to explain node-type "hiding_nodes" field.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="dynamic_node_name_will_follow_any_title_change_on_default_translation" approved="yes">
+      <trans-unit xml:space="preserve" id="dynamic_node_name_will_follow_any_title_change_on_default_translation">
         <source>dynamic_node_name_will_follow_any_title_change_on_default_translation</source>
-        <target state="final">A dynamic node name will follow any title changes on your default translation.</target>
+        <target state="translated">A dynamic node name will follow any title changes on your default translation.</target>
         <note>Help message to explain node dynamic-node-name field.</note>
       </trans-unit>
       <!-- Font form help messages -->
-      <trans-unit xml:space="preserve" id="font_name_should_be_the_same_for_all_variants" approved="yes">
+      <trans-unit xml:space="preserve" id="font_name_should_be_the_same_for_all_variants">
         <source>font_name_should_be_the_same_for_all_variants</source>
-        <target state="final">Font name should be the same for all font variants.</target>
+        <target state="translated">Font name should be the same for all font variants.</target>
         <note>Help message to explain font name field should be the same over all variants.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="css_font_family_hash_is_automatically_generated_from_font_name" approved="yes">
+      <trans-unit xml:space="preserve" id="css_font_family_hash_is_automatically_generated_from_font_name">
         <source>css_font_family_hash_is_automatically_generated_from_font_name</source>
-        <target state="final">CSS font-family hash is automatically generated from your font name.</target>
+        <target state="translated">CSS font-family hash is automatically generated from your font name.</target>
         <note>Help message to explain font css family field will be automatically generated from font name, it should be the same for all variants.</note>
       </trans-unit>
       <!-- Node type field form help messages -->
-      <trans-unit xml:space="preserve" id="technical_name_for_database_and_templating" approved="yes">
+      <trans-unit xml:space="preserve" id="technical_name_for_database_and_templating">
         <source>technical_name_for_database_and_templating</source>
-        <target state="final">Technical name for database and templating.</target>
+        <target state="translated">Technical name for database and templating.</target>
         <note>Help message to explain node-type-field name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="human_readable_field_name" approved="yes">
+      <trans-unit xml:space="preserve" id="human_readable_field_name">
         <source>human_readable_field_name</source>
-        <target state="final">Human readable field name.</target>
+        <target state="translated">Human readable field name.</target>
         <note>Help message to explain node-type-field label.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="use_the_same_group_names_over_fields_to_gather_them_in_tabs" approved="yes">
+      <trans-unit xml:space="preserve" id="use_the_same_group_names_over_fields_to_gather_them_in_tabs">
         <source>use_the_same_group_names_over_fields_to_gather_them_in_tabs</source>
-        <target state="final">Use the same group name over your node-type field to gather them into tabs.</target>
+        <target state="translated">Use the same group name over your node-type field to gather them into tabs.</target>
         <note>Help message to explain node-type-field group name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="disable_field_visibility_if_you_dont_want_it_to_be_editable_from_backoffice" approved="yes">
+      <trans-unit xml:space="preserve" id="disable_field_visibility_if_you_dont_want_it_to_be_editable_from_backoffice">
         <source>disable_field_visibility_if_you_dont_want_it_to_be_editable_from_backoffice</source>
-        <target state="final">Disable field visibility if you don’t want it to be editable from Roadiz back-office.</target>
+        <target state="translated">Disable field visibility if you don’t want it to be editable from Roadiz back-office.</target>
         <note>Help message to explain node-type-field visible switch.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="field_should_be_indexed_if_you_plan_to_query_or_order_by_it" approved="yes">
+      <trans-unit xml:space="preserve" id="field_should_be_indexed_if_you_plan_to_query_or_order_by_it">
         <source>field_should_be_indexed_if_you_plan_to_query_or_order_by_it</source>
-        <target state="final">Field should be indexed if you plan to query or order by it in your theme.</target>
+        <target state="translated">Field should be indexed if you plan to query or order by it in your theme.</target>
         <note>Help message to explain node-type-field indexed switch.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="universal_fields_will_be_only_editable_from_default_translation" approved="yes">
+      <trans-unit xml:space="preserve" id="universal_fields_will_be_only_editable_from_default_translation">
         <source>universal_fields_will_be_only_editable_from_default_translation</source>
-        <target state="final">Universal fields will only be editable from your default translation, other translations will be duplicated.</target>
+        <target state="translated">Universal fields will only be editable from your default translation, other translations will be duplicated.</target>
         <note>Help message to explain node-type-field universal switch.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="for_children_node_and_node_references_enter_node_type_names_comma_separated" approved="yes">
+      <trans-unit xml:space="preserve" id="for_children_node_and_node_references_enter_node_type_names_comma_separated">
         <source>for_children_node_and_node_references_enter_node_type_names_comma_separated</source>
-        <target state="final">For “children node” and “node references” types, you can enter node-type names comma separated.</target>
+        <target state="translated">For “children node” and “node references” types, you can enter node-type names comma separated.</target>
         <note>Help message to explain node-type-field default values.</note>
       </trans-unit>
       <!-- Explorer and Widget translation -->
-      <trans-unit xml:space="preserve" id="document" approved="yes">
+      <trans-unit xml:space="preserve" id="document">
         <source>document</source>
-        <target state="final">Document</target>
+        <target state="translated">Document</target>
         <note>Document label in explorer panel.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="item" approved="yes">
+      <trans-unit xml:space="preserve" id="item">
         <source>item</source>
-        <target state="final">Item</target>
+        <target state="translated">Item</target>
         <note>Item label in explorer panel.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="items" approved="yes">
+      <trans-unit xml:space="preserve" id="items">
         <source>items</source>
-        <target state="final">Items</target>
+        <target state="translated">Items</target>
         <note>Items label in explorer panel.</note>
       </trans-unit>
       <!-- New Join node-type-field type -->
-      <trans-unit xml:space="preserve" id="join.toggle-explorer" approved="yes">
+      <trans-unit xml:space="preserve" id="join.toggle-explorer">
         <source>join.toggle-explorer</source>
-        <target state="final">Explorer</target>
+        <target state="translated">Explorer</target>
         <note>Button label for join type explorer</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="many-to-many.type" approved="yes">
+      <trans-unit xml:space="preserve" id="many-to-many.type">
         <source>many-to-many.type</source>
-        <target state="final">Multiple join (many to many)</target>
+        <target state="translated">Multiple join (many to many)</target>
         <note>Node-type field type for Doctrine Many-to-many relationship</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="many-to-one.type" approved="yes">
+      <trans-unit xml:space="preserve" id="many-to-one.type">
         <source>many-to-one.type</source>
-        <target state="final">Simple join (many to one)</target>
+        <target state="translated">Simple join (many to one)</target>
         <note>Node-type field type for Doctrine Many-to-one relationship</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="default_values_do_not_match_field_type" approved="yes">
+      <trans-unit xml:space="preserve" id="default_values_do_not_match_field_type">
         <source>default_values_do_not_match_field_type</source>
-        <target state="final">Default values do not match field type requirements.</target>
+        <target state="translated">Default values do not match field type requirements.</target>
         <note>Validator message: when default value is not correct for choosen type</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="default_values_should_not_be_empty_for_this_type" approved="yes">
+      <trans-unit xml:space="preserve" id="default_values_should_not_be_empty_for_this_type">
         <source>default_values_should_not_be_empty_for_this_type</source>
-        <target state="final">Default values should not be empty for this field type.</target>
+        <target state="translated">Default values should not be empty for this field type.</target>
         <note>Validator message: when default value is empty and it should not</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="default_values_should_be_a_yaml_configuration_for_this_type" approved="yes">
+      <trans-unit xml:space="preserve" id="default_values_should_be_a_yaml_configuration_for_this_type">
         <source>default_values_should_be_a_yaml_configuration_for_this_type</source>
-        <target state="final">Default values should be formatted as YAML for this field type.</target>
+        <target state="translated">Default values should be formatted as YAML for this field type.</target>
         <note>Validator message: when default value is not a valid YAML text</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="classname_does_not_exist" approved="yes">
+      <trans-unit xml:space="preserve" id="classname_does_not_exist">
         <source>classname_%classname%_does_not_exist</source>
-        <target state="final">PHP Class "%classname%" does not exist.</target>
+        <target state="translated">PHP Class "%classname%" does not exist.</target>
         <note>Validator message: when provided classname does not exist.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="classname_must_extend_abstract_entity_class" approved="yes">
+      <trans-unit xml:space="preserve" id="classname_must_extend_abstract_entity_class">
         <source>classname_%classname%_must_extend_abstract_entity_class</source>
-        <target state="final">PHP Class "%classname%" must extend AbstractEntity class.</target>
+        <target state="translated">PHP Class "%classname%" must extend AbstractEntity class.</target>
         <note>Validator message: when provided classname does not extend AbstractEntity base class.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="classname_must_extend_abstract_type_class" approved="yes">
+      <trans-unit xml:space="preserve" id="classname_must_extend_abstract_type_class">
         <source>classname_%classname%_must_extend_abstract_type_class</source>
-        <target state="final">PHP class %classname% must extend AbstractType class.</target>
+        <target state="translated">PHP class %classname% must extend AbstractType class.</target>
         <note>Validator message: when provided classname does not extend Symfony Form AbstractType base class.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="classname_does_not_declare_method" approved="yes">
+      <trans-unit xml:space="preserve" id="classname_does_not_declare_method">
         <source>classname_%classname%_does_not_declare_%method%_method</source>
-        <target state="final">PHP Class "%classname%" does not implement "%method%" method.</target>
+        <target state="translated">PHP Class "%classname%" does not implement "%method%" method.</target>
         <note>Validator message: when provided classname does not declare provided method.</note>
       </trans-unit>
       <trans-unit xml:space="preserve" id="more.entities" approved="yes">
@@ -4479,438 +4474,433 @@
         <target state="final">More items</target>
         <note>Explorer more button label for entities.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="drawer.sortable-not-enable" approved="yes">
+      <trans-unit xml:space="preserve" id="drawer.sortable-not-enable">
         <source>drawer.sortable-not-enable</source>
-        <target state="final">Items position do not matter.</target>
+        <target state="translated">Items position do not matter.</target>
         <note>Message info when the sortable drawer option is disable.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="explorer.create_tag" approved="yes">
+      <trans-unit xml:space="preserve" id="explorer.create_tag">
         <source>explorer.create_tag</source>
-        <target state="final">Create a tag</target>
+        <target state="translated">Create a tag</target>
         <note>Message info to create a tag when tag explorer is open and tag creation widget is available.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="min" approved="yes">
+      <trans-unit xml:space="preserve" id="min">
         <source>min</source>
-        <target state="final">min.</target>
+        <target state="translated">min.</target>
         <note>Drawer message: when a minimum length is provided.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.adjust" approved="yes">
+      <trans-unit xml:space="preserve" id="document.adjust">
         <source>document.adjust</source>
-        <target state="final">Adjust</target>
+        <target state="translated">Adjust</target>
         <note>Document navbar link text for document adjust page.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor">
         <source>blanchetteEditor</source>
-        <target state="final">Blanchet’ Editor</target>
+        <target state="translated">Blanchet’ Editor</target>
         <note>Blanchette Editorpage title</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.free" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.free">
         <source>blanchetteEditor.free</source>
-        <target state="final">Free aspect ratio</target>
+        <target state="translated">Free aspect ratio</target>
         <note>Blanchette Editor message button label: free aspect ratio</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.move" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.move">
         <source>blanchetteEditor.move</source>
-        <target state="final">Move</target>
+        <target state="translated">Move</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.crop" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.crop">
         <source>blanchetteEditor.crop</source>
-        <target state="final">Crop</target>
+        <target state="translated">Crop</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.zoomIn" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.zoomIn">
         <source>blanchetteEditor.zoomIn</source>
-        <target state="final">Zoom in</target>
+        <target state="translated">Zoom in</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.zoomOut" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.zoomOut">
         <source>blanchetteEditor.zoomOut</source>
-        <target state="final">Zoom out</target>
+        <target state="translated">Zoom out</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.rotateLeft" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.rotateLeft">
         <source>blanchetteEditor.rotateLeft</source>
-        <target state="final">Rotate left</target>
+        <target state="translated">Rotate left</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.rotateRight" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.rotateRight">
         <source>blanchetteEditor.rotateRight</source>
-        <target state="final">Rotate right</target>
+        <target state="translated">Rotate right</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.flipHorizontal" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.flipHorizontal">
         <source>blanchetteEditor.flipHorizontal</source>
-        <target state="final">Flip horizontally</target>
+        <target state="translated">Flip horizontally</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.flipVertical" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.flipVertical">
         <source>blanchetteEditor.flipVertical</source>
-        <target state="final">Flip vertically</target>
+        <target state="translated">Flip vertically</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.applyChange" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.applyChange">
         <source>blanchetteEditor.applyChange</source>
-        <target state="final">Apply changes</target>
+        <target state="translated">Apply changes</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.undo" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.undo">
         <source>blanchetteEditor.undo</source>
-        <target state="final">Undo</target>
+        <target state="translated">Undo</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.aspectRatio" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.aspectRatio">
         <source>blanchetteEditor.aspectRatio</source>
-        <target state="final">Aspect ratio</target>
+        <target state="translated">Aspect ratio</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.saveAndOverwrite" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.saveAndOverwrite">
         <source>blanchetteEditor.saveAndOverwrite</source>
-        <target state="final">Save and override file</target>
+        <target state="translated">Save and override file</target>
         <note>Blanchette Editor message button label</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.other" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.other">
         <source>blanchetteEditor.other</source>
-        <target state="final">Others</target>
+        <target state="translated">Others</target>
         <note>Blanchette Editor aspect ratio group name</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.portrait" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.portrait">
         <source>blanchetteEditor.portrait</source>
-        <target state="final">Portrait</target>
+        <target state="translated">Portrait</target>
         <note>Blanchette Editor aspect ratio group name</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="blanchetteEditor.landscape" approved="yes">
+      <trans-unit xml:space="preserve" id="blanchetteEditor.landscape">
         <source>blanchetteEditor.landscape</source>
-        <target state="final">Landscape</target>
+        <target state="translated">Landscape</target>
         <note>Blanchette Editor aspect ratio group name</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="make_this_field_mandatory_for_users" approved="yes">
+      <trans-unit xml:space="preserve" id="make_this_field_mandatory_for_users">
         <source>make_this_field_mandatory_for_users</source>
-        <target state="final">Make this field mandatory for users.</target>
+        <target state="translated">Make this field mandatory for users.</target>
         <note>Form field description for Required switch</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="expanded" approved="yes">
+      <trans-unit xml:space="preserve" id="expanded">
         <source>expanded</source>
-        <target state="final">Expanded</target>
+        <target state="translated">Expanded</target>
         <note>Form field label for "expanded" boolean (expanded tells if list should be rendered as select-boxes or radio-button list)</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="use_checkboxes_or_radio_buttons_instead_of_select_box" approved="yes">
+      <trans-unit xml:space="preserve" id="use_checkboxes_or_radio_buttons_instead_of_select_box">
         <source>use_checkboxes_or_radio_buttons_instead_of_select_box</source>
-        <target state="final">Use checkboxes or radio buttons instead of select boxes.</target>
+        <target state="translated">Use checkboxes or radio buttons instead of select boxes.</target>
         <note>Form field description for "expanded" boolean (expanded tells if list should be rendered as select-boxes or radio-button list)</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="placeholder" approved="yes">
+      <trans-unit xml:space="preserve" id="placeholder">
         <source>placeholder</source>
-        <target state="final">Placeholder</target>
+        <target state="translated">Placeholder</target>
         <note>Label for «placeholder» field for Custom form field and Node-Type field. Placeholder is the HTML placeholder attribute for inputs and select-boxes.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="label_for_field_with_empty_data" approved="yes">
+      <trans-unit xml:space="preserve" id="label_for_field_with_empty_data">
         <source>label_for_field_with_empty_data</source>
-        <target state="final">Placeholder is displayed inside a field with no data in.</target>
+        <target state="translated">Placeholder is displayed inside a field with no data in.</target>
         <note>Description for «placeholder» field for Custom form field and Node-Type field. Placeholder is the HTML placeholder attribute for inputs and select-boxes.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="session.expire.title" approved="yes">
+      <trans-unit xml:space="preserve" id="session.expire.title">
         <source>session.expire.title</source>
-        <target state="final">Session expired</target>
+        <target state="translated">Session expired</target>
         <note>Title for login check warning "modal".</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="session.expire.content" approved="yes">
+      <trans-unit xml:space="preserve" id="session.expire.content">
         <source>session.expire.content</source>
-        <target state="final">You have been disconnected. Connect you back again.</target>
+        <target state="translated">You have been disconnected. Connect you back again.</target>
         <note>Description for login check warning "modal".</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="health_check.failed.title" approved="yes">
+      <trans-unit xml:space="preserve" id="health_check.failed.title">
         <source>health_check.failed.title</source>
-        <target state="final">Houston, we have a problem...</target>
+        <target state="translated">Houston, we have a problem...</target>
         <note>Title for health check warning "modal".</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="health_check.failed.content" approved="yes">
+      <trans-unit xml:space="preserve" id="health_check.failed.content">
         <source>health_check.failed.content</source>
-        <target state="final">Roadiz does not respond anymore, a CMS upgrade or a server maintenance might be in progress. Please wait a moment.</target>
+        <target state="translated">Roadiz does not respond anymore, a CMS upgrade or a server maintenance might be in progress. Please wait a moment.</target>
         <note>Description for health check warning "modal".</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="single-provider.type" approved="yes">
+      <trans-unit xml:space="preserve" id="single-provider.type">
         <source>single-provider.type</source>
-        <target state="final">Single relationship using a Provider</target>
+        <target state="translated">Single relationship using a Provider</target>
         <note>Node-type field type for Provider manual many-to-one relationship.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="multiple-provider.type" approved="yes">
+      <trans-unit xml:space="preserve" id="multiple-provider.type">
         <source>multiple-provider.type</source>
-        <target state="final">Multiple relationship using a Provider</target>
+        <target state="translated">Multiple relationship using a Provider</target>
         <note>Node-type field type for Provider manual many-to-many relationship.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="pictureUrl" approved="yes">
+      <trans-unit xml:space="preserve" id="pictureUrl">
         <source>pictureUrl</source>
-        <target state="final">Avatar picture URL</target>
+        <target state="translated">Avatar picture URL</target>
         <note>User detail form field label for user portrait picture.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="user.backoffice.language" approved="yes">
+      <trans-unit xml:space="preserve" id="user.backoffice.language">
         <source>user.backoffice.language</source>
-        <target state="final">Back-office language</target>
+        <target state="translated">Back-office language</target>
         <note>User detail form field label for user backoffice language.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="use.website.default_language" approved="yes">
+      <trans-unit xml:space="preserve" id="use.website.default_language">
         <source>use.website.default_language</source>
-        <target state="final">-- Use website default language --</target>
+        <target state="translated">-- Use website default language --</target>
         <note>User detail form field choice for using website default language.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="sort_asc" approved="yes">
+      <trans-unit xml:space="preserve" id="sort_asc">
         <source>sort_asc</source>
-        <target state="final">Sort ascendant</target>
+        <target state="translated">Sort ascendant</target>
         <note>Table column link to sort data ascendently</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="sort_desc" approved="yes">
+      <trans-unit xml:space="preserve" id="sort_desc">
         <source>sort_desc</source>
-        <target state="final">Sort descendant</target>
+        <target state="translated">Sort descendant</target>
         <note>Table column link to sort data descendently</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="preview" approved="yes">
+      <trans-unit xml:space="preserve" id="preview">
         <source>preview</source>
-        <target state="final">Preview</target>
+        <target state="translated">Preview</target>
         <note>Preview mode label on warning sign.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="current.document.file.does.not.exist" approved="yes">
+      <trans-unit xml:space="preserve" id="current.document.file.does.not.exist">
         <source>current.document.file.does.not.exist</source>
-        <target state="final">Current document file does not exist on server.</target>
+        <target state="translated">Current document file does not exist on server.</target>
         <note>When a document does not have any file attached.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="google_tag_manager_id" approved="yes">
+      <trans-unit xml:space="preserve" id="google_tag_manager_id">
         <source>google_tag_manager_id</source>
-        <target state="final">Google Tag Manager - Container ID</target>
+        <target state="translated">Google Tag Manager - Container ID</target>
         <note>Google Tag Manager setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="leaflet_map_tile_url" approved="yes">
+      <trans-unit xml:space="preserve" id="leaflet_map_tile_url">
         <source>leaflet_map_tile_url</source>
-        <target state="final">Leaflet - Map tiles URL</target>
+        <target state="translated">Leaflet - Map tiles URL</target>
         <note>Leaflet Map tile URL setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_access_token" approved="yes">
+      <trans-unit xml:space="preserve" id="twitter_access_token">
         <source>twitter_access_token</source>
-        <target state="final">Twitter API - Access token</target>
+        <target state="translated">Twitter API - Access token</target>
         <note>Setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_access_token_secret" approved="yes">
+      <trans-unit xml:space="preserve" id="twitter_access_token_secret">
         <source>twitter_access_token_secret</source>
-        <target state="final">Twitter API - Access token secret</target>
+        <target state="translated">Twitter API - Access token secret</target>
         <note>Setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="instagram_access_token" approved="yes">
+      <trans-unit xml:space="preserve" id="instagram_access_token">
         <source>instagram_access_token</source>
-        <target state="final">Instagram API - Access token</target>
+        <target state="translated">Instagram API - Access token</target>
         <note>Setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_consumer_key" approved="yes">
+      <trans-unit xml:space="preserve" id="twitter_consumer_key">
         <source>twitter_consumer_key</source>
-        <target state="final">Twitter API - Consumer key</target>
+        <target state="translated">Twitter API - Consumer key</target>
         <note>Setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="twitter_consumer_secret" approved="yes">
+      <trans-unit xml:space="preserve" id="twitter_consumer_secret">
         <source>twitter_consumer_secret</source>
-        <target state="final">Twitter API - Consumer secret</target>
+        <target state="translated">Twitter API - Consumer secret</target>
         <note>Setting name.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.mimeType" approved="yes">
+      <trans-unit xml:space="preserve" id="document.mimeType">
         <source>document.mimeType</source>
-        <target state="final">File mime-type</target>
+        <target state="translated">File mime-type</target>
         <note>Document form</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.embed" approved="yes">
+      <trans-unit xml:space="preserve" id="document.embed">
         <source>document.embed</source>
-        <target state="final">Embed media</target>
+        <target state="translated">Embed media</target>
         <note>Document form</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.no_embed_platform" approved="yes">
+      <trans-unit xml:space="preserve" id="document.no_embed_platform">
         <source>document.no_embed_platform</source>
-        <target state="final">No embedded media</target>
+        <target state="translated">No embedded media</target>
         <note>Document form</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="versions" approved="yes">
+      <trans-unit xml:space="preserve" id="versions">
         <source>versions</source>
-        <target state="final">Versions</target>
+        <target state="translated">Versions</target>
         <note>Version management</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.working_copy" approved="yes">
+      <trans-unit xml:space="preserve" id="versions.working_copy">
         <source>versions.working_copy</source>
-        <target state="final">Working copy</target>
+        <target state="translated">Working copy</target>
         <note>Version management : latest version aka working copy</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.viewing_a_previous_version" approved="yes">
+      <trans-unit xml:space="preserve" id="versions.viewing_a_previous_version">
         <source>versions.viewing_a_previous_version</source>
-        <target state="final">You are currently viewing a preview version. Form is read-only.</target>
+        <target state="translated">You are currently viewing a preview version. Form is read-only.</target>
         <note>Version management : Disclaimer that user is viewing a previous version</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.revert_to_this_version" approved="yes">
+      <trans-unit xml:space="preserve" id="versions.revert_to_this_version">
         <source>versions.revert_to_this_version</source>
-        <target state="final">Revert working copy to this version</target>
+        <target state="translated">Revert working copy to this version</target>
         <note>Version management : Button label to revert to current viewing version</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="max_versions_showed" approved="yes">
+      <trans-unit xml:space="preserve" id="max_versions_showed">
         <source>max_versions_showed</source>
-        <target state="final">Maximum showed versions count </target>
+        <target state="translated">Maximum showed versions count </target>
         <note>Version management : setting label to choose how many version to display in action-menu</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="versions.back_to_working_copy" approved="yes">
+      <trans-unit xml:space="preserve" id="versions.back_to_working_copy">
         <source>versions.back_to_working_copy</source>
-        <target state="final">Back to working copy</target>
+        <target state="translated">Back to working copy</target>
         <note>Version management : Button label to go back to working copy</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="original.document" approved="yes">
+      <trans-unit xml:space="preserve" id="original.document">
         <source>original.document</source>
-        <target state="final">Original document</target>
+        <target state="translated">Original document</target>
         <note>Document : Label to display original document when dealing with thumbnails.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="see.original.document" approved="yes">
+      <trans-unit xml:space="preserve" id="see.original.document">
         <source>see.original.document</source>
-        <target state="final">See original document</target>
+        <target state="translated">See original document</target>
         <note>Document : Button Label to display original document when dealing with thumbnails.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.thumbnails" approved="yes">
+      <trans-unit xml:space="preserve" id="document.thumbnails">
         <source>document.thumbnails</source>
-        <target state="final">Thumbnails</target>
+        <target state="translated">Thumbnails</target>
         <note>Document : Input Label to display thumbnail documents when dealing with original.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="excludeFromSearch" approved="yes">
+      <trans-unit xml:space="preserve" id="excludeFromSearch">
         <source>excludeFromSearch</source>
-        <target state="final">Exclude from search</target>
+        <target state="translated">Exclude from search</target>
         <note>Node type field : Input Label.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="export.documentation" approved="yes">
+      <trans-unit xml:space="preserve" id="export.documentation">
         <source>export.documentation</source>
-        <target state="final">Export documentation</target>
+        <target state="translated">Export documentation</target>
         <note>Button label, for exporting node-type Markdown documentation</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="manage.decorators" approved="yes">
-        <source>manage.decorators</source>
-        <target state="final">Decorate</target>
-        <note>Button label, for manage node-type-decorators</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="export.typescript_declaration" approved="yes">
+      <trans-unit xml:space="preserve" id="export.typescript_declaration">
         <source>export.typescript_declaration</source>
-        <target state="final">Export Typescript declarations</target>
+        <target state="translated">Export Typescript declarations</target>
         <note>Button label, for exporting node-types into a TypeScript declaration file.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="hide_roadiz_version" approved="yes">
+      <trans-unit xml:space="preserve" id="hide_roadiz_version">
         <source>hide_roadiz_version</source>
-        <target state="final">Hide Roadiz version</target>
+        <target state="translated">Hide Roadiz version</target>
         <note>Setting</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="exact_search" approved="yes">
+      <trans-unit xml:space="preserve" id="exact_search">
         <source>exact_search</source>
-        <target state="final">Exact search</target>
+        <target state="translated">Exact search</target>
         <note>Node search page, search exact query</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="login_with_openid" approved="yes">
+      <trans-unit xml:space="preserve" id="login_with_openid">
         <source>login_with_openid</source>
-        <target state="final">Login with OpenID</target>
+        <target state="translated">Login with OpenID</target>
         <note>Default login button label for OpenID</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="filter" approved="yes">
+      <trans-unit xml:space="preserve" id="filter">
         <source>filter</source>
-        <target state="final">Filter</target>
+        <target state="translated">Filter</target>
         <note>Button label for a generic filtering action.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_created" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_created">
         <source>%namespace%.%item%.was_created</source>
-        <target state="final">%namespace% "%item%" was created.</target>
+        <target state="translated">%namespace% "%item%" was created.</target>
         <note>Default controller addAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_updated" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_updated">
         <source>%namespace%.%item%.was_updated</source>
-        <target state="final">%namespace% "%item%" was updated.</target>
+        <target state="translated">%namespace% "%item%" was updated.</target>
         <note>Default controller editAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_deleted" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_deleted">
         <source>%namespace%.%item%.was_deleted</source>
-        <target state="final">%namespace% "%item%" was deleted.</target>
+        <target state="translated">%namespace% "%item%" was deleted.</target>
         <note>Default controller deleteAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_published" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_published">
         <source>%namespace%.%item%.was_published</source>
-        <target state="final">%namespace% "%item%" was published.</target>
+        <target state="translated">%namespace% "%item%" was published.</target>
         <note>Default controller bulkPublishAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_unpublished" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_unpublished">
         <source>%namespace%.%item%.was_unpublished</source>
-        <target state="final">%namespace% "%item%" was unpublished.</target>
+        <target state="translated">%namespace% "%item%" was unpublished.</target>
         <note>Default controller bulkUnpublishAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_enabled" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_enabled">
         <source>%namespace%.%item%.was_enabled</source>
-        <target state="final">%namespace% "%item%" was enabled.</target>
+        <target state="translated">%namespace% "%item%" was enabled.</target>
         <note>Default controller bulkEnableAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_disabled" approved="yes">
+      <trans-unit xml:space="preserve" id="%namespace%.%item%.was_disabled">
         <source>%namespace%.%item%.was_disabled</source>
-        <target state="final">%namespace% "%item%" was disabled.</target>
+        <target state="translated">%namespace% "%item%" was disabled.</target>
         <note>Default controller bulkDisabledAction result message.</note>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.document_display_gallery" approved="yes">
+      <trans-unit xml:space="preserve" id="document.document_display_gallery">
         <source>document.document_display_gallery</source>
-        <target state="final">Gallery</target>
+        <target state="translated">Gallery</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="documents.document_display_list" approved="yes">
+      <trans-unit xml:space="preserve" id="documents.document_display_list">
         <source>documents.document_display_list</source>
-        <target state="final">List</target>
+        <target state="translated">List</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeSource.noIndex" approved="yes">
+      <trans-unit xml:space="preserve" id="nodeSource.noIndex">
         <source>nodeSource.noIndex</source>
-        <target state="final">Disallow indexing</target>
+        <target state="translated">Disallow indexing</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.imageCropAlignment" approved="yes">
+      <trans-unit xml:space="preserve" id="document.imageCropAlignment">
         <source>document.imageCropAlignment</source>
-        <target state="final">Image crop alignment</target>
+        <target state="translated">Image crop alignment</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="document.imageCropAlignment.help" approved="yes">
+      <trans-unit xml:space="preserve" id="document.imageCropAlignment.help">
         <source>document.imageCropAlignment.help</source>
-        <target state="final">Define an interest area in your image for responsive image cropping.</target>
+        <target state="translated">Define an interest area in your image for responsive image cropping.</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.none" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.none">
         <source>image_crop_alignment.none</source>
-        <target state="final">No alignment set</target>
+        <target state="translated">No alignment set</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.top-left" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.top-left">
         <source>image_crop_alignment.top-left</source>
-        <target state="final">Top left</target>
+        <target state="translated">Top left</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.top" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.top">
         <source>image_crop_alignment.top</source>
-        <target state="final">Top</target>
+        <target state="translated">Top</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.top-right" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.top-right">
         <source>image_crop_alignment.top-right</source>
-        <target state="final">Top right</target>
+        <target state="translated">Top right</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.left" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.left">
         <source>image_crop_alignment.left</source>
-        <target state="final">Left</target>
+        <target state="translated">Left</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.center" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.center">
         <source>image_crop_alignment.center</source>
-        <target state="final">Center</target>
+        <target state="translated">Center</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.right" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.right">
         <source>image_crop_alignment.right</source>
-        <target state="final">Right</target>
+        <target state="translated">Right</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom-left" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom-left">
         <source>image_crop_alignment.bottom-left</source>
-        <target state="final">Bottom left</target>
+        <target state="translated">Bottom left</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom">
         <source>image_crop_alignment.bottom</source>
-        <target state="final">Bottom</target>
+        <target state="translated">Bottom</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom-right" approved="yes">
+      <trans-unit xml:space="preserve" id="image_crop_alignment.bottom-right">
         <source>image_crop_alignment.bottom-right</source>
-        <target state="final">Bottom right</target>
+        <target state="translated">Bottom right</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="attributable" approved="yes">
+      <trans-unit xml:space="preserve" id="attributable">
         <source>attributable</source>
-        <target state="final">Attributable</target>
+        <target state="translated">Attributable</target>
       </trans-unit>
-      <trans-unit xml:space="preserve" id="enables_node_attributes_for_this_type" approved="yes">
+      <trans-unit xml:space="preserve" id="enables_node_attributes_for_this_type">
         <source>enables_node_attributes_for_this_type</source>
-        <target state="final">Allows nodes of this type to hold attributes in addition of their data fields.</target>
+        <target state="translated">Allows nodes of this type to hold attributes in addition of their data fields.</target>
       </trans-unit>
       <trans-unit xml:space="preserve" id="sortingAttributesByWeight" approved="yes">
         <source>sortingAttributesByWeight</source>
@@ -4923,108 +4913,6 @@
       <trans-unit xml:space="preserve" id="ip_address" approved="yes">
         <source>ip_address</source>
         <target state="final">IP address</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="add.a.nodeTypeDecorator" approved="yes">
-        <source>add.a.nodeTypeDecorator</source>
-            <target state="final">Add a decorator</target>
-            <note>Button label, for add new node-type-decorators</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator" approved="yes">
-        <source>nodeTypeDecorator</source>
-            <target state="final">Decorate nodes types</target>
-            <note>Title, for list node-type-decorator</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.path" approved="yes">
-        <source>nodeTypeDecorator.path</source>
-            <target state="final">Path</target>
-            <note>Table column label for node-type-decorator path</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.entity" approved="yes">
-        <source>nodeTypeDecorator.entity</source>
-            <target state="final">Entity</target>
-            <note>Table column label for node-type-decorator entity based on path</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.field" approved="yes">
-        <source>nodeTypeDecorator.field</source>
-            <target state="final">Field</target>
-            <note>Table column label for node-type-decorator field based on path</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property" approved="yes">
-        <source>nodeTypeDecorator.property</source>
-            <target state="final">Property</target>
-            <note>Table column label for node-type-decorator property</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.value" approved="yes">
-        <source>nodeTypeDecorator.value</source>
-            <target state="final">Value</target>
-            <note>Table column label for node-type-decorator value</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="back_to.nodeTypeDecorators" approved="yes">
-        <source>back_to.nodeTypeDecorators</source>
-        <target state="final">Back to decorators</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="delete.nodeTypeDecorator.%name%" approved="yes">
-        <source>delete.nodeTypeDecorator.%name%</source>
-        <target state="final">Delete %name% decorator</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="are_you_sure.delete.nodeTypeDecorator" approved="yes">
-        <source>are_you_sure.delete.nodeTypeDecorator</source>
-        <target state="final">Are you sure you want to delete this decorator?</target>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.without_field" approved="yes">
-        <source>nodeTypeDecorator.without_field</source>
-        <target state="final">Node-type level property</target>
-        <note>Default value of node type decorator field select</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.display_name" approved="yes">
-        <source>nodeTypeDecorator.property.display_name</source>
-        <target state="final">Display Name</target>
-        <note>Property value label for node type display name</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.description" approved="yes">
-        <source>nodeTypeDecorator.property.description</source>
-        <target state="final">Description</target>
-        <note>Property value label for node type description</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.color" approved="yes">
-        <source>nodeTypeDecorator.property.color</source>
-        <target state="final">Color</target>
-        <note>Property value label for node type color</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_label" approved="yes">
-        <source>nodeTypeDecorator.property.field_label</source>
-        <target state="final">Label</target>
-        <note>Property value label for node type field label</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_universal" approved="yes">
-        <source>nodeTypeDecorator.property.field_universal</source>
-        <target state="final">Universal</target>
-        <note>Property value label for node type field universal</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_description" approved="yes">
-        <source>nodeTypeDecorator.property.field_description</source>
-        <target state="final">Description</target>
-        <note>Property value label for node type field description</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_placeholder" approved="yes">
-        <source>nodeTypeDecorator.property.field_placeholder</source>
-        <target state="final">Placeholder</target>
-        <note>Property value label for node type field placeholder</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_visible" approved="yes">
-        <source>nodeTypeDecorator.property.field_visible</source>
-        <target state="final">Visible</target>
-        <note>Property value label for node type field visible</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_min_length" approved="yes">
-        <source>nodeTypeDecorator.property.field_min_length</source>
-        <target state="final">Min Length</target>
-        <note>Property value label for node type field min_length</note>
-      </trans-unit>
-      <trans-unit xml:space="preserve" id="nodeTypeDecorator.property.field_max_length" approved="yes">
-        <source>nodeTypeDecorator.property.field_max_length</source>
-        <target state="final">Max Length</target>
-        <note>Property value label for node type field max_length</note>
       </trans-unit>
     </body>
   </file>

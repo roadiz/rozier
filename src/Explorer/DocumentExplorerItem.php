@@ -95,10 +95,9 @@ final class DocumentExplorerItem extends AbstractExplorerItem
     public function toArray(): array
     {
         $thumbnail80Url = null;
+
         $this->documentUrlGenerator->setDocument($this->document);
         $hasThumbnail = false;
-        $thumbnailOptions = self::$thumbnail80Array;
-        $previewOptions = self::$previewArray;
 
         if (
             $this->document instanceof HasThumbnailInterface
@@ -110,21 +109,10 @@ final class DocumentExplorerItem extends AbstractExplorerItem
             $hasThumbnail = true;
         }
 
-        if ($this->document instanceof Document) {
-            $thumbnailOptions = [
-                ...self::$thumbnail80Array,
-                'align' => $this->document->getImageCropAlignment(),
-            ];
-            $previewOptions = [
-                ...self::$previewArray,
-                'align' => $this->document->getImageCropAlignment(),
-            ];
-        }
-
         if (!$this->document->isPrivate() && !empty($this->document->getRelativePath())) {
-            $this->documentUrlGenerator->setOptions($thumbnailOptions);
+            $this->documentUrlGenerator->setOptions(self::$thumbnail80Array);
             $thumbnail80Url = $this->documentUrlGenerator->getUrl();
-            $this->documentUrlGenerator->setOptions($previewOptions);
+            $this->documentUrlGenerator->setOptions(self::$previewArray);
         }
 
         $embedFinder = $this->embedFinderFactory?->createForPlatform(

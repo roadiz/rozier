@@ -9,7 +9,6 @@ use RZ\Roadiz\CompatBundle\Controller\AppController;
 use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Bag\Roles;
 use RZ\Roadiz\CoreBundle\Bag\Settings;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerInterface;
 use RZ\Roadiz\OpenId\OAuth2LinkGenerator;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,8 +24,6 @@ use Twig\Error\RuntimeError;
 
 /**
  * Rozier main theme application.
- *
- * @deprecated Use AbstractController instead
  */
 class RozierApp extends AppController
 {
@@ -61,9 +58,6 @@ class RozierApp extends AppController
         ]);
     }
 
-    /**
-     * @deprecated Use EntityListManagerFactoryInterface::createAdminEntityListManager() instead
-     */
     public function createEntityListManager(string $entity, array $criteria = [], array $ordering = []): EntityListManagerInterface
     {
         return parent::createEntityListManager($entity, $criteria, $ordering)
