@@ -49,7 +49,7 @@ class CustomFormsUtilsController extends RozierApp
         $keys = [
             'ip',
             'submitted.date',
-            ...$fields
+            ...$fields,
         ];
 
         $response = new StreamedResponse(function () use ($query, $keys) {
