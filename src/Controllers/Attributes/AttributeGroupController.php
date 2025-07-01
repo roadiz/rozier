@@ -10,6 +10,9 @@ use RZ\Roadiz\CoreBundle\Form\AttributeGroupType;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Controllers\AbstractAdminController;
 
+/**
+ * @package Themes\Rozier\Controllers\Attributes
+ */
 class AttributeGroupController extends AbstractAdminController
 {
     /**

@@ -55,9 +55,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 
         $configuration = $this->getFieldConfiguration($options);
         $displayableData = [];
-        /** @var callable $callable */
-        $callable = [$options['nodeSource'], $options['nodeTypeField']->getGetterName()];
-        $entities = call_user_func($callable);
+
+        $entities = call_user_func([$options['nodeSource'], $options['nodeTypeField']->getGetterName()]);
 
         if ($entities instanceof \Traversable) {
             /** @var PersistableInterface $entity */
@@ -69,9 +68,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
                     'id' => $entity->getId(),
                     'classname' => $configuration['classname'],
                 ];
-                $displayableCallable = [$entity, $configuration['displayable']];
-                if (\is_callable($displayableCallable)) {
-                    $data['name'] = call_user_func($displayableCallable);
+                if (is_callable([$entity, $configuration['displayable']])) {
+                    $data['name'] = call_user_func([$entity, $configuration['displayable']]);
                 }
                 $displayableData[] = $data;
             }
@@ -83,9 +81,8 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
                 'id' => $entities->getId(),
                 'classname' => $configuration['classname'],
             ];
-            $displayableCallable = [$entities, $configuration['displayable']];
-            if (\is_callable($displayableCallable)) {
-                $data['name'] = call_user_func($displayableCallable);
+            if (is_callable([$entities, $configuration['displayable']])) {
+                $data['name'] = call_user_func([$entities, $configuration['displayable']]);
             }
             $displayableData[] = $data;
         }

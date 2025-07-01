@@ -12,7 +12,7 @@
 /* -------- STYLES -------- */
 
 .dropzone-container {
-    border-radius: 0;
+    .rounded(0);
     overflow: hidden;
 
     .circles-icons {
@@ -24,7 +24,7 @@
         position: absolute;
         top:50%;
         left:50%;
-        border-radius: 200px;
+        .rounded(200px);
         background:none;
         border:1px solid @circle-border-color;
         pointer-events: none;
@@ -82,10 +82,9 @@
             height:50px;
             border-top:1px dashed #D2D2D2;
             text-align: center;
-            font-size: @default-font-size;
-            line-height:50px;
+            font-size: 12px; line-height:50px;
             background:#ECECEC;
-            color: var(--global-text-lighter-color);
+            color: @grey-medium;
             letter-spacing: 0.05em;
             text-shadow: 0 0 4px #fff;
             z-index: 2;
@@ -111,7 +110,7 @@
         left:0; right:0; height:4px;
 
         .dz-upload{
-            background-color: var(--rz-accent-color);
+            background-color: @contrast-color;
         }
     }
     .dz-details{
@@ -127,7 +126,7 @@
     }
 
     &.dz-image-preview:hover .dz-details img {
-        opacity: 1;
+        .opacity(1);
     }
 
 
@@ -152,7 +151,7 @@
     .dz-error-message {
         top: 0;
         padding: 5px;
-        font-size: @default-font-size;
+        font-size: 12px;
         text-align: center;
         min-width: 0;
         max-width: none;
@@ -173,7 +172,7 @@
 
     &.dz-error {
         .dz-error-message {
-            opacity: 1;
+            .opacity(1);
         }
 
         .dz-details {
@@ -199,7 +198,7 @@
 // Leave message when an upload has been done
 .dropzone-container.dz-started .dz-message{
     display: block;
-    opacity: 1;
+    .opacity(1);
 
     .circles-icons{
         display: none;

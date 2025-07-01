@@ -12,6 +12,7 @@
 
 @grey-form-border:              #D3D3D3;
 @grey-form-before:              #BBBBBB;
+@grey-form-label:               #555555;
 @grey-form-text:                #666666;
 @grey-form-submit:              #EAEAEA;
 @grey-form-submit-hover:        #CECECE;
@@ -19,6 +20,7 @@
 @grey-form-submit-border-hover: #888888;
 @grey-form-submit-color:        #333333;
 @grey-form-submit-icon:         #777777;
+@grey-form-submit-icon-hover:   #555555;
 @grey-form-submit-textsimple:   #999999;
 
 
@@ -55,9 +57,9 @@
     input[type="date"],
     input[type="datetime-local"],
     textarea {
-        font-size: @default-font-size;
+        font-size: 12px;
         line-height: 16px;
-        //font-weight: bold;
+        font-weight: bold;
         //width: 100%; // You cannot place this for a wide selector! it will break ui-kit
         color: @grey-form-text;
         padding: 0px 15px;
@@ -65,7 +67,7 @@
         border: 1px solid @grey-form-border;
         .border-radius(0px);
         .box-sizing();
-        transition: ~'0.35s ease border-color, 0.5s ease background';
+        .transition(~'0.35s ease border-color, 0.5s ease background');
 
         &.colorpicker-input{
             width:105px;
@@ -73,7 +75,7 @@
         }
 
         &:hover {
-            background-color: var(--contrasted-bg);
+            background-color: white;
             border-color: @grey-form-submit-border-hover;
             color: #333;
         }
@@ -94,13 +96,13 @@
         background-color: @grey-form-submit;
         margin:3px;
         &:checked:before {
-            background: var(--rz-accent-color-darker);
+            background: darken(@contrast-color, 10%);
         }
     }
 
     // File
     input[type=file]{
-        font-size: @default-font-size;
+        font-size:12px;
     }
 
     // Checkbox
@@ -110,7 +112,7 @@
         }
 
         &:checked:before{
-            color: var(--rz-accent-color-darker);
+            color: darken(@contrast-color, 10%);
         }
     }
 
@@ -131,7 +133,7 @@
         height:36px;
         margin: 0;
         padding: 0;
-        font-size: @default-font-size;
+        font-size:12px;
         color: @grey-form-text;
         //border: 1px solid @grey-form-border;
         .border-radius(0px);
@@ -145,6 +147,7 @@
             height:36px;
             content: "\f0d7";
             padding:0 10px;
+            //background: white;
             font:normal 12px/36px 'FontAwesome';
             pointer-events: none;
         }
@@ -153,7 +156,7 @@
             height: 36px;
             .box-sizing();
             .border-radius(0px);
-            background-color: var(--contrasted-bg);
+            background-color: white;
             border: 1px solid @grey-form-border;
             padding: 8px 30px 8px 15px;
             //background-color: transparent;
@@ -182,9 +185,9 @@
     select[multiple]{
         min-width: 100px; min-height: 120px;
         padding:0 6px;
-        font-size: @default-font-size;
+        font-size:12px;
         -webkit-appearance:none;
-        border-radius: 0px;
+        .rounded(0px);
 
         &:focus{
             background-color: @grey-verylight;
@@ -226,8 +229,8 @@
 
     // Labels
     .uk-form-label {
-        font-size: @default-font-size;
-        color: var(--global-title-color);
+        font-size: 12px;
+        color: @grey-form-label;
         font-weight: normal;
 
         &:before {
@@ -247,8 +250,8 @@
     }
 
     .form-check-label {
-        font-size: @default-font-size;
-        color: var(--global-title-color);
+        font-size: 12px;
+        color: @grey-form-label;
         font-weight: normal;
     }
 
@@ -314,6 +317,15 @@
                 }
             }
         }
+    }
+
+    .form-row-desc {
+        max-width: 400px;
+        font-size: 11px;
+        line-height: 17px;
+        color: #b0b0b0;
+        margin: 5px 0 10px;
+        display: block;
     }
 
     .datetime-separator{
@@ -400,16 +412,6 @@
     }
 }
 
-.form-row-desc {
-    max-width: 550px;
-    font-size: 12px;
-    letter-spacing: 0.005em;
-    line-height: 17px;
-    color: #a5a5a5;
-    margin: 5px 0 10px;
-    display: block;
-}
-
 .uk-form-row {
     position: relative;
     margin: 1em 0;
@@ -467,7 +469,7 @@
 }
 
 .form-col-nodesourcebase {
-    background: var(--maincontent-bar-bg);
+    background: #EFEFEF;
     margin: -20px -15px 0; // keep negative top to compensate main content padding
     padding: 30px 15px 0;
 

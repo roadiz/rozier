@@ -19,14 +19,15 @@
                 <table class="content-table uk-table">
                     <thead>
                     <tr>
-                        <th>{% trans %}title{% endtrans %}</th>
+                        <th class="uk-text-center">{% trans %}title{% endtrans %}</th>
                         <th>{% trans %}usage.fieldName{% endtrans %}</th>
+                        <th>{% trans %}nodeType.name{% endtrans %}</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for usage in usages %}
                         {% set source = usage.nodeSource %}
-                        {% set field = usage.fieldName %}
+                        {% set field = usage.field %}
                         <tr>
                             <td>
                                 <a href="{{ path('nodesEditSourcePage', {
@@ -40,7 +41,8 @@
                                     {% endif %}
                                 </a>
                             </td>
-                            <td>{{ field }}</td>
+                            <td>{{ field.name }}</td>
+                            <td>{{ field.nodeType.name }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -60,7 +62,7 @@
                     </thead>
                     <tbody>
                     {% for attribute in attributes %}
-                        <tr style="--rz-accent-color: {{ attribute.color }};">
+                        <tr>
                             <td class="name">
                                 <a href="{{ path('attributesEditPage', { id: attribute.id }) }}">
                                     <span class="color"
@@ -89,7 +91,7 @@
                     </thead>
                     <tbody>
                     {% for tag in tags %}
-                        <tr style="--rz-accent-color: {{ tag.color }};">
+                        <tr>
                             <td class="name">
                                 <a href="{{ path('tagsEditPage', { tagId: tag.id }) }}">
                                     <span class="color"
