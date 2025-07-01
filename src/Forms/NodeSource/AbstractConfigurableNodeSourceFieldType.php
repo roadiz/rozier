@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms\NodeSource;
 
-use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use Symfony\Component\Yaml\Yaml;
 
 abstract class AbstractConfigurableNodeSourceFieldType extends AbstractNodeSourceFieldType
 {
     protected function getFieldConfiguration(array $options): mixed
     {
-        /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $options['nodeTypeField'];
-
-        return $nodeTypeField->getDefaultValuesAsArray();
+        return Yaml::parse($options['nodeTypeField']->getDefaultValues() ?? '');
     }
 }

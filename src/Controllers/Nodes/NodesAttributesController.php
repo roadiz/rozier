@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\Attribute;
 use RZ\Roadiz\CoreBundle\Entity\AttributeValue;
 use RZ\Roadiz\CoreBundle\Entity\AttributeValueTranslation;
@@ -17,76 +15,56 @@ use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueTranslationType;
 use RZ\Roadiz\CoreBundle\Form\AttributeValueType;
 use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
-use RZ\Roadiz\CoreBundle\Repository\AllStatusesNodesSourcesRepository;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-#[AsController]
-final class NodesAttributesController extends AbstractController
+class NodesAttributesController extends RozierApp
 {
     public function __construct(
         private readonly FormFactoryInterface $formFactory,
         private readonly FormErrorSerializer $formErrorSerializer,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LogTrail $logTrail,
-        private readonly NodeTypes $nodeTypesBag,
-        private readonly AllStatusesNodesSourcesRepository $allStatusesNodesSourcesRepository,
     ) {
     }
 
     /**
-     * @return array{Node, Translation, NodesSources}
+     * @throws RuntimeError
      */
-    private function getNodeAndTranslation(int $nodeId, int $translationId): array
+    public function editAction(Request $request, int $nodeId, int $translationId): Response
     {
         /** @var Translation|null $translation */
-        $translation = $this->managerRegistry
-            ->getRepository(Translation::class)
-            ->find($translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
         /** @var Node|null $node */
-        $node = $this->managerRegistry
-            ->getRepository(Node::class)
-            ->find($nodeId);
+        $node = $this->em()->find(Node::class, $nodeId);
 
         if (null === $translation || null === $node) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
+
         /** @var NodesSources|null $nodeSource */
-        $nodeSource = $this->allStatusesNodesSourcesRepository->findOneBy(['translation' => $translation, 'node' => $node]);
+        $nodeSource = $this->em()
+            ->getRepository(NodesSources::class)
+            ->setDisplayingAllNodesStatuses(true)
+            ->setDisplayingNotPublishedNodes(true)
+            ->findOneBy(['translation' => $translation, 'node' => $node]);
 
         if (null === $nodeSource) {
             throw $this->createNotFoundException('Node-source does not exist');
         }
 
-        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
-
-        return [$node, $translation, $nodeSource];
-    }
-
-    public function editAction(Request $request, int $nodeId, int $translationId): Response
-    {
-        [$node, $translation, $nodeSource] = $this->getNodeAndTranslation($nodeId, $translationId);
-
         if (!$this->isAttributable($node)) {
             throw $this->createNotFoundException('Node type is not attributable');
         }
 
-        $assignation = [];
-
-        if (null !== $response = $this->handleAddAttributeForm($request, $node, $translation, $assignation)) {
+        if (null !== $response = $this->handleAddAttributeForm($request, $node, $translation)) {
             return $response;
         }
 
@@ -98,13 +76,13 @@ final class NodesAttributesController extends AbstractController
                 $request->getAcceptableContentTypes()
             );
 
-        $assignation['attribute_value_translation_forms'] = [];
-        $nodeType = $this->nodeTypesBag->get($node->getNodeTypeName());
-        if (!$nodeType instanceof NodeType) {
-            throw new \RuntimeException('Cannot create node from invalid NodeType.');
+        $this->assignation['attribute_value_translation_forms'] = [];
+        $nodeType = $node->getNodeType();
+        $orderByWeight = false;
+        if ($nodeType instanceof NodeType) {
+            $orderByWeight = $nodeType->isSortingAttributesByWeight();
         }
-        $orderByWeight = $nodeType->isSortingAttributesByWeight();
-        $attributeValues = $this->managerRegistry->getRepository(AttributeValue::class)->findByAttributable(
+        $attributeValues = $this->em()->getRepository(AttributeValue::class)->findByAttributable(
             $node,
             $orderByWeight
         );
@@ -116,7 +94,7 @@ final class NodesAttributesController extends AbstractController
                 $attributeValueTranslation = new AttributeValueTranslation();
                 $attributeValueTranslation->setAttributeValue($attributeValue);
                 $attributeValueTranslation->setTranslation($translation);
-                $this->managerRegistry->getManager()->persist($attributeValueTranslation);
+                $this->em()->persist($attributeValueTranslation);
             }
             $attributeValueTranslationForm = $this->formFactory->createNamedBuilder(
                 $name,
@@ -127,18 +105,21 @@ final class NodesAttributesController extends AbstractController
 
             if ($attributeValueTranslationForm->isSubmitted()) {
                 if ($attributeValueTranslationForm->isValid()) {
-                    $this->managerRegistry->getManager()->flush();
+                    $this->em()->flush();
 
-                    $this->eventDispatcher->dispatch(new NodesSourcesUpdatedEvent($nodeSource));
+                    /*
+                     * Dispatch event
+                     */
+                    $this->dispatchEvent(new NodesSourcesUpdatedEvent($nodeSource));
 
-                    $msg = $this->translator->trans(
+                    $msg = $this->getTranslator()->trans(
                         'attribute_value_translation.%name%.updated_from_node.%nodeName%',
                         [
                             '%name%' => $attributeValue->getAttribute()->getLabelOrCode($translation),
                             '%nodeName%' => $nodeSource->getTitle(),
                         ]
                     );
-                    $this->logTrail->publishConfirmMessage($request, $msg, $nodeSource);
+                    $this->publishConfirmMessage($request, $msg, $nodeSource);
 
                     if ($isJson) {
                         return new JsonResponse([
@@ -160,40 +141,38 @@ final class NodesAttributesController extends AbstractController
                         return new JsonResponse([
                             'status' => 'fail',
                             'errors' => $errors,
-                            'message' => $this->translator->trans('form_has_errors.check_you_fields'),
+                            'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
                         ], Response::HTTP_BAD_REQUEST);
                     }
                     foreach ($errors as $error) {
-                        $this->logTrail->publishErrorMessage($request, $error);
+                        $this->publishErrorMessage($request, $error);
                     }
                 }
             }
 
-            $assignation['attribute_value_translation_forms'][] = $attributeValueTranslationForm->createView();
+            $this->assignation['attribute_value_translation_forms'][] = $attributeValueTranslationForm->createView();
         }
 
-        $availableTranslations = $this->managerRegistry
+        $this->assignation['source'] = $nodeSource;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['order_by_weight'] = $orderByWeight;
+        $availableTranslations = $this->em()
             ->getRepository(Translation::class)
             ->findAvailableTranslationsForNode($node);
+        $this->assignation['available_translations'] = $availableTranslations;
+        $this->assignation['node'] = $node;
 
-        return $this->render('@RoadizRozier/nodes/attributes/edit.html.twig', [
-            ...$assignation,
-            'source' => $nodeSource,
-            'translation' => $translation,
-            'node' => $node,
-            'order_by_weight' => $orderByWeight,
-            'available_translations' => $availableTranslations,
-        ]);
+        return $this->render('@RoadizRozier/nodes/attributes/edit.html.twig', $this->assignation);
     }
 
     protected function hasAttributes(): bool
     {
-        return $this->managerRegistry->getRepository(Attribute::class)->countBy([]) > 0;
+        return $this->em()->getRepository(Attribute::class)->countBy([]) > 0;
     }
 
     protected function isAttributable(Node $node): bool
     {
-        $nodeType = $this->nodeTypesBag->get($node->getNodeTypeName());
+        $nodeType = $node->getNodeType();
         if ($nodeType instanceof NodeType) {
             return $nodeType->isAttributable();
         }
@@ -201,12 +180,8 @@ final class NodesAttributesController extends AbstractController
         return false;
     }
 
-    protected function handleAddAttributeForm(
-        Request $request,
-        Node $node,
-        Translation $translation,
-        array &$assignation,
-    ): ?RedirectResponse {
+    protected function handleAddAttributeForm(Request $request, Node $node, Translation $translation): ?RedirectResponse
+    {
         if (!$this->isAttributable($node)) {
             return null;
         }
@@ -216,24 +191,24 @@ final class NodesAttributesController extends AbstractController
         $attributeValue = new AttributeValue();
         $attributeValue->setAttributable($node);
         $addAttributeForm = $this->createForm(AttributeValueType::class, $attributeValue, [
-            'translation' => $this->managerRegistry->getRepository(Translation::class)->findDefault(),
+            'translation' => $this->em()->getRepository(Translation::class)->findDefault(),
         ]);
         $addAttributeForm->handleRequest($request);
 
         if ($addAttributeForm->isSubmitted() && $addAttributeForm->isValid()) {
-            $this->managerRegistry->getManager()->persist($attributeValue);
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->persist($attributeValue);
+            $this->em()->flush();
 
             $nodeSource = $node->getNodeSourcesByTranslation($translation)->first() ?: null;
             if ($nodeSource instanceof NodesSources) {
-                $msg = $this->translator->trans(
+                $msg = $this->getTranslator()->trans(
                     'attribute_value_translation.%name%.updated_from_node.%nodeName%',
                     [
                         '%name%' => $attributeValue->getAttribute()->getLabelOrCode($translation),
                         '%nodeName%' => $nodeSource->getTitle(),
                     ]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $nodeSource);
+                $this->publishConfirmMessage($request, $msg, $nodeSource);
             }
 
             return $this->redirectToRoute('nodesEditAttributesPage', [
@@ -241,41 +216,61 @@ final class NodesAttributesController extends AbstractController
                 'translationId' => $translation->getId(),
             ]);
         }
-        $assignation['addAttributeForm'] = $addAttributeForm->createView();
+        $this->assignation['addAttributeForm'] = $addAttributeForm->createView();
 
         return null;
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function deleteAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
         /** @var AttributeValue|null $item */
-        $item = $this->managerRegistry
-            ->getRepository(AttributeValue::class)
-            ->find($attributeValueId);
+        $item = $this->em()->find(AttributeValue::class, $attributeValueId);
         if (null === $item) {
             throw $this->createNotFoundException('AttributeValue does not exist.');
         }
+        /** @var Translation|null $translation */
+        $translation = $this->em()->find(Translation::class, $translationId);
+        /** @var Node|null $node */
+        $node = $this->em()->find(Node::class, $nodeId);
 
-        [$node, $translation, $nodeSource] = $this->getNodeAndTranslation($nodeId, $translationId);
+        if (null === $translation || null === $node) {
+            throw $this->createNotFoundException('Node-source does not exist');
+        }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
+
+        /** @var NodesSources|null $nodeSource */
+        $nodeSource = $this->em()
+            ->getRepository(NodesSources::class)
+            ->setDisplayingAllNodesStatuses(true)
+            ->setDisplayingNotPublishedNodes(true)
+            ->findOneBy(['translation' => $translation, 'node' => $node]);
+
+        if (null === $nodeSource) {
+            throw $this->createNotFoundException('Node-source does not exist');
+        }
 
         $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->managerRegistry->getManager()->remove($item);
-                $this->managerRegistry->getManager()->flush();
+                $this->em()->remove($item);
+                $this->em()->flush();
 
-                $msg = $this->translator->trans(
+                $msg = $this->getTranslator()->trans(
                     'attribute.%name%.deleted_from_node.%nodeName%',
                     [
                         '%name%' => $item->getAttribute()->getLabelOrCode($translation),
                         '%nodeName%' => $nodeSource->getTitle(),
                     ]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $item);
+                $this->publishConfirmMessage($request, $msg, $item);
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $item);
+                $this->publishErrorMessage($request, $e->getMessage(), $item);
             }
 
             return $this->redirectToRoute('nodesEditAttributesPage', [
@@ -284,19 +279,22 @@ final class NodesAttributesController extends AbstractController
             ]);
         }
 
-        return $this->render('@RoadizRozier/nodes/attributes/delete.html.twig', [
-            'item' => $item,
-            'source' => $nodeSource,
-            'translation' => $translation,
-            'node' => $node,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['item'] = $item;
+        $this->assignation['source'] = $nodeSource;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['node'] = $node;
+
+        return $this->render('@RoadizRozier/nodes/attributes/delete.html.twig', $this->assignation);
     }
 
+    /**
+     * @throws RuntimeError
+     */
     public function resetAction(Request $request, int $nodeId, int $translationId, int $attributeValueId): Response
     {
         /** @var AttributeValueTranslation|null $item */
-        $item = $this->managerRegistry
+        $item = $this->em()
             ->getRepository(AttributeValueTranslation::class)
             ->findOneBy([
                 'attributeValue' => $attributeValueId,
@@ -305,27 +303,46 @@ final class NodesAttributesController extends AbstractController
         if (null === $item) {
             throw $this->createNotFoundException('AttributeValueTranslation does not exist.');
         }
+        /** @var Translation|null $translation */
+        $translation = $this->em()->find(Translation::class, $translationId);
+        /** @var Node|null $node */
+        $node = $this->em()->find(Node::class, $nodeId);
 
-        [$node, $translation, $nodeSource] = $this->getNodeAndTranslation($nodeId, $translationId);
+        if (null === $translation || null === $node) {
+            throw $this->createNotFoundException('Node-source does not exist');
+        }
+
+        $this->denyAccessUnlessGranted(NodeVoter::EDIT_ATTRIBUTE, $node);
+
+        /** @var NodesSources|null $nodeSource */
+        $nodeSource = $this->em()
+            ->getRepository(NodesSources::class)
+            ->setDisplayingAllNodesStatuses(true)
+            ->setDisplayingNotPublishedNodes(true)
+            ->findOneBy(['translation' => $translation, 'node' => $node]);
+
+        if (null === $nodeSource) {
+            throw $this->createNotFoundException('Node-source does not exist');
+        }
 
         $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->managerRegistry->getManager()->remove($item);
-                $this->managerRegistry->getManager()->flush();
+                $this->em()->remove($item);
+                $this->em()->flush();
 
-                $msg = $this->translator->trans(
+                $msg = $this->getTranslator()->trans(
                     'attribute.%name%.reset_for_node.%nodeName%',
                     [
                         '%name%' => $item->getAttribute()->getLabelOrCode($translation),
                         '%nodeName%' => $nodeSource->getTitle(),
                     ]
                 );
-                $this->logTrail->publishConfirmMessage($request, $msg, $item);
+                $this->publishConfirmMessage($request, $msg, $item);
             } catch (\RuntimeException $e) {
-                $this->logTrail->publishErrorMessage($request, $e->getMessage(), $item);
+                $this->publishErrorMessage($request, $e->getMessage(), $item);
             }
 
             return $this->redirectToRoute('nodesEditAttributesPage', [
@@ -334,12 +351,12 @@ final class NodesAttributesController extends AbstractController
             ]);
         }
 
-        return $this->render('@RoadizRozier/nodes/attributes/reset.html.twig', [
-            'item' => $item,
-            'source' => $nodeSource,
-            'translation' => $translation,
-            'node' => $node,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['item'] = $item;
+        $this->assignation['source'] = $nodeSource;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['node'] = $node;
+
+        return $this->render('@RoadizRozier/nodes/attributes/reset.html.twig', $this->assignation);
     }
 }

@@ -1,9 +1,10 @@
 import $ from 'jquery'
-import {Expo, TweenLite} from 'gsap'
+import { Expo, TweenLite } from 'gsap'
 import DocumentsBulk from './components/bulk-edits/DocumentsBulk'
 import NodesBulk from './components/bulk-edits/NodesBulk'
 import TagsBulk from './components/bulk-edits/TagsBulk'
 import DocumentUploader from './components/documents/DocumentUploader'
+import NodeTypeFieldsPosition from './components/node-type-fields/NodeTypeFieldsPosition'
 import AttributeValuePosition from './components/attribute-values/AttributeValuePosition'
 import CustomFormFieldsPosition from './components/custom-form-fields/CustomFormFieldsPosition'
 import NodeTreeContextActions from './components/trees/NodeTreeContextActions'
@@ -44,6 +45,7 @@ export default class Lazyload {
         this.saveButtons = null
         this.tagAutocomplete = null
         this.folderAutocomplete = null
+        this.nodeTypeFieldsPosition = null
         this.attributeValuesPosition = null
         this.customFormFieldsPosition = null
         this.settingsSaveButtons = null
@@ -311,6 +313,7 @@ export default class Lazyload {
             this.nodeTreeContextActions,
             this.tagAutocomplete,
             this.folderAutocomplete,
+            this.nodeTypeFieldsPosition,
             this.attributeValuesPosition,
             this.customFormFieldsPosition,
             this.settingsSaveButtons,
@@ -343,6 +346,7 @@ export default class Lazyload {
 
         this.tagAutocomplete = new TagAutocomplete()
         this.folderAutocomplete = new FolderAutocomplete()
+        this.nodeTypeFieldsPosition = new NodeTypeFieldsPosition()
         this.attributeValuesPosition = new AttributeValuePosition()
         this.customFormFieldsPosition = new CustomFormFieldsPosition()
         this.nodeTreeContextActions = new NodeTreeContextActions()

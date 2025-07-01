@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use Doctrine\Persistence\ManagerRegistry;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Serializer\SerializerInterface;
+use Themes\Rozier\RozierApp;
 
-#[AsController]
-final class TagsUtilsController extends AbstractController
+class TagsUtilsController extends RozierApp
 {
-    public function __construct(
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly SerializerInterface $serializer,
-    ) {
+    public function __construct(private readonly SerializerInterface $serializer)
+    {
     }
 
     /**
@@ -29,13 +25,13 @@ final class TagsUtilsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
+        $existingTag = $this->em()->find(Tag::class, $tagId);
 
         return new JsonResponse(
             $this->serializer->serialize(
                 $existingTag,
                 'json',
-                ['groups' => ['tag', 'tag_base', 'tag_children', 'translated_tag', 'translation_base', 'position']]
+                SerializationContext::create()->setGroups(['tag', 'position'])
             ),
             Response::HTTP_OK,
             [
@@ -55,7 +51,7 @@ final class TagsUtilsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTags = $this->managerRegistry
+        $existingTags = $this->em()
                               ->getRepository(Tag::class)
                               ->findBy(['parent' => null]);
 
@@ -63,7 +59,7 @@ final class TagsUtilsController extends AbstractController
             $this->serializer->serialize(
                 $existingTags,
                 'json',
-                ['groups' => ['tag', 'tag_base', 'tag_children', 'translated_tag', 'translation_base', 'position']]
+                SerializationContext::create()->setGroups(['tag', 'position'])
             ),
             Response::HTTP_OK,
             [

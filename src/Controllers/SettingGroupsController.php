@@ -9,7 +9,7 @@ use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use Symfony\Component\HttpFoundation\Request;
 use Themes\Rozier\Forms\SettingGroupType;
 
-final class SettingGroupsController extends AbstractAdminController
+class SettingGroupsController extends AbstractAdminController
 {
     protected function supports(PersistableInterface $item): bool
     {

@@ -9,7 +9,7 @@ use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
-use RZ\Roadiz\CoreBundle\Repository\NotPublishedNodeRepository;
+use RZ\Roadiz\CoreBundle\Repository\NodeRepository;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -17,11 +17,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceNodeType extends AbstractNodeSourceFieldType
 {
-    public function __construct(
-        ManagerRegistry $managerRegistry,
-        private readonly NotPublishedNodeRepository $notPublishedNodeRepository,
-        private readonly NodeHandler $nodeHandler,
-    ) {
+    public function __construct(ManagerRegistry $managerRegistry, private readonly NodeHandler $nodeHandler)
+    {
         parent::__construct($managerRegistry);
     }
 
@@ -64,7 +61,11 @@ final class NodeSourceNodeType extends AbstractNodeSourceFieldType
         /** @var NodeTypeField $nodeTypeField */
         $nodeTypeField = $event->getForm()->getConfig()->getOption('nodeTypeField');
 
-        $event->setData($this->notPublishedNodeRepository->findByNodeAndField(
+        /** @var NodeRepository $nodeRepo */
+        $nodeRepo = $this->managerRegistry
+            ->getRepository(Node::class)
+            ->setDisplayingNotPublishedNodes(true);
+        $event->setData($nodeRepo->findByNodeAndField(
             $nodeSource->getNode(),
             $nodeTypeField
         ));

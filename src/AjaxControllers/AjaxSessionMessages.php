@@ -7,7 +7,7 @@ namespace Themes\Rozier\AjaxControllers;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 final class AjaxSessionMessages extends AbstractAjaxController
 {
@@ -22,7 +22,7 @@ final class AjaxSessionMessages extends AbstractAjaxController
 
         if ($request->hasPreviousSession()) {
             $session = $request->getSession();
-            if ($session instanceof FlashBagAwareSessionInterface) {
+            if ($session instanceof Session) {
                 $responseArray['messages'] = $session->getFlashBag()->all();
             }
         }
