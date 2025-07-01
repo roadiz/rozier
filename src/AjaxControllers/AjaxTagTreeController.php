@@ -7,17 +7,13 @@ namespace Themes\Rozier\AjaxControllers;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\SerializerInterface;
 use Themes\Rozier\Widgets\TagTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 
-final class AjaxTagTreeController extends AbstractAjaxController
+class AjaxTagTreeController extends AbstractAjaxController
 {
-    public function __construct(
-        private readonly TreeWidgetFactory $treeWidgetFactory,
-        SerializerInterface $serializer,
-    ) {
-        parent::__construct($serializer);
+    public function __construct(private readonly TreeWidgetFactory $treeWidgetFactory)
+    {
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -28,7 +24,7 @@ final class AjaxTagTreeController extends AbstractAjaxController
         /** @var TagTreeWidget|null $tagTree */
         $tagTree = null;
 
-        switch ($request->get('_action')) {
+        switch ($request->get("_action")) {
             /*
              * Inner tag edit for tagTree
              */
@@ -48,9 +44,9 @@ final class AjaxTagTreeController extends AbstractAjaxController
                 $this->assignation['mainTagTree'] = false;
 
                 break;
-                /*
-                 * Main panel tree tagTree
-                 */
+            /*
+             * Main panel tree tagTree
+             */
             case 'requestMainTagTree':
                 $parent = null;
                 $tagTree = $this->treeWidgetFactory->createTagTree($parent, $translation);
@@ -60,10 +56,14 @@ final class AjaxTagTreeController extends AbstractAjaxController
 
         $this->assignation['tagTree'] = $tagTree;
 
-        return $this->createSerializedResponse([
+        $responseArray = [
             'statusCode' => '200',
             'status' => 'success',
             'tagTree' => $this->getTwig()->render('@RoadizRozier/widgets/tagTree/tagTree.html.twig', $this->assignation),
-        ]);
+        ];
+
+        return new JsonResponse(
+            $responseArray
+        );
     }
 }
