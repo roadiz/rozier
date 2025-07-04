@@ -36,14 +36,13 @@ export default class CustomFormFieldsPosition {
             afterFieldId = parseInt($sibling.data('field-id'))
         }
 
-        let postData = {
+        const postData = {
             _token: window.Rozier.ajaxToken,
             _action: 'updatePosition',
             customFormFieldId: customFormFieldId,
             beforeFieldId: beforeFieldId,
             afterFieldId: afterFieldId,
         }
-
         const response = await fetch(
             window.Rozier.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
             {

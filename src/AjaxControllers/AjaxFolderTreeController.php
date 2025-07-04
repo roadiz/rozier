@@ -4,22 +4,26 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Widgets\FolderTreeWidget;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
+use Twig\Environment;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxFolderTreeController extends AbstractAjaxController
+final class AjaxFolderTreeController extends AbstractAjaxController
 {
-    private TreeWidgetFactory $treeWidgetFactory;
-
-    public function __construct(TreeWidgetFactory $treeWidgetFactory)
-    {
-        $this->treeWidgetFactory = $treeWidgetFactory;
+    public function __construct(
+        private readonly TreeWidgetFactory $treeWidgetFactory,
+        private readonly Environment $twig,
+        ManagerRegistry $managerRegistry,
+        SerializerInterface $serializer,
+        TranslatorInterface $translator,
+    ) {
+        parent::__construct($managerRegistry, $serializer, $translator);
     }
 
     public function getTreeAction(Request $request): JsonResponse
@@ -29,47 +33,35 @@ class AjaxFolderTreeController extends AbstractAjaxController
 
         /** @var FolderTreeWidget|null $folderTree */
         $folderTree = null;
+        $assignation = [];
 
-        switch ($request->get("_action")) {
-            /*
-             * Inner folder edit for folderTree
-             */
+        switch ($request->get('_action')) {
             case 'requestFolderTree':
                 if ($request->get('parentFolderId') > 0) {
-                    $folder = $this->em()
-                                ->find(
-                                    Folder::class,
-                                    (int) $request->get('parentFolderId')
-                                );
+                    $folder = $this->managerRegistry
+                        ->getRepository(Folder::class)
+                        ->find((int) $request->get('parentFolderId'));
                 } else {
                     $folder = null;
                 }
 
                 $folderTree = $this->treeWidgetFactory->createFolderTree($folder, $translation);
 
-                $this->assignation['mainFolderTree'] = false;
-
+                $assignation['mainFolderTree'] = false;
                 break;
-            /*
-             * Main panel tree folderTree
-             */
             case 'requestMainFolderTree':
                 $parent = null;
                 $folderTree = $this->treeWidgetFactory->createFolderTree($parent, $translation);
-                $this->assignation['mainFolderTree'] = true;
+                $assignation['mainFolderTree'] = true;
                 break;
         }
 
-        $this->assignation['folderTree'] = $folderTree;
+        $assignation['folderTree'] = $folderTree;
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'statusCode' => '200',
             'status' => 'success',
-            'folderTree' => $this->getTwig()->render('@RoadizRozier/widgets/folderTree/folderTree.html.twig', $this->assignation),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'folderTree' => $this->twig->render('@RoadizRozier/widgets/folderTree/folderTree.html.twig', $assignation),
+        ]);
     }
 }

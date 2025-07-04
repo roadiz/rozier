@@ -4,61 +4,44 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
-use Doctrine\ORM\EntityManager;
-use RZ\Roadiz\Core\AbstractEntities\AbstractField;
+use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
+use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Configuration\JoinNodeTypeFieldConfiguration;
-use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\CoreBundle\Entity\Setting;
-use RZ\Roadiz\CoreBundle\Entity\User;
-use RZ\Roadiz\Documents\MediaFinders\EmbedFinderFactory;
-use RZ\Roadiz\Documents\Renderer\RendererInterface;
-use RZ\Roadiz\Documents\UrlGenerators\DocumentUrlGeneratorInterface;
+use RZ\Roadiz\CoreBundle\Enum\FieldType;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemFactoryInterface;
+use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Yaml\Yaml;
-use Themes\Rozier\Explorer\ConfigurableExplorerItem;
-use Themes\Rozier\Explorer\FolderExplorerItem;
-use Themes\Rozier\Explorer\SettingExplorerItem;
-use Themes\Rozier\Explorer\UserExplorerItem;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * @package Themes\Rozier\AjaxControllers
- */
-class AjaxEntitiesExplorerController extends AbstractAjaxController
+final class AjaxEntitiesExplorerController extends AbstractAjaxExplorerController
 {
-    private RendererInterface $renderer;
-    private DocumentUrlGeneratorInterface $documentUrlGenerator;
-    private UrlGeneratorInterface $urlGenerator;
-    private EmbedFinderFactory $embedFinderFactory;
-
     public function __construct(
-        RendererInterface $renderer,
-        DocumentUrlGeneratorInterface $documentUrlGenerator,
-        UrlGeneratorInterface $urlGenerator,
-        EmbedFinderFactory $embedFinderFactory
+        private readonly NodeTypes $nodeTypesBag,
+        ExplorerItemFactoryInterface $explorerItemFactory,
+        EventDispatcherInterface $eventDispatcher,
+        EntityListManagerFactoryInterface $entityListManagerFactory,
+        SerializerInterface $serializer,
+        ManagerRegistry $managerRegistry,
+        TranslatorInterface $translator,
     ) {
-        $this->renderer = $renderer;
-        $this->documentUrlGenerator = $documentUrlGenerator;
-        $this->urlGenerator = $urlGenerator;
-        $this->embedFinderFactory = $embedFinderFactory;
+        parent::__construct($explorerItemFactory, $eventDispatcher, $entityListManagerFactory, $managerRegistry, $serializer, $translator);
     }
 
-    /**
-     * @param NodeTypeField $nodeTypeField
-     * @return array
-     */
     protected function getFieldConfiguration(NodeTypeField $nodeTypeField): array
     {
         if (
-            $nodeTypeField->getType() !== AbstractField::MANY_TO_MANY_T &&
-            $nodeTypeField->getType() !== AbstractField::MANY_TO_ONE_T
+            FieldType::MANY_TO_MANY_T !== $nodeTypeField->getType()
+            && FieldType::MANY_TO_ONE_T !== $nodeTypeField->getType()
         ) {
-            throw new InvalidParameterException('nodeTypeField is not a valid entity join.');
+            throw new BadRequestHttpException('nodeTypeField is not a valid entity join.');
         }
 
         $configs = [
@@ -74,12 +57,30 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
     {
         $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        if (!$request->query->has('nodeTypeFieldId')) {
-            throw new InvalidParameterException('nodeTypeFieldId parameter is missing.');
+        if (!$request->query->has('nodeTypeFieldName')) {
+            throw new BadRequestHttpException('nodeTypeFieldId parameter is missing.');
         }
 
-        /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
+        if (!$request->query->has('nodeTypeName')) {
+            throw new BadRequestHttpException('nodeTypeName parameter is missing.');
+        }
+
+        $nodeTypeName = $request->query->get('nodeTypeName');
+        if (!is_string($nodeTypeName)) {
+            throw new \RuntimeException('nodeTypeName should be a string');
+        }
+
+        $nodeTypeFieldName = $request->query->get('nodeTypeFieldName');
+        if (!is_string($nodeTypeFieldName)) {
+            throw new \RuntimeException('nodeTypeFieldName should be a string');
+        }
+
+        $nodeTypeField = $this->nodeTypesBag->get($nodeTypeName)?->getFieldByName($nodeTypeFieldName);
+
+        if (null === $nodeTypeField) {
+            throw new BadRequestHttpException('nodeTypeField does not exist.');
+        }
+
         $configuration = $this->getFieldConfiguration($nodeTypeField);
         /** @var class-string<PersistableInterface> $className */
         $className = $configuration['classname'];
@@ -109,47 +110,54 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
 
         $entitiesArray = $this->normalizeEntities($entities, $configuration);
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
             'entities' => $entitiesArray,
             'filters' => $listManager->getAssignation(),
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+        ]);
     }
 
-    /**
-     * Get a Node list from an array of id.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function listAction(Request $request): JsonResponse
     {
-        if (!$request->query->has('nodeTypeFieldId')) {
-            throw new InvalidParameterException('nodeTypeFieldId parameter is missing.');
+        if (!$request->query->has('nodeTypeFieldName')) {
+            throw new BadRequestHttpException('nodeTypeFieldName parameter is missing.');
         }
 
         if (!$request->query->has('ids')) {
-            throw new InvalidParameterException('Ids should be provided within an array');
+            throw new BadRequestHttpException('Ids should be provided within an array');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_ACCESS_NODES');
+        $this->denyAccessUnlessGranted('ROLE_BACKEND_USER');
 
-        /** @var EntityManager $em */
-        $em = $this->em();
+        $em = $this->managerRegistry->getManager();
 
-        /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $this->em()->find(NodeTypeField::class, $request->query->get('nodeTypeFieldId'));
+        if (!$request->query->has('nodeTypeName')) {
+            throw new BadRequestHttpException('nodeTypeName parameter is missing.');
+        }
+
+        $nodeTypeName = $request->query->get('nodeTypeName');
+        if (!is_string($nodeTypeName)) {
+            throw new \RuntimeException('nodeTypeName should be a string');
+        }
+
+        $nodeTypeFieldName = $request->query->get('nodeTypeFieldName');
+        if (!is_string($nodeTypeFieldName)) {
+            throw new \RuntimeException('nodeTypeFieldName should be a string');
+        }
+
+        $nodeTypeField = $this->nodeTypesBag->get($nodeTypeName)?->getFieldByName($nodeTypeFieldName);
+
+        if (null === $nodeTypeField) {
+            throw new BadRequestHttpException('nodeTypeField does not exist.');
+        }
+
         $configuration = $this->getFieldConfiguration($nodeTypeField);
         /** @var class-string<PersistableInterface> $className */
         $className = $configuration['classname'];
 
         $cleanNodeIds = array_filter($request->query->filter('ids', [], \FILTER_DEFAULT, [
-            'flags' => \FILTER_FORCE_ARRAY
+            'flags' => \FILTER_FORCE_ARRAY,
         ]));
         $entitiesArray = [];
 
@@ -163,46 +171,29 @@ class AjaxEntitiesExplorerController extends AbstractAjaxController
             $entitiesArray = $this->normalizeEntities($entities, $configuration);
         }
 
-        $responseArray = [
+        return $this->createSerializedResponse([
             'status' => 'confirm',
             'statusCode' => 200,
-            'items' => $entitiesArray
-        ];
-
-        return new JsonResponse(
-            $responseArray
-        );
+            'items' => $entitiesArray,
+        ]);
     }
 
     /**
      * Normalize response Node list result.
      *
      * @param iterable<PersistableInterface> $entities
-     * @param array $configuration
+     *
      * @return array<array>
      */
-    private function normalizeEntities(iterable $entities, array &$configuration): array
+    private function normalizeEntities(iterable $entities, array $configuration): array
     {
         $entitiesArray = [];
 
-        /** @var PersistableInterface $entity */
         foreach ($entities as $entity) {
-            if ($entity instanceof Folder) {
-                $explorerItem = new FolderExplorerItem($entity, $this->urlGenerator);
-            } elseif ($entity instanceof Setting) {
-                $explorerItem = new SettingExplorerItem($entity, $this->urlGenerator);
-            } elseif ($entity instanceof User) {
-                $explorerItem = new UserExplorerItem($entity, $this->urlGenerator);
-            } else {
-                $explorerItem = new ConfigurableExplorerItem(
-                    $entity,
-                    $configuration,
-                    $this->renderer,
-                    $this->documentUrlGenerator,
-                    $this->urlGenerator,
-                    $this->embedFinderFactory
-                );
-            }
+            $explorerItem = $this->explorerItemFactory->createForEntity(
+                $entity,
+                $configuration
+            );
             $entitiesArray[] = $explorerItem->toArray();
         }
 

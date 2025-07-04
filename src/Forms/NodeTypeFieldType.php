@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
+use RZ\Roadiz\CoreBundle\Enum\FieldType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -13,9 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/**
- * @package Themes\Rozier\Forms
- */
 class NodeTypeFieldType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -33,7 +31,7 @@ class NodeTypeFieldType extends AbstractType
         ->add('type', ChoiceType::class, [
             'label' => 'type',
             'required' => true,
-            'choices' => array_flip(NodeTypeField::$typeToHuman),
+            'choices' => array_flip(FieldType::humanValues()),
         ])
         ->add('description', TextType::class, [
             'label' => 'description',
@@ -75,7 +73,7 @@ class NodeTypeFieldType extends AbstractType
             'required' => false,
         ])
         ->add('defaultValues', DynamicType::class, [
-            'label' => 'defaultValues',
+            'label' => 'nodeTypeField.defaultValues',
             'required' => false,
             'help' => 'for_children_node_and_node_references_enter_node_type_names_comma_separated',
             'attr' => [
@@ -116,7 +114,7 @@ class NodeTypeFieldType extends AbstractType
             'data_class' => NodeTypeField::class,
             'attr' => [
                 'class' => 'uk-form node-type-field-form',
-            ]
+            ],
         ]);
     }
 }

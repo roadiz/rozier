@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Traits;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Gedmo\Exception\UnexpectedValueException;
-use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
 use RZ\Roadiz\CoreBundle\Entity\UserLogEntry;
+use RZ\Roadiz\CoreBundle\Repository\UserLogEntryRepository;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -17,47 +19,41 @@ trait VersionedControllerTrait
 {
     protected bool $isReadOnly = false;
 
-    /**
-     * @return bool
-     */
     public function isReadOnly(): bool
     {
         return $this->isReadOnly;
     }
 
     /**
-     * @param bool $isReadOnly
-     *
-     * @return self
+     * @return $this
      */
-    public function setIsReadOnly(bool $isReadOnly)
+    public function setIsReadOnly(bool $isReadOnly): self
     {
         $this->isReadOnly = $isReadOnly;
 
         return $this;
     }
 
-    protected function handleVersions(Request $request, PersistableInterface $entity): ?Response
+    protected function handleVersions(Request $request, PersistableInterface $entity, array &$assignation): ?Response
     {
-        /**
-         * @var LogEntryRepository $repo
-         */
-        $repo = $this->em()->getRepository(UserLogEntry::class);
+        /** @var UserLogEntryRepository $repo */
+        $repo = $this->getDoctrine()->getRepository(UserLogEntry::class);
         $logs = $repo->getLogEntries($entity);
+        $versionNumber = $request->get('version', null);
 
         if (
-            $request->get('version', null) !== null &&
-            $request->get('version', null) > 0
+            \is_numeric($versionNumber)
+            && intval($versionNumber) > 0
         ) {
             try {
-                $versionNumber = (int) $request->get('version', null);
+                $versionNumber = intval($versionNumber);
                 $repo->revert($entity, $versionNumber);
                 $this->isReadOnly = true;
-                $this->assignation['currentVersionNumber'] = $versionNumber;
+                $assignation['currentVersionNumber'] = $versionNumber;
                 /** @var UserLogEntry $log */
                 foreach ($logs as $log) {
                     if ($log->getVersion() === $versionNumber) {
-                        $this->assignation['currentVersion'] = $log;
+                        $assignation['currentVersion'] = $log;
                     }
                 }
                 $revertForm = $this->createNamedFormBuilder('revertVersion')
@@ -65,20 +61,19 @@ trait VersionedControllerTrait
                     ->getForm();
                 $revertForm->handleRequest($request);
 
-                $this->assignation['revertForm'] = $revertForm->createView();
-
                 if ($revertForm->isSubmitted() && $revertForm->isValid()) {
-                    $this->em()->persist($entity);
+                    $this->getDoctrine()->getManager()->persist($entity);
                     $this->onPostUpdate($entity, $request);
 
                     return $this->getPostUpdateRedirection($entity);
                 }
+                $assignation['revertForm'] = $revertForm->createView();
             } catch (UnexpectedValueException $e) {
                 throw new ResourceNotFoundException();
             }
         }
 
-        $this->assignation['versions'] = $logs;
+        $assignation['versions'] = $logs;
 
         return null;
     }
@@ -86,4 +81,11 @@ trait VersionedControllerTrait
     abstract protected function onPostUpdate(PersistableInterface $entity, Request $request): void;
 
     abstract protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response;
+
+    /**
+     * @deprecated
+     */
+    abstract protected function getDoctrine(): ManagerRegistry;
+
+    abstract protected function createNamedFormBuilder(string $name = 'form', mixed $data = null, array $options = []): FormBuilderInterface;
 }

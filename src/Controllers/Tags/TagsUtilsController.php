@@ -4,54 +4,44 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Tags;
 
-use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Themes\Rozier\RozierApp;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @package Themes\Rozier\Controllers\Tags
- */
-class TagsUtilsController extends RozierApp
+#[AsController]
+final class TagsUtilsController extends AbstractController
 {
-    private SerializerInterface $serializer;
-
-    /**
-     * @param SerializerInterface $serializer
-     */
-    public function __construct(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
+    public function __construct(
+        private readonly ManagerRegistry $managerRegistry,
+        private readonly SerializerInterface $serializer,
+    ) {
     }
 
     /**
-     * Export a Tag in a Json file
-     *
-     * @param Request $request
-     * @param int     $tagId
-     *
-     * @return Response
+     * Export a Tag in a Json file.
      */
-    public function exportAction(Request $request, int $tagId)
+    public function exportAction(Request $request, int $tagId): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTag = $this->em()->find(Tag::class, $tagId);
+        $existingTag = $this->managerRegistry->getRepository(Tag::class)->find($tagId);
 
         return new JsonResponse(
             $this->serializer->serialize(
                 $existingTag,
                 'json',
-                SerializationContext::create()->setGroups(['tag', 'position'])
+                ['groups' => ['tag', 'tag_base', 'tag_children', 'translated_tag', 'translation_base', 'position']]
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-' . $existingTag->getTagName() . '-' . date("YmdHis")  . '.json'
+                    'tag-'.$existingTag->getTagName().'-'.date('YmdHis').'.json'
                 ),
             ],
             true
@@ -59,32 +49,27 @@ class TagsUtilsController extends RozierApp
     }
 
     /**
-     * Export a Tag in a Json file
-     *
-     * @param Request $request
-     * @param int $tagId
-     *
-     * @return Response
+     * Export a Tag in a Json file.
      */
-    public function exportAllAction(Request $request, int $tagId)
+    public function exportAllAction(Request $request, int $tagId): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TAGS');
 
-        $existingTags = $this->em()
+        $existingTags = $this->managerRegistry
                               ->getRepository(Tag::class)
-                              ->findBy(["parent" => null]);
+                              ->findBy(['parent' => null]);
 
         return new JsonResponse(
             $this->serializer->serialize(
                 $existingTags,
                 'json',
-                SerializationContext::create()->setGroups(['tag', 'position'])
+                ['groups' => ['tag', 'tag_base', 'tag_children', 'translated_tag', 'translation_base', 'position']]
             ),
-            JsonResponse::HTTP_OK,
+            Response::HTTP_OK,
             [
                 'Content-Disposition' => sprintf(
                     'attachment; filename="%s"',
-                    'tag-all-' . date("YmdHis") . '.json'
+                    'tag-all-'.date('YmdHis').'.json'
                 ),
             ],
             true

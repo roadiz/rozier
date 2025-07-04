@@ -4,18 +4,31 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\AjaxControllers;
 
+use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Themes\Rozier\RozierApp;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Extends common back-office controller, but add a request validation
  * to secure Ajax connexions.
  */
-abstract class AbstractAjaxController extends RozierApp
+abstract class AbstractAjaxController extends AbstractController
 {
+    public const AJAX_TOKEN_INTENTION = 'rozier_ajax';
+
+    public function __construct(
+        protected readonly ManagerRegistry $managerRegistry,
+        protected readonly SerializerInterface $serializer,
+        protected readonly TranslatorInterface $translator,
+    ) {
+    }
+
     protected static array $validMethods = [
         Request::METHOD_POST,
         Request::METHOD_GET,
@@ -25,40 +38,36 @@ abstract class AbstractAjaxController extends RozierApp
     {
         $translationId = $request->get('translationId', null);
         if (\is_numeric($translationId) && $translationId > 0) {
-            $translation = $this->em()->find(
-                Translation::class,
-                $translationId
-            );
+            $translation = $this->managerRegistry
+                ->getRepository(Translation::class)
+                ->find($translationId);
             if (null !== $translation) {
                 return $translation;
             }
         }
 
-        return $this->em()->getRepository(Translation::class)->findDefault();
+        return $this->managerRegistry->getRepository(Translation::class)->findDefault();
     }
 
     /**
-     * @param Request $request
-     * @param string  $method
-     * @param bool    $requestCsrfToken
-     *
-     * @return boolean  Return true if request is valid, else throw exception
+     * @return bool Return true if request is valid, else throw exception
      */
     protected function validateRequest(Request $request, string $method = 'POST', bool $requestCsrfToken = true): bool
     {
-        if ($request->get('_action') == "") {
+        if (empty($request->get('_action'))) {
             throw new BadRequestHttpException('Wrong action requested');
         }
 
-        if ($requestCsrfToken === true) {
-            if (!$this->isCsrfTokenValid(static::AJAX_TOKEN_INTENTION, $request->get('_token'))) {
-                throw new BadRequestHttpException('Bad CSRF token');
-            }
+        if (
+            true === $requestCsrfToken
+            && !$this->isCsrfTokenValid(static::AJAX_TOKEN_INTENTION, $request->get('_token'))
+        ) {
+            throw new BadRequestHttpException('Bad CSRF token');
         }
 
         if (
-            in_array(\mb_strtolower($method), static::$validMethods) &&
-            \mb_strtolower($request->getMethod()) != \mb_strtolower($method)
+            in_array(\mb_strtolower($method), static::$validMethods)
+            && \mb_strtolower($request->getMethod()) != \mb_strtolower($method)
         ) {
             throw new BadRequestHttpException('Bad method');
         }
@@ -75,11 +84,30 @@ abstract class AbstractAjaxController extends RozierApp
                 if ($element == $value->getId()) {
                     $return[] = $value;
                     unset($arr[$key]);
-                    break 1;
+                    break;
                 }
             }
         }
 
         return $return;
+    }
+
+    protected function createSerializedResponse(array $data): JsonResponse
+    {
+        return new JsonResponse(
+            $this->serializer->serialize(
+                $data,
+                'json',
+                ['groups' => [
+                    'document_display',
+                    'explorer_thumbnail',
+                    'node_type:display',
+                    'model',
+                ]]
+            ),
+            200,
+            [],
+            true
+        );
     }
 }

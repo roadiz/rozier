@@ -4,13 +4,23 @@ import request from 'axios'
  * Fetch Nodes from an array of node id.
  *
  * @param {Array} ids
+ * @param {Object} filters
  * @returns {Promise<R>|Promise.<T>}
  */
-export function getNodesByIds({ ids = [] }) {
+export function getNodesByIds({ ids = [], filters = {} }) {
     const postData = {
         _token: window.RozierRoot.ajaxToken,
         _action: 'nodesByIds',
-        ids: ids,
+    }
+    if (filters && filters._locale) {
+        postData._locale = filters._locale
+    }
+    /*
+     * We need to send the ids as an object with keys as string
+     * when Varnish is enabled, the query string is sorted
+     */
+    for (let i = 0; i < ids.length; i++) {
+        postData['ids[' + i + ']'] = ids[i]
     }
 
     return request({
@@ -48,6 +58,13 @@ export function getNodes({ searchTerms, preFilters, filters, filterExplorerSelec
         _action: 'toggleExplorer',
         search: searchTerms,
         page: 1,
+    }
+
+    if (preFilters && preFilters._locale) {
+        postData._locale = preFilters._locale
+    }
+    if (filters && filters._locale) {
+        postData._locale = filters._locale
     }
 
     if (filterExplorerSelection) {

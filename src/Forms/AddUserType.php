@@ -7,9 +7,6 @@ namespace Themes\Rozier\Forms;
 use RZ\Roadiz\CoreBundle\Form\GroupsType;
 use Symfony\Component\Form\FormBuilderInterface;
 
-/**
- * @package Themes\Rozier\Forms
- */
 class AddUserType extends UserType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -17,11 +14,11 @@ class AddUserType extends UserType
         parent::buildForm($builder, $options);
 
         $builder->add('groups', GroupsType::class, [
-                'label' => 'user.groups',
-                'required' => false,
-                'multiple' => true,
-                'expanded' => true,
-            ])
+            'label' => 'user.groups',
+            'required' => false,
+            'multiple' => true,
+            'expanded' => true,
+        ])
         ;
     }
 

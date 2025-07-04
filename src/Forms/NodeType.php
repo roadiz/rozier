@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
+use RZ\Roadiz\CoreBundle\Bag\NodeTypes;
 use RZ\Roadiz\CoreBundle\Entity\Node;
-use RZ\Roadiz\CoreBundle\Form\Constraint\UniqueNodeName;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -16,18 +16,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class NodeType extends AbstractType
 {
+    public function __construct(
+        private readonly NodeTypes $nodeTypesBag,
+    ) {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('nodeName', TextType::class, [
-                'label' => 'nodeName',
-                'empty_data' => '',
-                'help' => 'node.nodeName.help',
-                'constraints' => [
-                    new UniqueNodeName([
-                        'currentValue' => $options['nodeName'],
-                    ]),
-                ]
-            ])
+            'label' => 'nodeName',
+            'empty_data' => '',
+            'help' => 'node.nodeName.help',
+        ])
             ->add('dynamicNodeName', CheckboxType::class, [
                 'label' => 'node.dynamicNodeName',
                 'required' => false,
@@ -35,7 +35,10 @@ class NodeType extends AbstractType
             ])
         ;
 
-        if (null !== $builder->getData() && $builder->getData()->getNodeType()->isReachable()) {
+        /** @var Node|null $node */
+        $node = $builder->getData();
+        $isReachable = null !== $node && $this->nodeTypesBag->get($node->getNodeTypeName())?->isReachable();
+        if ($isReachable) {
             $builder->add('home', CheckboxType::class, [
                 'label' => 'node.isHome',
                 'required' => false,
@@ -44,9 +47,9 @@ class NodeType extends AbstractType
         }
 
         $builder->add('childrenOrder', ChoiceType::class, [
-                'label' => 'node.childrenOrder',
-                'choices' => Node::$orderingFields,
-            ])
+            'label' => 'node.childrenOrder',
+            'choices' => Node::$orderingFields,
+        ])
             ->add('childrenOrderDirection', ChoiceType::class, [
                 'label' => 'node.childrenOrderDirection',
                 'choices' => [
@@ -56,7 +59,7 @@ class NodeType extends AbstractType
             ])
         ;
 
-        if (null !== $builder->getData() && $builder->getData()->getNodeType()->isReachable()) {
+        if ($isReachable) {
             $builder->add('ttl', IntegerType::class, [
                 'label' => 'node.ttl',
                 'help' => 'node_time_to_live_cache_on_front_controller',
@@ -80,7 +83,6 @@ class NodeType extends AbstractType
                 'class' => 'uk-form node-form',
             ],
         ]);
-
-        $resolver->setAllowedTypes('nodeName', 'string');
+        $resolver->setAllowedTypes('nodeName', ['string', 'null']);
     }
 }

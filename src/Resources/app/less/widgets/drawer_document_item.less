@@ -33,32 +33,32 @@
     .preview-zoom {
         position: absolute;
         z-index: 15;
-        top: 0;
+        top: -4px;
         right: 0;
         width: 20px;
         text-align: center;
-        background: @contrast-color;
+        transform: translateY(-100%);
+        background-color: var(--rz-accent-color);
+        cursor: pointer;
         font-size: 11px;
-        padding: 2px 0;
+        padding: 5px 0;
         height: 15px;
         color: #fff;
-        opacity: 0;
-        .transition(0.4s opacity @easeOutExpo);
+        transition: 0.4s transform @easeOutExpo;
     }
 
     &:hover {
         .preview-zoom {
-            opacity: 1;
-            cursor: pointer;
+            transform: translateY(0);
         }
     }
 
-    .document-border{
+    .document-border {
         position: absolute;
         top:0; right:0; left:0;
         z-index: 15;
         height:4px;
-        background:@contrast-color;
+        background: var(--rz-accent-color);
     }
 
     .document-image{
@@ -68,28 +68,29 @@
 
     .document-name{
         display: none;
-        .transition(~"0.4s opacity ease, 0.4s top ease");
+        transition: ~"0.4s opacity ease, 0.4s top ease";
     }
 
     .document-mime-type{
         display: none;
     }
 
-    .document-links{
-        position:absolute;
-        width:80px;
-        height:30px;
-        bottom:-30px;
+    .document-links {
+        position: absolute;
+        width: 80px;
+        height: 30px;
+        transform: translateY(100%);
+        bottom: 0;
         overflow: hidden;
-        .transition(0.4s bottom @easeOutExpo);
+        transition: 0.4s transform @easeOutExpo;
         background: rgba(255,255,255,0.8);
 
         .document-link {
             display: inline-block;
             width:40px;
             height:30px;
-            .rounded(0);
-            .opacity(0.95);
+            border-radius: 0;
+            opacity: 0.95;
 
             i {
                 margin:0;
@@ -113,12 +114,12 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        .rounded(4px);
+        border-radius: 4px;
         text-align: center;
         line-height: 35px;
         .box-shadow(0px 0px 3px rgba(0, 0, 0, 0.1));
-        .opacity(0.95);
-        .transition(0.9s opacity @easeOutExpo);
+        opacity: 0.95;
+        transition: 0.9s opacity @easeOutExpo;
 
         i{
             font-size: 28px;
@@ -134,7 +135,7 @@
         }
         .document-name {
             display: block;
-            .opacity(0.7);
+            opacity: 0.7;
             font-size: 9px;
             position: absolute;
             top: 63px;
@@ -144,12 +145,11 @@
     }
 
     &:hover{
-
         .document-links{
-            bottom:0px;
+            transform: translateY(0);
         }
         .document-platform-icon {
-            .opacity(0);
+            opacity: 0;
         }
         &.not-image {
             .document-name {

@@ -1,15 +1,12 @@
 import $ from 'jquery'
-import { Expo, TweenLite } from 'gsap'
+import {Expo, TweenLite} from 'gsap'
 import DocumentsBulk from './components/bulk-edits/DocumentsBulk'
 import NodesBulk from './components/bulk-edits/NodesBulk'
 import TagsBulk from './components/bulk-edits/TagsBulk'
 import DocumentUploader from './components/documents/DocumentUploader'
-import NodeTypeFieldsPosition from './components/node-type-fields/NodeTypeFieldsPosition'
 import AttributeValuePosition from './components/attribute-values/AttributeValuePosition'
-import NodeTypeFieldEdit from './components/node-type-fields/NodeTypeFieldEdit'
 import CustomFormFieldsPosition from './components/custom-form-fields/CustomFormFieldsPosition'
 import NodeTreeContextActions from './components/trees/NodeTreeContextActions'
-import Import from './components/import/Import'
 import NodeEditSource from './components/node/NodeEditSource'
 import InputLengthWatcher from './widgets/InputLengthWatcher'
 import ChildrenNodesField from './widgets/ChildrenNodesField'
@@ -29,9 +26,6 @@ import MultiLeafletGeotagField from './widgets/MultiLeafletGeotagField'
 import TagEdit from './components/tag/TagEdit'
 import MainTreeTabs from './components/tabs/MainTreeTabs'
 
-/**
- * Lazyload
- */
 export default class Lazyload {
     constructor() {
         this.$linksSelector = null
@@ -50,11 +44,9 @@ export default class Lazyload {
         this.saveButtons = null
         this.tagAutocomplete = null
         this.folderAutocomplete = null
-        this.nodeTypeFieldsPosition = null
         this.attributeValuesPosition = null
         this.customFormFieldsPosition = null
         this.settingsSaveButtons = null
-        this.nodeTypeFieldEdit = null
         this.nodeEditSource = null
         this.tagEdit = null
         this.markdownEditors = []
@@ -116,14 +108,10 @@ export default class Lazyload {
         ) {
             event.preventDefault()
 
-            if (this.clickTimeout) {
-                clearTimeout(this.clickTimeout)
-            }
-
-            this.clickTimeout = window.setTimeout(() => {
+            window.requestAnimationFrame(() => {
                 window.history.pushState({}, null, $link.attr('href'))
                 this.onPopState(null)
-            }, 0)
+            })
 
             return false
         }
@@ -160,10 +148,10 @@ export default class Lazyload {
          * Delay loading if user is click like devil
          */
         if (this.currentTimeout) {
-            clearTimeout(this.currentTimeout)
+            window.cancelAnimationFrame(this.currentTimeout)
         }
 
-        this.currentTimeout = window.setTimeout(() => {
+        this.currentTimeout = window.requestAnimationFrame(async () => {
             /*
              * Trigger event on window to notify open
              * widgets to close.
@@ -171,48 +159,71 @@ export default class Lazyload {
             let pageChangeEvent = new CustomEvent('pagechange')
             window.dispatchEvent(pageChangeEvent)
 
-            this.currentRequest = $.ajax({
-                url: location.href,
-                type: 'get',
-                dataType: 'html',
-                cache: false,
-                data: state.headerData,
-                beforeSend: (xhr) => {
-                    xhr.setRequestHeader('X-Partial', true)
-                },
-            })
-                .done((data) => {
-                    this.applyContent(data)
-                    this.canvasLoader.hide()
-                    let pageLoadEvent = new CustomEvent('pageload', { detail: data })
-                    window.dispatchEvent(pageLoadEvent)
-                })
-                .fail((data) => {
-                    if (typeof data.responseText !== 'undefined') {
-                        try {
-                            let exception = JSON.parse(data.responseText)
-                            window.UIkit.notify({
-                                message: exception.message,
-                                status: 'danger',
-                                timeout: 3000,
-                                pos: 'top-center',
+            try {
+                let url = ''
+                const path = location.href.split('?')[0]
+                const params = new URLSearchParams(location.href.split('?')[1])
+                if (state.headerData) {
+                    /**
+                     * @param {string} key
+                     * @param {string|number|Array<string|number>} value
+                     */
+                    for (let [key, value] of Object.entries(state.headerData)) {
+                        if (Array.isArray(value)) {
+                            value.forEach((v, i) => {
+                                params.append(key + '[' + i + ']', v)
                             })
-                        } catch (e) {
-                            // No valid JsonResponse, need to refresh page
-                            window.location.href = location.href
+                        } else {
+                            params.set(key, value)
                         }
-                    } else {
+                    }
+                }
+                if (params.toString() !== '') {
+                    url = path + '?' + params.toString()
+                } else {
+                    url = path
+                }
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Partial': true,
+                        Accept: 'text/html',
+                    },
+                })
+                if (!response.ok) {
+                    throw response
+                }
+                const data = await response.text()
+                this.applyContent(data)
+                let pageLoadEvent = new CustomEvent('pageload', { detail: data })
+                window.dispatchEvent(pageLoadEvent)
+            } catch (response) {
+                const data = await response.text()
+                if (data) {
+                    try {
+                        let exception = JSON.parse(data)
                         window.UIkit.notify({
-                            message: window.Rozier.messages.forbiddenPage,
+                            message: exception.message,
                             status: 'danger',
                             timeout: 3000,
                             pos: 'top-center',
                         })
+                    } catch (e) {
+                        // No valid JsonResponse, need to refresh page
+                        window.location.href = location.href
                     }
-
-                    this.canvasLoader.hide()
-                })
-        }, 100)
+                } else {
+                    window.UIkit.notify({
+                        message: window.Rozier.messages.forbiddenPage,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
+                }
+            }
+            this.canvasLoader.hide()
+        })
     }
 
     refreshCodemirrorEditor() {
@@ -264,10 +275,10 @@ export default class Lazyload {
 
         $tempData = $container.find('.new-content-global')
 
-        $old.fadeOut(100, () => {
+        $old.eq(0).fadeOut(100, () => {
             $old.remove()
             this.generalBind()
-            $tempData.fadeIn(200, () => {
+            $tempData.eq(0).fadeIn(200, () => {
                 $tempData.removeClass('new-content-global')
                 let pageShowEndEvent = new CustomEvent('pageshowend')
                 window.dispatchEvent(pageShowEndEvent)
@@ -300,11 +311,9 @@ export default class Lazyload {
             this.nodeTreeContextActions,
             this.tagAutocomplete,
             this.folderAutocomplete,
-            this.nodeTypeFieldsPosition,
             this.attributeValuesPosition,
             this.customFormFieldsPosition,
             this.settingsSaveButtons,
-            this.nodeTypeFieldEdit,
             this.nodeEditSource,
             this.tagEdit,
             this.nodeTree,
@@ -334,12 +343,10 @@ export default class Lazyload {
 
         this.tagAutocomplete = new TagAutocomplete()
         this.folderAutocomplete = new FolderAutocomplete()
-        this.nodeTypeFieldsPosition = new NodeTypeFieldsPosition()
         this.attributeValuesPosition = new AttributeValuePosition()
         this.customFormFieldsPosition = new CustomFormFieldsPosition()
         this.nodeTreeContextActions = new NodeTreeContextActions()
         this.settingsSaveButtons = new SettingsSaveButtons()
-        this.nodeTypeFieldEdit = new NodeTypeFieldEdit()
         this.nodeEditSource = new NodeEditSource()
         this.tagEdit = new TagEdit()
         this.nodeTree = new NodeTree()
@@ -364,13 +371,7 @@ export default class Lazyload {
 
         // Switch checkboxes
         this.initBootstrapSwitches()
-
         window.Rozier.getMessages()
-
-        if (typeof window.Rozier.importRoutes !== 'undefined' && window.Rozier.importRoutes !== null) {
-            window.Rozier.import = new Import(window.Rozier.importRoutes)
-            window.Rozier.importRoutes = null
-        }
     }
 
     generalUnbind(objects) {

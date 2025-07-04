@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Widgets;
 
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
@@ -16,27 +15,17 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 final class TagTreeWidget extends AbstractWidget
 {
-    protected ?Tag $parentTag = null;
-    /**
-     * @var array<Tag>|Paginator<Tag>|null
-     */
-    protected $tags = null;
-    protected bool $canReorder = true;
-    protected bool $forceTranslation = false;
-    private ?TranslationInterface $translation;
+    private ?iterable $tags = null;
+    private bool $canReorder = true;
 
     public function __construct(
         RequestStack $requestStack,
         ManagerRegistry $managerRegistry,
-        Tag $parent = null,
-        ?TranslationInterface $translation = null,
-        bool $forceTranslation = false
+        private readonly ?Tag $parentTag = null,
+        private readonly ?TranslationInterface $translation = null,
+        private readonly bool $forceTranslation = false,
     ) {
         parent::__construct($requestStack, $managerRegistry);
-
-        $this->parentTag = $parent;
-        $this->forceTranslation = $forceTranslation;
-        $this->translation = $translation;
     }
 
     /**
@@ -48,9 +37,9 @@ final class TagTreeWidget extends AbstractWidget
             'position' => 'ASC',
         ];
         if (
-            null !== $this->parentTag &&
-            $this->parentTag->getChildrenOrder() !== 'order' &&
-            $this->parentTag->getChildrenOrder() !== 'position'
+            null !== $this->parentTag
+            && 'order' !== $this->parentTag->getChildrenOrder()
+            && 'position' !== $this->parentTag->getChildrenOrder()
         ) {
             $ordering = [
                 $this->parentTag->getChildrenOrder() => $this->parentTag->getChildrenOrderDirection(),
@@ -67,19 +56,17 @@ final class TagTreeWidget extends AbstractWidget
     }
 
     /**
-     * @param Tag|null $parent
-     *
      * @return iterable<Tag>|null
      */
     public function getChildrenTags(?Tag $parent): ?iterable
     {
-        if ($parent !== null) {
+        if (null !== $parent) {
             $ordering = [
                 'position' => 'ASC',
             ];
             if (
-                $parent->getChildrenOrder() !== 'order' &&
-                $parent->getChildrenOrder() !== 'position'
+                'order' !== $parent->getChildrenOrder()
+                && 'position' !== $parent->getChildrenOrder()
             ) {
                 $ordering = [
                     $parent->getChildrenOrder() => $parent->getChildrenOrderDirection(),
@@ -100,28 +87,24 @@ final class TagTreeWidget extends AbstractWidget
 
         return null;
     }
-    /**
-     * @return Tag|null
-     */
+
     public function getRootTag(): ?Tag
     {
         return $this->parentTag;
     }
 
     /**
-     * @return array<Tag>|Paginator<Tag>|null
+     * @return iterable<Tag>
      */
-    public function getTags(): ?iterable
+    public function getTags(): iterable
     {
-        if ($this->tags === null) {
+        if (null === $this->tags) {
             $this->getTagTreeAssignationForParent();
         }
+
         return $this->tags;
     }
 
-    /**
-     * @return TagRepository
-     */
     protected function getTagRepository(): TagRepository
     {
         return $this->getManagerRegistry()->getRepository(Tag::class);
@@ -129,17 +112,12 @@ final class TagTreeWidget extends AbstractWidget
 
     /**
      * Gets the value of canReorder.
-     *
-     * @return bool
      */
     public function getCanReorder(): bool
     {
         return $this->canReorder;
     }
 
-    /**
-     * @return TranslationInterface
-     */
     public function getTranslation(): TranslationInterface
     {
         return $this->translation ?? parent::getTranslation();
