@@ -9,8 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf node_modules && rm -rf static",
     "start": "npm run dev",
-    "prettier": "prettier --config .prettierrc.js -w --check Resources/app/**/*.js Resources/app/**/*.vue Resources/app/**/*.less",
-    "lint": "eslint && prettier --config .prettierrc.js -w --check Resources/app/**/*.js Resources/app/**/*.vue Resources/app/**/*.less"
+    "lint": "eslint"
   },
   "dependencies": {
     "codemirror": "^5.25.0",
@@ -40,6 +39,7 @@
     "@typescript-eslint/parser": "^8.35.1",
     "@vitejs/plugin-vue2": "^2.3.3",
     "autoprefixer": "^9.0.0",
+    "cropperjs": "^2.0.1",
     "eslint": "^8",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
