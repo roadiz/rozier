@@ -1,11 +1,22 @@
+import $ from 'jquery'
 import { Expo, TweenLite } from 'gsap'
+import DocumentsBulk from './components/bulk-edits/DocumentsBulk'
+import NodesBulk from './components/bulk-edits/NodesBulk'
+import TagsBulk from './components/bulk-edits/TagsBulk'
 import DocumentUploader from './components/documents/DocumentUploader'
+import NodeTypeFieldsPosition from './components/node-type-fields/NodeTypeFieldsPosition'
 import AttributeValuePosition from './components/attribute-values/AttributeValuePosition'
 import CustomFormFieldsPosition from './components/custom-form-fields/CustomFormFieldsPosition'
+import NodeTreeContextActions from './components/trees/NodeTreeContextActions'
+import NodeEditSource from './components/node/NodeEditSource'
 import InputLengthWatcher from './widgets/InputLengthWatcher'
 import ChildrenNodesField from './widgets/ChildrenNodesField'
 import StackNodeTree from './widgets/StackNodeTree'
+import SaveButtons from './widgets/SaveButtons'
+import TagAutocomplete from './widgets/TagAutocomplete'
+import FolderAutocomplete from './widgets/FolderAutocomplete'
 import SettingsSaveButtons from './widgets/SettingsSaveButtons'
+import NodeTree from './widgets/NodeTree'
 import NodeStatuses from './widgets/NodeStatuses'
 import YamlEditor from './widgets/YamlEditor'
 import MarkdownEditor from './widgets/MarkdownEditor'
@@ -13,25 +24,38 @@ import JsonEditor from './widgets/JsonEditor'
 import CssEditor from './widgets/CssEditor'
 import LeafletGeotagField from './widgets/LeafletGeotagField'
 import MultiLeafletGeotagField from './widgets/MultiLeafletGeotagField'
-import { fadeIn, fadeOut } from './utils/animation'
+import TagEdit from './components/tag/TagEdit'
+import MainTreeTabs from './components/tabs/MainTreeTabs'
 
 export default class Lazyload {
     constructor() {
-        this.linksSelector = null
+        this.$linksSelector = null
+        this.$canvasLoaderContainer = null
+        this.documentsList = null
+        this.mainColor = null
         this.currentRequest = null
+        this.nodeTreeContextActions = null
+        this.documentsBulk = null
+        this.tagsBulk = null
         this.inputLengthWatcher = null
         this.documentUploader = null
         this.childrenNodesFields = null
         this.geotagField = null
         this.multiGeotagField = null
+        this.saveButtons = null
         this.tagAutocomplete = null
+        this.folderAutocomplete = null
+        this.nodeTypeFieldsPosition = null
         this.attributeValuesPosition = null
         this.customFormFieldsPosition = null
         this.settingsSaveButtons = null
+        this.nodeEditSource = null
+        this.tagEdit = null
         this.markdownEditors = []
         this.jsonEditors = []
         this.cssEditors = []
         this.yamlEditors = []
+        this.$window = $(window)
 
         // Bind methods
         this.onPopState = this.onPopState.bind(this)
@@ -42,14 +66,31 @@ export default class Lazyload {
         window.removeEventListener('popstate', this.onPopState)
         window.addEventListener('popstate', this.onPopState)
 
+        this.$canvasLoaderContainer = $('#canvasloader-container')
+        this.mainColor = window.Rozier.mainColor ? window.Rozier.mainColor : '#00deab'
+        this.initLoader()
+
         /*
          * Start history with first hard loaded page
          */
         window.history.pushState({}, document.title, window.location.href)
     }
 
+    /**
+     * Init loader
+     */
+    initLoader() {
+        this.canvasLoader = new window.CanvasLoader('canvasloader-container')
+        this.canvasLoader.setColor(this.mainColor)
+        this.canvasLoader.setShape('square')
+        this.canvasLoader.setDensity(90)
+        this.canvasLoader.setRange(0.8)
+        this.canvasLoader.setSpeed(4)
+        this.canvasLoader.setFPS(30)
+    }
+
     parseLinks() {
-        this.linksSelector = document.querySelectorAll('a:not([target=_blank]):not([download]):not([href="#"])')
+        this.$linksSelector = $("a:not('[target=_blank]')").not('.rz-no-ajax-link').not('[download]').not('[href="#"]')
     }
 
     /**
@@ -57,21 +98,20 @@ export default class Lazyload {
      * @param {Event} event
      */
     onClick(event) {
-        const link = event.currentTarget
-        const href = link.getAttribute('href')
+        let $link = $(event.currentTarget)
+        let href = $link.attr('href')
 
         if (
             typeof href !== 'undefined' &&
-            href !== null &&
-            !link.classList.contains('rz-no-ajax-link') &&
+            !$link.hasClass('rz-no-ajax-link') &&
             href !== '' &&
             href !== '#' &&
-            (href.indexOf(window.RozierConfig.baseUrl) >= 0 || href.charAt(0) === '/' || href.charAt(0) === '?')
+            (href.indexOf(window.Rozier.baseUrl) >= 0 || href.charAt(0) === '/' || href.charAt(0) === '?')
         ) {
             event.preventDefault()
 
             window.requestAnimationFrame(() => {
-                window.history.pushState({}, null, href)
+                window.history.pushState({}, null, $link.attr('href'))
                 this.onPopState(null)
             })
 
@@ -95,7 +135,7 @@ export default class Lazyload {
         }
 
         if (state !== null) {
-            window.dispatchEvent(new CustomEvent('requestLoaderShow'))
+            this.canvasLoader.show()
             this.loadContent(state, window.location)
         }
     }
@@ -149,6 +189,7 @@ export default class Lazyload {
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
+                        'X-Partial': true,
                         Accept: 'text/html',
                     },
                 })
@@ -164,30 +205,26 @@ export default class Lazyload {
                 if (data) {
                     try {
                         let exception = JSON.parse(data)
-                        window.dispatchEvent(
-                            new CustomEvent('pushToast', {
-                                detail: {
-                                    message: exception.message,
-                                    status: 'danger',
-                                },
-                            })
-                        )
+                        window.UIkit.notify({
+                            message: exception.message,
+                            status: 'danger',
+                            timeout: 3000,
+                            pos: 'top-center',
+                        })
                     } catch (e) {
                         // No valid JsonResponse, need to refresh page
                         window.location.href = location.href
                     }
                 } else {
-                    window.dispatchEvent(
-                        new CustomEvent('pushToast', {
-                            detail: {
-                                message: window.RozierConfig.messages.forbiddenPage,
-                                status: 'danger',
-                            },
-                        })
-                    )
+                    window.UIkit.notify({
+                        message: window.Rozier.messages.forbiddenPage,
+                        status: 'danger',
+                        timeout: 3000,
+                        pos: 'top-center',
+                    })
                 }
             }
-            window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+            this.canvasLoader.hide()
         })
     }
 
@@ -206,81 +243,55 @@ export default class Lazyload {
         }
     }
 
-    destroyCodemirrorEditor() {
-        for (let editor of this.markdownEditors) {
-            editor.destroy()
-        }
-        for (let editor of this.yamlEditors) {
-            editor.destroy()
-        }
-        for (let editor of this.cssEditors) {
-            editor.destroy()
-        }
-        for (let editor of this.jsonEditors) {
-            editor.destroy()
-        }
-    }
-
     /**
      * Apply content to main content.
      *
      * @param {string} data
      * @return {void}
      */
-    async applyContent(data) {
-        let container = document.getElementById('main-content-scrollable')
-        let old = container.querySelector('.content-global')
+    applyContent(data) {
+        let $container = $('#main-content-scrollable')
+        let $old = $container.find('.content-global')
 
-        let tempData = document.createElement('div')
-        tempData.innerHTML = data
-
+        let $tempData = $(data)
         /*
          * If AJAX request data is an entire HTML page.
          */
-        /** @var {HTMLElement} ajaxRoot */
-        const ajaxRoot = tempData.querySelector('[data-ajax-root]')
-        if (ajaxRoot) {
-            tempData = document.createElement('div')
-            tempData.innerHTML = ajaxRoot.innerHTML
+        /** @var {jQuery} $ajaxRoot */
+        const $ajaxRoot = $tempData.find('[data-ajax-root]')
+        if ($ajaxRoot.length) {
+            $tempData = $($ajaxRoot.html())
         }
 
-        tempData.classList.add('new-content-global')
+        $tempData.addClass('new-content-global')
         // Removed previous ajax meta[title] tags
-        const metaTitleToRemove = container.querySelectorAll('meta[name="title"]')
-        metaTitleToRemove.forEach((meta) => {
-            meta.remove()
-        })
+        $container.find('meta[name="title"]').remove()
         // Append Ajax loaded data to DOM
-        container.append(tempData)
+        $container.append($tempData)
 
-        const metaTitle = container.querySelectorAll('meta[name="title"]')
-        if (metaTitle.length) {
-            document.title = metaTitle[0].getAttribute('content')
+        /** @var {jQuery} $metaTitle */
+        const $metaTitle = $container.find('meta[name="title"]')
+        if ($metaTitle.length) {
+            document.title = $metaTitle[0].getAttribute('content')
         }
 
-        tempData = container.querySelector('.new-content-global')
+        $tempData = $container.find('.new-content-global')
 
-        if (old && tempData) {
-            await fadeOut(old, 100)
-            old.remove()
+        $old.eq(0).fadeOut(100, () => {
+            $old.remove()
             this.generalBind()
-
-            await fadeIn(tempData, 200)
-            tempData.classList.remove('new-content-global')
-            const pageShowEndEvent = new CustomEvent('pageshowend')
-            window.dispatchEvent(pageShowEndEvent)
-        }
+            $tempData.eq(0).fadeIn(200, () => {
+                $tempData.removeClass('new-content-global')
+                let pageShowEndEvent = new CustomEvent('pageshowend')
+                window.dispatchEvent(pageShowEndEvent)
+            })
+        })
     }
 
     bindAjaxLink() {
         this.parseLinks()
-
-        this.linksSelector.forEach((link) => {
-            // Remove existing listener from this specific link before adding a new one
-            link.removeEventListener('click', this.onClick)
-            // Add the listener to this specific link
-            link.addEventListener('click', this.onClick)
-        })
+        this.$linksSelector.off('click', this.onClick)
+        this.$linksSelector.on('click', this.onClick)
     }
 
     /**
@@ -289,16 +300,26 @@ export default class Lazyload {
      */
     generalBind() {
         this.generalUnbind([
+            this.documentsBulk,
+            this.mainTreeTabs,
+            this.nodesBulk,
+            this.tagsBulk,
             this.inputLengthWatcher,
             this.documentUploader,
             this.childrenNodesFields,
             this.geotagField,
             this.multiGeotagField,
             this.stackNodeTrees,
+            this.nodeTreeContextActions,
             this.tagAutocomplete,
+            this.folderAutocomplete,
+            this.nodeTypeFieldsPosition,
             this.attributeValuesPosition,
             this.customFormFieldsPosition,
             this.settingsSaveButtons,
+            this.nodeEditSource,
+            this.tagEdit,
+            this.nodeTree,
         ])
         this.bindAjaxLink()
         this.markdownEditors = []
@@ -306,17 +327,33 @@ export default class Lazyload {
         this.cssEditors = []
         this.yamlEditors = []
 
+        this.documentsBulk = new DocumentsBulk()
+        this.mainTreeTabs = new MainTreeTabs()
+        this.nodesBulk = new NodesBulk()
+        this.tagsBulk = new TagsBulk()
         this.inputLengthWatcher = new InputLengthWatcher()
-        this.documentUploader = new DocumentUploader(window.RozierConfig.messages.dropzone)
+        this.documentUploader = new DocumentUploader(window.Rozier.messages.dropzone)
         this.childrenNodesFields = new ChildrenNodesField()
         this.geotagField = new LeafletGeotagField()
         this.multiGeotagField = new MultiLeafletGeotagField()
 
         this.stackNodeTrees = new StackNodeTree()
 
+        if (this.saveButtons) {
+            this.saveButtons.unbind()
+        }
+        this.saveButtons = new SaveButtons()
+
+        this.tagAutocomplete = new TagAutocomplete()
+        this.folderAutocomplete = new FolderAutocomplete()
+        this.nodeTypeFieldsPosition = new NodeTypeFieldsPosition()
         this.attributeValuesPosition = new AttributeValuePosition()
         this.customFormFieldsPosition = new CustomFormFieldsPosition()
+        this.nodeTreeContextActions = new NodeTreeContextActions()
         this.settingsSaveButtons = new SettingsSaveButtons()
+        this.nodeEditSource = new NodeEditSource()
+        this.tagEdit = new TagEdit()
+        this.nodeTree = new NodeTree()
 
         // Codemirror
         this.initMarkdownEditors()
@@ -324,10 +361,11 @@ export default class Lazyload {
         this.initCssEditors()
         this.initYamlEditors()
         this.initFilterBars()
+        this.initColorPickers()
         this.initCollectionsForms()
 
         // Animate actions menu
-        if (document.querySelectorAll('.actions-menu').length) {
+        if ($('.actions-menu').length) {
             TweenLite.to('.actions-menu', 0.5, { right: 0, delay: 0.4, ease: Expo.easeOut })
         }
 
@@ -335,11 +373,12 @@ export default class Lazyload {
         window.Rozier.bindMainTrees()
         window.Rozier.nodeStatuses = new NodeStatuses()
 
+        // Switch checkboxes
+        this.initBootstrapSwitches()
         window.Rozier.getMessages()
     }
 
     generalUnbind(objects) {
-        this.destroyCodemirrorEditor()
         for (let object of objects) {
             if (object) {
                 object.unbind()
@@ -347,37 +386,32 @@ export default class Lazyload {
         }
     }
 
-    initCollectionsForms(scope = null) {
+    initCollectionsForms($scope = null) {
         const _this = this
-        let types = null
-        if (scope !== null) {
-            types = scope.querySelectorAll('.rz-collection-form-type')
+        let $types = null
+        if ($scope !== null) {
+            $types = $scope.find('.rz-collection-form-type')
         } else {
-            types = document.querySelectorAll('.rz-collection-form-type')
+            $types = $('.rz-collection-form-type')
         }
-        if (types.length) {
-            // Jquery collection
-            $(types).collection({
+        if ($types.length) {
+            $types.collection({
                 up: '<a tabindex="-1" class="uk-button uk-button-small" href="#"><i tabindex="-1" class="uk-icon uk-icon-angle-up"></i></a>',
                 down: '<a tabindex="-1" class="uk-button uk-button-small" href="#"><i tabindex="-1" class="uk-icon uk-icon-angle-down"></i></a>',
                 add: '<a tabindex="-1" class="uk-button-primary uk-button uk-button-small" href="#"><i tabindex="-1" class="uk-icon uk-icon-plus"></i></a>',
                 remove: '<a tabindex="-1" class="uk-button-danger uk-button uk-button-small" href="#"><i tabindex="-1" class="uk-icon uk-icon-minus"></i></a>',
-                /**
-                 * @param collection
-                 * @param {jQuery} element
-                 * @return {boolean}
-                 */
                 after_add: (collection, element) => {
-                    const el = element[0]
-                    _this.initMarkdownEditors(el)
-                    _this.initJsonEditors(el)
-                    _this.initCssEditors(el)
-                    _this.initYamlEditors(el)
-                    _this.initCollectionsForms(el)
+                    _this.initMarkdownEditors(element)
+                    _this.initJsonEditors(element)
+                    _this.initCssEditors(element)
+                    _this.initYamlEditors(element)
+                    _this.initBootstrapSwitches(element)
+                    _this.initColorPickers(element)
+                    _this.initCollectionsForms(element)
 
-                    let vueComponents = el.querySelectorAll('[data-vuejs]')
+                    let $vueComponents = element.find('[data-vuejs]')
                     // Create each component
-                    vueComponents.forEach((el) => {
+                    $vueComponents.each((i, el) => {
                         window.Rozier.vueApp.mainContentComponents.push(window.Rozier.vueApp.buildComponent(el))
                     })
                     return true
@@ -386,96 +420,105 @@ export default class Lazyload {
         }
     }
 
-    /**
-     * @param {HTMLElement|undefined} scope
-     */
-    initMarkdownEditors(scope) {
+    initColorPickers($scope) {
+        let $colorPickerInput = $('.colorpicker-input')
+
+        if ($scope && $scope.length) {
+            $colorPickerInput = $scope.find('.colorpicker-input')
+        }
+
+        // Init colorpicker
+        if ($colorPickerInput.length) {
+            $colorPickerInput.minicolors()
+        }
+    }
+
+    initBootstrapSwitches($scope) {
+        let $checkboxes = $('.rz-boolean-checkbox')
+        if ($scope && $scope.length) {
+            $checkboxes = $scope.find('.rz-boolean-checkbox')
+        }
+
+        // Switch checkboxes
+        $checkboxes.bootstrapSwitch({
+            size: 'small',
+        })
+    }
+
+    initMarkdownEditors($scope) {
         // Init markdown-preview
-        let textareasMarkdown = []
-        if (scope) {
-            textareasMarkdown = scope.querySelectorAll('textarea[data-rz-markdowneditor]')
+        let $textareasMarkdown = []
+        if ($scope && $scope.length) {
+            $textareasMarkdown = $scope.find('textarea[data-rz-markdowneditor]')
         } else {
-            textareasMarkdown = document.querySelectorAll('textarea[data-rz-markdowneditor]')
+            $textareasMarkdown = $('textarea[data-rz-markdowneditor]')
         }
-        let editorCount = textareasMarkdown.length
+        let editorCount = $textareasMarkdown.length
 
         if (editorCount) {
             for (let i = 0; i < editorCount; i++) {
-                this.markdownEditors.push(new MarkdownEditor(textareasMarkdown[i], i))
+                this.markdownEditors.push(new MarkdownEditor($textareasMarkdown.eq(i), i))
             }
         }
     }
 
-    /**
-     * @param {HTMLElement|undefined} scope
-     */
-    initJsonEditors(scope) {
+    initJsonEditors($scope) {
         // Init json-preview
-        let textareasJson = []
-        if (scope) {
-            textareasJson = scope.querySelectorAll('textarea[data-rz-jsoneditor]')
+        let $textareasJson = []
+        if ($scope && $scope.length) {
+            $textareasJson = $scope.find('textarea[data-rz-jsoneditor]')
         } else {
-            textareasJson = document.querySelectorAll('textarea[data-rz-jsoneditor]')
+            $textareasJson = $('textarea[data-rz-jsoneditor]')
         }
-        let editorCount = textareasJson.length
+        let editorCount = $textareasJson.length
         if (editorCount) {
             for (let i = 0; i < editorCount; i++) {
-                this.jsonEditors.push(new JsonEditor(textareasJson[i], i))
+                this.jsonEditors.push(new JsonEditor($textareasJson.eq(i), i))
             }
         }
     }
 
-    /**
-     * @param {HTMLElement|undefined} scope
-     */
-    initCssEditors(scope) {
+    initCssEditors($scope) {
         // Init css-preview
-        let textareasCss = []
-        if (scope) {
-            textareasCss = scope.querySelectorAll('textarea[data-rz-csseditor]')
+        let $textareasCss = []
+        if ($scope && $scope.length) {
+            $textareasCss = $scope.find('textarea[data-rz-csseditor]')
         } else {
-            textareasCss = document.querySelectorAll('textarea[data-rz-csseditor]')
+            $textareasCss = $('textarea[data-rz-csseditor]')
         }
-        let editorCount = textareasCss.length
+        let editorCount = $textareasCss.length
 
         if (editorCount) {
             for (let i = 0; i < editorCount; i++) {
-                this.cssEditors.push(new CssEditor(textareasCss[i], i))
+                this.cssEditors.push(new CssEditor($textareasCss.eq(i), i))
             }
         }
     }
 
-    /**
-     * @param {HTMLElement|undefined} scope
-     */
-    initYamlEditors(scope) {
+    initYamlEditors($scope) {
         // Init yaml-preview
-        let textareasYaml = []
-        if (scope) {
-            textareasYaml = scope.querySelectorAll('textarea[data-rz-yamleditor]')
+        let $textareasYaml = []
+        if ($scope && $scope.length) {
+            $textareasYaml = $scope.find('textarea[data-rz-yamleditor]')
         } else {
-            textareasYaml = document.querySelectorAll('textarea[data-rz-yamleditor]')
+            $textareasYaml = $('textarea[data-rz-yamleditor]')
         }
-        let editorCount = textareasYaml.length
+        let editorCount = $textareasYaml.length
 
         if (editorCount) {
             for (let i = 0; i < editorCount; i++) {
-                this.yamlEditors.push(new YamlEditor(textareasYaml[i], i))
+                this.yamlEditors.push(new YamlEditor($textareasYaml.eq(i), i))
             }
         }
     }
 
     initFilterBars() {
-        const selectItemPerPage = document.querySelectorAll('select.item-per-page')
-        if (selectItemPerPage.length) {
-            const handleChange = (event) => {
-                const form = event.currentTarget.closest('form')
-                if (form) {
-                    form.requestSubmit()
-                }
-            }
-            selectItemPerPage.forEach((selectElement) => {
-                selectElement.addEventListener('change', handleChange)
+        const $selectItemPerPage = $('select.item-per-page')
+
+        if ($selectItemPerPage.length) {
+            $selectItemPerPage.off('change')
+            $selectItemPerPage.on('change', (event) => {
+                $(event.currentTarget).parents('form').submit()
             })
         }
     }
@@ -483,5 +526,10 @@ export default class Lazyload {
     /**
      * Resize
      */
-    resize() {}
+    resize() {
+        if (this.$canvasLoaderContainer.length) {
+            this.$canvasLoaderContainer[0].style.left =
+                window.Rozier.mainContentScrollableOffsetLeft + window.Rozier.mainContentScrollableWidth / 2 + 'px'
+        }
+    }
 }

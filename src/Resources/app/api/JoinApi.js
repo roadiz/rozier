@@ -1,3 +1,5 @@
+import request from 'axios'
+
 /**
  * Fetch Joins from an array of node id.
  *
@@ -7,42 +9,27 @@
  */
 export function getJoinsByIds({ ids = [], filters }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
-        filters: filters,
-        nodeTypeFieldName: filters.nodeTypeField,
-        nodeTypeName: filters.nodeTypeName,
-    }
-    if (filters && filters._locale) {
-        postData._locale = filters._locale
-    }
-    /*
-     * We need to send the ids as an object with keys as string
-     * when Varnish is enabled, the query string is sorted
-     */
-    for (let i = 0; i < ids.length; i++) {
-        postData['ids[' + i + ']'] = ids[i]
+        _token: window.RozierRoot.ajaxToken,
+        ids: ids,
+        nodeTypeFieldId: filters.nodeTypeField,
     }
 
-    return fetch(window.RozierConfig.routes.joinsAjaxByArray + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.joinsAjaxByArray,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.items) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.items) {
                 return {
-                    items: data.items,
+                    items: response.data.items,
                 }
             } else {
                 return null
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error.response.data.humanMessage)
         })
 }
 
@@ -58,47 +45,33 @@ export function getJoinsByIds({ ids = [], filters }) {
  */
 export function getJoins({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'toggleExplorer',
-        nodeTypeName: preFilters.nodeTypeName,
+        nodeTypeFieldId: preFilters ? preFilters.nodeTypeField : null,
         search: searchTerms,
         page: 1,
-    }
-    if (preFilters && preFilters._locale) {
-        postData._locale = preFilters._locale
-    }
-    if (filters && filters._locale) {
-        postData._locale = filters._locale
-    }
-
-    if (preFilters && preFilters.nodeTypeField) {
-        postData.nodeTypeFieldName = preFilters.nodeTypeField
     }
 
     if (moreData) {
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return fetch(window.RozierConfig.routes.joinsAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.joinsAjaxExplorer,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.entities) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.entities) {
                 return {
-                    items: data.entities,
-                    filters: data.filters,
+                    items: response.data.entities,
+                    filters: response.data.filters,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error)
         })
 }

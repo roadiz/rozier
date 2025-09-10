@@ -50,6 +50,56 @@
     }
 }
 
+.documents-widget-nav{
+    min-height:45px;
+    border-bottom:1px dashed @documents-widget-border;
+
+    @media (min-width: @screen-lg-min) {
+        min-height:55px;
+    }
+
+    .uk-navbar-brand {
+        .widgetNavBarBrand();
+    }
+
+    .uk-icon-rz-documents{
+        font-size:28px;
+    }
+
+    .documents-widget-quick-creation{
+        margin:0;
+    }
+
+    .uk-navbar-content {
+        padding: 11px 10px;
+        height: auto;
+    }
+
+    .uk-button{
+        background: @documents-widget-btn-bg;
+        margin-right:6px;
+        border: 1px solid @documents-widget-btn-border;
+        color: @documents-widget-btn-color;
+
+        &:last-child{
+            margin-right:0;
+        }
+
+        &.uk-active,
+        &:active,
+        &:hover {
+            border-color:darken(@documents-widget-btn-border, 15%);
+            background-color:darken(@documents-widget-btn-bg, 10%);
+            color: darken(@documents-widget-btn-color, 15%);
+        }
+
+        &.rz-coming-soon {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    }
+}
+
 .documents-widget-sortable-container {
     background: var(--contrasted-bg);
     position: relative;
@@ -73,10 +123,8 @@
 .documents-widget-sortable-list-item,
 .documents-widget-dragging {
     position: relative;
-    display: inline-block;
-    vertical-align: top;
-    width:80px;
-    height:80px;
+    display: inline-block; vertical-align: top;
+    width:80px; height:80px;
     margin-right:12px;
     margin-top: 8px;
     cursor: move;
@@ -110,26 +158,25 @@
         transition: ~"0.4s opacity ease, 0.4s top ease";
     }
 
-    .document-mime-type {
+    .document-mime-type{
         display: none;
     }
 
-    .document-links {
+    .document-links{
         position:absolute;
-        width: 80px;
-        height: 30px;
-        transform: translateY(100%);
-        bottom: 0;
+        width:80px;
+        height:30px;
+        bottom:-30px;
         overflow: hidden;
-        transition: 0.4s transform @easeOutExpo;
+        transition: 0.4s bottom @easeOutExpo;
         background: rgba(255,255,255,0.8);
-        display: flex;
 
         .document-link {
             display: inline-block;
             width:40px;
             height:30px;
             border-radius: 0;
+            opacity: 0.95;
 
             i {
                 margin:0;
@@ -146,7 +193,7 @@
         display: none;
     }
 
-    .document-platform-icon {
+    .document-platform-icon{
         width: 35px; height: 35px;
         background-color: #EEE;
         margin: -18px;
@@ -184,8 +231,9 @@
     }
 
     &:hover{
-        .document-links {
-            transform: translateY(0);
+
+        .document-links{
+            bottom:0px;
         }
         .document-platform-icon {
             opacity: 0;
