@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms\NodeSource;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Psr\Container\ContainerInterface;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractExplorerItem;
-use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderInterface;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerProviderLocator;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\ProviderDataTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -18,8 +17,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldType
 {
-    public function __construct(ManagerRegistry $managerRegistry, private readonly ContainerInterface $container)
-    {
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        private readonly ExplorerProviderLocator $explorerProviderLocator,
+    ) {
         parent::__construct($managerRegistry);
     }
 
@@ -40,6 +41,9 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
 
             return false;
         });
+
+        $resolver->setDefault('_locale', null);
+        $resolver->addAllowedTypes('_locale', ['string', 'null']);
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -49,21 +53,9 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
         $builder->addModelTransformer(
             new ProviderDataTransformer(
                 $options['nodeTypeField'],
-                $this->getProvider($configuration, $options)
+                $this->explorerProviderLocator->getProvider($configuration['classname'])
             )
         );
-    }
-
-    protected function getProvider(array $configuration, array $options): ExplorerProviderInterface
-    {
-        if ($this->container->has($configuration['classname'])) {
-            $provider = $this->container->get($configuration['classname']);
-        } else {
-            /** @var ExplorerProviderInterface $provider */
-            $provider = new $configuration['classname']();
-        }
-
-        return $provider;
     }
 
     /**
@@ -73,6 +65,8 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
     {
         parent::buildView($view, $form, $options);
 
+        $view->vars['_locale'] = $options['_locale'];
+
         $configuration = $this->getFieldConfiguration($options);
         if (isset($configuration['options'])) {
             $providerOptions = $configuration['options'];
@@ -80,7 +74,7 @@ final class NodeSourceProviderType extends AbstractConfigurableNodeSourceFieldTy
             $providerOptions = [];
         }
 
-        $provider = $this->getProvider($configuration, $options);
+        $provider = $this->explorerProviderLocator->getProvider($configuration['classname']);
 
         $displayableData = [];
         /** @var callable $callable */
