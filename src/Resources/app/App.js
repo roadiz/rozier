@@ -1,13 +1,11 @@
 import Vue from 'vue'
 import store from './store'
-import $ from 'jquery'
 
 // Services
 import KeyboardEventService from './services/KeyboardEventService'
 import LoginCheckService from './services/LoginCheckService'
 
 // Containers
-import NodeTypeFieldFormContainer from './containers/NodeTypeFieldFormContainer.vue'
 import NodesSearchContainer from './containers/NodesSearchContainer.vue'
 import DrawerContainer from './containers/DrawerContainer.vue'
 import ExplorerContainer from './containers/ExplorerContainer.vue'
@@ -33,7 +31,6 @@ export default class AppVue {
         this.documentExplorer = null
         this.mainContentComponents = []
         this.registeredContainers = {
-            NodeTypeFieldFormContainer,
             NodesSearchContainer,
             DrawerContainer,
             ExplorerContainer,
@@ -111,20 +108,21 @@ export default class AppVue {
         this.destroyMainContentComponents()
 
         // Looking for new vuejs component
-        const $vueComponents = $('#main-content').find('[data-vuejs]')
+        const vueComponents = document.querySelectorAll('#main-content [data-vuejs]')
 
         // Create each component
-        $vueComponents.each((i, el) => {
+        vueComponents.forEach((el) => {
             this.mainContentComponents.push(this.buildComponent(el))
         })
     }
 
     buildComponent(el) {
         return new Vue({
-            delimiters: ['${', '}'],
             el: el,
+            delimiters: ['${', '}'],
             store,
             components: this.vuejsElements,
+            ignoreElements: ['document-edit-dialog'],
         })
     }
 }
