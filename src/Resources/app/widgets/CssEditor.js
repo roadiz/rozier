@@ -1,16 +1,18 @@
+import $ from 'jquery'
+
 /**
  * Css Editor
  */
 export default class CssEditor {
     /**
-     * @param {HTMLTextAreaElement} textarea
+     * @param {jQuery} $textarea
      * @param index
      */
-    constructor(textarea, index) {
-        this.textarea = textarea
-        this.cont = this.textarea.closest('.uk-form-row')
-        this.settingRow = this.textarea.closest('.setting-row')
-        this.tabSize = 4
+    constructor($textarea, index) {
+        this.$textarea = $textarea
+        this.textarea = this.$textarea[0]
+        this.$cont = this.$textarea.parents('.uk-form-row').eq(0)
+        this.$settingRow = this.$textarea.parents('.setting-row').eq(0)
 
         let options = {
             lineNumbers: true,
@@ -27,7 +29,7 @@ export default class CssEditor {
             },
         }
 
-        if (this.settingRow) {
+        if (this.$settingRow.length) {
             options.lineNumbers = false
         }
 
@@ -43,16 +45,13 @@ export default class CssEditor {
     }
 
     init() {
-        if (this.textarea) {
+        if (this.$textarea.length) {
             this.editor.on('change', this.textareaChange)
             this.editor.on('focus', this.textareaFocus)
             this.editor.on('blur', this.textareaBlur)
 
             window.requestAnimationFrame(() => {
-                const switchers = document.querySelectorAll('[data-uk-switcher]')
-                switchers.forEach((switcher) => {
-                    switcher.addEventListener('show.uk.switcher', this.forceEditorUpdate)
-                })
+                $('[data-uk-switcher]').on('show.uk.switcher', this.forceEditorUpdate)
                 this.forceEditorUpdate()
             })
         }
@@ -73,16 +72,15 @@ export default class CssEditor {
      * Textarea focus
      */
     textareaFocus() {
-        this.cont.classList.add('form-col-focus')
+        this.$cont.addClass('form-col-focus')
     }
 
     /**
      * Textarea focus out
      */
     textareaBlur() {
-        this.cont.classList.remove('form-col-focus')
+        this.$cont.removeClass('form-col-focus')
     }
-    destroy() {}
 
     /**
      * Window resize callback
