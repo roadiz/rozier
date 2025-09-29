@@ -1,23 +1,50 @@
+/*
+ * Copyright (c) 2017. Ambroise Maupate and Julien Blanchet
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished
+ * to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the ROADIZ shall not
+ * be used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Ambroise Maupate and Julien Blanchet.
+ *
+ * @file DrawersStoreModule.js
+ * @author Adrien Scholaert <adrien@rezo-zero.com>
+ */
+
 import { remove } from 'lodash'
 import {
     DRAWERS_ADD_INSTANCE,
-    DRAWERS_ADD_ITEM,
-    DRAWERS_DISABLE_DROPZONE,
-    DRAWERS_EDIT_INSTANCE,
-    DRAWERS_ENABLE_DROPZONE,
-    DRAWERS_INIT_DATA_REQUEST,
-    DRAWERS_INIT_DATA_REQUEST_EMPTY,
-    DRAWERS_INIT_DATA_REQUEST_FAILED,
-    DRAWERS_INIT_DATA_REQUEST_SUCCESS,
     DRAWERS_REMOVE_INSTANCE,
+    DRAWERS_ADD_ITEM,
     DRAWERS_REMOVE_ITEM,
+    DRAWERS_EDIT_INSTANCE,
     DRAWERS_UPDATE_LIST,
-    EXPLORER_CLOSE,
+    DRAWERS_ENABLE_DROPZONE,
+    DRAWERS_DISABLE_DROPZONE,
+    DRAWERS_INIT_DATA_REQUEST,
+    DRAWERS_INIT_DATA_REQUEST_SUCCESS,
+    DRAWERS_INIT_DATA_REQUEST_FAILED,
+    DRAWERS_INIT_DATA_REQUEST_EMPTY,
     KEYBOARD_EVENT_ESCAPE,
+    EXPLORER_CLOSE,
 } from '../../types/mutationTypes'
 import * as DrawerApi from '../../api/DrawerApi'
 import EntityAwareFactory from '../../factories/EntityAwareFactory'
-import { NODE_SOURCE_DOCUMENT_ENTITY } from '../../types/entityTypes'
 
 /**
  * State
@@ -38,7 +65,7 @@ const state = {
  * Getters
  */
 const getters = {
-    drawersGetById: (state) => (id) => {
+    drawersGetById: (state, getters) => (id) => {
         return state.list.find((drawer) => drawer.id === id)
     },
     getDrawerFilters: (state) => {
@@ -56,36 +83,16 @@ const actions = {
     drawersRemoveInstance({ commit }, drawerToRemove) {
         commit(DRAWERS_REMOVE_INSTANCE, { drawerToRemove })
     },
-    drawersInitData({ commit }, { drawer, entity, ids, filters, maxLength, minLength, entityName }) {
+    drawersInitData({ commit }, { drawer, entity, ids, filters, maxLength, minLength }) {
         commit(DRAWERS_INIT_DATA_REQUEST, { drawer, entity, ids, filters })
 
         // If no initial ids provided no need to use the api
         if (!ids || ids.length === 0 || !entity) {
             commit(DRAWERS_INIT_DATA_REQUEST_EMPTY, { drawer, maxLength, minLength })
         } else {
-            const fetchIds = ids.map((item) => {
-                if (item && item.document) {
-                    return item.document
-                }
-                return item
-            })
             // If ids provided, fetch data and fill the Drawer
-            DrawerApi.getItemsByIds(entity, fetchIds, filters)
+            DrawerApi.getItemsByIds(entity, ids, filters)
                 .then((result) => {
-                    if (result && entityName === NODE_SOURCE_DOCUMENT_ENTITY) {
-                        const resultDto = {
-                            ...result,
-                            items: ids.map(function (item, index) {
-                                return {
-                                    document: result.items[index],
-                                    hotspot: item.hotspot,
-                                    imageCropAlignment: item.imageCropAlignment,
-                                }
-                            }),
-                        }
-                        commit(DRAWERS_INIT_DATA_REQUEST_SUCCESS, { drawer, result: resultDto, maxLength, minLength })
-                        return
-                    }
                     commit(DRAWERS_INIT_DATA_REQUEST_SUCCESS, { drawer, result, maxLength, minLength })
                 })
                 .catch((error) => {
