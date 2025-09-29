@@ -1,0 +1,50 @@
+{% extends '@RoadizRozier/layout.html.twig' %}
+
+{% block title %}{% trans %}attributes{% endtrans %} | {{ parent() }}{% endblock %}
+
+{% block content %}
+<section class="content-global content-nav-and-filters bulk-layout">
+    <header class="content-header header-item header-item-list">
+        <h1 class="content-title item-list-title">{% trans %}attributes{% endtrans %}</h1>
+        {% include '@RoadizRozier/widgets/countFiltersBar.html.twig' %}
+        <div class="content-header-action-menu">
+            <a class="uk-button" href="{{ path('attributesAddPage') }}">
+                <i class="uk-icon-rz-plus"></i> {% trans %}add.a.attribute{% endtrans %}
+            </a>
+            <a class="uk-button" href="{{ path('attributeGroupsHomePage') }}">
+                <i class="uk-icon-gears"></i> {% trans %}attribute_groups{% endtrans %}
+            </a>
+            <a class="uk-button rz-no-ajax-link" href="{{ path('attributesExportPage') }}">
+                <i class="uk-icon-rz-download"></i> {% trans %}export.all{% endtrans %}
+            </a>
+            <a class="uk-button rz-no-ajax-link" href="{{ path('attributesImportPage') }}">
+                <i class="uk-icon-rz-upload"></i> {% trans %}import{% endtrans %}
+            </a>
+        </div>
+    </header>
+
+    {% include '@RoadizRozier/widgets/filtersBar.html.twig' %}
+    {% include '@RoadizRozier/admin/bulk_actions.html.twig' %}
+
+    <article class="content content-no-action-menu">
+        <div class="content-table-cont">
+            <table class="items content-table uk-table attributes">
+                <thead>
+                    <tr>
+                        {% include '@RoadizRozier/attributes/attribute_row_header.html.twig' %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        {% include '@RoadizRozier/attributes/attribute_row.html.twig' %}
+                    </tr>
+                    {% else %}
+                        <tr><td colspan="4">{% trans %}no_attributes{% endtrans %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}
