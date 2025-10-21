@@ -1,5 +1,3 @@
-import request from 'axios'
-
 /**
  * Fetch all Tags.
  *
@@ -12,7 +10,7 @@ import request from 'axios'
  */
 export function getTags({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'getTags',
         search: searchTerms,
         page: 1,
@@ -33,27 +31,27 @@ export function getTags({ searchTerms, preFilters, filters, filterExplorerSelect
         postData.tagId = filterExplorerSelection.id
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.tagsAjaxExplorerList + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.tagsAjaxExplorerList,
-        params: postData,
+        headers: {
+            Accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.tags) {
+        .then(async (response) => {
+            const data = await response.json()
+            if (typeof data !== 'undefined' && data.tags) {
                 return {
-                    items: response.data.tags,
-                    filters: response.data.filters,
+                    items: data.tags,
+                    filters: data.filters,
                 }
             }
 
             throw new Error('No tags found')
         })
-        .catch((error) => {
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.humanMessage)
-            } else {
-                throw new Error(error.message)
-            }
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
 
@@ -65,7 +63,7 @@ export function getTags({ searchTerms, preFilters, filters, filterExplorerSelect
  */
 export function getTagsByIds({ ids = [], filters = {} }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'documentsByIds',
     }
 
@@ -81,22 +79,26 @@ export function getTagsByIds({ ids = [], filters = {} }) {
         postData['ids[' + i + ']'] = ids[i]
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.tagsAjaxByArray + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.tagsAjaxByArray,
-        params: postData,
+        headers: {
+            Accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.tags) {
+        .then(async (response) => {
+            const data = await response.json()
+            if (typeof data !== 'undefined' && data.tags) {
                 return {
-                    items: response.data.tags,
+                    items: data.tags,
                 }
             } else {
                 return {}
             }
         })
-        .catch((error) => {
-            throw new Error(error.response.data.humanMessage)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
 
@@ -108,28 +110,29 @@ export function getTagsByIds({ ids = [], filters = {} }) {
  */
 export function createTag({ tagName }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'documentsByIds',
         tagName: tagName,
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.tagsAjaxCreate + '?' + new URLSearchParams(postData), {
         method: 'POST',
-        url: window.RozierRoot.routes.tagsAjaxCreate,
-        params: postData,
+        headers: {
+            Accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.tag) {
-                return response.data.tag
+        .then(async (response) => {
+            const data = await response.json()
+
+            if (typeof data !== 'undefined' && data.tag) {
+                return data.tag
             }
 
             throw new Error('Tag creation error')
         })
-        .catch((error) => {
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.humanMessage)
-            } else {
-                throw new Error(error.message)
-            }
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
