@@ -1,6 +1,5 @@
+import $ from 'jquery'
 import Dropzone from 'dropzone'
-import { fadeOut } from '../../utils/animation'
-import { sleep } from '../../utils/sleep'
 
 /**
  * Document uploader
@@ -16,14 +15,14 @@ export default class DocumentUploader {
             onSuccess: (data) => {},
             onError: (data) => {},
             onAdded: (file) => {},
-            url: window.RozierConfig.routes.documentsUploadPage,
+            url: window.Rozier.routes.documentsUploadPage,
             selector: '#upload-dropzone-document',
             paramName: 'form[attachment]',
             uploadMultiple: false,
             maxFilesize: 64,
             timeout: 0, // no timeout
             autoDiscover: false,
-            headers: { _token: window.RozierConfig.ajaxToken },
+            headers: { _token: window.Rozier.ajaxToken },
             dictDefaultMessage: 'Drop files here to upload or click to open your explorer',
             dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
             dictFallbackText: 'Please use the fallback form below to upload your files like in the olden days.',
@@ -38,11 +37,10 @@ export default class DocumentUploader {
         }
 
         if (typeof options !== 'undefined') {
-            Object.assign(this.options, options)
+            $.extend(this.options, options)
         }
 
-        const optionsSelector = document.querySelector(this.options.selector)
-        if (optionsSelector && !this.attached) {
+        if ($(this.options.selector).length && !this.attached) {
             this.init()
         }
     }
@@ -51,12 +49,11 @@ export default class DocumentUploader {
         const _self = this
 
         // Get folder id
-        let form = document.getElementById('upload-dropzone-document')
-        let dataFolderId = form.getAttribute('data-folder-id')
+        let form = $('#upload-dropzone-document')
 
-        if (dataFolderId && dataFolderId > 0) {
-            this.options.headers.folderId = parseInt(dataFolderId)
-            this.options.url = window.RozierConfig.routes.documentsUploadPage + '/' + parseInt(dataFolderId)
+        if (form.attr('data-folder-id') && form.attr('data-folder-id') > 0) {
+            this.options.headers.folderId = parseInt(form.attr('data-folder-id'))
+            this.options.url = window.Rozier.routes.documentsUploadPage + '/' + parseInt(form.attr('data-folder-id'))
         }
 
         Dropzone.options.uploadDropzoneDocument = {
@@ -83,20 +80,22 @@ export default class DocumentUploader {
                     _self.options.onAdded(file)
                 })
 
-                this.on('success', async function (file, data) {
+                this.on('success', function (file, data) {
                     /*
                      * Remove previews after 3 sec not
                      * to bloat the dropzone when dragging more than
                      * 20 files…
                      */
                     if (file.previewElement) {
-                        let preview = file.previewElement
-                        await sleep(3000)
-                        await fadeOut(preview, 500)
-                        preview.remove()
+                        let $preview = $(file.previewElement)
+                        window.setTimeout(() => {
+                            $preview.fadeOut(500, () => {
+                                $preview.remove()
+                            })
+                        }, 3000)
                     }
                     _self.options.onSuccess(data)
-                    await window.Rozier.getMessages()
+                    window.Rozier.getMessages()
                 })
 
                 this.on('canceled', function (file, data) {
@@ -123,15 +122,10 @@ export default class DocumentUploader {
             /* eslint-disable no-new */
             new Dropzone(this.options.selector, Dropzone.options.uploadDropzoneDocument)
 
-            let dropzone = document.querySelector(this.options.selector)
-            dropzone.insertAdjacentHTML(
-                'beforeend',
-                `<div class="dz-default dz-message"><span>${this.options.dictDefaultMessage}</span></div>`
-            )
-            let dzMessage = dropzone.querySelector('.dz-message')
-            dzMessage.insertAdjacentHTML(
-                'beforeend',
-                `
+            let $dropzone = $(this.options.selector)
+            $dropzone.append(`<div class="dz-default dz-message"><span>${this.options.dictDefaultMessage}</span></div>`)
+            let $dzMessage = $dropzone.find('.dz-message')
+            $dzMessage.append(`
             <div class="circles-icons">
                 <div class="circle circle-1"></div>
                 <div class="circle circle-2"></div>
@@ -139,8 +133,7 @@ export default class DocumentUploader {
                 <div class="circle circle-4"></div>
                 <div class="circle circle-5"></div>
                 <i class="uk-icon-rz-file"></i>
-            </div>`
-            )
+            </div>`)
             this.attached = true
         } catch (e) {
             console.error(e)
