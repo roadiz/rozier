@@ -71,7 +71,7 @@
             <a class="uk-icon-button uk-icon-rz-user"
                href="{{ path('usersEditPage', {'id':app.user.id }) }}"><span class="user-action-label">{% trans %}edit.account{% endtrans %}</span></a>
             {% endif %}
-            {% for action in rozier.userActions %}
+            {% for action in rozier_user_actions %}
                 <a class="uk-icon-button {{ action.icon }}"
                    title="{{ action.label|trans }}"
                    data-uk-tooltip="{animation:true}"
@@ -90,15 +90,15 @@
             {% endif %}
         </nav>
 
-        {% if app.debug %}
+        {% if head.devMode %}
             <p class="dev-mode"><i class="uk-icon-rz-devmode"></i> {% trans %}dev_mode.activated{% endtrans %}</p>
         {% endif %}
-        {% if bags.settings.get('maintenance_mode') %}
+        {% if head.maintenanceMode %}
             <p class="dev-mode"><i class="uk-icon-exclamation-triangle"></i> {% trans %}maintenance_mode.activated{% endtrans %}</p>
         {% endif %}
     </div>
     <footer id="cms-version">
-        {% if help_external_url is defined and help_external_url %}
+        {% if help_external_url is defined %}
             <a target="_blank" rel="noopener"
                title="{% trans %}help{% endtrans %}"
                data-uk-tooltip="{animation:true}"

@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\EntityHandler\NodeHandler;
-use RZ\Roadiz\CoreBundle\Enum\NodeStatus;
-use RZ\Roadiz\CoreBundle\Repository\NotPublishedNodeRepository;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Chroot\NodeChrootResolver;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -26,43 +21,43 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Workflow\Registry;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
 use Themes\Rozier\Widgets\TreeWidgetFactory;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class NodesTreesController extends AbstractController
+class NodesTreesController extends RozierApp
 {
     public function __construct(
-        private readonly ManagerRegistry $managerRegistry,
         private readonly NodeChrootResolver $nodeChrootResolver,
         private readonly TreeWidgetFactory $treeWidgetFactory,
         private readonly FormFactoryInterface $formFactory,
         private readonly HandlerFactoryInterface $handlerFactory,
-        private readonly Registry $workflowRegistry,
-        private readonly LogTrail $logTrail,
-        private readonly TranslatorInterface $translator,
-        private readonly NotPublishedNodeRepository $notPublishedNodeRepository,
+        private readonly Registry $workflowRegistry
     ) {
     }
 
+    /**
+     * @param Request $request
+     * @param int|null $nodeId
+     * @param int|null $translationId
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function treeAction(Request $request, ?int $nodeId = null, ?int $translationId = null): Response
     {
-        $assignation = [];
-
         if (null !== $nodeId) {
             /** @var Node|null $node */
-            $node = $this->notPublishedNodeRepository->find($nodeId);
+            $node = $this->em()->find(Node::class, $nodeId);
             if (null === $node) {
                 throw new ResourceNotFoundException();
             }
-            $this->managerRegistry->getManager()->refresh($node);
+            $this->em()->refresh($node);
         } elseif (null !== $user = $this->getUser()) {
             $node = $this->nodeChrootResolver->getChroot($user);
         } else {
@@ -77,49 +72,45 @@ final class NodesTreesController extends AbstractController
 
         if (null !== $translationId) {
             /** @var Translation $translation */
-            $translation = $this->managerRegistry
+            $translation = $this->em()
                                 ->getRepository(Translation::class)
                                 ->findOneBy(['id' => $translationId]);
         } else {
             /** @var Translation $translation */
-            $translation = $this->managerRegistry->getRepository(Translation::class)->findDefault();
+            $translation = $this->em()->getRepository(Translation::class)->findDefault();
         }
 
         $widget = $this->treeWidgetFactory->createNodeTree($node, $translation);
 
         if (
-            $request->get('tagId')
-            && $request->get('tagId') > 0
+            $request->get('tagId') &&
+            $request->get('tagId') > 0
         ) {
-            $filterTag = $this->managerRegistry
-                ->getRepository(Tag::class)
-                ->find((int) $request->get('tagId'));
-            $assignation['filterTag'] = $filterTag;
+            $filterTag = $this->em()->find(Tag::class, (int) $request->get('tagId'));
+            $this->assignation['filterTag'] = $filterTag;
             $widget->setTag($filterTag);
         }
 
         $widget->setStackTree(true);
-        $widget->getNodes(); // pre-fetch nodes for enable filters
+        $widget->getNodes(); //pre-fetch nodes for enable filters
 
         if (null !== $node) {
-            $assignation['node'] = $node;
+            $this->assignation['node'] = $node;
 
             if ($node->isHidingChildren()) {
-                $assignation['availableTags'] = $this->managerRegistry
-                    ->getRepository(Tag::class)
-                    ->findAllLinkedToNodeChildren(
-                        $node,
-                        $translation
-                    );
+                $this->assignation['availableTags'] = $this->em()->getRepository(Tag::class)->findAllLinkedToNodeChildren(
+                    $node,
+                    $translation
+                );
             }
-            $assignation['source'] = $node->getNodeSourcesByTranslation($translation)->first();
-            $availableTranslations = $this->managerRegistry
+            $this->assignation['source'] = $node->getNodeSourcesByTranslation($translation)->first();
+            $availableTranslations = $this->em()
                 ->getRepository(Translation::class)
                 ->findAvailableTranslationsForNode($node);
-            $assignation['available_translations'] = $availableTranslations;
+            $this->assignation['available_translations'] = $availableTranslations;
         }
-        $assignation['translation'] = $translation;
-        $assignation['specificNodeTree'] = $widget;
+        $this->assignation['translation'] = $translation;
+        $this->assignation['specificNodeTree'] = $widget;
 
         /*
          * Handle bulk tag form
@@ -136,24 +127,24 @@ final class NodesTreesController extends AbstractController
             } elseif ($submitUntag instanceof ClickableInterface && $submitUntag->isClicked()) {
                 $msg = $this->untagNodes($data);
             } else {
-                $msg = $this->translator->trans('wrong.request');
+                $msg = $this->getTranslator()->trans('wrong.request');
             }
 
-            $this->logTrail->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg);
 
             return $this->redirectToRoute(
                 'nodesTreePage',
                 ['nodeId' => $nodeId, 'translationId' => $translationId]
             );
         }
-        $assignation['tagNodesForm'] = $tagNodesForm->createView();
+        $this->assignation['tagNodesForm'] = $tagNodesForm->createView();
 
         /*
          * Handle bulk status
          */
         if ($this->isGranted('ROLE_ACCESS_NODES_STATUS')) {
             $statusBulkNodes = $this->buildBulkStatusForm($request->getRequestUri());
-            $assignation['statusNodesForm'] = $statusBulkNodes->createView();
+            $this->assignation['statusNodesForm'] = $statusBulkNodes->createView();
         }
 
         if ($this->isGranted('ROLE_ACCESS_NODES_DELETE')) {
@@ -161,13 +152,15 @@ final class NodesTreesController extends AbstractController
              * Handle bulk delete form
              */
             $deleteNodesForm = $this->buildBulkDeleteForm($request->getRequestUri());
-            $assignation['deleteNodesForm'] = $deleteNodesForm->createView();
+            $this->assignation['deleteNodesForm'] = $deleteNodesForm->createView();
         }
 
-        return $this->render('@RoadizRozier/nodes/tree.html.twig', $assignation);
+        return $this->render('@RoadizRozier/nodes/tree.html.twig', $this->assignation);
     }
 
     /**
+     * @param Request $request
+     * @return Response
      * @throws RuntimeError
      */
     public function bulkDeleteAction(Request $request): Response
@@ -176,19 +169,19 @@ final class NodesTreesController extends AbstractController
             throw new ResourceNotFoundException();
         }
 
-        $assignation = [];
-
         $nodesIds = trim($request->get('deleteForm')['nodesIds']);
         $nodesIds = explode(',', $nodesIds);
         array_filter($nodesIds);
 
         /** @var Node[] $nodes */
-        $nodes = $this->notPublishedNodeRepository
+        $nodes = $this->em()
+                      ->getRepository(Node::class)
+                      ->setDisplayingNotPublishedNodes(true)
                       ->findBy([
                           'id' => $nodesIds,
                       ]);
 
-        if (0 === count($nodes)) {
+        if (count($nodes) === 0) {
             throw new ResourceNotFoundException();
         }
 
@@ -203,7 +196,7 @@ final class NodesTreesController extends AbstractController
         $form->handleRequest($request);
         if ($request->get('confirm') && $form->isSubmitted() && $form->isValid()) {
             $msg = $this->bulkDeleteNodes($form->getData());
-            $this->logTrail->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg);
 
             if (!empty($form->getData()['referer'])) {
                 return $this->redirect($form->getData()['referer']);
@@ -212,17 +205,20 @@ final class NodesTreesController extends AbstractController
             }
         }
 
-        $assignation['nodes'] = $nodes;
-        $assignation['form'] = $form->createView();
+        $this->assignation['nodes'] = $nodes;
+        $this->assignation['form'] = $form->createView();
 
         if (!empty($request->get('deleteForm')['referer'])) {
-            $assignation['referer'] = $request->get('deleteForm')['referer'];
+            $this->assignation['referer'] = $request->get('deleteForm')['referer'];
         }
 
-        return $this->render('@RoadizRozier/nodes/bulkDelete.html.twig', $assignation);
+        return $this->render('@RoadizRozier/nodes/bulkDelete.html.twig', $this->assignation);
     }
 
     /**
+     * @param Request $request
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function bulkStatusAction(Request $request): Response
@@ -231,18 +227,19 @@ final class NodesTreesController extends AbstractController
             throw new ResourceNotFoundException();
         }
 
-        $assignation = [];
-
         $nodesIds = trim($request->get('statusForm')['nodesIds']);
         $nodesIds = explode(',', $nodesIds);
         array_filter($nodesIds);
 
         /** @var Node[] $nodes */
-        $nodes = $this->notPublishedNodeRepository->findBy([
-            'id' => $nodesIds,
-        ]);
+        $nodes = $this->em()
+                      ->getRepository(Node::class)
+                      ->setDisplayingNotPublishedNodes(true)
+                      ->findBy([
+                          'id' => $nodesIds,
+                      ]);
 
-        if (0 === count($nodes)) {
+        if (count($nodes) === 0) {
             throw new ResourceNotFoundException();
         }
 
@@ -260,7 +257,7 @@ final class NodesTreesController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $msg = $this->bulkStatusNodes($form->getData());
-            $this->logTrail->publishConfirmMessage($request, $msg);
+            $this->publishConfirmMessage($request, $msg);
 
             if (!empty($form->getData()['referer'])) {
                 return $this->redirect($form->getData()['referer']);
@@ -269,19 +266,25 @@ final class NodesTreesController extends AbstractController
             }
         }
 
-        $assignation['nodes'] = $nodes;
-        $assignation['form'] = $form->createView();
+        $this->assignation['nodes'] = $nodes;
+        $this->assignation['form'] = $form->createView();
 
         if (!empty($request->get('statusForm')['referer'])) {
-            $assignation['referer'] = $request->get('statusForm')['referer'];
+            $this->assignation['referer'] = $request->get('statusForm')['referer'];
         }
 
-        return $this->render('@RoadizRozier/nodes/bulkStatus.html.twig', $assignation);
+        return $this->render('@RoadizRozier/nodes/bulkStatus.html.twig', $this->assignation);
     }
 
+    /**
+     * @param null|string  $referer
+     * @param array $nodesIds
+     *
+     * @return FormInterface
+     */
     private function buildBulkDeleteForm(
         ?string $referer = null,
-        array $nodesIds = [],
+        array $nodesIds = []
     ): FormInterface {
         /** @var FormBuilder $builder */
         $builder = $this->formFactory
@@ -304,14 +307,21 @@ final class NodesTreesController extends AbstractController
         return $builder->getForm();
     }
 
-    private function bulkDeleteNodes(array $data): string
+    /**
+     * @param array $data
+     *
+     * @return string
+     */
+    private function bulkDeleteNodes(array $data)
     {
         if (!empty($data['nodesIds'])) {
             $nodesIds = trim($data['nodesIds']);
             $nodesIds = explode(',', $nodesIds);
             array_filter($nodesIds);
 
-            $nodes = $this->notPublishedNodeRepository
+            $nodes = $this->em()
+                          ->getRepository(Node::class)
+                          ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
                               'id' => $nodesIds,
                           ]);
@@ -323,12 +333,12 @@ final class NodesTreesController extends AbstractController
                 $handler->softRemoveWithChildren();
             }
 
-            $this->managerRegistry->getManager()->flush();
+            $this->em()->flush();
 
-            return $this->translator->trans('nodes.bulk.deleted');
+            return $this->getTranslator()->trans('nodes.bulk.deleted');
         }
 
-        return $this->translator->trans('wrong.request');
+        return $this->getTranslator()->trans('wrong.request');
     }
 
     private function bulkStatusNodes(array $data): string
@@ -339,7 +349,9 @@ final class NodesTreesController extends AbstractController
             array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->notPublishedNodeRepository
+            $nodes = $this->em()
+                ->getRepository(Node::class)
+                ->setDisplayingNotPublishedNodes(true)
                 ->findBy([
                     'id' => $nodesIds,
                 ])
@@ -351,12 +363,11 @@ final class NodesTreesController extends AbstractController
                     $workflow->apply($node, $data['status']);
                 }
             }
-            $this->managerRegistry->getManager()->flush();
-
-            return $this->translator->trans('nodes.bulk.status.changed');
+            $this->em()->flush();
+            return $this->getTranslator()->trans('nodes.bulk.status.changed');
         }
 
-        return $this->translator->trans('wrong.request');
+        return $this->getTranslator()->trans('wrong.request');
     }
 
     private function buildBulkTagForm(): FormInterface
@@ -387,7 +398,7 @@ final class NodesTreesController extends AbstractController
                 'attr' => [
                     'class' => 'uk-button uk-button-primary',
                     'title' => 'link.tags',
-                    'data-uk-tooltip' => '{animation:true}',
+                    'data-uk-tooltip' => "{animation:true}",
                 ],
             ])
             ->add('submitUntag', SubmitType::class, [
@@ -395,7 +406,7 @@ final class NodesTreesController extends AbstractController
                 'attr' => [
                     'class' => 'uk-button',
                     'title' => 'unlink.tags',
-                    'data-uk-tooltip' => '{animation:true}',
+                    'data-uk-tooltip' => "{animation:true}",
                 ],
             ])
         ;
@@ -403,19 +414,25 @@ final class NodesTreesController extends AbstractController
         return $builder->getForm();
     }
 
-    private function tagNodes(array $data): string
+    /**
+     * @param  array $data
+     * @return string
+     */
+    private function tagNodes(array $data)
     {
-        $msg = $this->translator->trans('nodes.bulk.not_tagged');
+        $msg = $this->getTranslator()->trans('nodes.bulk.not_tagged');
 
         if (
-            !empty($data['tagsPaths'])
-            && !empty($data['nodesIds'])
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
         ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->notPublishedNodeRepository
+            $nodes = $this->em()
+                          ->getRepository(Node::class)
+                          ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
                               'id' => $nodesIds,
                           ]);
@@ -424,7 +441,7 @@ final class NodesTreesController extends AbstractController
             $paths = array_filter($paths);
 
             foreach ($paths as $path) {
-                $tag = $this->managerRegistry
+                $tag = $this->em()
                             ->getRepository(Tag::class)
                             ->findOrCreateByPath($path);
 
@@ -432,27 +449,33 @@ final class NodesTreesController extends AbstractController
                     $node->addTag($tag);
                 }
             }
-            $msg = $this->translator->trans('nodes.bulk.tagged');
+            $msg = $this->getTranslator()->trans('nodes.bulk.tagged');
         }
 
-        $this->managerRegistry->getManager()->flush();
+        $this->em()->flush();
 
         return $msg;
     }
 
-    private function untagNodes(array $data): string
+    /**
+     * @param  array $data
+     * @return string
+     */
+    private function untagNodes(array $data)
     {
-        $msg = $this->translator->trans('nodes.bulk.not_untagged');
+        $msg = $this->getTranslator()->trans('nodes.bulk.not_untagged');
 
         if (
-            !empty($data['tagsPaths'])
-            && !empty($data['nodesIds'])
+            !empty($data['tagsPaths']) &&
+            !empty($data['nodesIds'])
         ) {
             $nodesIds = explode(',', $data['nodesIds']);
             $nodesIds = array_filter($nodesIds);
 
             /** @var Node[] $nodes */
-            $nodes = $this->notPublishedNodeRepository
+            $nodes = $this->em()
+                          ->getRepository(Node::class)
+                          ->setDisplayingNotPublishedNodes(true)
                           ->findBy([
                               'id' => $nodesIds,
                           ]);
@@ -461,7 +484,7 @@ final class NodesTreesController extends AbstractController
             $paths = array_filter($paths);
 
             foreach ($paths as $path) {
-                $tag = $this->managerRegistry
+                $tag = $this->em()
                             ->getRepository(Tag::class)
                             ->findByPath($path);
 
@@ -471,18 +494,25 @@ final class NodesTreesController extends AbstractController
                     }
                 }
             }
-            $msg = $this->translator->trans('nodes.bulk.untagged');
+            $msg = $this->getTranslator()->trans('nodes.bulk.untagged');
         }
 
-        $this->managerRegistry->getManager()->flush();
+        $this->em()->flush();
 
         return $msg;
     }
 
+    /**
+     * @param null|string $referer
+     * @param array $nodesIds
+     * @param string $status
+     *
+     * @return FormInterface
+     */
     private function buildBulkStatusForm(
         ?string $referer = null,
         array $nodesIds = [],
-        string $status = 'reject',
+        string $status = 'reject'
     ): FormInterface {
         /** @var FormBuilder $builder */
         $builder = $this->formFactory
@@ -499,10 +529,10 @@ final class NodesTreesController extends AbstractController
                 'label' => false,
                 'data' => $status,
                 'choices' => [
-                    NodeStatus::DRAFT->getLabel() => 'reject',
-                    NodeStatus::PENDING->getLabel() => 'review',
-                    NodeStatus::PUBLISHED->getLabel() => 'publish',
-                    NodeStatus::ARCHIVED->getLabel() => 'archive',
+                    Node::getStatusLabel(Node::DRAFT) => 'reject',
+                    Node::getStatusLabel(Node::PENDING) => 'review',
+                    Node::getStatusLabel(Node::PUBLISHED) => 'publish',
+                    Node::getStatusLabel(Node::ARCHIVED) => 'archive',
                 ],
                 'constraints' => [
                     new NotNull(),
