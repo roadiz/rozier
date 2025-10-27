@@ -1,36 +1,47 @@
-import request from 'axios'
-
 /**
  * Fetch Documents from an array of document id.
  *
  * @param {Array} ids
+ * @param {Object} filters
  * @returns {Promise<R>|Promise.<T>}
  */
-export function getDocumentsByIds({ ids = [] }) {
+export function getDocumentsByIds({ ids = [], filters = {} }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'documentsByIds',
-        ids: ids,
+    }
+    if (filters && filters._locale) {
+        postData._locale = filters._locale
+    }
+    /*
+     * We need to send the ids as an object with keys as string
+     * when Varnish is enabled, the query string is sorted
+     */
+    for (let i = 0; i < ids.length; i++) {
+        postData['ids[' + i + ']'] = ids[i]
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.documentsAjaxByArray + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.documentsAjaxByArray,
-        params: postData,
+        headers: {
+            accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.documents) {
+        .then(async (response) => {
+            const data = await response.json()
+            if (typeof data !== 'undefined' && data.documents) {
                 return {
-                    items: response.data.documents,
-                    trans: response.data.trans,
+                    items: data.documents,
+                    trans: data.trans,
                 }
             } else {
                 return null
             }
         })
-        .catch((error) => {
-            // Log request error or display a message
-            throw new Error(error.response.data.humanMessage)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
 
@@ -38,17 +49,25 @@ export function getDocumentsByIds({ ids = [] }) {
  * Fetch Documents from search terms.
  *
  * @param {String} searchTerms
+ * @param {Object} preFilters
  * @param {Object} filters
  * @param {Object} filterExplorerSelection
  * @param {Boolean} moreData
  * @return Promise
  */
-export function getDocuments({ searchTerms, filters, filterExplorerSelection, moreData }) {
+export function getDocuments({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'toggleExplorer',
         search: searchTerms,
         page: 1,
+    }
+
+    if (preFilters && preFilters._locale) {
+        postData._locale = preFilters._locale
+    }
+    if (filters && filters._locale) {
+        postData._locale = filters._locale
     }
 
     if (filterExplorerSelection && filterExplorerSelection.id) {
@@ -59,30 +78,35 @@ export function getDocuments({ searchTerms, filters, filterExplorerSelection, mo
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.documentsAjaxExplorer + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.documentsAjaxExplorer,
-        params: postData,
+        headers: {
+            accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.documents) {
+        .then(async (response) => {
+            const data = await response.json()
+            if (typeof data !== 'undefined' && data.documents) {
                 return {
-                    items: response.data.documents,
-                    filters: response.data.filters,
-                    trans: response.data.trans,
+                    items: data.documents,
+                    filters: data.filters,
+                    trans: data.trans,
                 }
             } else {
                 return {}
             }
         })
-        .catch((error) => {
-            // Log request error or display a message
-            throw new Error(error)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
 
 export function setDocument(formData) {
-    return request.post(window.location.href, formData, {
+    return fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
         headers: { Accept: 'application/json' },
     })
 }

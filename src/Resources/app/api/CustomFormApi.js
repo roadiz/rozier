@@ -1,5 +1,3 @@
-import request from 'axios'
-
 /**
  * Fetch Joins from an array of node id.
  *
@@ -9,28 +7,31 @@ import request from 'axios'
  */
 export function getCustomFormsByIds({ ids = [], filters }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
-        ids: ids,
+        _token: window.RozierConfig.ajaxToken,
+    }
+    /*
+     * We need to send the ids as an object with keys as string
+     * when Varnish is enabled, the query string is sorted
+     */
+    for (let i = 0; i < ids.length; i++) {
+        postData['ids[' + i + ']'] = ids[i]
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.customFormsAjaxByArray + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.customFormsAjaxByArray,
-        params: postData,
+        headers: {
+            accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.forms) {
-                return {
-                    items: response.data.forms,
-                }
-            } else {
-                return null
+        .then(async (response) => {
+            return {
+                items: (await response.json()).forms,
             }
         })
-        .catch((error) => {
-            // TODO
-            // Log request error or display a message
-            throw new Error(error.response.data.humanMessage)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
 
@@ -44,7 +45,7 @@ export function getCustomFormsByIds({ ids = [], filters }) {
  */
 export function getCustomForms({ searchTerms, filters, moreData }) {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'toggleExplorer',
         search: searchTerms,
         page: 1,
@@ -54,24 +55,26 @@ export function getCustomForms({ searchTerms, filters, moreData }) {
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.customFormsAjaxExplorer + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.customFormsAjaxExplorer,
-        params: postData,
+        headers: {
+            accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.customForms) {
+        .then(async (response) => {
+            const data = await response.json()
+            if (typeof data !== 'undefined' && data.customForms) {
                 return {
-                    items: response.data.customForms,
-                    filters: response.data.filters,
+                    items: data.customForms,
+                    filters: data.filters,
                 }
             } else {
                 return {}
             }
         })
-        .catch((error) => {
-            // TODO
-            // Log request error or display a message
-            throw new Error(error)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }

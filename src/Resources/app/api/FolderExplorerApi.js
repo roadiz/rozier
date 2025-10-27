@@ -1,5 +1,3 @@
-import request from 'axios'
-
 /**
  * Fetch documents Folders.
  *
@@ -7,27 +5,30 @@ import request from 'axios'
  */
 export function getFolders() {
     const postData = {
-        _token: window.RozierRoot.ajaxToken,
+        _token: window.RozierConfig.ajaxToken,
         _action: 'foldersExplorer',
     }
 
-    return request({
+    return fetch(window.RozierConfig.routes.foldersAjaxExplorer + '?' + new URLSearchParams(postData), {
         method: 'GET',
-        url: window.RozierRoot.routes.foldersAjaxExplorer,
-        params: postData,
+        headers: {
+            Accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
-        .then((response) => {
-            if (typeof response.data !== 'undefined' && response.data.folders) {
+        .then(async (response) => {
+            const data = await response.json()
+
+            if (typeof data !== 'undefined' && data.folders) {
                 return {
-                    items: response.data.folders,
+                    items: data.folders,
                 }
             } else {
                 return {}
             }
         })
-        .catch((error) => {
-            // TODO
-            // Log request error or display a message
-            throw new Error(error)
+        .catch(async (error) => {
+            throw new Error((await error.response.json()).humanMessage)
         })
 }
