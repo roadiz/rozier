@@ -1,3 +1,5 @@
+import request from 'axios'
+
 /**
  * Fetch tags.
  *
@@ -5,30 +7,26 @@
  */
 export function getTags() {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'tagsExplorer',
     }
 
-    return fetch(window.RozierConfig.routes.tagsAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.tagsAjaxExplorer,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.tags) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.tags) {
                 return {
-                    items: data.tags,
+                    items: response.data.tags,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error)
         })
 }
 
@@ -39,31 +37,26 @@ export function getTags() {
  */
 export function getParentTags() {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'tagsExplorer',
         onlyParents: true,
     }
 
-    return fetch(window.RozierConfig.routes.tagsAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.tagsAjaxExplorer,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-
-            if (typeof data !== 'undefined' && data.tags) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.tags) {
                 return {
-                    items: data.tags,
+                    items: response.data.tags,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error)
         })
 }

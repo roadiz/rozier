@@ -33,8 +33,8 @@ const actions = {
     documentPreviewClose({ commit }) {
         commit(DOCUMENT_PREVIEW_CLOSE)
     },
-    documentPreviewOpen({ commit }, { document }) {
-        commit(DOCUMENT_PREVIEW_OPEN, { document })
+    documentPreviewOpen({ commit }) {
+        commit(DOCUMENT_PREVIEW_OPEN)
     },
 }
 
@@ -43,19 +43,17 @@ const actions = {
  */
 const mutations = {
     [DOCUMENT_PREVIEW_INIT](state, { document }) {
-        if (!document) return
-
         state.document = document
     },
     [DOCUMENT_PREVIEW_DESTROY](state) {
-        state.isVisible = false
-        state.document = null
+        if (!state.isVisible) {
+            state.document = null
+        }
     },
     [KEYBOARD_EVENT_SPACE](state) {
-        if (state.document && !state.isVisible) {
-            // Display document preview
+        if (state.document !== null && !state.isVisible) {
             state.isVisible = true
-        } else {
+        } else if (state.isVisible) {
             state.isVisible = false
             state.document = null
         }
@@ -64,10 +62,7 @@ const mutations = {
         state.isVisible = false
         state.document = null
     },
-    [DOCUMENT_PREVIEW_OPEN](state, { document }) {
-        if (!document) return
-
-        state.document = document
+    [DOCUMENT_PREVIEW_OPEN](state) {
         state.isVisible = true
     },
     [DOCUMENT_PREVIEW_CLOSE](state) {
