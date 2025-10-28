@@ -1,5 +1,4 @@
-import $ from 'jquery'
-
+// HERE WE NEED JQUERY BECAUSE UI-KIT V2 REQUIRE JQUERY
 /**
  * Custom form fields position
  */
@@ -37,38 +36,44 @@ export default class CustomFormFieldsPosition {
         }
 
         const postData = {
-            _token: window.Rozier.ajaxToken,
+            _token: window.RozierConfig.ajaxToken,
             _action: 'updatePosition',
             customFormFieldId: customFormFieldId,
             beforeFieldId: beforeFieldId,
             afterFieldId: afterFieldId,
         }
         const response = await fetch(
-            window.Rozier.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
+            window.RozierConfig.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
             {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
+                    // Required to prevent using this route as referer when login again
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams(postData),
             }
         )
         if (!response.ok) {
             const data = await response.json()
-            window.UIkit.notify({
-                message: data.title,
-                status: 'danger',
-                timeout: 3000,
-                pos: 'top-center',
-            })
+            window.dispatchEvent(
+                new CustomEvent('pushToast', {
+                    detail: {
+                        message: data.title,
+                        status: 'danger',
+                    },
+                })
+            )
         } else {
             const data = await response.json()
-            window.UIkit.notify({
-                message: data.responseText,
-                status: data.status,
-                timeout: 3000,
-                pos: 'top-center',
-            })
+            window.dispatchEvent(
+                new CustomEvent('pushToast', {
+                    detail: {
+                        message: data.responseText,
+                        status: data.status,
+                    },
+                })
+            )
         }
     }
 }
