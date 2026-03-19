@@ -1,15 +1,14 @@
 {% if is_granted('ROLE_ACCESS_NODETYPES') %}
-    <a href="{{ path('nodeTypeFieldsListPage', {'nodeTypeId': node.nodeType.id}) }}"
+    <a href="{{ path('nodeTypeFieldsListPage', {'nodeTypeName': node.nodeTypeName}) }}"
        class="node-edit-node-type-circle"
-       title="{{ node.nodeType.displayName }}"
+       title="{{ getNodeType(node).displayName }}"
        data-uk-tooltip="{animation:true}">
         <i class="uk-icon-rz-infos"></i>
     </a>
 {% else %}
     <span class="node-edit-node-type-circle"
-       title="{{ node.nodeType.displayName }}"
-       data-uk-tooltip="{animation:true}">
+          title="{{ getNodeType(node).displayName }}"
+          data-uk-tooltip="{animation:true}">
         <i class="uk-icon-rz-infos"></i>
     </span>
 {% endif %}
-

@@ -5,26 +5,27 @@ declare(strict_types=1);
 namespace Themes\Rozier\Forms;
 
 use RZ\Roadiz\CoreBundle\Entity\CustomFormField;
+use RZ\Roadiz\CoreBundle\Enum\FieldType;
 use RZ\Roadiz\CoreBundle\Form\DataListTextType;
 use RZ\Roadiz\CoreBundle\Form\MarkdownType;
 use RZ\Roadiz\CoreBundle\Repository\CustomFormFieldRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CustomFormFieldType extends AbstractType
+final class CustomFormFieldType extends AbstractType
 {
     public function __construct(
-        private readonly CustomFormFieldRepository $customFormFieldRepository
+        private readonly CustomFormFieldRepository $customFormFieldRepository,
     ) {
     }
 
     /**
-     * @param CustomFormField $field
      * @return string[]
      */
     protected function getAllGroupsNames(CustomFormField $field): array
@@ -35,9 +36,9 @@ class CustomFormFieldType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('label', TextType::class, [
-                'label' => 'label',
-                'empty_data' => '',
-            ])
+            'label' => 'label',
+            'empty_data' => '',
+        ])
             ->add('description', MarkdownType::class, [
                 'label' => 'description',
                 'required' => false,
@@ -47,10 +48,12 @@ class CustomFormFieldType extends AbstractType
                 'required' => false,
                 'help' => 'label_for_field_with_empty_data',
             ])
-            ->add('type', ChoiceType::class, [
+            ->add('type', EnumType::class, [
                 'label' => 'type',
                 'required' => true,
-                'choices' => array_flip(CustomFormField::$typeToHuman),
+                'class' => FieldType::class,
+                'choice_label' => fn (FieldType $fieldType) => $fieldType->toHuman(),
+                'choice_filter' => fn (FieldType $fieldType) => \in_array($fieldType, CustomFormField::$availableTypes),
             ])
             ->add('required', CheckboxType::class, [
                 'label' => 'required',
@@ -115,7 +118,7 @@ class CustomFormFieldType extends AbstractType
                 ],
                 'placeholder' => 'autocomplete.no_autocomplete',
                 'choice_label' => function ($choice, $key, $value) {
-                    return 'autocomplete.' . $value;
+                    return 'autocomplete.'.$value;
                 },
                 'required' => false,
             ]);
