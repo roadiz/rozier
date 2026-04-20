@@ -1,14 +1,15 @@
-import { fadeIn, fadeOut } from '../utils/animation'
+import $ from 'jquery'
+import NodesBulk from '../components/bulk-edits/NodesBulk'
+import NodeTreeContextActions from '../components/trees/NodeTreeContextActions'
 
 export default class StackNodeTree {
     constructor() {
-        this.page = document.querySelector('.stack-tree')
-        if (this.page) {
-            this.quickAddNodeButtons = this.page.querySelectorAll('.stack-tree-quick-creation a')
-            this.nodeTree = this.page.querySelector('.root-tree')
-        }
+        this.$page = $('.stack-tree').eq(0)
+        this.$quickAddNodeButtons = this.$page.find('.stack-tree-quick-creation a')
+        this.$nodeTree = this.$page.find('.root-tree').eq(0)
 
         this.onQuickAddClick = this.onQuickAddClick.bind(this)
+
         this.init()
     }
 
@@ -16,76 +17,88 @@ export default class StackNodeTree {
      * @return {Number}
      */
     getCurrentPage() {
-        this.nodeTree = this.page.querySelector('.root-tree')
-        const currentPage = parseInt(this.nodeTree.getAttribute('data-page'))
-        return isNaN(currentPage) ? 1 : currentPage
+        this.$nodeTree = this.$page.find('.root-tree').eq(0)
+        let currentPage = parseInt(this.$nodeTree.attr('data-page'))
+        if (isNaN(currentPage)) {
+            return 1
+        }
+
+        return currentPage
     }
 
     /**
      * @return {Number|null}
      */
     getTranslationId() {
-        this.nodeTree = this.page.querySelector('.root-tree')
-        const translationId = parseInt(this.nodeTree.getAttribute('data-translation-id'))
-        return isNaN(translationId) ? null : translationId
+        this.$nodeTree = this.$page.find('.root-tree').eq(0)
+        let currentTranslationId = parseInt(this.$nodeTree.attr('data-translation-id'))
+        if (isNaN(currentTranslationId)) {
+            return null
+        }
+
+        return currentTranslationId
     }
 
     init() {
-        if (this.page) {
-            const langs = this.page.querySelector('.nodetree-langs')
-            if (langs) langs.remove()
+        this.$page.find('.nodetree-langs').remove()
 
-            this.quickAddNodeButtons.forEach((btn) => {
-                btn.addEventListener('click', this.onQuickAddClick)
-            })
+        if (this.$quickAddNodeButtons.length) {
+            this.$quickAddNodeButtons.on('click', this.onQuickAddClick)
         }
     }
 
     unbind() {
-        if (this.page) {
-            this.quickAddNodeButtons.forEach((btn) => {
-                btn.removeEventListener('click', this.onQuickAddClick)
-            })
+        if (this.$quickAddNodeButtons.length) {
+            this.$quickAddNodeButtons.off('click', this.onQuickAddClick)
         }
     }
 
-    async quickAddNode(nodeTypeName, parentNodeId, tagId = null) {
-        try {
-            const response = await fetch(window.RozierConfig.routes.nodesQuickAddAjax, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: new URLSearchParams({
-                    _token: window.RozierConfig.ajaxToken,
-                    _action: 'quickAddNode',
-                    nodeTypeName,
-                    parentNodeId,
-                    translationId: this.getTranslationId(),
-                    tagId,
-                    pushTop: 1,
-                }),
-            })
-            if (!response.ok) throw await response.json()
-            return await response.json()
-        } catch (err) {
-            throw err
-        }
+    async quickAddNode(nodeTypeName, parentNodeId, tagId = undefined) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const response = await fetch(window.Rozier.routes.nodesQuickAddAjax, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    body: new URLSearchParams({
+                        _token: window.Rozier.ajaxToken,
+                        _action: 'quickAddNode',
+                        nodeTypeName: nodeTypeName,
+                        parentNodeId: parentNodeId,
+                        translationId: this.getTranslationId(),
+                        tagId: tagId || null,
+                        pushTop: 1,
+                    }),
+                })
+                if (!response.ok) {
+                    reject(await response.json())
+                } else {
+                    resolve(await response.json())
+                }
+            } catch (err) {
+                reject()
+            }
+        })
     }
 
+    /**
+     * @param {Event} event
+     * @returns {boolean}
+     */
     async onQuickAddClick(event) {
         event.preventDefault()
-        const link = event.currentTarget
-        const nodeTypeName = link.getAttribute('data-children-node-type')
-        const parentNodeId = parseInt(link.getAttribute('data-children-parent-node'))
-        let tagId = null
+        let $link = $(event.currentTarget)
+        let nodeTypeName = $link.attr('data-children-node-type')
+        let parentNodeId = parseInt($link.attr('data-children-parent-node'))
+        let tagId = undefined
 
-        if (!nodeTypeName || parentNodeId <= 0) return false
+        if (nodeTypeName === '' || parentNodeId <= 0) {
+            return false
+        }
 
-        if (link.hasAttribute('data-filter-tag')) {
-            tagId = parseInt(link.getAttribute('data-filter-tag'))
+        if ($link.attr('data-filter-tag')) {
+            tagId = parseInt($link.attr('data-filter-tag'))
         }
 
         try {
@@ -93,88 +106,103 @@ export default class StackNodeTree {
             await Promise.all([window.Rozier.refreshMainNodeTree(), this.refreshNodeTree(parentNodeId, tagId, 1)])
             await window.Rozier.getMessages()
         } catch (data) {
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.error_message,
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.error_message,
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 
     treeAvailable() {
-        return !!(this.page && this.page.querySelector('.nodetree-widget'))
+        let $nodeTree = this.$page.find('.nodetree-widget')
+        return !!$nodeTree.length
     }
 
     async fetchNodeTree(rootNodeId, page = undefined, tagId = undefined) {
-        try {
-            const params = new URLSearchParams({
-                _token: window.RozierConfig.ajaxToken,
-                _action: 'requestNodeTree',
-                stackTree: true,
-                parentNodeId: rootNodeId,
-                page: page || this.getCurrentPage(),
-                tagId,
-                translationId: this.getTranslationId(),
-            })
-            const url = `${window.RozierConfig.routes.nodesTreeAjax}?${params.toString()}`
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            if (!response.ok) throw await response.json()
-            return await response.json()
-        } catch (err) {
-            throw err
-        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                const params = new URLSearchParams({
+                    _token: window.Rozier.ajaxToken,
+                    _action: 'requestNodeTree',
+                    stackTree: true,
+                    parentNodeId: rootNodeId,
+                    page: page || this.getCurrentPage(),
+                    tagId: tagId,
+                    translationId: this.getTranslationId(),
+                })
+                const url = `${window.Rozier.routes.nodesTreeAjax}?${params.toString()}`
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                })
+                if (!response.ok) {
+                    reject(await response.json())
+                } else {
+                    resolve(await response.json())
+                }
+            } catch (err) {
+                reject()
+            }
+        })
     }
 
+    /**
+     * @param {Number|String|undefined|null} rootNodeId
+     * @param {Number|String|undefined|null} tagId
+     * @param page
+     */
     async refreshNodeTree(rootNodeId, tagId, page) {
-        const nodeTreeContainer = this.page.querySelector('.nodetree-widget')
-        if (!nodeTreeContainer) return
+        let $nodeTree = this.$page.find('.nodetree-widget')
+        if (!$nodeTree.length) {
+            return
+        }
 
-        const rootTree = nodeTreeContainer.querySelector('.root-tree')
+        let $rootTree = $nodeTree.find('.root-tree').eq(0)
 
         if (typeof rootNodeId === 'undefined') {
-            const parentIdAttr = rootTree.getAttribute('data-parent-node-id')
-            rootNodeId = parentIdAttr ? parseInt(parentIdAttr) : null
+            if (!$rootTree.attr('data-parent-node-id')) {
+                rootNodeId = null
+            } else {
+                rootNodeId = parseInt($rootTree.attr('data-parent-node-id'))
+            }
         } else {
             rootNodeId = parseInt(rootNodeId)
         }
 
-        window.dispatchEvent(new CustomEvent('requestLoaderShow'))
+        window.Rozier.lazyload.canvasLoader.show()
 
         const data = await this.fetchNodeTree(
             rootNodeId,
             page ? parseInt(page) : undefined,
             tagId ? parseInt(tagId) : undefined
         )
-
-        if (data.nodeTree) {
-            await fadeOut(nodeTreeContainer)
-
-            const wrapper = document.createElement('div')
-            wrapper.innerHTML = data.nodeTree
-            const newNodeTree = wrapper.querySelector('.nodetree-widget')
-
-            nodeTreeContainer.replaceWith(newNodeTree)
+        if ($nodeTree.length && typeof data.nodeTree !== 'undefined') {
+            await window.Rozier.fadeOut($nodeTree)
+            $nodeTree.replaceWith(data.nodeTree)
+            $nodeTree = this.$page.find('.nodetree-widget')
 
             window.Rozier.initNestables()
             window.Rozier.bindMainTrees()
             window.Rozier.lazyload.bindAjaxLink()
-            await fadeIn(newNodeTree)
+            await window.Rozier.fadeIn($nodeTree)
             window.Rozier.resize()
 
-            this.nodeTree = this.page.querySelector('.root-tree')
-            const langs = this.page.querySelector('.nodetree-langs')
-            if (langs) langs.remove()
-            window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+            /* eslint-disable no-new */
+            new NodesBulk()
+
+            this.$nodeTree = this.$page.find('.root-tree').eq(0)
+            this.$page.find('.nodetree-langs').remove()
+            window.Rozier.lazyload.canvasLoader.hide()
+
+            if (window.Rozier.lazyload.nodeTreeContextActions) {
+                window.Rozier.lazyload.nodeTreeContextActions.unbind()
+            }
+
+            window.Rozier.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
         }
     }
 }

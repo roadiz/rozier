@@ -1,3 +1,6 @@
+import request from 'axios'
+import qs from 'qs'
+
 /**
  * Fetch Joins from an array of node id.
  *
@@ -7,7 +10,7 @@
  */
 export function getItemsByIds({ ids = [], filters }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         providerClass: filters.providerClass,
     }
     if (filters && filters._locale) {
@@ -21,26 +24,23 @@ export function getItemsByIds({ ids = [], filters }) {
         postData['ids[' + i + ']'] = ids[i]
     }
 
-    return fetch(window.RozierConfig.routes.providerAjaxByArray + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.providerAjaxByArray,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.items) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.items) {
                 return {
-                    items: data.items,
+                    items: response.data.items,
                 }
             } else {
                 return null
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            // Log request error or display a message
+            throw new Error(error.response.data.humanMessage)
         })
 }
 
@@ -56,8 +56,10 @@ export function getItemsByIds({ ids = [], filters }) {
  */
 export function getItems({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'toggleExplorer',
+        providerClass: preFilters ? preFilters.providerClass : null,
+        options: preFilters ? preFilters.providerOptions : null,
         search: searchTerms,
         page: 1,
     }
@@ -68,37 +70,27 @@ export function getItems({ searchTerms, preFilters, filters, filterExplorerSelec
         postData._locale = filters._locale
     }
 
-    if (preFilters && preFilters.providerClass) {
-        postData.providerClass = preFilters.providerClass
-    }
-    if (preFilters && preFilters.providerOptions) {
-        postData.options = preFilters.providerOptions
-    }
-
     if (moreData) {
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return fetch(window.RozierConfig.routes.providerAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.providerAjaxExplorer + '?' + qs.stringify(postData), // need to use QS to compile array parameters
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.entities) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.entities) {
                 return {
-                    items: data.entities,
-                    filters: data.filters,
+                    items: response.data.entities,
+                    filters: response.data.filters,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            // TODO
+            // Log request error or display a message
+            throw new Error(error)
         })
 }

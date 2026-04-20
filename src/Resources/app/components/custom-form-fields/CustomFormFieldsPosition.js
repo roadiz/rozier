@@ -1,4 +1,5 @@
-// HERE WE NEED JQUERY BECAUSE UI-KIT V2 REQUIRE JQUERY
+import $ from 'jquery'
+
 /**
  * Custom form fields position
  */
@@ -36,44 +37,38 @@ export default class CustomFormFieldsPosition {
         }
 
         const postData = {
-            _token: window.RozierConfig.ajaxToken,
+            _token: window.Rozier.ajaxToken,
             _action: 'updatePosition',
             customFormFieldId: customFormFieldId,
             beforeFieldId: beforeFieldId,
             afterFieldId: afterFieldId,
         }
         const response = await fetch(
-            window.RozierConfig.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
+            window.Rozier.routes.customFormsFieldAjaxEdit.replace('%customFormFieldId%', customFormFieldId),
             {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams(postData),
             }
         )
         if (!response.ok) {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.title,
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.title,
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         } else {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.responseText,
-                        status: data.status,
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.responseText,
+                status: data.status,
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 }

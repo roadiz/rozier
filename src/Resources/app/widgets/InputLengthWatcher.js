@@ -1,7 +1,9 @@
+import $ from 'jquery'
+
 export default class InputLengthWatcher {
     constructor() {
-        this.maxLengthed = document.querySelectorAll('input[data-max-length]')
-        this.minLengthed = document.querySelectorAll('input[data-min-length]')
+        this.$maxLengthed = $('input[data-max-length]')
+        this.$minLengthed = $('input[data-min-length]')
 
         this.onMaxKeyUp = this.onMaxKeyUp.bind(this)
         this.onMinKeyUp = this.onMinKeyUp.bind(this)
@@ -10,30 +12,22 @@ export default class InputLengthWatcher {
     }
 
     init() {
-        if (this.maxLengthed.length) {
-            this.maxLengthed.forEach((input) => {
-                input.addEventListener('keyup', this.onMaxKeyUp)
-            })
+        if (this.$maxLengthed.length) {
+            this.$maxLengthed.on('keyup', this.onMaxKeyUp)
         }
 
-        if (this.minLengthed.length) {
-            this.minLengthed.forEach((input) => {
-                input.addEventListener('keyup', this.onMinKeyUp)
-            })
+        if (this.$minLengthed.length) {
+            this.$minLengthed.on('keyup', this.onMinKeyUp)
         }
     }
 
     unbind() {
-        if (this.maxLengthed.length) {
-            this.maxLengthed.forEach((input) => {
-                input.removeEventListener('keyup', this.onMaxKeyUp)
-            })
+        if (this.$maxLengthed.length) {
+            this.$maxLengthed.off('keyup', this.onMaxKeyUp)
         }
 
-        if (this.minLengthed.length) {
-            this.minLengthed.forEach((input) => {
-                input.removeEventListener('keyup', this.onMinKeyUp)
-            })
+        if (this.$minLengthed.length) {
+            this.$minLengthed.off('keyup', this.onMinKeyUp)
         }
     }
 
@@ -41,14 +35,14 @@ export default class InputLengthWatcher {
      * @param {Event} event
      */
     onMaxKeyUp(event) {
-        let input = event.currentTarget
+        let input = $(event.currentTarget)
         let maxLength = Math.round(event.currentTarget.getAttribute('data-max-length'))
         let currentLength = event.currentTarget.value.length
 
         if (currentLength > maxLength) {
-            input.classList.add('uk-form-danger')
+            input.addClass('uk-form-danger')
         } else {
-            input.classList.remove('uk-form-danger')
+            input.removeClass('uk-form-danger')
         }
     }
 
@@ -56,14 +50,14 @@ export default class InputLengthWatcher {
      * @param {Event} event
      */
     onMinKeyUp(event) {
-        let input = event.currentTarget
+        let input = $(event.currentTarget)
         let maxLength = Math.round(event.currentTarget.getAttribute('data-min-length'))
         let currentLength = event.currentTarget.value.length
 
         if (currentLength <= maxLength) {
-            input.classList.add('uk-form-danger')
+            input.addClass('uk-form-danger')
         } else {
-            input.classList.remove('uk-form-danger')
+            input.removeClass('uk-form-danger')
         }
     }
 }

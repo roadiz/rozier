@@ -1,27 +1,50 @@
+import $ from 'jquery'
 import Lazyload from './Lazyload'
+import EntriesPanel from './components/panels/EntriesPanel'
 import VueApp from './App'
-import { Expo, TweenLite } from 'gsap'
-import { fadeIn, fadeOut } from './utils/animation'
-import { sleep } from './utils/sleep'
-import 'gsap/ScrollToPlugin'
+import { PointerEventsPolyfill } from './utils/plugins'
+import { TweenLite, Expo } from 'gsap'
+import NodeTreeContextActions from './components/trees/NodeTreeContextActions'
+import RozierMobile from './RozierMobile'
+import bulkActions from './widgets/GenericBulkActions'
 
+require('gsap/ScrollToPlugin')
 /**
  * Rozier root entry
  */
 export default class Rozier {
     constructor() {
+        this.$window = null
+        this.$body = null
+
         this.windowWidth = null
         this.windowHeight = null
         this.resizeFirst = true
+        this.mobile = null
+        this.ajaxToken = null
 
-        this.minifyTreePanelButton = null
-        this.mainTrees = null
-        this.canvasLoader = null
+        this.nodeTrees = []
+        this.treeTrees = []
 
-        this.mainContentScrollable = null
+        this.$userPanelContainer = null
+        this.$minifyTreePanelButton = null
+        this.$mainTrees = null
+        this.$mainTreesContainer = null
+        this.$mainTreeElementName = null
+        this.$treeContextualButton = null
+        this.$nodesSourcesSearch = null
+        this.nodesSourcesSearchHeight = null
+        this.$nodeTreeHead = null
+        this.nodeTreeHeadHeight = null
+        this.$treeScrollCont = null
+        this.$treeScroll = null
+        this.treeScrollHeight = null
+
+        this.$mainContentScrollable = null
         this.mainContentScrollableWidth = null
         this.mainContentScrollableOffsetLeft = null
-        this.backTopBtn = null
+        this.$backTopBtn = null
+        this.entriesPanel = null
         this.collapsedNestableState = null
 
         this.maintreeElementNameRightClick = this.maintreeElementNameRightClick.bind(this)
@@ -35,7 +58,13 @@ export default class Rozier {
     }
 
     onDocumentReady() {
-        this.initLoader()
+        /*
+         * Store Rozier configuration
+         */
+        for (let index in window.temp) {
+            window.Rozier[index] = window.temp[index]
+        }
+
         /*
          * override default nestable settings in order to
          * store toggle state between reloads.
@@ -43,28 +72,37 @@ export default class Rozier {
         this.setupCollapsedNestableState()
 
         this.lazyload = new Lazyload()
+        this.entriesPanel = new EntriesPanel()
         this.vueApp = new VueApp()
 
-        // --- Selectors --- //
-        this.minifyTreePanelButton = document.querySelectorAll('#minify-tree-panel-button')
-        this.mainTrees = document.querySelector('#main-trees')
-        this.mainContentScrollable = document.querySelector('#main-content-scrollable')
-        this.backTopBtn = document.querySelector('#back-top-button')
+        this.$window = $(window)
+        this.$body = $('body')
 
-        // Minify trees panel toggle button
-        if (this.minifyTreePanelButton.length) {
-            this.minifyTreePanelButton.forEach((element) => {
-                element.addEventListener('click', this.toggleTreesPanel)
-            })
+        // --- Selectors --- //
+        this.$userPanelContainer = $('#user-panel-container')
+        this.$minifyTreePanelButton = $('#minify-tree-panel-button')
+        this.$mainTrees = $('#main-trees')
+        this.$mainTreesContainer = $('#main-trees-container')
+        this.$nodesSourcesSearch = $('#nodes-sources-search')
+        this.$mainContentScrollable = $('#main-content-scrollable')
+        this.$backTopBtn = $('#back-top-button')
+
+        // Pointer events polyfill
+        if (!window.Modernizr.testProp('pointerEvents')) {
+            PointerEventsPolyfill.initialize({ selector: '#main-trees-overlay' })
         }
 
+        // Minify trees panel toggle button
+        this.$minifyTreePanelButton.on('click', this.toggleTreesPanel)
+
+        // this.$body.on('markdownPreviewOpen', '.markdown-editor-preview', this.toggleTreesPanel);
         document.body.addEventListener('markdownPreviewOpen', this.openTreesPanel, false)
 
         // Back top btn
-        this.backTopBtn.addEventListener('click', this.backTopBtnClick)
+        this.$backTopBtn.on('click', this.backTopBtnClick)
 
-        window.addEventListener('resize', this.resize)
-        this.resize()
+        this.$window.on('resize', this.resize)
+        this.$window.trigger('resize')
 
         this.lazyload.generalBind()
         this.bindMainNodeTreeLangs()
@@ -76,45 +114,14 @@ export default class Rozier {
         this.refreshMainTagTree()
         this.refreshMainFolderTree()
 
+        /*
+         * init generic bulk actions widget
+         */
+        bulkActions()
         window.addEventListener('pageshowend', () => {
+            bulkActions()
             this.syncCollapsedNestableState()
         })
-        window.addEventListener('requestAllNodeTreeChange', () => {
-            this.refreshAllNodeTrees()
-            this.getMessages()
-        })
-        window.addEventListener('requestLoaderShow', () => {
-            this.canvasLoader.show()
-        })
-        window.addEventListener('requestLoaderHide', () => {
-            this.canvasLoader.hide()
-        })
-        window.addEventListener('pushToast', (event) => {
-            if (!event.detail || !event.detail.message) {
-                return
-            }
-            window.UIkit.notify({
-                message: event.detail.message,
-                status: event.detail.status || 'success',
-                timeout: 2000,
-                pos: 'top-center',
-            })
-        })
-    }
-
-    /**
-     * Init loader
-     */
-    initLoader() {
-        this.canvasLoader = new window.CanvasLoader('canvasloader-container')
-        this.canvasLoader.setColor(
-            window.getComputedStyle(document.documentElement).getPropertyValue('--rz-accent-color')
-        )
-        this.canvasLoader.setShape('square')
-        this.canvasLoader.setDensity(90)
-        this.canvasLoader.setRange(0.8)
-        this.canvasLoader.setSpeed(4)
-        this.canvasLoader.setFPS(30)
     }
 
     setupCollapsedNestableState() {
@@ -231,36 +238,31 @@ export default class Rozier {
      * Bind main trees
      */
     bindMainTrees() {
-        /*
-         * ui kit events require jQuery objects
-         */
-        const nodeTrees = document.querySelectorAll('.nodetree-widget .root-tree')
-        nodeTrees.forEach((nodeTree) => {
-            const $nodeTree = $(nodeTree)
-            $nodeTree.off('change.uk.nestable', this.onNestableNodeTreeChange)
+        // TREES
+        let $nodeTree = $('.nodetree-widget .root-tree')
+        if ($nodeTree.length) {
+            $nodeTree.off('change.uk.nestable')
             $nodeTree.on('change.uk.nestable', this.onNestableNodeTreeChange)
-        })
+        }
 
-        const tagTrees = document.querySelectorAll('.tagtree-widget .root-tree')
-        tagTrees.forEach((tagTree) => {
-            const $tagTree = $(tagTree)
-            $tagTree.off('change.uk.nestable', this.onNestableTagTreeChange)
+        let $tagTree = $('.tagtree-widget .root-tree')
+        if ($tagTree.length) {
+            $tagTree.off('change.uk.nestable')
             $tagTree.on('change.uk.nestable', this.onNestableTagTreeChange)
-        })
+        }
 
-        const folderTrees = document.querySelectorAll('.foldertree-widget .root-tree')
-        folderTrees.forEach((folderTree) => {
-            const $folderTree = $(folderTree)
-            $folderTree.off('change.uk.nestable', this.onNestableFolderTreeChange)
+        let $folderTree = $('.foldertree-widget .root-tree')
+        if ($folderTree.length) {
+            $folderTree.off('change.uk.nestable')
             $folderTree.on('change.uk.nestable', this.onNestableFolderTreeChange)
-        })
+        }
 
-        // Contextual menu on tree element names
-        const mainTreeElementName = this.mainTrees?.querySelectorAll('.tree-element-name') || []
-        mainTreeElementName.forEach((element) => {
-            element.removeEventListener('contextmenu', this.maintreeElementNameRightClick)
-            element.addEventListener('contextmenu', this.maintreeElementNameRightClick)
-        })
+        // Tree element name
+        this.$mainTreeElementName = this.$mainTrees.find('.tree-element-name')
+        if (this.$mainTreeElementName.length) {
+            this.$mainTreeElementName.off('contextmenu', this.maintreeElementNameRightClick)
+            this.$mainTreeElementName.on('contextmenu', this.maintreeElementNameRightClick)
+        }
     }
 
     /**
@@ -268,22 +270,11 @@ export default class Rozier {
      * @return {boolean}
      */
     maintreeElementNameRightClick(e) {
-        e.preventDefault()
-
-        // Close all other contextual menus
-        document.querySelectorAll('.tree-contextualmenu').forEach((contextualMenu) => {
-            if (contextualMenu.classList.contains('uk-open')) {
-                contextualMenu.classList.remove('uk-open')
-            }
-        })
-
-        const contextualMenu = e.currentTarget.parentElement.querySelector('.tree-contextualmenu')
-        if (contextualMenu) {
-            if (!contextualMenu.classList.contains('uk-open')) {
-                contextualMenu.classList.add('uk-open')
-            } else {
-                contextualMenu.classList.remove('uk-open')
-            }
+        let $contextualMenu = $(e.currentTarget).parent().find('.tree-contextualmenu')
+        if ($contextualMenu.length) {
+            if ($contextualMenu[0].className.indexOf('uk-open') === -1) {
+                $contextualMenu.addClass('uk-open')
+            } else $contextualMenu.removeClass('uk-open')
         }
 
         return false
@@ -295,14 +286,12 @@ export default class Rozier {
      * @return {boolean}
      */
     bindMainNodeTreeLangs() {
-        document.body.addEventListener('click', (event) => {
-            const target = event.target.closest('#tree-container .nodetree-langs a')
-            if (target) {
-                window.dispatchEvent(new CustomEvent('requestLoaderShow'))
-                const translationId = parseInt(target.getAttribute('data-translation-id'), 10)
-                this.refreshMainNodeTree(translationId)
-                return false
-            }
+        $('body').on('click', '#tree-container .nodetree-langs a', (event) => {
+            this.lazyload.canvasLoader.show()
+            let $link = $(event.currentTarget)
+            let translationId = parseInt($link.attr('data-translation-id'))
+            this.refreshMainNodeTree(translationId)
+            return false
         })
     }
 
@@ -310,26 +299,24 @@ export default class Rozier {
         return new Promise(async (resolve, reject) => {
             const query = new URLSearchParams({
                 _action: 'messages',
-                _token: window.RozierConfig.ajaxToken,
+                _token: this.ajaxToken,
             })
-            const url = window.RozierConfig.routes.ajaxSessionMessages + '?' + query.toString()
+            const url = this.routes.ajaxSessionMessages + '?' + query.toString()
             try {
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Required to prevent using this route as referer when login again
-                        'X-Requested-With': 'XMLHttpRequest',
                         Accept: 'application/json',
                     },
                 })
                 const data = await response.json()
                 if (!data.messages) {
-                    resolve([])
+                    reject()
                 }
                 resolve(data.messages)
             } catch (e) {
-                reject(e)
+                reject()
             }
         })
     }
@@ -338,29 +325,26 @@ export default class Rozier {
      */
     async getMessages() {
         const messages = await this.fetchSessionMessages()
-        if (messages.confirm && Array.isArray(messages.confirm) && messages.confirm.length > 0) {
-            messages.confirm.forEach((message) => {
-                window.dispatchEvent(
-                    new CustomEvent('pushToast', {
-                        detail: {
-                            message: message,
-                            status: 'success',
-                        },
-                    })
-                )
-            })
+        if (typeof messages.confirm !== 'undefined' && messages.confirm.length > 0) {
+            for (let i = messages.confirm.length - 1; i >= 0; i--) {
+                window.UIkit.notify({
+                    message: messages.confirm[i],
+                    status: 'success',
+                    timeout: 2000,
+                    pos: 'top-center',
+                })
+            }
         }
-        if (messages.error && Array.isArray(messages.error) && messages.error.length > 0) {
-            messages.error.forEach((message) => {
-                window.dispatchEvent(
-                    new CustomEvent('pushToast', {
-                        detail: {
-                            message: message,
-                            status: 'danger',
-                        },
-                    })
-                )
-            })
+
+        if (typeof messages.error !== 'undefined' && messages.error.length > 0) {
+            for (let j = data.messages.error.length - 1; j >= 0; j--) {
+                window.UIkit.notify({
+                    message: data.messages.error[j],
+                    status: 'error',
+                    timeout: 2000,
+                    pos: 'top-center',
+                })
+            }
         }
     }
 
@@ -382,9 +366,10 @@ export default class Rozier {
          * Children node fields widgets;
          */
         if (this.lazyload.childrenNodesFields.treeAvailable()) {
-            this.lazyload.childrenNodesFields.nodeTrees.forEach((nodeTree) => {
-                promises.push(this.lazyload.childrenNodesFields.refreshNodeTree(nodeTree))
-            })
+            for (let i = this.lazyload.childrenNodesFields.$nodeTrees.length - 1; i >= 0; i--) {
+                let $nodeTree = this.lazyload.childrenNodesFields.$nodeTrees.eq(i)
+                promises.push(this.lazyload.childrenNodesFields.refreshNodeTree($nodeTree))
+            }
         }
         return Promise.all(promises)
     }
@@ -395,30 +380,28 @@ export default class Rozier {
      * @param {Number|null|undefined} translationId
      */
     async refreshMainNodeTree(translationId = undefined) {
-        const currentNodeTree = document.querySelector('#tree-container .nodetree-widget')
-        if (!currentNodeTree) {
+        let $currentNodeTree = $('#tree-container').find('.nodetree-widget').eq(0)
+        if (!$currentNodeTree.length) {
             console.debug('No main node-tree available.')
             return
         }
 
-        const currentRootTree = currentNodeTree.querySelector('.root-tree')
-        if (currentRootTree && !translationId) {
-            translationId = currentRootTree.getAttribute('data-translation-id')
+        let $currentRootTree = $currentNodeTree.find('.root-tree').eq(0)
+        if ($currentRootTree.length && !translationId) {
+            translationId = $currentRootTree.attr('data-translation-id')
         }
 
         try {
             const query = new URLSearchParams({
-                _token: window.RozierConfig.ajaxToken,
+                _token: this.ajaxToken,
                 _action: 'requestMainNodeTree',
                 translationId: translationId || null,
             })
-            const url = window.RozierConfig.routes.nodesTreeAjax + '?' + query.toString()
+            const url = this.routes.nodesTreeAjax + '?' + query.toString()
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
             if (!response.ok) {
@@ -426,29 +409,31 @@ export default class Rozier {
             }
             const data = await response.json()
             if (typeof data.nodeTree !== 'undefined') {
-                await fadeOut(currentNodeTree)
-                currentNodeTree.insertAdjacentHTML('afterend', data.nodeTree)
-                currentNodeTree.remove()
-                const newNodeTree = document.querySelector('#tree-container .nodetree-widget')
-                if (newNodeTree) {
-                    await fadeIn(newNodeTree)
-                } else {
-                    console.debug('No main node-tree available.')
-                    return
-                }
+                await this.fadeOut($currentNodeTree)
+                $currentNodeTree.replaceWith(data.nodeTree)
+                $currentNodeTree = $('#tree-container').find('.nodetree-widget')
+
+                await this.fadeIn($currentNodeTree)
                 this.initNestables()
                 this.bindMainTrees()
                 this.resize()
                 this.lazyload.bindAjaxLink()
+
+                if (this.lazyload.nodeTreeContextActions) {
+                    this.lazyload.nodeTreeContextActions.unbind()
+                }
+
+                this.lazyload.nodeTreeContextActions = new NodeTreeContextActions()
             }
         } catch (e) {
-            console.debug('[Rozier.refreshMainNodeTree] Retrying in 3 seconds')
+            console.log('[Rozier.refreshMainNodeTree] Retrying in 3 seconds')
             // Wait for background jobs to be done
-            await sleep(3000)
-            this.refreshMainNodeTree(translationId)
+            window.setTimeout(() => {
+                this.refreshMainNodeTree(translationId)
+            }, 3000)
         }
 
-        window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+        this.lazyload.canvasLoader.hide()
     }
 
     /**
@@ -456,104 +441,114 @@ export default class Rozier {
      *
      */
     async refreshMainTagTree() {
-        const currentTagTree = document.querySelector('#tree-container .tagtree-widget')
-        if (!currentTagTree) {
+        let $currentTagTree = $('#tree-container').find('.tagtree-widget')
+
+        if (!$currentTagTree.length) {
             console.debug('No main tag-tree available.')
             return
         }
 
         const query = new URLSearchParams({
-            _token: window.RozierConfig.ajaxToken,
+            _token: this.ajaxToken,
             _action: 'requestMainTagTree',
         })
-        const url = window.RozierConfig.routes.tagsTreeAjax + '?' + query.toString()
+        const url = this.routes.tagsTreeAjax + '?' + query.toString()
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
-                // Required to prevent using this route as referer when login again
-                'X-Requested-With': 'XMLHttpRequest',
             },
         })
         const data = await response.json()
         if (typeof data.tagTree !== 'undefined') {
-            await fadeOut(currentTagTree)
-            currentTagTree.insertAdjacentHTML('afterend', data.tagTree)
-            currentTagTree.remove()
-            const newTagTree = document.querySelector('#tree-container .tagtree-widget')
-            if (newTagTree) {
-                await fadeIn(newTagTree)
-            } else {
-                console.debug('No main tag-tree available.')
-                return
-            }
+            await this.fadeOut($currentTagTree)
+            $currentTagTree.replaceWith(data.tagTree)
+            $currentTagTree = $('#tree-container').find('.tagtree-widget')
+            await this.fadeIn($currentTagTree)
             this.initNestables()
             this.bindMainTrees()
             this.resize()
             this.lazyload.bindAjaxLink()
         }
-        window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+        this.lazyload.canvasLoader.hide()
     }
 
     /**
      * Refresh only main folderTree.
      */
     async refreshMainFolderTree() {
-        const currentFolderTree = document.querySelector('#tree-container .foldertree-widget')
-        if (!currentFolderTree) {
+        let $currentFolderTree = $('#tree-container').find('.foldertree-widget')
+
+        if (!$currentFolderTree.length) {
             console.debug('No main folder-tree available.')
             return
         }
 
         const query = new URLSearchParams({
-            _token: window.RozierConfig.ajaxToken,
+            _token: this.ajaxToken,
             _action: 'requestMainFolderTree',
         })
-        const url = window.RozierConfig.routes.foldersTreeAjax + '?' + query.toString()
+        const url = this.routes.foldersTreeAjax + '?' + query.toString()
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
-                // Required to prevent using this route as referer when login again
-                'X-Requested-With': 'XMLHttpRequest',
             },
         })
         const data = await response.json()
         if (typeof data.folderTree !== 'undefined') {
-            await fadeOut(currentFolderTree)
-            currentFolderTree.insertAdjacentHTML('afterend', data.folderTree)
-            currentFolderTree.remove()
-            const newFolderTree = document.querySelector('#tree-container .foldertree-widget')
-            if (newFolderTree) {
-                await fadeIn(newFolderTree)
-            } else {
-                console.debug('No main folder-tree available.')
-                return
-            }
+            await this.fadeOut($currentFolderTree)
+            $currentFolderTree.replaceWith(data.folderTree)
+            $currentFolderTree = $('#tree-container').find('.foldertree-widget')
+            await this.fadeIn($currentFolderTree)
             this.initNestables()
             this.bindMainTrees()
             this.resize()
             this.lazyload.bindAjaxLink()
         }
 
-        window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+        this.lazyload.canvasLoader.hide()
+    }
+
+    /**
+     * @param {jQuery} element
+     * @return {Promise<unknown>}
+     */
+    async fadeIn(element) {
+        return new Promise((resolve, reject) => {
+            element.fadeIn(() => {
+                resolve()
+            })
+        })
+    }
+
+    /**
+     * @param {jQuery} element
+     * @return {Promise<unknown>}
+     */
+    async fadeOut(element) {
+        return new Promise((resolve, reject) => {
+            element.fadeOut('slow', () => {
+                resolve()
+            })
+        })
     }
 
     /**
      * Toggle trees panel
      */
     toggleTreesPanel() {
-        document.getElementById('main-container-inner').classList.toggle('trees-panel--minified')
-        document.getElementById('main-content').classList.toggle('maximized')
-        document.querySelector('#minify-tree-panel-button i').classList.toggle('uk-icon-rz-panel-tree-open')
-        document.getElementById('minify-tree-panel-area').classList.toggle('tree-panel-hidden')
+        $('#main-container-inner').toggleClass('trees-panel--minified')
+        $('#main-content').toggleClass('maximized')
+        $('#minify-tree-panel-button').find('i').toggleClass('uk-icon-rz-panel-tree-open')
+        $('#minify-tree-panel-area').toggleClass('tree-panel-hidden')
 
         return false
     }
 
     openTreesPanel() {
-        if (document.getElementById('main-container-inner').classList.contains('trees-panel--minified')) {
-            this.toggleTreesPanel()
+        if ($('#main-container-inner').hasClass('trees-panel--minified')) {
+            this.toggleTreesPanel(null)
         }
 
         return false
@@ -563,7 +558,7 @@ export default class Rozier {
      * Toggle user panel
      */
     toggleUserPanel() {
-        document.getElementById('user-panel').classList.toggle('minified')
+        $('#user-panel').toggleClass('minified')
         return false
     }
 
@@ -614,38 +609,27 @@ export default class Rozier {
 
     /**
      * @param event
-     * @param {jQuery} rootEl
-     * @param {jQuery} $element
+     * @param {HTMLElement} rootEl
+     * @param {HTMLElement} el
      * @param {string|null|undefined} status
      * @returns {false|undefined}
      */
-    async onNestableNodeTreeChange(event, rootEl, $element, status) {
+    async onNestableNodeTreeChange(event, rootEl, el, status) {
+        let element = $(el)
         /*
          * If node removed, do not do anything, the other change.uk.nestable nodeTree will be triggered
          */
         if (status === 'removed') {
             return false
         }
-        if (!$element) {
-            return false
-        }
-        const element = $element[0]
-        if (!element) {
-            console.error('No element found')
-            return false
-        }
-        const nodeId = parseInt(element.getAttribute('data-node-id'))
+        let nodeId = parseInt(element.attr('data-node-id'))
         let parentNodeId = null
-        const nodeTree = element.parentElement.closest('.nodetree-element')
-        const stackTree = element.parentElement.closest('.stack-tree-widget')
-        const childrenNodetree = element.parentElement.closest('.children-node-widget')
-
-        if (nodeTree) {
-            parentNodeId = parseInt(nodeTree.getAttribute('data-node-id'))
-        } else if (stackTree) {
-            parentNodeId = parseInt(stackTree.getAttribute('data-parent-node-id'))
-        } else if (childrenNodetree) {
-            parentNodeId = parseInt(childrenNodetree.getAttribute('data-parent-node-id'))
+        if (element.parents('.nodetree-element').length) {
+            parentNodeId = parseInt(element.parents('.nodetree-element').eq(0).attr('data-node-id'))
+        } else if (element.parents('.stack-tree-widget').length) {
+            parentNodeId = parseInt(element.parents('.stack-tree-widget').eq(0).attr('data-parent-node-id'))
+        } else if (element.parents('.children-node-widget').length) {
+            parentNodeId = parseInt(element.parents('.children-node-widget').eq(0).attr('data-parent-node-id'))
         }
 
         /*
@@ -667,7 +651,7 @@ export default class Rozier {
         }
 
         const postData = {
-            _token: window.RozierConfig.ajaxToken,
+            _token: this.ajaxToken,
             _action: 'updatePosition',
             nodeId: nodeId,
             newParent: parentNodeId,
@@ -676,24 +660,17 @@ export default class Rozier {
         /*
          * Get node siblings id to compute new position
          */
-        const nextElement = element.nextElementSibling
-        if (nextElement && typeof nextElement.getAttribute('data-node-id') !== 'undefined') {
-            postData.nextNodeId = parseInt(nextElement.getAttribute('data-node-id'))
-        } else {
-            const previousElement = element.previousElementSibling
-            if (previousElement && typeof previousElement.getAttribute('data-node-id') !== 'undefined') {
-                postData.prevNodeId = parseInt(previousElement.getAttribute('data-node-id'))
-            }
+        if (element.next().length && typeof element.next().attr('data-node-id') !== 'undefined') {
+            postData.nextNodeId = parseInt(element.next().attr('data-node-id'))
+        } else if (element.prev().length && typeof element.prev().attr('data-node-id') !== 'undefined') {
+            postData.prevNodeId = parseInt(element.prev().attr('data-node-id'))
         }
 
         try {
-            const route = window.RozierConfig.routes.nodeAjaxEdit.replace('%nodeId%', nodeId)
-            const response = await fetch(route, {
+            const response = await fetch(this.routes.nodeAjaxEdit.replace('%nodeId%', nodeId), {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams(postData),
             })
@@ -701,35 +678,33 @@ export default class Rozier {
                 throw response
             }
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.responseText || data.detail,
-                        status: data.status,
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.responseText || data.detail,
+                status: data.status,
+                timeout: 3000,
+                pos: 'top-center',
+            })
         } catch (response) {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.error_message || data.detail,
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.error_message || data.detail,
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 
     /**
      * @param event
-     * @param {jQuery} rootEl
-     * @param {jQuery} $element
+     * @param {HTMLElement} rootEl
+     * @param {HTMLElement} el
      * @param {string|null|undefined} status
      * @returns {false|undefined}
      */
-    async onNestableTagTreeChange(event, rootEl, $element, status) {
+    async onNestableTagTreeChange(event, rootEl, el, status) {
+        let element = $(el)
+
         /*
          * If tag removed, do not do anything, the other tagTree will be triggered
          */
@@ -737,15 +712,12 @@ export default class Rozier {
             return false
         }
 
-        const element = $element[0]
-        let tagId = parseInt(element.getAttribute('data-tag-id'))
+        let tagId = parseInt(element.attr('data-tag-id'))
         let parentTagId = null
-        const tagTree = element.parentElement.closest('.tagtree-element')
-        const rootTree = element.parentElement.closest('.root-tree')
-        if (tagTree) {
-            parentTagId = parseInt(tagTree.getAttribute('data-tag-id'))
-        } else if (rootTree) {
-            parentTagId = parseInt(rootTree.getAttribute('data-parent-tag-id'))
+        if (element.parents('.tagtree-element').length) {
+            parentTagId = parseInt(element.parents('.tagtree-element').eq(0).attr('data-tag-id'))
+        } else if (element.parents('.root-tree').length) {
+            parentTagId = parseInt(element.parents('.root-tree').eq(0).attr('data-parent-tag-id'))
         }
         /*
          * When dropping to route
@@ -767,7 +739,7 @@ export default class Rozier {
         }
 
         let postData = {
-            _token: window.RozierConfig.ajaxToken,
+            _token: this.ajaxToken,
             _action: 'updatePosition',
             tagId: tagId,
             newParent: parentTagId,
@@ -776,23 +748,17 @@ export default class Rozier {
         /*
          * Get tag siblings id to compute new position
          */
-        const nextElement = element.nextElementSibling
-        if (nextElement && typeof nextElement.getAttribute('data-tag-id') !== 'undefined') {
-            postData.nextTagId = parseInt(nextElement.getAttribute('data-tag-id'))
-        } else {
-            const previousElement = element.previousElementSibling
-            if (previousElement && typeof previousElement.getAttribute('data-tag-id') !== 'undefined') {
-                postData.prevTagId = parseInt(previousElement.getAttribute('data-tag-id'))
-            }
+        if (element.next().length && typeof element.next().attr('data-tag-id') !== 'undefined') {
+            postData.nextTagId = parseInt(element.next().attr('data-tag-id'))
+        } else if (element.prev().length && typeof element.prev().attr('data-tag-id') !== 'undefined') {
+            postData.prevTagId = parseInt(element.prev().attr('data-tag-id'))
         }
 
         try {
-            const response = await fetch(window.RozierConfig.routes.tagAjaxEdit.replace('%tagId%', tagId), {
+            const response = await fetch(this.routes.tagAjaxEdit.replace('%tagId%', tagId), {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams(postData),
             })
@@ -800,51 +766,46 @@ export default class Rozier {
                 throw response
             }
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.responseText,
-                        status: data.status,
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.responseText,
+                status: data.status,
+                timeout: 3000,
+                pos: 'top-center',
+            })
         } catch (response) {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.error_message || data.detail,
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.error_message || data.detail,
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 
     /**
      * @param event
-     * @param {jQuery} rootEl
-     * @param {jQuery} $element
+     * @param {HTMLElement} rootEl
+     * @param {HTMLElement} el
      * @param {string|null|undefined} status
      * @returns {false|undefined}
      */
-    async onNestableFolderTreeChange(event, rootEl, $element, status) {
+    async onNestableFolderTreeChange(event, rootEl, el, status) {
+        let element = $(el)
         /*
          * If folder removed, do not do anything, the other folderTree will be triggered
          */
         if (status === 'removed') {
             return false
         }
-        const element = $element[0]
-        let folderId = parseInt(element.getAttribute('data-folder-id'))
+
+        let folderId = parseInt(element.attr('data-folder-id'))
         let parentFolderId = null
 
-        const folderTreeElement = element.parentElement.closest('.foldertree-element')
-        const rootTreeElement = element.parentElement.closest('.root-tree')
-        if (folderTreeElement) {
-            parentFolderId = parseInt(folderTreeElement.getAttribute('data-folder-id'))
-        } else if (rootTreeElement) {
-            parentFolderId = parseInt(rootTreeElement.getAttribute('data-parent-folder-id'))
+        if (element.parents('.foldertree-element').length) {
+            parentFolderId = parseInt(element.parents('.foldertree-element').eq(0).attr('data-folder-id'))
+        } else if (element.parents('.root-tree').length) {
+            parentFolderId = parseInt(element.parents('.root-tree').eq(0).attr('data-parent-folder-id'))
         }
 
         /*
@@ -867,7 +828,7 @@ export default class Rozier {
         }
 
         let postData = {
-            _token: window.RozierConfig.ajaxToken,
+            _token: this.ajaxToken,
             _action: 'updatePosition',
             folderId: folderId,
             newParent: parentFolderId,
@@ -876,23 +837,17 @@ export default class Rozier {
         /*
          * Get folder siblings id to compute new position
          */
-        const nextElement = element.nextElementSibling
-        if (nextElement && typeof nextElement.getAttribute('data-folder-id') !== 'undefined') {
-            postData.nextFolderId = parseInt(nextElement.getAttribute('data-folder-id'))
-        } else {
-            const previousElement = element.previousElementSibling
-            if (previousElement && typeof previousElement.getAttribute('data-folder-id') !== 'undefined') {
-                postData.prevFolderId = parseInt(previousElement.getAttribute('data-folder-id'))
-            }
+        if (element.next().length && typeof element.next().attr('data-folder-id') !== 'undefined') {
+            postData.nextFolderId = parseInt(element.next().attr('data-folder-id'))
+        } else if (element.prev().length && typeof element.prev().attr('data-folder-id') !== 'undefined') {
+            postData.prevFolderId = parseInt(element.prev().attr('data-folder-id'))
         }
 
         try {
-            const response = await fetch(window.RozierConfig.routes.folderAjaxEdit.replace('%folderId%', folderId), {
+            const response = await fetch(this.routes.folderAjaxEdit.replace('%folderId%', folderId), {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams(postData),
             })
@@ -900,35 +855,92 @@ export default class Rozier {
                 throw response
             }
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.responseText,
-                        status: data.status,
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.responseText,
+                status: data.status,
+                timeout: 3000,
+                pos: 'top-center',
+            })
         } catch (response) {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.error_message || data.detail,
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.error_message || data.detail,
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 
+    /**
+     * Back top click
+     * @return {boolean} [description]
+     */
     backTopBtnClick() {
-        TweenLite.to(this.mainContentScrollable, 0.6, { scrollTo: { y: 0 }, ease: Expo.easeOut })
+        TweenLite.to(this.$mainContentScrollable, 0.6, { scrollTo: { y: 0 }, ease: Expo.easeOut })
         return false
     }
 
+    /**
+     * Resize
+     * @return {[type]} [description]
+     */
     resize() {
-        this.windowWidth = window.offsetWidth
-        this.windowHeight = window.offsetHeight
+        this.windowWidth = this.$window.width()
+        this.windowHeight = this.$window.height()
+
+        // Close tree panel if small screen & first resize
+        if (this.windowWidth >= 768 && this.windowWidth <= 1200 && this.$mainTrees.length && this.resizeFirst) {
+            this.$mainTrees[0].style.display = 'none'
+            this.$minifyTreePanelButton.trigger('click')
+            window.requestAnimationFrame(() => {
+                this.$mainTrees[0].style.display = 'table-cell'
+            })
+        }
+
+        // Check if mobile
+        if (this.windowWidth <= 768 && this.resizeFirst) {
+            this.mobile = new RozierMobile()
+        }
+
+        if (this.$mainTreesContainer.length && this.$mainContentScrollable.length) {
+            if (this.windowWidth >= 768) {
+                this.$mainContentScrollable.height(this.windowHeight)
+                this.$mainTreesContainer[0].style.height = ''
+            } else {
+                this.$mainContentScrollable[0].style.height = ''
+                this.$mainTreesContainer.height(this.windowHeight)
+            }
+        }
+
+        // Tree scroll height
+        if (this.$mainTrees.length) {
+            this.$nodeTreeHead = this.$mainTrees.find('.nodetree-head')
+            this.$treeScrollCont = this.$mainTrees.find('.tree-scroll-cont')
+            this.$treeScroll = this.$mainTrees.find('.tree-scroll')
+
+            /*
+             * need actual to get tree height even when they are hidden.
+             */
+            this.nodesSourcesSearchHeight = this.$nodesSourcesSearch.actual('outerHeight')
+            this.nodeTreeHeadHeight = this.$nodeTreeHead.actual('outerHeight')
+            this.treeScrollHeight = this.windowHeight - (this.nodesSourcesSearchHeight + this.nodeTreeHeadHeight)
+
+            if (this.mobile !== null) {
+                this.treeScrollHeight = this.windowHeight - (50 + 50 + this.nodeTreeHeadHeight)
+            } // Menu + tree menu + tree head
+
+            for (let i = 0; i < this.$treeScrollCont.length; i++) {
+                this.$treeScrollCont[i].style.height = this.treeScrollHeight + 'px'
+            }
+        }
+
+        // Main content
+        this.mainContentScrollableWidth = this.$mainContentScrollable.width()
+        this.mainContentScrollableOffsetLeft = this.windowWidth - this.mainContentScrollableWidth
+
+        this.lazyload.resize()
+        this.entriesPanel.replaceSubNavs()
 
         // Set resize first to false
         if (this.resizeFirst) this.resizeFirst = false

@@ -1,3 +1,5 @@
+import request from 'axios'
+
 /**
  * Fetch Nodes Source from search terms.
  *
@@ -6,28 +8,24 @@
  */
 export function getNodesSourceFromSearch(searchTerms) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'searchNodesSources',
         searchTerms: searchTerms,
     }
 
-    return fetch(window.RozierConfig.routes.searchAjax + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.searchAjax,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data.data !== 'undefined' && data.data.length > 0) {
-                return data.data
+        .then((response) => {
+            if (typeof response.data.data !== 'undefined' && response.data.data.length > 0) {
+                return response.data.data
             } else {
                 return []
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error)
         })
 }

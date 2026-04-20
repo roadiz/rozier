@@ -28,16 +28,14 @@
     border-color: @grey-form-submit-border;
     color: @grey-form-submit-color;
 
-    &:hover,
-    &:active,
-    &:focus {
+    &:hover, &:active, &:focus {
         background-color: @grey-form-submit-hover;
         border-color: #888888;
         color: #333;
     }
 
     [class*=uk-icon-]{
-        font-size: var(--default-font-size);
+        font-size: @default-font-size;
         margin:0 4px 0 0;
     }
 
@@ -47,7 +45,7 @@
 
     @media screen and (min-width: 1380px) {
         height: 36px;
-        font-size: var(--default-font-size);
+        font-size: @default-font-size;
 
         [class*=uk-icon-]{
             font-size: 16px;
@@ -63,10 +61,6 @@
 
         [class*=uk-icon-] {
             font-size: 14px;
-
-            @media screen and (max-width: @screen-xs-max) {
-                font-size: 16px;
-            }
         }
 
         @media screen and (min-width: 1380px) {
@@ -101,7 +95,7 @@
         }
 
         &:hover{
-            background-color: @grey-verylight;
+            background-color:@grey-verylight;
             color: #333;
 
             [class*=uk-icon-]{
@@ -122,11 +116,6 @@
         [class*=uk-icon-]{
             display: block;
             margin:0;
-        }
-
-        @media screen and (max-width: @screen-xs-max) {
-            width: 32px;
-            height: 32px;
         }
 
         @media screen and (min-width: 1380px) {
@@ -170,9 +159,13 @@
         }
 
         &.uk-button-danger {
+            background: fade(@alert-color, 20%);
+            border-color: @alert-color;
+
             [class*=uk-icon-]{
                 color: @alert-color;
             }
+
             &:hover, &:focus{
                 background: fade(@alert-color, 20%);
                 border-color:darken(@alert-color, 15%);
@@ -206,7 +199,7 @@
 .uk-button-mini {
     width: 17px;
     height: 17px;
-    padding: 0;
+    padding: 0px;
     min-width: 17px;
     min-height: 17px;
     font-size: 10px;
@@ -214,11 +207,6 @@
     border: none;
     background: var(--maintree-global-bg-3);
     color: var(--maintree-global-bg-30);
-
-    @media screen and (max-width: @screen-xs-max) {
-        height: 17px;
-        padding: 0;
-    }
 }
 
 .uk-button-status{
@@ -252,7 +240,7 @@
 
 .uk-button-success {
     &:not(:disabled) {
-        background: lighten(@success-color, 40%);
+        background: fade(@success-color, 20%);
         border-color: @success-color;
         color: darken(@success-color, 15%);
         text-shadow: none;
@@ -277,7 +265,7 @@
 .uk-button-locked,
 .uk-button-warning {
     &:not(:disabled) {
-        background: lighten(@warning-color, 30%);
+        background: fade(@warning-color, 20%);
         border-color: @warning-color;
         color: darken(@warning-color, 15%);
         text-shadow: none;
@@ -300,7 +288,7 @@
 .uk-button-deleted,
 .uk-button-danger {
     &:not(:disabled) {
-        background: lighten(@alert-color, 35%);
+        background: fade(@alert-color, 20%);
         border-color: @alert-color;
         color: darken(@alert-color, 15%);
         text-shadow: none;
