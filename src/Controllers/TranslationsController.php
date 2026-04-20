@@ -4,71 +4,62 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\Handlers\HandlerFactoryInterface;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
 use RZ\Roadiz\CoreBundle\EntityHandler\TranslationHandler;
 use RZ\Roadiz\CoreBundle\Event\Translation\TranslationCreatedEvent;
 use RZ\Roadiz\CoreBundle\Event\Translation\TranslationDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\Translation\TranslationUpdatedEvent;
-use RZ\Roadiz\CoreBundle\ListManager\EntityListManagerFactoryInterface;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Forms\TranslationType;
+use Themes\Rozier\RozierApp;
+use Twig\Error\RuntimeError;
 
-#[AsController]
-final class TranslationsController extends AbstractController
+class TranslationsController extends RozierApp
 {
-    public function __construct(
-        private readonly HandlerFactoryInterface $handlerFactory,
-        private readonly EntityListManagerFactoryInterface $entityManagerFactory,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LogTrail $logTrail,
-        private readonly FormFactoryInterface $formFactory,
-    ) {
+    public const ITEM_PER_PAGE = 5;
+
+    public function __construct(private readonly HandlerFactoryInterface $handlerFactory)
+    {
     }
 
+    /**
+     * @param Request $request
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function indexAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
-        $assignation = [];
-        $assignation['translations'] = [];
+        $this->assignation['translations'] = [];
 
-        $listManager = $this->entityManagerFactory->createAdminEntityListManager(
+        $listManager = $this->createEntityListManager(
             Translation::class
         );
+        $listManager->setDisplayingNotPublishedNodes(true);
         $listManager->handle();
 
-        $assignation['filters'] = $listManager->getAssignation();
+        $this->assignation['filters'] = $listManager->getAssignation();
         $translations = $listManager->getEntities();
 
         /** @var Translation $translation */
         foreach ($translations as $translation) {
             // Make default forms
-            $form = $this->formFactory
-                ->createNamedBuilder('default_trans_'.$translation->getId(), FormType::class, $translation)
-                ->getForm();
+            $form = $this->createNamedFormBuilder('default_trans_' . $translation->getId(), $translation)->getForm();
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var TranslationHandler $handler */
                 $handler = $this->handlerFactory->getHandler($translation);
                 $handler->makeDefault();
-                $msg = $this->translator->trans('translation.%name%.made_default', ['%name%' => $translation->getName()]);
-                $this->logTrail->publishConfirmMessage($request, $msg, $translation);
-                $this->eventDispatcher->dispatch(new TranslationUpdatedEvent($translation));
-
+                $msg = $this->getTranslator()->trans('translation.%name%.made_default', ['%name%' => $translation->getName()]);
+                $this->publishConfirmMessage($request, $msg, $translation);
+                $this->dispatchEvent(new TranslationUpdatedEvent($translation));
                 /*
                  * Force redirect to avoid resending form when refreshing page
                  */
@@ -77,38 +68,44 @@ final class TranslationsController extends AbstractController
                 );
             }
 
-            $assignation['translations'][] = [
+            $this->assignation['translations'][] = [
                 'translation' => $translation,
                 'defaultForm' => $form->createView(),
             ];
         }
 
-        return $this->render('@RoadizRozier/translations/list.html.twig', $assignation);
+        return $this->render('@RoadizRozier/translations/list.html.twig', $this->assignation);
     }
 
+    /**
+     * @param Request $request
+     * @param int $translationId
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function editAction(Request $request, int $translationId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->managerRegistry
-            ->getRepository(Translation::class)
-            ->find($translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
-        if (null === $translation) {
+        if ($translation === null) {
             throw new ResourceNotFoundException();
         }
+
+        $this->assignation['translation'] = $translation;
 
         $form = $this->createForm(TranslationType::class, $translation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->managerRegistry->getManagerForClass(Translation::class)->flush();
-            $msg = $this->translator->trans('translation.%name%.updated', ['%name%' => $translation->getName()]);
-            $this->logTrail->publishConfirmMessage($request, $msg, $translation);
+            $this->em()->flush();
+            $msg = $this->getTranslator()->trans('translation.%name%.updated', ['%name%' => $translation->getName()]);
+            $this->publishConfirmMessage($request, $msg, $translation);
 
-            $this->eventDispatcher->dispatch(new TranslationUpdatedEvent($translation));
-
+            $this->dispatchEvent(new TranslationUpdatedEvent($translation));
             /*
              * Force redirect to avoid resending form when refreshing page
              */
@@ -118,76 +115,85 @@ final class TranslationsController extends AbstractController
             );
         }
 
-        return $this->render('@RoadizRozier/translations/edit.html.twig', [
-            'translation' => $translation,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/translations/edit.html.twig', $this->assignation);
     }
 
+    /**
+     * @param Request $request
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function addAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         $translation = new Translation();
+        $this->assignation['translation'] = $translation;
 
         $form = $this->createForm(TranslationType::class, $translation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->managerRegistry->getManagerForClass(Translation::class)->persist($translation);
-            $this->managerRegistry->getManagerForClass(Translation::class)->flush();
+            $this->em()->persist($translation);
+            $this->em()->flush();
 
-            $msg = $this->translator->trans('translation.%name%.created', ['%name%' => $translation->getName()]);
-            $this->logTrail->publishConfirmMessage($request, $msg, $translation);
+            $msg = $this->getTranslator()->trans('translation.%name%.created', ['%name%' => $translation->getName()]);
+            $this->publishConfirmMessage($request, $msg, $translation);
 
-            $this->eventDispatcher->dispatch(new TranslationCreatedEvent($translation));
-
+            $this->dispatchEvent(new TranslationCreatedEvent($translation));
             /*
              * Force redirect to avoid resending form when refreshing page
              */
             return $this->redirectToRoute('translationsHomePage');
         }
 
-        return $this->render('@RoadizRozier/translations/add.html.twig', [
-            'translation' => $translation,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/translations/add.html.twig', $this->assignation);
     }
 
+    /**
+     * @param Request $request
+     * @param int $translationId
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function deleteAction(Request $request, int $translationId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_TRANSLATIONS');
 
         /** @var Translation|null $translation */
-        $translation = $this->managerRegistry
-            ->getRepository(Translation::class)
-            ->find($translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if (null === $translation) {
             throw new ResourceNotFoundException();
         }
 
+        $this->assignation['translation'] = $translation;
         $form = $this->createForm(FormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             if (false === $translation->isDefaultTranslation()) {
-                $this->managerRegistry->getManagerForClass(Translation::class)->remove($translation);
-                $this->managerRegistry->getManagerForClass(Translation::class)->flush();
-                $msg = $this->translator->trans('translation.%name%.deleted', ['%name%' => $translation->getName()]);
-                $this->logTrail->publishConfirmMessage($request, $msg, $translation);
-                $this->eventDispatcher->dispatch(new TranslationDeletedEvent($translation));
+                $this->em()->remove($translation);
+                $this->em()->flush();
+                $msg = $this->getTranslator()->trans('translation.%name%.deleted', ['%name%' => $translation->getName()]);
+                $this->publishConfirmMessage($request, $msg, $translation);
+                $this->dispatchEvent(new TranslationDeletedEvent($translation));
 
                 return $this->redirectToRoute('translationsHomePage');
             }
-            $form->addError(new FormError($this->translator->trans(
+            $form->addError(new FormError($this->getTranslator()->trans(
                 'translation.%name%.cannot_delete_default_translation',
                 ['%name%' => $translation->getName()]
             )));
         }
 
-        return $this->render('@RoadizRozier/translations/delete.html.twig', [
-            'translation' => $translation,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/translations/delete.html.twig', $this->assignation);
     }
 }

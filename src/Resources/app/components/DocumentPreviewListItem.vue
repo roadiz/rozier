@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
         <li v-if="document"
-            :title="document.classname"
+            :title="document.filename"
             class="image-document uk-sortable-list-item documents-widget-sortable-list-item"
             data-uk-tooltip="{animation:true, pos:'bottom'}"
             @mouseleave="onMouseleave"
@@ -17,45 +17,42 @@
                 <div class="document-border"></div>
 
                 <div class="document-overflow">
-                    <template v-if="document.isPrivate">
+                    <template v-if="document.isSvg">
+                        <div v-html="document.preview_html" class="svg"></div>
+                    </template>
+                    <template v-else-if="document.isImage && !document.isWebp && !document.isPrivate">
+                        <picture>
+                            <source :srcset="document.thumbnail_80 + '.webp'" type="image/webp">
+                            <img class="document-image"
+                                 width="80"
+                                 height="80"
+                                 loading="lazy"
+                                 :src="document.thumbnail_80" />
+                        </picture>
+                    </template>
+                    <template v-else-if="document.isImage && !document.isPrivate">
+                        <img class="document-image" width="80" height="80"
+                             src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+                             v-dynamic-img="document.thumbnail_80" />
+                    </template>
+                    <template v-else-if="document.isPrivate">
                         <div class="document-platform-icon"><i class="uk-icon-lock"></i></div>
                     </template>
                     <template v-else>
-                        <template v-if="document.isSvg">
-                            <div v-html="document.previewHtml" class="svg"></div>
-                        </template>
-                        <template v-else-if="document.isImage && !document.isWebp">
-                            <picture>
-                                <source :srcset="document.thumbnail80 + '.webp'" type="image/webp">
-                                <img class="document-image"
-                                     width="80"
-                                     height="80"
-                                     loading="lazy"
-                                     :src="document.thumbnail80" />
-                            </picture>
-                        </template>
-                        <template v-else-if="document.isImage">
-                            <img class="document-image" width="80" height="80"
-                                 src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                                 v-dynamic-img="document.thumbnail80" />
-                        </template>
-                        <template v-else>
-                            <img v-if="document.hasThumbnail"
-                                 class="document-image"
-                                 width="80" height="80"
-                                 src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                                 v-dynamic-img="document.thumbnail80" />
-                            <div class="document-platform-icon"><i :class="'uk-icon-file-' + document.icon +'-o'"></i></div>
-                        </template>
+                        <img v-if="document.hasThumbnail"
+                             class="document-image"
+                             width="80" height="80"
+                             src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+                             v-dynamic-img="document.thumbnail_80" />
+                        <div class="document-platform-icon"><i :class="'uk-icon-file-' + document.icon +'-o'"></i></div>
                     </template>
-
                     <template v-if="drawerName">
                         <input type="hidden" :name="drawerName + '[' + index +']'" :value="document.id" />
                     </template>
 
                     <div class="document-links">
                         <ajax-link
-                            :href="editUrl"
+                            :href="document.editUrl + getReferer()"
                             class="uk-button document-link uk-button-mini">
                             <i class="uk-icon-rz-pencil"></i>
                         </ajax-link><a
@@ -65,9 +62,9 @@
                             <i class="uk-icon-rz-trash-o"></i>
                         </a>
                     </div>
-                    <template v-if="document.embedPlatform">
+                    <template v-if="document.isEmbed">
                         <div class="document-mime-type">{{ document.embedPlatform }}</div>
-                        <div class="document-platform-icon"><i :class="'uk-icon-' + document.icon"></i></div>
+                        <div class="document-platform-icon"><i :class="'uk-icon-rz-' + document.icon"></i></div>
                     </template>
                     <template v-else>
                         <div class="document-mime-type">{{ shortMimeType }}</div>
@@ -108,13 +105,7 @@
                 return centralTruncate(this.document.shortMimeType, 13)
             },
             filename: function () {
-                return centralTruncate(this.document.classname, 12)
-            },
-            name: function () {
-                return centralTruncate(this.document.displayable, 12)
-            },
-            editUrl: function () {
-                return this.document.editItem + this.getReferer()
+                return centralTruncate(this.document.filename, 12)
             }
         },
         methods: {

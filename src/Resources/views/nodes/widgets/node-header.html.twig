@@ -8,7 +8,7 @@
     <th class="mobile-hidden">
         {% trans %}node.type{% endtrans %}
         {% include '@RoadizRozier/includes/column_ordering.html.twig' with {
-            'field': 'nodeTypeName',
+            'field': 'nt.name',
             'filters': filters,
         } only %}
     </th>

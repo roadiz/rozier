@@ -13,13 +13,7 @@ export function getNodeTypesByIds({ ids = [] }) {
     const postData = {
         _token: window.RozierRoot.ajaxToken,
         _action: 'nodeTypesByIds',
-    }
-    /*
-     * We need to send the ids as an object with keys as string
-     * when Varnish is enabled, the query string is sorted
-     */
-    for (let i = 0; i < ids.length; i++) {
-        postData['names[' + i + ']'] = ids[i]
+        names: ids,
     }
 
     return request({
