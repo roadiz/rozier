@@ -1,21 +1,19 @@
-import request from 'axios'
-
 /**
  * Get a random image.
  *
  * @returns {Promise<R>|Promise.<T>}
  */
 export function getImage() {
-    return request({
+    return fetch(window.RozierConfig.routes.splashRequest, {
         method: 'GET',
-        url: window.RozierRoot.routes.splashRequest,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        params: {
-            _: Math.random(),
+        headers: {
+            Accept: 'application/json',
+            // Required to prevent using this route as referer when login again
+            'X-Requested-With': 'XMLHttpRequest',
         },
     })
-        .then((response) => {
-            return response.data.url
+        .then(async (response) => {
+            return (await response.json()).url
         })
         .catch(() => {
             throw new Error('Image not found')
