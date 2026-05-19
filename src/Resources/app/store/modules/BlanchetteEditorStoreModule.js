@@ -42,25 +42,24 @@ const actions = {
         commit(BLANCHETTE_EDITOR_IS_LOADING)
 
         return DocumentApi.setDocument(formData)
-            .then(async (response) => {
-                const data = await response.json()
+            .then((res) => {
                 commit(BLANCHETTE_EDITOR_LOADED)
-                if (data && data.path) {
-                    window.dispatchEvent(
-                        new CustomEvent('pushToast', {
-                            detail: {
-                                message: data.message,
-                                status: 'success',
-                            },
-                        })
-                    )
-                    commit(BLANCHETTE_EDITOR_SAVE_SUCCESS, { path: data.path })
+                if (res.data && res.data.path) {
+                    window.UIkit.notify({
+                        message: res.data.message,
+                        status: 'success',
+                        timeout: 2000,
+                        pos: 'top-center',
+                    })
+
+                    commit(BLANCHETTE_EDITOR_SAVE_SUCCESS, { path: res.data.path })
                 } else {
                     throw new Error('No path found')
                 }
             })
-            .catch(async (error) => {
-                commit(BLANCHETTE_EDITOR_ERROR, { error: await error.response.json() })
+            .catch((error) => {
+                console.error(error)
+                commit(BLANCHETTE_EDITOR_ERROR, { error })
                 commit(BLANCHETTE_EDITOR_LOADED)
             })
     },

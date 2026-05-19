@@ -17,22 +17,26 @@ export default class KeyboardEventService {
     }
 
     bindEscape() {
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'Escape' || e.keyCode === 27) {
-                this.store.commit(KEYBOARD_EVENT_ESCAPE)
-            }
-        })
+        window.Mousetrap.bind('esc', () => this.store.commit(KEYBOARD_EVENT_ESCAPE))
     }
 
     bindSpace() {
-        window.addEventListener('keyup', (e) => {
-            if (!e.key === 'Space' || !this.store.getters.documentPreviewGetDocument) {
-                return
+        window.Mousetrap.bind('space', (e) => {
+            if (e.preventDefault && this.store.getters.documentPreviewGetDocument) {
+                e.preventDefault()
+            } else if (this.store.getters.documentPreviewGetDocument) {
+                // internet explorer
+                e.returnValue = false
             }
-            e.preventDefault()
-            this.store.commit(KEYBOARD_EVENT_SPACE, { event: e })
 
-            return false
+            if (e.target === document.body && e.preventDefault) {
+                e.preventDefault()
+            } else if (e.target === document.body) {
+                // internet explorer
+                e.returnValue = false
+            }
+
+            this.store.commit(KEYBOARD_EVENT_SPACE)
         })
     }
 }

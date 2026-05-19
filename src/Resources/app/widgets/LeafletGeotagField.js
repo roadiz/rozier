@@ -1,9 +1,6 @@
-import { GeoJSON, Icon, LatLng, Map, Marker, TileLayer } from 'leaflet'
+import $ from 'jquery'
+import { Map, Marker, LatLng, TileLayer, Icon, GeoJSON } from 'leaflet'
 import GeoCodingService from '../services/GeoCodingService'
-import iconUrl from '../img/marker.png'
-import iconRetinaUrl from '../img/marker@2x.png'
-import shadowUrl from '../img/marker_shadow.png'
-import shadowRetinaUrl from '../img/marker_shadow@2x.png'
 
 export const DEFAULT_LOCATION = { lat: 45.769785, lng: 4.833967, zoom: 14 }
 
@@ -42,8 +39,8 @@ export default class LeafletGeotagField {
         const labelText = $label.innerHTML
         let jsonCode = null
 
-        if (window.RozierConfig.defaultMapLocation) {
-            jsonCode = window.RozierConfig.defaultMapLocation
+        if (window.Rozier.defaultMapLocation) {
+            jsonCode = window.Rozier.defaultMapLocation
         } else {
             jsonCode = DEFAULT_LOCATION
         }
@@ -72,7 +69,7 @@ export default class LeafletGeotagField {
             '<button type="button" id="' +
                 resetButtonId +
                 '" class="uk-button uk-button-content uk-button-danger rz-geotag-reset" title="' +
-                window.RozierConfig.messages.geotag.resetMarker +
+                window.Rozier.messages.geotag.resetMarker +
                 '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
             '</div>',
             '</div>',
@@ -89,7 +86,7 @@ export default class LeafletGeotagField {
         }
         let $geocodeInput = document.getElementById(fieldAddressId)
         if ($geocodeInput) {
-            $geocodeInput.setAttribute('placeholder', window.RozierConfig.messages.geotag.typeAnAddress)
+            $geocodeInput.setAttribute('placeholder', window.Rozier.messages.geotag.typeAnAddress)
         }
         // Reset button
         let $geocodeReset = document.getElementById(resetButtonId)
@@ -103,7 +100,7 @@ export default class LeafletGeotagField {
         let mapOptions = {
             center: this.createLatLng(jsonCode),
             zoom: jsonCode.zoom || jsonCode.alt,
-            styles: window.RozierConfig.mapsStyle,
+            styles: window.Rozier.mapsStyle,
         }
         let map = this.createMap(fieldId, mapOptions)
         let marker = null
@@ -113,10 +110,10 @@ export default class LeafletGeotagField {
                 jsonCode = JSON.parse(element.value)
                 marker = this.createMarker(jsonCode, map)
                 $geocodeReset.style.display = 'inline-block'
-                marker.on('dragend', this.setMarkerEvent.bind(this, marker, element, $geocodeReset, map))
+                marker.on('dragend', $.proxy(this.setMarkerEvent, this, marker, element, $geocodeReset, map))
                 $geocodeReset.addEventListener(
                     'click',
-                    this.resetMarker.bind(this, marker, element, $geocodeReset, map)
+                    $.proxy(this.resetMarker, this, marker, element, $geocodeReset, map)
                 )
             } catch (e) {
                 element.style.display = null
@@ -125,8 +122,11 @@ export default class LeafletGeotagField {
             }
         }
 
-        map.on('click', this.setMarkerEvent.bind(this, marker, element, $geocodeReset, map))
-        $geocodeInput.addEventListener('keypress', this.requestGeocode.bind(this, marker, element, $geocodeReset, map))
+        map.on('click', $.proxy(this.setMarkerEvent, this, marker, element, $geocodeReset, map))
+        $geocodeInput.addEventListener(
+            'keypress',
+            $.proxy(this.requestGeocode, this, marker, element, $geocodeReset, map)
+        )
 
         this.resetMap(map, marker, mapOptions, null)
 
@@ -207,11 +207,11 @@ export default class LeafletGeotagField {
      */
     createAndBindMarker(latlng, map, $input, $geocodeReset) {
         const marker = this.createMarker(latlng, map)
-        marker.on('dragend', this.setMarkerEvent.bind(this, marker, $input, $geocodeReset, map))
-        $geocodeReset.addEventListener('click', this.resetMarker.bind(this, marker, $input, $geocodeReset, map))
+        marker.on('dragend', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
+        $geocodeReset.addEventListener('click', $.proxy(this.resetMarker, this, marker, $input, $geocodeReset, map))
         // reset existing click event
         map.off('click')
-        map.on('click', this.setMarkerEvent.bind(this, marker, $input, $geocodeReset, map))
+        map.on('click', $.proxy(this.setMarkerEvent, this, marker, $input, $geocodeReset, map))
         return marker
     }
 
@@ -335,7 +335,7 @@ export default class LeafletGeotagField {
      */
     createMap(fieldId, mapOptions) {
         const map = new Map(document.getElementById(fieldId)).setView(mapOptions.center, mapOptions.zoom)
-        const osmLayer = new TileLayer(window.RozierConfig.leafletMapTileUrl, {
+        const osmLayer = new TileLayer(window.Rozier.leafletMapTileUrl, {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18,
         })
@@ -361,10 +361,10 @@ export default class LeafletGeotagField {
 
     createIcon() {
         return new Icon({
-            iconUrl,
-            iconRetinaUrl,
-            shadowUrl,
-            shadowRetinaUrl,
+            iconUrl: window.Rozier.resourcesUrl + 'assets/img/marker.png',
+            iconRetinaUrl: window.Rozier.resourcesUrl + 'assets/img/marker@2x.png',
+            shadowUrl: window.Rozier.resourcesUrl + 'assets/img/marker_shadow.png',
+            shadowRetinaUrl: window.Rozier.resourcesUrl + 'assets/img/marker_shadow@2x.png',
             iconSize: [22, 30], // size of the icon
             shadowSize: [25, 22], // size of the shadow
             iconAnchor: [11, 30], // point of the icon which will correspond to marker's location
@@ -385,10 +385,12 @@ export default class LeafletGeotagField {
                     latLng.name = response.display_name
                     return latLng
                 } else {
+                    console.error('Geocode was not successful.')
                     return null
                 }
             })
             .catch((e) => {
+                console.error(e)
                 return null
             })
     }

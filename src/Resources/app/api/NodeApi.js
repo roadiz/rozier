@@ -1,3 +1,5 @@
+import request from 'axios'
+
 /**
  * Fetch Nodes from an array of node id.
  *
@@ -7,7 +9,7 @@
  */
 export function getNodesByIds({ ids = [], filters = {} }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'nodesByIds',
     }
     if (filters && filters._locale) {
@@ -21,26 +23,22 @@ export function getNodesByIds({ ids = [], filters = {} }) {
         postData['ids[' + i + ']'] = ids[i]
     }
 
-    return fetch(window.RozierConfig.routes.nodesAjaxByArray + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.nodesAjaxByArray,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.items) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.items) {
                 return {
-                    items: data.items,
+                    items: response.data.items,
                 }
             } else {
                 return null
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error.response.data.humanMessage)
         })
 }
 
@@ -56,7 +54,7 @@ export function getNodesByIds({ ids = [], filters = {} }) {
  */
 export function getNodes({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'toggleExplorer',
         search: searchTerms,
         page: 1,
@@ -69,41 +67,36 @@ export function getNodes({ searchTerms, preFilters, filters, filterExplorerSelec
         postData._locale = filters._locale
     }
 
-    if (filterExplorerSelection && filterExplorerSelection.id) {
-        postData.tagId = filterExplorerSelection.id
+    if (filterExplorerSelection) {
+        if (filterExplorerSelection.id) {
+            postData.tagId = filterExplorerSelection.id
+        }
     }
 
     if (preFilters && preFilters.nodeTypes) {
-        const nodeTypes = JSON.parse(preFilters.nodeTypes)
-        if (Array.isArray(nodeTypes) && nodeTypes.length > 0) {
-            postData.nodeTypes = nodeTypes
-        }
+        postData.nodeTypes = JSON.parse(preFilters.nodeTypes)
     }
 
     if (moreData) {
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return fetch(window.RozierConfig.routes.nodesAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.nodesAjaxExplorer,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.nodes) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.nodes) {
                 return {
-                    items: data.nodes,
-                    filters: data.filters,
+                    items: response.data.nodes,
+                    filters: response.data.filters,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error)
         })
 }
