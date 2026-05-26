@@ -1,4 +1,5 @@
-// HERE WE NEED JQUERY BECAUSE UI-KIT V2 REQUIRE JQUERY
+import $ from 'jquery'
+
 export default class AttributeValuePosition {
     constructor() {
         this.$list = $('.attribute-value-forms > .uk-sortable')
@@ -42,7 +43,7 @@ export default class AttributeValuePosition {
         } else {
             afterElementId = parseInt($sibling.data('id'))
         }
-        const route = window.RozierConfig.routes.attributeValueAjaxEdit
+        const route = window.Rozier.routes.attributeValueAjaxEdit
         if (!route || !attributeValueId) {
             return
         }
@@ -52,11 +53,9 @@ export default class AttributeValuePosition {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams({
-                    _token: window.RozierConfig.ajaxToken,
+                    _token: window.Rozier.ajaxToken,
                     _action: 'updatePosition',
                     attributeValueId: attributeValueId,
                     beforeAttributeValueId: beforeElementId,
@@ -67,24 +66,20 @@ export default class AttributeValuePosition {
                 throw response
             }
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.responseText,
-                        status: data.status,
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.responseText,
+                status: data.status,
+                timeout: 3000,
+                pos: 'top-center',
+            })
         } catch (response) {
             const data = await response.json()
-            window.dispatchEvent(
-                new CustomEvent('pushToast', {
-                    detail: {
-                        message: data.title || '',
-                        status: 'danger',
-                    },
-                })
-            )
+            window.UIkit.notify({
+                message: data.title || '',
+                status: 'danger',
+                timeout: 3000,
+                pos: 'top-center',
+            })
         }
     }
 }

@@ -1,19 +1,16 @@
+<!-- Inline template 'views/widgets/drawer.html.twig' -->
 <template>
-    <div
-        class="uk-form-row drawer-widget entity-"
-        :class="[
-            {
-                'uk-active': isActive,
-                'uk-alert-danger': drawer.errorMessage,
-            },
-            'entity-' + entity,
-        ]"
-        v-if="drawer"
-        ref="drawer"
-        :data-accept-entity="entity"
-        data-accept-limit="0"
-        data-entity-types="[]"
-    >
+    <div class="uk-form-row drawer-widget entity-"
+         :class="[{
+            'uk-active' : isActive,
+            'uk-alert-danger': drawer.errorMessage
+         }, 'entity-' + entity]"
+         v-if="drawer"
+         ref="drawer"
+         :data-accept-entity="entity"
+         data-accept-limit="0"
+         data-entity-types="[]">
+
         <nav class="drawer-widget-nav uk-navbar">
             <ul class="uk-navbar-nav">
                 <li class="uk-navbar-brand"><i class=""></i></li>
@@ -35,11 +32,13 @@
         </template>
 
         <div class="drawer-widget-sortable-container">
+
             <transition name="fade" v-if="drawer.isLoading">
                 <div class="spinner"></div>
             </transition>
 
-            <ul class="drawer-widget-sortable" data-input-name="">
+            <ul class="drawer-widget-sortable"
+                data-input-name="">
                 <draggable v-model="items" :options="{ group: '' }">
                     <transition-group>
                         <component
@@ -51,8 +50,7 @@
                             :add-item="addItem"
                             :remove-item="removeItem"
                             :index="index"
-                            :item="item"
-                        >
+                            :item="item">
                         </component>
                     </transition-group>
                 </draggable>
@@ -66,63 +64,62 @@
     </div>
 </template>
 <script>
-// Inline template 'views/widgets/drawer.html.twig'
+    import { mapState } from 'vuex'
 
-// Components
-import DrawerContainer from './DrawerContainer.vue'
-import { mapState } from 'vuex'
-import RzTextarea from '../components/RzTextarea.vue'
+    // Components
+    import DrawerContainer from './DrawerContainer.vue'
+    import RzTextarea from '../components/RzTextarea.vue'
 
-export default {
-    props: {
-        entity: {
-            required: true,
-            type: String,
+    export default {
+        props: {
+            entity: {
+                required: true,
+                type: String
+            },
+            name: {
+                required: true,
+                type: String
+            },
+            id: {
+                required: true,
+                type: String
+            },
+            cols: {
+                type: Number
+            },
+            rows: {
+                type: Number
+            },
+            initialValue: {
+                required: true,
+                type: String
+            }
         },
-        name: {
-            required: true,
-            type: String,
+        mixins: [DrawerContainer],
+        data () {
+            return {
+                currentView: '',
+                value: ''
+            }
         },
-        id: {
-            required: true,
-            type: String,
+        mounted () {
+            this.ids = this.initialValue.split(',')
         },
-        cols: {
-            type: Number,
+        computed: {
+            ...mapState({
+                translations: state => state.translations
+            }),
+
+            updateList () {
+                let array = this.items.map((item) => {
+                    return item.nodeTypeName
+                })
+
+                this.value = array.join(', ')
+            }
         },
-        rows: {
-            type: Number,
-        },
-        initialValue: {
-            required: true,
-            type: String,
-        },
-    },
-    mixins: [DrawerContainer],
-    data() {
-        return {
-            currentView: '',
-            value: '',
+        components: {
+            RzTextarea
         }
-    },
-    mounted() {
-        this.ids = this.initialValue.split(',')
-    },
-    computed: {
-        ...mapState({
-            translations: (state) => state.translations,
-        }),
-
-        updateList() {
-            let array = this.items.map((item) => {
-                return item.nodeTypeName
-            })
-
-            this.value = array.join(', ')
-        },
-    },
-    components: {
-        RzTextarea,
-    },
-}
+    }
 </script>

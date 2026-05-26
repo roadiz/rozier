@@ -1,34 +1,37 @@
+import $ from 'jquery'
+import request from 'axios'
 ;(function () {
     const onLoad = function (data) {
-        const splashContainer = document.getElementById('splash-container')
-        splashContainer.style.backgroundImage = 'url(' + data.url + ')'
-        splashContainer.classList.add('visible')
+        const $splashContainer = $('#splash-container')
+        $splashContainer.css({
+            'background-image': 'url(' + data.url + ')',
+        })
+        $splashContainer.addClass('visible')
     }
 
     const requestImage = function () {
-        fetch(window.RozierConfig.routes.splashRequest, {
+        request({
             method: 'GET',
+            url: window.RozierRoot.routes.splashRequest,
             headers: {
-                Accept: 'application/json',
-                // Required to prevent using this route as referer when login again
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            credentials: 'omit',
+            withCredentials: false,
+            responseType: 'json',
         })
-            .then(async (response) => {
-                const data = await response.json()
-                if (typeof data !== 'undefined' && typeof data.url !== 'undefined') {
+            .then((response) => {
+                if (typeof response.data !== 'undefined' && typeof response.data.url !== 'undefined') {
                     let myImage = new Image(window.width, window.height)
-                    myImage.src = data.url
-                    myImage.onload = $.proxy(onLoad, this, data)
+                    myImage.src = response.data.url
+                    myImage.onload = $.proxy(onLoad, this, response.data)
                 }
             })
-            .catch(async (error) => {
-                console.error((await error.response.json()).humanMessage)
+            .catch((error) => {
+                console.error(error.response.data.humanMessage)
             })
     }
 
-    if (typeof window.RozierConfig.routes.splashRequest !== 'undefined') {
+    if (typeof window.RozierRoot.routes.splashRequest !== 'undefined') {
         requestImage()
     }
 })()

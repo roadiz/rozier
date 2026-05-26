@@ -1,3 +1,5 @@
+import request from 'axios'
+
 /**
  * Fetch NodeTypes from an array of node name.
  *
@@ -9,7 +11,7 @@ export function getNodeTypesByIds({ ids = [] }) {
     ids = ids.map((item) => item.trim())
 
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'nodeTypesByIds',
     }
     /*
@@ -20,26 +22,22 @@ export function getNodeTypesByIds({ ids = [] }) {
         postData['names[' + i + ']'] = ids[i]
     }
 
-    return fetch(window.RozierConfig.routes.nodeTypesAjaxByArray + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.nodeTypesAjaxByArray,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.items) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.items) {
                 return {
-                    items: data.items,
+                    items: response.data.items,
                 }
             } else {
                 return null
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            throw new Error(error.response.data.humanMessage)
         })
 }
 
@@ -55,7 +53,7 @@ export function getNodeTypesByIds({ ids = [] }) {
  */
 export function getNodeTypes({ searchTerms, preFilters, filters, filterExplorerSelection, moreData }) {
     const postData = {
-        _token: window.RozierConfig.ajaxToken,
+        _token: window.RozierRoot.ajaxToken,
         _action: 'toggleExplorer',
         search: searchTerms,
         page: 1,
@@ -65,26 +63,24 @@ export function getNodeTypes({ searchTerms, preFilters, filters, filterExplorerS
         postData.page = filters ? filters.nextPage : 1
     }
 
-    return fetch(window.RozierConfig.routes.nodeTypesAjaxExplorer + '?' + new URLSearchParams(postData), {
+    return request({
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            // Required to prevent using this route as referer when login again
-            'X-Requested-With': 'XMLHttpRequest',
-        },
+        url: window.RozierRoot.routes.nodeTypesAjaxExplorer,
+        params: postData,
     })
-        .then(async (response) => {
-            const data = await response.json()
-            if (typeof data !== 'undefined' && data.nodeTypes) {
+        .then((response) => {
+            if (typeof response.data !== 'undefined' && response.data.nodeTypes) {
                 return {
-                    items: data.nodeTypes,
-                    filters: data.filters,
+                    items: response.data.nodeTypes,
+                    filters: response.data.filters,
                 }
             } else {
                 return {}
             }
         })
-        .catch(async (error) => {
-            throw new Error((await error.response.json()).humanMessage)
+        .catch((error) => {
+            // TODO
+            // Log request error or display a message
+            throw new Error(error)
         })
 }

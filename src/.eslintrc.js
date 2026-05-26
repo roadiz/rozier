@@ -1,23 +1,19 @@
 // https://eslint.org/docs/user-guide/configuring
 module.exports = {
     root: true,
+    parser: 'babel-eslint',
+    parserOptions: {
+        sourceType: 'module',
+    },
     env: {
         browser: true,
         es6: true,
     },
-    parser: 'vue-eslint-parser',
-    parserOptions: {
-        parser: '@typescript-eslint/parser',
-    },
     // https://github.com/standard/standard/blob/master/docs/RULES-en.md
-    extends: [
-        'plugin:vue/vue2-recommended',
-        'plugin:@typescript-eslint/recommended',
-        'prettier',
-        'plugin:prettier/recommended',
-    ],
+    //extends: 'standard',
+    extends: ['prettier', 'plugin:prettier/recommended', 'plugin:vue/base'],
     // required to lint *.vue files
-    plugins: ['@typescript-eslint', 'html', 'prettier'],
+    plugins: ['html', 'prettier'],
     // add your custom rules here
     rules: {
         indent: ['warn', 4, { SwitchCase: 1 }],
