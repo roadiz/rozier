@@ -1,24 +1,33 @@
+import $ from 'jquery'
+
 /**
  * Settings save buttons
  */
 export default class SettingsSaveButtons {
     constructor() {
-        this.buttons = document.querySelectorAll('.uk-button-settings-save')
+        // Selectors
+        this.$button = $('.uk-button-settings-save')
         this.currentRequest = null
+
+        // Bind methods
         this.buttonClick = this.buttonClick.bind(this)
 
-        this.init()
+        // Methods
+        if (this.$button.length) {
+            this.init()
+        }
     }
 
     /**
      * Init
      */
     init() {
-        this.buttons.forEach((button) => button.addEventListener('click', this.buttonClick))
+        // Events
+        this.$button.on('click', this.buttonClick)
     }
 
     unbind() {
-        this.buttons.forEach((button) => button.removeEventListener('click', this.buttonClick))
+        this.$button.off('click', this.buttonClick)
     }
 
     /**
@@ -28,31 +37,24 @@ export default class SettingsSaveButtons {
      */
     async buttonClick(e) {
         e.preventDefault()
-        let form = e.currentTarget?.closest('.setting-row')?.querySelector('.uk-form')
+        let $form = $(e.currentTarget).parent().parent().find('.uk-form').eq(0)
 
-        if (!form) {
-            console.error('No form found for settings save button')
+        if ($form.find('input[type=file]').length) {
+            $form.submit()
             return false
         }
 
-        if (form.querySelectorAll('input[type=file]').length) {
-            form.requestSubmit()
-            return false
+        if ($form.hasClass('uk-has-errors')) {
+            $form.find('.uk-alert').remove()
+            $form.removeClass('uk-has-errors')
         }
 
-        if (form.classList.contains('uk-has-errors')) {
-            form.querySelector('.uk-alert').remove()
-            form.classList.remove('uk-has-errors')
-        }
-
-        window.dispatchEvent(new CustomEvent('requestLoaderShow'))
-        const formData = new window.FormData(form)
+        window.Rozier.lazyload.canvasLoader.show()
+        const formData = new window.FormData($form[0])
         const response = await fetch(window.location.href, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
-                // Required to prevent using this route as referer when login again
-                'X-Requested-With': 'XMLHttpRequest',
             },
             body: formData,
         })
@@ -60,26 +62,20 @@ export default class SettingsSaveButtons {
             const data = await response.json()
             if (data.errors && data.errors.value) {
                 for (let key in data.errors.value) {
-                    form.classList.add('uk-has-errors')
-                    form.insertAdjacentHTML(
-                        'beforeend',
-                        '<span class="uk-alert uk-alert-danger">' + data.errors.value[key] + '</span>'
-                    )
+                    $form.addClass('uk-has-errors')
+                    $form.append('<span class="uk-alert uk-alert-danger">' + data.errors.value[key] + '</span>')
                 }
             } else if (data.errors) {
                 for (let key in data.errors) {
-                    form.classList.add('uk-has-errors')
-                    form.insertAdjacentHTML(
-                        'beforeend',
-                        '<span class="uk-alert uk-alert-danger">' + data.errors[key] + '</span>'
-                    )
+                    $form.addClass('uk-has-errors')
+                    $form.append('<span class="uk-alert uk-alert-danger">' + data.errors[key] + '</span>')
                     break
                 }
             }
         }
 
         await window.Rozier.getMessages()
-        window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+        window.Rozier.lazyload.canvasLoader.hide()
 
         return false
     }

@@ -1,3 +1,4 @@
+import $ from 'jquery'
 import LeafletGeotagField, { DEFAULT_LOCATION } from './LeafletGeotagField'
 import { LatLngBounds } from 'leaflet'
 
@@ -45,8 +46,8 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
         $label.style.display = 'none'
 
         let jsonCode = null
-        if (window.RozierConfig.defaultMapLocation) {
-            jsonCode = window.RozierConfig.defaultMapLocation
+        if (window.Rozier.defaultMapLocation) {
+            jsonCode = window.Rozier.defaultMapLocation
         } else {
             jsonCode = DEFAULT_LOCATION
         }
@@ -57,7 +58,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             center: this.createLatLng(jsonCode),
             zoom: jsonCode.zoom || jsonCode.alt,
             scrollwheel: false,
-            styles: window.RozierConfig.mapsStyle,
+            styles: window.Rozier.mapsStyle,
         }
 
         // Prepare DOM
@@ -77,7 +78,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             '<button type="button" id="' +
                 resetButtonId +
                 '" class="uk-button uk-button-content uk-button-danger rz-geotag-reset" title="' +
-                window.RozierConfig.messages.geotag.resetMarker +
+                window.Rozier.messages.geotag.resetMarker +
                 '" data-uk-tooltip="{animation:true}"><i class="uk-icon-rz-trash-o"></i></button>',
             '</div>',
             '</div>',
@@ -93,7 +94,7 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
         element.after(metaNode)
 
         let $geocodeInput = document.getElementById(fieldAddressId)
-        $geocodeInput.setAttribute('placeholder', window.RozierConfig.messages.geotag.typeAnAddress)
+        $geocodeInput.setAttribute('placeholder', window.Rozier.messages.geotag.typeAnAddress)
         // Reset button
         let $geocodeReset = document.getElementById(resetButtonId)
         $geocodeReset.style.display = 'none'
@@ -117,21 +118,21 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
                     const marker = this.createMarker(feature, map)
                     marker.on(
                         'dragend',
-                        this.setMarkerEvent.bind(this, marker, markers, element, $geocodeReset, map, $selector)
+                        $.proxy(this.setMarkerEvent, this, marker, markers, element, $geocodeReset, map, $selector)
                     )
                     markers.push(marker)
                 }
             } catch (e) {
                 element.style.display = 'block'
-                document.getElementById(fieldId).style.display = 'none'
+                $(document.getElementById(fieldId)).style.display = 'none'
                 return false
             }
         }
 
-        map.on('click', this.setMarkerEvent.bind(this, null, markers, element, $geocodeReset, map, $selector))
+        map.on('click', $.proxy(this.setMarkerEvent, this, null, markers, element, $geocodeReset, map, $selector))
         $geocodeInput.addEventListener(
             'keypress',
-            this.requestGeocode.bind(this, markers, element, $geocodeReset, map, $selector)
+            $.proxy(this.requestGeocode, this, markers, element, $geocodeReset, map, $selector)
         )
 
         this.resetMap(map, markers, mapOptions, null)
@@ -195,10 +196,10 @@ export default class MultiLeafletGeotagField extends LeafletGeotagField {
             let $centerBtn = $selector.querySelector('.rz-multi-geotag-center[data-geocode-id="' + j + '"]')
             let $removeBtn = $selector.querySelector('.rz-multi-geotag-remove[data-geocode-id="' + j + '"]')
             if ($centerBtn && $removeBtn) {
-                $centerBtn.addEventListener('click', this.centerMap.bind(this, map, marker))
+                $centerBtn.addEventListener('click', $.proxy(this.centerMap, this, map, marker))
                 $removeBtn.addEventListener(
                     'click',
-                    this.removeMarker.bind(this, map, markers, marker, $selector, $input)
+                    $.proxy(this.removeMarker, this, map, markers, marker, $selector, $input)
                 )
             }
             j++

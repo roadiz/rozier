@@ -1,18 +1,19 @@
-import { addClass, stripTags } from '../utils/plugins'
-import { Expo, TweenLite } from 'gsap'
-import markdownit from 'markdown-it'
-import markdownItFootnote from 'markdown-it-footnote'
+import $ from 'jquery'
+import { stripTags, addClass } from '../utils/plugins'
+import { TweenLite, Expo } from 'gsap'
+import Markdownit from '../../../bower_components/markdown-it/dist/markdown-it'
+import markdownItFootnote from '../../../bower_components/markdown-it-footnote/dist/markdown-it-footnote'
 
+/**
+ * Markdown Editor
+ */
 export default class MarkdownEditor {
-    /**
-     * @param {HTMLTextAreaElement} textarea
-     * @param index
-     */
-    constructor(textarea, index) {
-        this.markdownit = new markdownit()
+    constructor($textarea, index) {
+        this.markdownit = new Markdownit()
         this.markdownit.use(markdownItFootnote)
 
-        this.textarea = textarea
+        this.$textarea = $textarea
+        this.textarea = this.$textarea[0]
         this.usePreview = false
 
         this.editor = window.CodeMirror.fromTextArea(this.textarea, {
@@ -44,18 +45,18 @@ export default class MarkdownEditor {
         })
 
         // Selectors
-        this.cont = this.textarea.closest('.uk-form-row')
-        this.parentForm = this.textarea.closest('form')
+        this.$cont = this.$textarea.parents('.uk-form-row').eq(0)
+        this.$parentForm = this.$textarea.parents('form').eq(0)
         this.index = index
-        this.buttonCode = null
-        this.buttonPreview = null
-        this.buttonFullscreen = null
-        this.count = null
-        this.countCurrent = null
+        this.$buttonCode = null
+        this.$buttonPreview = null
+        this.$buttonFullscreen = null
+        this.$count = null
+        this.$countCurrent = null
         this.limit = 0
         this.countMinLimit = 0
         this.countMaxLimit = 0
-        this.countMaxLimitText = null
+        this.$countMaxLimitText = null
         this.countAlertActive = false
         this.fullscreenActive = false
 
@@ -79,155 +80,126 @@ export default class MarkdownEditor {
     init() {
         this.editor.on('change', this.textareaChange)
 
-        if (!this.cont || !this.textarea) {
-            return
-        }
+        if (this.$cont.length && this.$textarea.length) {
+            this.$editor = this.$cont.find('.CodeMirror').eq(0)
 
-        this.$editor = this.cont.querySelector('.CodeMirror')
-
-        this.cont.classList.add('markdown-editor')
-        if (this.editor.getOption('readOnly') === true) {
-            this.cont.classList.add('markdown-editor__disabled')
-        }
-        this.buttons = this.cont.querySelectorAll('[data-markdowneditor-button]')
-        // Selectors
-        this.content = this.cont.querySelectorAll('.markdown-editor-content')
-        this.buttonCode = this.cont.querySelectorAll('.markdown-editor-button-code')
-        this.buttonPreview = this.cont.querySelectorAll('.markdown-editor-button-preview')
-        this.buttonFullscreen = this.cont.querySelectorAll('.markdown-editor-button-fullscreen')
-        this.count = this.cont.querySelectorAll('.markdown-editor-count')
-        this.countCurrent = this.cont.querySelectorAll('.count-current')
-        this.countMaxLimitText = this.cont.querySelectorAll('.count-limit')
-
-        // Store markdown index into datas
-        const buttonsCode = this.cont.querySelectorAll('.markdown-editor-button-code')
-        buttonsCode.forEach((button) => {
-            button.setAttribute('data-index', this.index)
-        })
-        const buttonPreview = this.cont.querySelectorAll('.markdown-editor-button-preview')
-        buttonPreview.forEach((button) => {
-            button.setAttribute('data-index', this.index)
-        })
-        const buttonFullscreen = this.cont.querySelectorAll('.markdown-editor-button-fullscreen')
-        buttonFullscreen.forEach((button) => {
-            button.setAttribute('data-index', this.index)
-        })
-        const mdTextarea = this.cont.querySelectorAll('.markdown_textarea')
-        mdTextarea.forEach((textarea) => {
-            textarea.setAttribute('data-index', this.index)
-        })
-        this.$editor.setAttribute('data-index', this.index)
-
-        /*
-         * Create preview tab.
-         */
-        const editorTabs = document.createElement('div')
-        editorTabs.classList.add('markdown-editor-tabs')
-        this.$editor.before(editorTabs)
-        this.tabs = editorTabs
-        this.previewContainer = document.getElementById('codemirror-preview-containers')
-
-        const editorPreview = document.createElement('div')
-        editorPreview.classList.add('markdown-editor-preview')
-        this.$editor.after(editorPreview)
-        this.preview = editorPreview
-
-        this.tabs.append(this.$editor)
-        this.previewContainer.append(this.preview)
-        this.editor.refresh()
-
-        // Check if a max length is defined
-        if (this.textarea.hasAttribute('data-max-length') && this.textarea.getAttribute('data-max-length') !== '') {
-            this.limit = true
-            this.countMaxLimit = parseInt(this.textarea.getAttribute('data-max-length'))
-
-            if (this.countCurrent.length && this.countMaxLimitText.length && this.count.length) {
-                this.countCurrent[0].innerHTML = stripTags(this.editor.getValue()).length
-                this.countMaxLimitText[0].innerHTML = this.textarea.getAttribute('data-max-length')
-                this.count[0].style.display = 'block'
+            this.$cont.addClass('markdown-editor')
+            if (this.editor.getOption('readOnly') === true) {
+                this.$cont.addClass('markdown-editor__disabled')
             }
-        }
+            this.$buttons = this.$cont.find('[data-markdowneditor-button]')
+            // Selectors
+            this.$content = this.$cont.find('.markdown-editor-content')
+            this.$buttonCode = this.$cont.find('.markdown-editor-button-code')
+            this.$buttonPreview = this.$cont.find('.markdown-editor-button-preview')
+            this.$buttonFullscreen = this.$cont.find('.markdown-editor-button-fullscreen')
+            this.$count = this.$cont.find('.markdown-editor-count')
+            this.$countCurrent = this.$cont.find('.count-current')
+            this.$countMaxLimitText = this.$cont.find('.count-limit')
 
-        if (this.textarea.hasAttribute('data-min-length') && this.textarea.getAttribute('data-min-length') !== '') {
-            this.limit = true
-            this.countMinLimit = parseInt(this.textarea.getAttribute('data-min-length'))
-        }
+            // Store markdown index into datas
+            this.$cont.find('.markdown-editor-button-code').attr('data-index', this.index)
+            this.$cont.find('.markdown-editor-button-preview').attr('data-index', this.index)
+            this.$cont.find('.markdown-editor-button-fullscreen').attr('data-index', this.index)
+            this.$cont.find('.markdown_textarea').attr('data-index', this.index)
+            this.$editor.attr('data-index', this.index)
 
-        if (
-            this.textarea.hasAttribute('data-max-length') &&
-            this.textarea.hasAttribute('data-min-length') &&
-            this.textarea.getAttribute('data-min-length') === '' &&
-            this.textarea.getAttribute('data-max-length') === ''
-        ) {
-            this.limit = false
-            this.countMaxLimit = null
-            this.countAlertActive = null
-        }
+            /*
+             * Create preview tab.
+             */
+            this.$editor.before('<div class="markdown-editor-tabs">')
+            this.$tabs = this.$cont.find('.markdown-editor-tabs').eq(0)
 
-        this.fullscreenActive = false
+            this.$editor.after('<div class="markdown-editor-preview">')
+            this.$preview = this.$cont.find('.markdown-editor-preview').eq(0)
 
-        if (this.limit) {
-            // Check if current length is over limit
-            if (stripTags(this.editor.getValue()).length > this.countMaxLimit) {
-                this.countAlertActive = true
-                addClass(this.cont, 'content-limit')
-            } else if (stripTags(this.editor.getValue()).length < this.countMinLimit) {
-                this.countAlertActive = true
-                addClass(this.cont, 'content-limit')
-            } else this.countAlertActive = false
-        }
+            this.$tabs.append(this.$editor)
+            this.$tabs.append(this.$preview)
+            this.editor.refresh()
 
-        this.editor.on('change', this.textareaChange)
-        this.editor.on('focus', this.textareaFocus)
-        this.editor.on('blur', this.textareaBlur)
+            // Check if a max length is defined
+            if (this.textarea.hasAttribute('data-max-length') && this.textarea.getAttribute('data-max-length') !== '') {
+                this.limit = true
+                this.countMaxLimit = parseInt(this.textarea.getAttribute('data-max-length'))
 
-        this.editor.on('drop', this.onDropFile)
-        this.buttonPreview.forEach((button) => {
-            button.addEventListener('click', this.buttonPreviewClick)
-        })
+                if (this.$countCurrent.length && this.$countMaxLimitText.length && this.$count.length) {
+                    this.$countCurrent[0].innerHTML = stripTags(this.editor.getValue()).length
+                    this.$countMaxLimitText[0].innerHTML = this.textarea.getAttribute('data-max-length')
+                    this.$count[0].style.display = 'block'
+                }
+            }
 
-        this.buttons.forEach((button) => {
-            button.addEventListener('click', this.buttonClick)
-        })
+            if (this.textarea.hasAttribute('data-min-length') && this.textarea.getAttribute('data-min-length') !== '') {
+                this.limit = true
+                this.countMinLimit = parseInt(this.textarea.getAttribute('data-min-length'))
+            }
 
-        window.requestAnimationFrame(() => {
-            document.querySelectorAll('[data-uk-switcher]').forEach((el) => {
-                el.addEventListener('show.uk.switcher', this.forceEditorUpdate)
+            if (
+                this.textarea.hasAttribute('data-max-length') &&
+                this.textarea.hasAttribute('data-min-length') &&
+                this.textarea.getAttribute('data-min-length') === '' &&
+                this.textarea.getAttribute('data-max-length') === ''
+            ) {
+                this.limit = false
+                this.countMaxLimit = null
+                this.countAlertActive = null
+            }
+
+            this.fullscreenActive = false
+
+            if (this.limit) {
+                // Check if current length is over limit
+                if (stripTags(this.editor.getValue()).length > this.countMaxLimit) {
+                    this.countAlertActive = true
+                    addClass(this.$cont[0], 'content-limit')
+                } else if (stripTags(this.editor.getValue()).length < this.countMinLimit) {
+                    this.countAlertActive = true
+                    addClass(this.$cont[0], 'content-limit')
+                } else this.countAlertActive = false
+            }
+
+            this.editor.on('change', this.textareaChange)
+            this.editor.on('focus', this.textareaFocus)
+            this.editor.on('blur', this.textareaBlur)
+
+            this.editor.on('drop', this.onDropFile)
+            this.$buttonPreview.on('click', this.buttonPreviewClick)
+
+            this.$buttons.on('click', this.buttonClick)
+
+            window.requestAnimationFrame(() => {
+                $('[data-uk-switcher]').on('show.uk.switcher', this.forceEditorUpdate)
+                this.forceEditorUpdate()
             })
-            this.forceEditorUpdate()
-        })
+        }
     }
 
     async onDropFile(editor, event) {
         event.preventDefault(event)
 
         for (let i = 0; i < event.dataTransfer.files.length; i++) {
-            window.dispatchEvent(new CustomEvent('requestLoaderShow'))
+            window.Rozier.lazyload.canvasLoader.show()
             let file = event.dataTransfer.files[i]
             let formData = new FormData()
-            formData.append('_token', window.RozierConfig.ajaxToken)
+            formData.append('_token', window.Rozier.ajaxToken)
             formData.append('form[attachment]', file)
 
-            const response = await fetch(window.RozierConfig.routes.documentsUploadPage, {
+            const response = await fetch(window.Rozier.routes.documentsUploadPage, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    // Required to prevent using this route as referer when login again
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: formData,
             })
             if (!response.ok) {
                 const data = await response.json()
                 if (data.errors) {
-                    window.dispatchEvent(
-                        new CustomEvent('pushToast', {
-                            detail: {
-                                message: data.message,
-                                status: 'danger',
-                            },
-                        })
-                    )
+                    window.UIkit.notify({
+                        message: data.message,
+                        status: 'danger',
+                        timeout: 2000,
+                        pos: 'top-center',
+                    })
                 }
             } else {
                 const data = await response.json()
@@ -238,7 +210,7 @@ export default class MarkdownEditor {
     }
 
     onDropFileUploaded(editor, data) {
-        window.dispatchEvent(new CustomEvent('requestLoaderHide'))
+        window.Rozier.lazyload.canvasLoader.hide()
 
         if (data.success === true) {
             let mark = '![' + data.document.name + '](' + data.document.url + ')'
@@ -251,7 +223,7 @@ export default class MarkdownEditor {
         this.editor.refresh()
 
         if (this.usePreview) {
-            this.preview.innerHTML = this.markdownit.render(this.editor.getValue())
+            this.$preview.html(this.markdownit.render(this.editor.getValue()))
         }
     }
 
@@ -262,11 +234,11 @@ export default class MarkdownEditor {
         if (this.editor.getOption('readOnly') === true) {
             return false
         }
-        let $button = event.currentTarget
+        let $button = $(event.currentTarget)
         let sel = this.editor.getSelections()
 
         if (sel.length > 0) {
-            switch ($button.getAttribute('data-markdowneditor-button')) {
+            switch ($button.attr('data-markdowneditor-button')) {
                 case 'nbsp':
                     this.editor.replaceSelections(this.nbspSelections(sel))
                     break
@@ -454,7 +426,7 @@ export default class MarkdownEditor {
         if (this.usePreview) {
             window.cancelAnimationFrame(this.refreshPreviewTimeout)
             this.refreshPreviewTimeout = window.requestAnimationFrame(() => {
-                this.preview.innerHTML = this.markdownit.render(this.editor.getValue())
+                this.$preview.html(this.markdownit.render(this.editor.getValue()))
             })
         }
 
@@ -464,21 +436,21 @@ export default class MarkdownEditor {
                 let textareaValStripped = stripTags(textareaVal)
                 let textareaValLength = textareaValStripped.length
 
-                this.countCurrent[0].innerHTML = textareaValLength
+                this.$countCurrent.html(textareaValLength)
 
                 if (textareaValLength > this.countMaxLimit) {
                     if (!this.countAlertActive) {
-                        this.cont.classList.add('content-limit')
+                        this.$cont.addClass('content-limit')
                         this.countAlertActive = true
                     }
                 } else if (textareaValLength < this.countMinLimit) {
                     if (!this.countAlertActive) {
-                        this.cont.classList.add('content-limit')
+                        this.$cont.addClass('content-limit')
                         this.countAlertActive = true
                     }
                 } else {
                     if (this.countAlertActive) {
-                        this.cont.classList.remove('content-limit')
+                        this.$cont.removeClass('content-limit')
                         this.countAlertActive = false
                     }
                 }
@@ -490,14 +462,14 @@ export default class MarkdownEditor {
      * Textarea focus
      */
     textareaFocus() {
-        this.cont.classList.add('form-col-focus')
+        this.$cont.addClass('form-col-focus')
     }
 
     /**
      * Textarea focus out
      */
     textareaBlur() {
-        this.cont.classList.remove('form-col-focus')
+        this.$cont.removeClass('form-col-focus')
     }
 
     /**
@@ -506,21 +478,23 @@ export default class MarkdownEditor {
     buttonPreviewClick(e) {
         e.preventDefault()
 
-        let width = this.preview.offsetWidth
+        let width = this.$preview.outerWidth()
 
         if (this.usePreview) {
             this.closePreview()
         } else {
             this.usePreview = true
-            this.buttonPreview.forEach((button) => {
-                button.classList.add('uk-active', 'active')
-            })
-            this.preview.classList.add('active')
+            this.$buttonPreview.addClass('uk-active active')
+            this.$preview.addClass('active')
             this.forceEditorUpdate()
-            TweenLite.fromTo(this.preview, 1, { x: width * -1, opacity: 0 }, { x: 0, ease: Expo.easeOut, opacity: 1 })
-            window.addEventListener('keyup', this.closePreview)
+            TweenLite.fromTo(this.$preview, 1, { x: width * -1, opacity: 0 }, { x: 0, ease: Expo.easeOut, opacity: 1 })
+            window.Rozier.$window.on('keyup', this.closePreview)
 
-            document.body.dispatchEvent(new CustomEvent('markdownPreviewOpen', { detail: this }))
+            let openPreview = new CustomEvent('markdownPreviewOpen', {
+                detail: this,
+            })
+
+            document.body.dispatchEvent(openPreview)
         }
     }
 
@@ -536,14 +510,12 @@ export default class MarkdownEditor {
             }
         }
 
-        let width = this.preview.offsetWidth
-        window.removeEventListener('keyup', this.closePreview)
+        let width = this.$preview.outerWidth()
+        window.Rozier.$window.off('keyup', this.closePreview)
         this.usePreview = false
-        this.buttonPreview.forEach((button) => {
-            button.classList.remove('uk-active', 'active')
-        })
+        this.$buttonPreview.removeClass('uk-active active')
         TweenLite.fromTo(
-            this.preview,
+            this.$preview,
             1,
             { x: 0, opacity: 1 },
             {
@@ -551,14 +523,10 @@ export default class MarkdownEditor {
                 opacity: 0,
                 ease: Expo.easeOut,
                 onComplete: () => {
-                    this.preview.classList.remove('active')
+                    this.$preview.removeClass('active')
                 },
             }
         )
-    }
-
-    destroy() {
-        this.preview.remove()
     }
 
     /**

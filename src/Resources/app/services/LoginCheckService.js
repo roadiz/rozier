@@ -1,3 +1,4 @@
+import request from 'axios'
 import {
     HEALTH_CHECK_FAILED,
     HEALTH_CHECK_SUCCEEDED,
@@ -24,12 +25,10 @@ export default class LoginCheckService {
 
         this.interval = window.setInterval(async () => {
             try {
-                const response = await fetch(window.RozierConfig.routes.ping, {
+                const response = await fetch(window.RozierRoot.routes.ping, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json',
-                        // Required to prevent using this route as referer when login again
-                        'X-Requested-With': 'XMLHttpRequest',
                     },
                 })
                 if (!response.ok) {
@@ -40,7 +39,7 @@ export default class LoginCheckService {
                     }
                 } else {
                     const responseUrl = new URL(response.url)
-                    if (responseUrl.pathname !== window.RozierConfig.routes.ping) {
+                    if (responseUrl.pathname !== window.RozierRoot.routes.ping) {
                         // User has been redirected to login
                         this.store.commit(LOGIN_CHECK_DISCONNECTED)
                         return

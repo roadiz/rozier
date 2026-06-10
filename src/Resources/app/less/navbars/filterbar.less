@@ -23,19 +23,14 @@
 
 // Count
 #uk-navbar-filter-count{
-    width:100%;
+    position: absolute;
+    width:100%; height:22px;
     vertical-align: bottom;
-    font-size: var(--default-font-size);
-    line-height:23px;
+    font-size: @default-font-size; line-height:23px;
     background: var(--maincontent-header-bg);
     color:@icon-simple;
 
-    @media (min-width: @screen-sm-min) {
-        position: absolute;
-        height:22px;
-    }
-
-    span {
+    span{
         color:@grey-interface;
         font-size:17px;
         font-weight: bold;
@@ -70,11 +65,11 @@
 }
 
 .filter-form-text{
-    font-size: var(--default-font-size);
+    font-size: @default-font-size;
 }
 
 .item-per-page-label {
-    font-size: var(--default-font-size);
+    font-size: @default-font-size;
     display: inline-block;
     margin-right: 5px;
 }
