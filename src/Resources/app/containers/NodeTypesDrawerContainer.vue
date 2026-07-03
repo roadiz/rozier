@@ -112,7 +112,7 @@
 
             updateList () {
                 let array = this.items.map((item) => {
-                    return item.nodeTypeName
+                    return item.nodeName
                 })
 
                 this.value = array.join(', ')

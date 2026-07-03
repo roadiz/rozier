@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers\Nodes;
 
-use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\Core\AbstractEntities\PersistableInterface;
-use RZ\Roadiz\CoreBundle\Bag\DecoratedNodeTypes;
-use RZ\Roadiz\CoreBundle\Bag\Settings;
 use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\Translation;
@@ -15,73 +12,48 @@ use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesDeletedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesPreUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Event\NodesSources\NodesSourcesUpdatedEvent;
 use RZ\Roadiz\CoreBundle\Form\Error\FormErrorSerializer;
-use RZ\Roadiz\CoreBundle\Repository\AllStatusesNodeRepository;
-use RZ\Roadiz\CoreBundle\Repository\AllStatusesNodesSourcesRepository;
-use RZ\Roadiz\CoreBundle\Repository\TranslationRepository;
 use RZ\Roadiz\CoreBundle\Routing\NodeRouter;
 use RZ\Roadiz\CoreBundle\Security\Authorization\Voter\NodeVoter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
 use RZ\Roadiz\CoreBundle\TwigExtension\JwtExtension;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Themes\Rozier\Forms\NodeSource\NodeSourceType;
+use Themes\Rozier\RozierApp;
 use Themes\Rozier\Traits\VersionedControllerTrait;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class NodesSourcesController extends AbstractController
+class NodesSourcesController extends RozierApp
 {
     use VersionedControllerTrait;
 
     public function __construct(
-        private readonly ManagerRegistry $managerRegistry,
         private readonly JwtExtension $jwtExtension,
-        private readonly FormErrorSerializer $formErrorSerializer,
-        private readonly DecoratedNodeTypes $nodeTypesBag,
-        private readonly Settings $settingsBag,
-        private readonly TranslatorInterface $translator,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly FormFactoryInterface $formFactory,
-        private readonly LogTrail $logTrail,
-        private readonly AllStatusesNodesSourcesRepository $allStatusesNodesSourcesRepository,
-        private readonly AllStatusesNodeRepository $allStatusesNodeRepository,
-        private readonly TranslationRepository $translationRepository,
+        private readonly FormErrorSerializer $formErrorSerializer
     ) {
-    }
-
-    protected function getDoctrine(): ManagerRegistry
-    {
-        return $this->managerRegistry;
-    }
-
-    protected function createNamedFormBuilder(string $name = 'form', mixed $data = null, array $options = []): FormBuilderInterface
-    {
-        return $this->formFactory->createNamedBuilder($name, FormType::class, $data, $options);
     }
 
     /**
      * Return an edition form for requested node.
+     *
+     * @param Request $request
+     * @param int     $nodeId
+     * @param int     $translationId
+     *
+     * @return Response
+     * @throws RuntimeError
      */
     public function editSourceAction(Request $request, int $nodeId, int $translationId): Response
     {
         /** @var Translation|null $translation */
-        $translation = $this->translationRepository->find($translationId);
+        $translation = $this->em()->find(Translation::class, $translationId);
 
         if (null === $translation) {
             throw new ResourceNotFoundException('Translation does not exist');
@@ -92,7 +64,7 @@ final class NodesSourcesController extends AbstractController
          * that is initialized before calling route method.
          */
         /** @var Node|null $gNode */
-        $gNode = $this->allStatusesNodeRepository->find($nodeId);
+        $gNode = $this->em()->find(Node::class, $nodeId);
         if (null === $gNode) {
             throw new ResourceNotFoundException('Node does not exist');
         }
@@ -100,35 +72,35 @@ final class NodesSourcesController extends AbstractController
         $this->denyAccessUnlessGranted(NodeVoter::EDIT_CONTENT, $gNode);
 
         /** @var NodesSources|null $source */
-        $source = $this->allStatusesNodesSourcesRepository->findOneBy(['translation' => $translation, 'node' => $gNode]);
+        $source = $this->em()
+                       ->getRepository(NodesSources::class)
+                       ->setDisplayingAllNodesStatuses(true)
+                       ->setDisplayingNotPublishedNodes(true)
+                       ->findOneBy(['translation' => $translation, 'node' => $gNode]);
 
         if (null === $source) {
             throw new ResourceNotFoundException('Node source does not exist');
         }
 
-        $this->managerRegistry->getManager()->refresh($source);
+        $this->em()->refresh($source);
 
         $node = $source->getNode();
-        $assignation = [];
-        /*
+
+        /**
          * Versioning
          */
         if ($this->isGranted('ROLE_ACCESS_VERSIONS')) {
-            if (null !== $response = $this->handleVersions($request, $source, $assignation)) {
+            if (null !== $response = $this->handleVersions($request, $source)) {
                 return $response;
             }
-        }
-        $nodeType = $this->nodeTypesBag->get($node->getNodeTypeName());
-        if (null === $nodeType) {
-            throw new ResourceNotFoundException('Node type does not exist');
         }
 
         $form = $this->createForm(
             NodeSourceType::class,
             $source,
             [
-                'class' => $nodeType->getSourceEntityFullQualifiedClassName(),
-                'nodeType' => $nodeType,
+                'class' => $node->getNodeType()->getSourceEntityFullQualifiedClassName(),
+                'nodeType' => $node->getNodeType(),
                 'withVirtual' => true,
                 'withTitle' => true,
                 'disabled' => $this->isReadOnly,
@@ -136,8 +108,8 @@ final class NodesSourcesController extends AbstractController
         );
         $form->handleRequest($request);
         $isJsonRequest =
-            $request->isXmlHttpRequest()
-            || \in_array('application/json', $request->getAcceptableContentTypes())
+            $request->isXmlHttpRequest() ||
+            \in_array('application/json', $request->getAcceptableContentTypes())
         ;
 
         if ($form->isSubmitted()) {
@@ -150,40 +122,35 @@ final class NodesSourcesController extends AbstractController
 
                 $jwtToken = $this->jwtExtension->createPreviewJwt();
 
-                if ($this->settingsBag->get('custom_preview_scheme')) {
-                    $previewUrl = $this->generateUrl(RouteObjectInterface::OBJECT_BASED_ROUTE_NAME, [
-                        RouteObjectInterface::ROUTE_OBJECT => $source,
-                        'canonicalScheme' => $this->settingsBag->get('custom_preview_scheme'),
+                if ($this->getSettingsBag()->get('custom_preview_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_preview_scheme'),
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
-                } elseif ($this->settingsBag->get('custom_public_scheme')) {
-                    $previewUrl = $this->generateUrl(RouteObjectInterface::OBJECT_BASED_ROUTE_NAME, [
-                        RouteObjectInterface::ROUTE_OBJECT => $source,
-                        'canonicalScheme' => $this->settingsBag->get('custom_public_scheme'),
+                } elseif ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $previewUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
                         '_preview' => 1,
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 } else {
-                    $previewUrl = $this->generateUrl(RouteObjectInterface::OBJECT_BASED_ROUTE_NAME, [
-                        RouteObjectInterface::ROUTE_OBJECT => $source,
+                    $previewUrl = $this->generateUrl($source, [
                         '_preview' => 1,
                         'token' => $jwtToken,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ]);
                 }
 
-                if ($this->settingsBag->get('custom_public_scheme')) {
-                    $publicUrl = $this->generateUrl(RouteObjectInterface::OBJECT_BASED_ROUTE_NAME, [
-                        RouteObjectInterface::ROUTE_OBJECT => $source,
-                        'canonicalScheme' => $this->settingsBag->get('custom_public_scheme'),
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                if ($this->getSettingsBag()->get('custom_public_scheme')) {
+                    $publicUrl = $this->generateUrl($source, [
+                        'canonicalScheme' => $this->getSettingsBag()->get('custom_public_scheme'),
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 } else {
-                    $publicUrl = $this->generateUrl(RouteObjectInterface::OBJECT_BASED_ROUTE_NAME, [
-                        RouteObjectInterface::ROUTE_OBJECT => $source,
-                        NodeRouter::NO_CACHE_PARAMETER => true,
+                    $publicUrl = $this->generateUrl($source, [
+                        NodeRouter::NO_CACHE_PARAMETER => true
                     ]);
                 }
 
@@ -204,50 +171,53 @@ final class NodesSourcesController extends AbstractController
              */
             if ($isJsonRequest) {
                 $errors = $this->formErrorSerializer->getErrorsAsArray($form);
-
                 return new JsonResponse([
                     'status' => 'fail',
                     'errors' => $errors,
-                    'message' => $this->translator->trans('form_has_errors.check_you_fields'),
+                    'message' => $this->getTranslator()->trans('form_has_errors.check_you_fields'),
                 ], Response::HTTP_BAD_REQUEST);
             }
         }
 
-        $availableTranslations = $this->translationRepository->findAvailableTranslationsForNode($gNode);
+        $availableTranslations = $this->em()
+            ->getRepository(Translation::class)
+            ->findAvailableTranslationsForNode($gNode);
 
-        return $this->render('@RoadizRozier/nodes/editSource.html.twig', [
-            ...$assignation,
-            'translation' => $translation,
-            'node' => $node,
-            'source' => $source,
-            'form' => $form->createView(),
-            'readOnly' => $this->isReadOnly,
-            'available_translations' => $availableTranslations,
-        ]);
+        $this->assignation['translation'] = $translation;
+        $this->assignation['available_translations'] = $availableTranslations;
+        $this->assignation['node'] = $node;
+        $this->assignation['source'] = $source;
+        $this->assignation['form'] = $form->createView();
+        $this->assignation['readOnly'] = $this->isReadOnly;
+
+        return $this->render('@RoadizRozier/nodes/editSource.html.twig', $this->assignation);
     }
 
     /**
      * Return a remove form for requested nodeSource.
      *
+     * @param Request $request
+     * @param int     $nodeSourceId
+     *
+     * @return Response
      * @throws RuntimeError
      */
     public function removeAction(Request $request, int $nodeSourceId): Response
     {
         /** @var NodesSources|null $ns */
-        $ns = $this->allStatusesNodesSourcesRepository->find($nodeSourceId);
+        $ns = $this->em()->find(NodesSources::class, $nodeSourceId);
         if (null === $ns) {
             throw new ResourceNotFoundException('Node source does not exist');
         }
         $this->denyAccessUnlessGranted(NodeVoter::DELETE, $ns);
         $node = $ns->getNode();
-        $manager = $this->managerRegistry->getManager();
-        $manager->refresh($ns->getNode());
+        $this->em()->refresh($ns->getNode());
 
         /*
          * Prevent deleting last node-source available in node.
          */
         if ($node->getNodeSources()->count() <= 1) {
-            $msg = $this->translator->trans('node_source.%node_source%.%translation%.cant.deleted', [
+            $msg = $this->getTranslator()->trans('node_source.%node_source%.%translation%.cant.deleted', [
                 '%node_source%' => $node->getNodeName(),
                 '%translation%' => $ns->getTranslation()->getName(),
             ]);
@@ -269,11 +239,13 @@ final class NodesSourcesController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $node = $ns->getNode();
+            /*
+             * Dispatch event
+             */
+            $this->dispatchEvent(new NodesSourcesDeletedEvent($ns));
 
-            $this->eventDispatcher->dispatch(new NodesSourcesDeletedEvent($ns));
-
-            $manager->remove($ns);
-            $manager->flush();
+            $this->em()->remove($ns);
+            $this->em()->flush();
 
             $ns = $node->getNodeSources()->first() ?: null;
 
@@ -281,23 +253,23 @@ final class NodesSourcesController extends AbstractController
                 throw new ResourceNotFoundException('No more node-source available for this node.');
             }
 
-            $msg = $this->translator->trans('node_source.%node_source%.deleted.%translation%', [
+            $msg = $this->getTranslator()->trans('node_source.%node_source%.deleted.%translation%', [
                 '%node_source%' => $node->getNodeName(),
                 '%translation%' => $ns->getTranslation()->getName(),
             ]);
 
-            $this->logTrail->publishConfirmMessage($request, $msg, $node);
+            $this->publishConfirmMessage($request, $msg, $node);
 
             return $this->redirectToRoute(
                 'nodesEditSourcePage',
-                ['nodeId' => $node->getId(), 'translationId' => $ns->getTranslation()->getId()]
+                ['nodeId' => $node->getId(), "translationId" => $ns->getTranslation()->getId()]
             );
         }
 
-        return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', [
-            'nodeSource' => $ns,
-            'form' => $form->createView(),
-        ]);
+        $this->assignation["nodeSource"] = $ns;
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/nodes/deleteSource.html.twig', $this->assignation);
     }
 
     protected function onPostUpdate(PersistableInterface $entity, Request $request): void
@@ -309,16 +281,16 @@ final class NodesSourcesController extends AbstractController
             return;
         }
 
-        $this->eventDispatcher->dispatch(new NodesSourcesPreUpdatedEvent($entity));
-        $this->managerRegistry->getManager()->flush();
-        $this->eventDispatcher->dispatch(new NodesSourcesUpdatedEvent($entity));
+        $this->dispatchEvent(new NodesSourcesPreUpdatedEvent($entity));
+        $this->em()->flush();
+        $this->dispatchEvent(new NodesSourcesUpdatedEvent($entity));
 
-        $msg = $this->translator->trans('node_source.%node_source%.updated.%translation%', [
+        $msg = $this->getTranslator()->trans('node_source.%node_source%.updated.%translation%', [
             '%node_source%' => $entity->getNode()->getNodeName(),
             '%translation%' => $entity->getTranslation()->getName(),
         ]);
 
-        $this->logTrail->publishConfirmMessage($request, $msg, $entity);
+        $this->publishConfirmMessage($request, $msg, $entity);
     }
 
     protected function getPostUpdateRedirection(PersistableInterface $entity): ?Response
@@ -329,12 +301,11 @@ final class NodesSourcesController extends AbstractController
 
         /** @var Translation $translation */
         $translation = $entity->getTranslation();
-
         return $this->redirectToRoute(
             'nodesEditSourcePage',
             [
                 'nodeId' => $entity->getNode()->getId(),
-                'translationId' => $translation->getId(),
+                'translationId' => $translation->getId()
             ]
         );
     }

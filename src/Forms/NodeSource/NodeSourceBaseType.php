@@ -15,6 +15,10 @@ use Symfony\Component\Validator\Constraints\Length;
 
 final class NodeSourceBaseType extends AbstractType
 {
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('title', TextType::class, [
@@ -22,24 +26,24 @@ final class NodeSourceBaseType extends AbstractType
             'empty_data' => '',
             'required' => false,
             'attr' => [
-                'data-dev-name' => '{{ nodeSource.'.StringHandler::camelCase('title').' }}',
+                'data-dev-name' => '{{ nodeSource.' . StringHandler::camelCase('title') . ' }}',
                 'lang' => \mb_strtolower(str_replace('_', '-', $options['translation']->getLocale())),
                 'dir' => $options['translation']->isRtl() ? 'rtl' : 'ltr',
             ],
             'constraints' => [
                 new Length([
                     'max' => 255,
-                ]),
-            ],
+                ])
+            ]
         ]);
 
-        if (true === $options['publishable']) {
+        if ($options['publishable'] === true) {
             $builder->add('publishedAt', DateTimeType::class, [
                 'label' => 'publishedAt',
                 'required' => false,
                 'attr' => [
                     'class' => 'rz-datetime-field',
-                    'data-dev-name' => '{{ nodeSource.'.StringHandler::camelCase('publishedAt').' }}',
+                    'data-dev-name' => '{{ nodeSource.' . StringHandler::camelCase('publishedAt') . ' }}',
                 ],
                 'date_widget' => 'single_text',
                 'date_format' => 'yyyy-MM-dd',
@@ -51,11 +55,17 @@ final class NodeSourceBaseType extends AbstractType
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'nodesourcebase';
     }
 
+    /**
+     * @param OptionsResolver $resolver
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

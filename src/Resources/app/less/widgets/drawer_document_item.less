@@ -33,23 +33,23 @@
     .preview-zoom {
         position: absolute;
         z-index: 15;
-        top: -4px;
+        top: 0;
         right: 0;
         width: 20px;
         text-align: center;
-        transform: translateY(-100%);
-        background-color: var(--rz-accent-color);
-        cursor: pointer;
+        background: var(--rz-accent-color);
         font-size: 11px;
-        padding: 5px 0;
+        padding: 2px 0;
         height: 15px;
         color: #fff;
-        transition: 0.4s transform @easeOutExpo;
+        opacity: 0;
+        transition: 0.4s opacity @easeOutExpo;
     }
 
     &:hover {
         .preview-zoom {
-            transform: translateY(0);
+            opacity: 1;
+            cursor: pointer;
         }
     }
 
@@ -75,14 +75,13 @@
         display: none;
     }
 
-    .document-links {
-        position: absolute;
-        width: 80px;
-        height: 30px;
-        transform: translateY(100%);
-        bottom: 0;
+    .document-links{
+        position:absolute;
+        width:80px;
+        height:30px;
+        bottom:-30px;
         overflow: hidden;
-        transition: 0.4s transform @easeOutExpo;
+        transition: 0.4s bottom @easeOutExpo;
         background: rgba(255,255,255,0.8);
 
         .document-link {
@@ -145,8 +144,9 @@
     }
 
     &:hover{
+
         .document-links{
-            transform: translateY(0);
+            bottom:0px;
         }
         .document-platform-icon {
             opacity: 0;

@@ -38,7 +38,7 @@ export default class ChildrenNodesField {
         return !!$nodeTree.length
     }
 
-    async quickAddNode(nodeTypeName, parentNodeId, translationId) {
+    async quickAddNode(nodeTypeId, parentNodeId, translationId) {
         return new Promise(async (resolve, reject) => {
             const response = await fetch(window.Rozier.routes.nodesQuickAddAjax, {
                 method: 'POST',
@@ -48,7 +48,7 @@ export default class ChildrenNodesField {
                 body: new URLSearchParams({
                     _token: window.Rozier.ajaxToken,
                     _action: 'quickAddNode',
-                    nodeTypeName: nodeTypeName,
+                    nodeTypeId: nodeTypeId,
                     parentNodeId: parentNodeId,
                     translationId: translationId,
                 }),
@@ -64,13 +64,13 @@ export default class ChildrenNodesField {
     async onQuickAddClick(event) {
         event.preventDefault()
         let $link = $(event.currentTarget)
-        let nodeTypeName = $link.attr('data-children-node-type')
+        let nodeTypeId = parseInt($link.attr('data-children-node-type'))
         let parentNodeId = parseInt($link.attr('data-children-parent-node'))
         let translationId = parseInt($link.attr('data-translation-id'))
 
-        if (nodeTypeName !== '' && parentNodeId > 0) {
+        if (nodeTypeId > 0 && parentNodeId > 0) {
             try {
-                await this.quickAddNode(nodeTypeName, parentNodeId, translationId)
+                await this.quickAddNode(nodeTypeId, parentNodeId, translationId)
                 window.Rozier.refreshMainNodeTree()
                 window.Rozier.getMessages()
                 let $nodeTree = $link.parents('.children-nodes-widget').find('.nodetree-widget').eq(0)

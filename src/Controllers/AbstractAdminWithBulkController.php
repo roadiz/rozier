@@ -20,7 +20,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     public function __construct(
         protected readonly FormFactoryInterface $formFactory,
         SerializerInterface $serializer,
-        UrlGeneratorInterface $urlGenerator,
+        UrlGeneratorInterface $urlGenerator
     ) {
         parent::__construct($serializer, $urlGenerator);
     }
@@ -63,18 +63,17 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     {
         return null;
     }
-
     protected function getBulkUnpublishRouteName(): ?string
     {
         return null;
     }
-
     protected function getBulkDeleteRouteName(): ?string
     {
         return null;
     }
 
     /**
+     * @param FormInterface|null $form
      * @return array<int|string>
      */
     protected function parseFormBulkIds(?FormInterface $form): array
@@ -100,9 +99,16 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     }
 
     /**
-     * @param callable(string): FormInterface                     $createBulkFormWithIds
+     * @param Request $request
+     * @param string $requiredRole
+     * @param FormInterface $bulkForm
+     * @param FormInterface $form
+     * @param callable(string): FormInterface $createBulkFormWithIds
+     * @param string $templatePath
+     * @param string $confirmMessageTemplate
      * @param callable(PersistableInterface, FormInterface): void $alterItemCallable
-     *
+     * @param string $bulkFormName
+     * @return Response
      * @throws \Twig\Error\RuntimeError
      */
     protected function bulkAction(
@@ -114,7 +120,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
         string $templatePath,
         string $confirmMessageTemplate,
         callable $alterItemCallable,
-        string $bulkFormName,
+        string $bulkFormName
     ): Response {
         $this->denyAccessUnlessGranted($requiredRole);
         $bulkForm->handleRequest($request);
@@ -158,14 +164,13 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                             $confirmMessageTemplate,
                             [
                                 '%item%' => $this->getEntityName($item),
-                                '%namespace%' => $this->getTranslator()->trans($this->getNamespace()),
+                                '%namespace%' => $this->getTranslator()->trans($this->getNamespace())
                             ]
                         );
                         $this->publishConfirmMessage($request, $msg, $item);
                     }
                 }
                 $this->em()->flush();
-
                 return $this->redirect($this->urlGenerator->generate(
                     $this->getDefaultRouteName(),
                     $this->getDefaultRouteParameters()
@@ -186,7 +191,6 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     public function bulkDeleteAction(Request $request): Response
     {
         $this->additionalAssignation($request);
-
         return $this->bulkAction(
             $request,
             $this->getRequiredDeletionRole(),
@@ -197,7 +201,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                     'id' => $ids,
                 ]);
             },
-            $this->getTemplateFolder().'/bulk_delete.html.twig',
+            $this->getTemplateFolder() . '/bulk_delete.html.twig',
             '%namespace%.%item%.was_deleted',
             function (PersistableInterface $item) {
                 $this->removeItem($item);
@@ -209,7 +213,6 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     public function bulkPublishAction(Request $request): Response
     {
         $this->additionalAssignation($request);
-
         return $this->bulkAction(
             $request,
             $this->getRequiredRole(),
@@ -220,7 +223,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                     'id' => $ids,
                 ]);
             },
-            $this->getTemplateFolder().'/bulk_publish.html.twig',
+            $this->getTemplateFolder() . '/bulk_publish.html.twig',
             '%namespace%.%item%.was_published',
             function (PersistableInterface $item) {
                 $this->setPublishedAt($item, new \DateTime('now'));
@@ -232,7 +235,6 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
     public function bulkUnpublishAction(Request $request): Response
     {
         $this->additionalAssignation($request);
-
         return $this->bulkAction(
             $request,
             $this->getRequiredRole(),
@@ -243,7 +245,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                     'id' => $ids,
                 ]);
             },
-            $this->getTemplateFolder().'/bulk_unpublish.html.twig',
+            $this->getTemplateFolder() . '/bulk_unpublish.html.twig',
             '%namespace%.%item%.was_unpublished',
             function (PersistableInterface $item) {
                 $this->setPublishedAt($item, null);
@@ -256,7 +258,7 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
         ?string $routeName,
         string $formName,
         bool $get = false,
-        ?array $data = null,
+        ?array $data = null
     ): FormInterface {
         if (null === $routeName) {
             throw new \RuntimeException('Bulk delete route name is not defined.');
@@ -273,12 +275,11 @@ abstract class AbstractAdminWithBulkController extends AbstractAdminController
                 'method' => 'POST',
             ];
         }
-
         return $this->formFactory->createNamedBuilder($formName, FormType::class, $data, $options)
             ->add('id', HiddenType::class, [
                 'attr' => [
-                    'class' => 'bulk-form-value',
-                ],
+                    'class' => 'bulk-form-value'
+                ]
             ])->getForm();
     }
 

@@ -12,6 +12,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DocumentEmbedType extends AbstractType
 {
+    /**
+     * @inheritDoc
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $services = [];
@@ -29,15 +32,18 @@ class DocumentEmbedType extends AbstractType
                 'label' => 'document.platform',
                 'required' => true,
                 'choices' => $services,
-                'placeholder' => 'document.no_embed_platform',
+                'placeholder' => 'document.no_embed_platform'
             ])
         ;
-        if (false === $options['required']) {
+        if ($options['required'] === false) {
             $builder->get('embedId')->setRequired(false);
             $builder->get('embedPlatform')->setRequired(false);
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('required', true);
@@ -45,6 +51,10 @@ class DocumentEmbedType extends AbstractType
         $resolver->setAllowedTypes('document_platforms', ['array']);
     }
 
+
+    /**
+     * @inheritDoc
+     */
     public function getBlockPrefix(): string
     {
         return 'document_embed';

@@ -7,7 +7,7 @@ namespace Themes\Rozier\Forms;
 use Doctrine\Persistence\ManagerRegistry;
 use RZ\Roadiz\CoreBundle\Entity\Folder;
 use RZ\Roadiz\CoreBundle\Form\DataTransformer\FolderCollectionTransformer;
-use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\AbstractType as AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -21,6 +21,11 @@ final class FolderCollectionType extends AbstractType
     {
     }
 
+    /**
+     * @param FormView $view
+     * @param FormInterface $form
+     * @param array $options
+     */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         parent::buildView($view, $form, $options);
@@ -28,6 +33,9 @@ final class FolderCollectionType extends AbstractType
         $view->vars['provider_class'] = FoldersProvider::class;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -38,6 +46,12 @@ final class FolderCollectionType extends AbstractType
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addModelTransformer(new FolderCollectionTransformer(
@@ -46,11 +60,17 @@ final class FolderCollectionType extends AbstractType
         ));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getParent(): ?string
     {
         return TextType::class;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'folders';
