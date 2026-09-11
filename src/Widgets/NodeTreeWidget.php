@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Themes\Rozier\Widgets;
 
 use Doctrine\Persistence\ManagerRegistry;
-use RZ\Roadiz\Core\AbstractEntities\NodeInterface;
 use RZ\Roadiz\Core\AbstractEntities\TranslationInterface;
-use RZ\Roadiz\CoreBundle\Bag\DecoratedNodeTypes;
-use RZ\Roadiz\CoreBundle\Entity\Document;
 use RZ\Roadiz\CoreBundle\Entity\Node;
-use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\Tag;
-use RZ\Roadiz\CoreBundle\ListManager\NodeTreeDtoListManager;
+use RZ\Roadiz\CoreBundle\ListManager\EntityListManager;
 use RZ\Roadiz\CoreBundle\ListManager\SessionListFilters;
-use RZ\Roadiz\CoreBundle\Model\NodeTreeDto;
-use RZ\Roadiz\CoreBundle\Model\TagTreeDto;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -24,10 +18,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final class NodeTreeWidget extends AbstractWidget
 {
     public const SESSION_ITEM_PER_PAGE = 'nodetree_item_per_page';
-    /**
-     * @var array<NodeInterface>|null
-     */
-    private ?array $nodes = null;
+    private ?iterable $nodes = null;
     private ?Tag $tag = null;
     private bool $stackTree = false;
     private ?array $filters = null;
@@ -35,26 +26,33 @@ final class NodeTreeWidget extends AbstractWidget
     private array $additionalCriteria = [];
 
     /**
-     * @param Node|null                 $parentNode  Entry point of NodeTreeWidget, set null if it's root
+     * @param RequestStack $requestStack
+     * @param ManagerRegistry $managerRegistry
+     * @param Node|null $parentNode Entry point of NodeTreeWidget, set null if it's root
      * @param TranslationInterface|null $translation NodeTree translation
+     * @param bool $includeRootNode
      */
     public function __construct(
         RequestStack $requestStack,
         ManagerRegistry $managerRegistry,
-        private readonly DecoratedNodeTypes $nodeTypesBag,
         private readonly ?Node $parentNode = null,
         private readonly ?TranslationInterface $translation = null,
-        private readonly bool $includeRootNode = false,
+        private readonly bool $includeRootNode = false
     ) {
         parent::__construct($requestStack, $managerRegistry);
     }
 
+    /**
+     * @return Tag|null
+     */
     public function getTag(): ?Tag
     {
         return $this->tag;
     }
 
     /**
+     * @param Tag|null $tag
+     *
      * @return $this
      */
     public function setTag(?Tag $tag): NodeTreeWidget
@@ -64,12 +62,17 @@ final class NodeTreeWidget extends AbstractWidget
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isStackTree(): bool
     {
         return $this->stackTree;
     }
 
     /**
+     * @param bool $stackTree
+     *
      * @return $this
      */
     public function setStackTree(bool $stackTree): NodeTreeWidget
@@ -82,7 +85,7 @@ final class NodeTreeWidget extends AbstractWidget
     /**
      * Fill twig assignation array with NodeTree entities.
      */
-    protected function getRootListManager(): NodeTreeDtoListManager
+    protected function getRootListManager(): EntityListManager
     {
         /*
          * Only use additional criteria for ROOT list-manager
@@ -90,28 +93,41 @@ final class NodeTreeWidget extends AbstractWidget
         return $this->getListManager($this->parentNode, false, $this->additionalCriteria);
     }
 
+    /**
+     * @return array
+     */
     public function getAdditionalCriteria(): array
     {
         return $this->additionalCriteria;
     }
 
+    /**
+     * @param array $additionalCriteria
+     *
+     * @return NodeTreeWidget
+     */
     public function setAdditionalCriteria(array $additionalCriteria): NodeTreeWidget
     {
         $this->additionalCriteria = $additionalCriteria;
-
         return $this;
     }
 
-    protected function canOrderByParent(?NodeInterface $parent = null, bool $subRequest = false): bool
+    /**
+     * @param Node|null $parent
+     * @param bool $subRequest
+     *
+     * @return bool
+     */
+    protected function canOrderByParent(Node $parent = null, bool $subRequest = false): bool
     {
         if (true === $subRequest || null === $parent) {
             return false;
         }
 
         if (
-            'position' !== $parent->getChildrenOrder()
-            && in_array($parent->getChildrenOrder(), Node::$orderingFields)
-            && in_array($parent->getChildrenOrderDirection(), ['ASC', 'DESC'])
+            $parent->getChildrenOrder() !== 'position' &&
+            in_array($parent->getChildrenOrder(), Node::$orderingFields) &&
+            in_array($parent->getChildrenOrderDirection(), ['ASC', 'DESC'])
         ) {
             return true;
         }
@@ -120,16 +136,18 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @param bool  $subRequest         Default: false
+     * @param Node|null $parent
+     * @param bool $subRequest Default: false
      * @param array $additionalCriteria Default: []
+     * @return EntityListManager
      */
     protected function getListManager(
-        ?NodeInterface $parent = null,
+        Node $parent = null,
         bool $subRequest = false,
-        array $additionalCriteria = [],
-    ): NodeTreeDtoListManager {
+        array $additionalCriteria = []
+    ): EntityListManager {
         $criteria = array_merge($additionalCriteria, [
-            'parent' => $parent?->getId() ?? null,
+            'parent' => $parent,
             'translation' => $this->translation,
         ]);
 
@@ -147,8 +165,10 @@ final class NodeTreeWidget extends AbstractWidget
             ];
             $this->canReorder = false;
         }
-
-        $listManager = new NodeTreeDtoListManager(
+        /*
+         * Manage get request to filter list
+         */
+        $listManager = new EntityListManager(
             $this->getRequest(),
             $this->getManagerRegistry()->getManager(),
             Node::class,
@@ -179,31 +199,30 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
+     * @param Node|null $parent
      * @param bool $subRequest Default: false
-     *
-     * @return array<NodeTreeDto>
-     *
-     * @throws \ReflectionException
+     * @return iterable<Node>
      */
-    public function getChildrenNodes(?NodeInterface $parent = null, bool $subRequest = false): array
+    public function getChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
         return $this->getListManager($parent, $subRequest)->getEntities();
     }
 
     /**
+     * @param Node|null $parent
      * @param bool $subRequest Default: false
-     *
-     * @return array<NodeTreeDto>
-     *
-     * @throws \ReflectionException
+     * @return iterable<Node>
      */
-    public function getReachableChildrenNodes(?NodeInterface $parent = null, bool $subRequest = false): array
+    public function getReachableChildrenNodes(Node $parent = null, bool $subRequest = false): iterable
     {
         return $this->getListManager($parent, $subRequest, [
-            'nodeTypeName' => array_map(fn (NodeType $nodeType) => $nodeType->getName(), $this->nodeTypesBag->allReachable()),
+            'nodeType.reachable' => true,
         ])->getEntities();
     }
 
+    /**
+     * @return Node|null
+     */
     public function getRootNode(): ?Node
     {
         return $this->parentNode;
@@ -213,12 +232,17 @@ final class NodeTreeWidget extends AbstractWidget
      * Get entity list manager filters.
      *
      * Call getNodes() first to populate this.
+     *
+     * @return array|null
      */
     public function getFilters(): ?array
     {
         return $this->filters;
     }
 
+    /**
+     * @return TranslationInterface
+     */
     public function getTranslation(): TranslationInterface
     {
         return $this->translation ?? parent::getTranslation();
@@ -238,9 +262,9 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return array<NodeInterface>
+     * @return iterable<Node>
      */
-    public function getNodes(): array
+    public function getNodes(): iterable
     {
         if ($this->includeRootNode && null !== $this->getRootNode()) {
             return [$this->getRootNode()];
@@ -255,33 +279,9 @@ final class NodeTreeWidget extends AbstractWidget
     }
 
     /**
-     * @return array<TagTreeDto>
-     */
-    public function getTags(?NodeInterface $node): array
-    {
-        if (null === $node) {
-            return [];
-        }
-
-        return $this->managerRegistry->getRepository(Tag::class)->findByAsTagTreeDto([
-            'nodes' => $node->getId(),
-        ], [
-            'position' => 'ASC',
-        ], null, null, $this->getTranslation());
-    }
-
-    public function getOneDisplayableDocument(NodeTreeDto $node): ?Document
-    {
-        return $this->managerRegistry
-            ->getRepository(Document::class)
-            ->findOneDisplayableByNodeSource(
-                $node->getNodeSource()->getId(),
-                $this->getTranslation()
-            );
-    }
-
-    /**
      * Gets the value of canReorder.
+     *
+     * @return bool
      */
     public function getCanReorder(): bool
     {

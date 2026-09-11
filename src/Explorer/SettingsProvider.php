@@ -6,6 +6,7 @@ namespace Themes\Rozier\Explorer;
 
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Explorer\AbstractDoctrineExplorerProvider;
+use RZ\Roadiz\CoreBundle\Explorer\ExplorerItemInterface;
 
 final class SettingsProvider extends AbstractDoctrineExplorerProvider
 {
@@ -24,12 +25,26 @@ final class SettingsProvider extends AbstractDoctrineExplorerProvider
         return ['name' => 'ASC'];
     }
 
-    public function supports(mixed $item): bool
+    /**
+     * @inheritDoc
+     */
+    public function supports($item): bool
     {
         if ($item instanceof Setting) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toExplorerItem(mixed $item): ?ExplorerItemInterface
+    {
+        if ($item instanceof Setting) {
+            return new SettingExplorerItem($item, $this->urlGenerator);
+        }
+        throw new \InvalidArgumentException('Explorer item must be instance of ' . Setting::class);
     }
 }

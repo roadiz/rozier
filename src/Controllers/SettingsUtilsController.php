@@ -4,58 +4,54 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Controllers;
 
-use Doctrine\Persistence\ManagerRegistry;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use RZ\Roadiz\CoreBundle\Entity\Setting;
 use RZ\Roadiz\CoreBundle\Entity\SettingGroup;
 use RZ\Roadiz\CoreBundle\Importer\SettingsImporter;
-use RZ\Roadiz\CoreBundle\Security\LogTrail;
 use RZ\Roadiz\Utils\StringHandler;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Themes\Rozier\RozierApp;
 use Twig\Error\RuntimeError;
 
-#[AsController]
-final class SettingsUtilsController extends AbstractController
+class SettingsUtilsController extends RozierApp
 {
     public function __construct(
         private readonly SerializerInterface $serializer,
-        private readonly SettingsImporter $settingsImporter,
-        private readonly ManagerRegistry $managerRegistry,
-        private readonly TranslatorInterface $translator,
-        private readonly LogTrail $logTrail,
+        private readonly SettingsImporter $settingsImporter
     ) {
     }
 
     /**
      * Export all settings in a Json file.
+     *
+     * @param Request $request
+     * @param int|null $settingGroupId
+     *
+     * @return Response
      */
-    public function exportAllAction(Request $request, ?int $settingGroupId = null): JsonResponse
+    public function exportAllAction(Request $request, ?int $settingGroupId = null): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         if (null !== $settingGroupId) {
             /** @var SettingGroup|null $group */
-            $group = $this->managerRegistry
-                ->getRepository(SettingGroup::class)
-                ->find($settingGroupId);
+            $group = $this->em()->find(SettingGroup::class, $settingGroupId);
             if (null === $group) {
                 throw $this->createNotFoundException();
             }
-            $fileName = 'settings-'.\mb_strtolower(StringHandler::cleanForFilename($group->getName())).'-'.date('YmdHis').'.json';
-            $settings = $this->managerRegistry
+            $fileName = 'settings-' . \mb_strtolower(StringHandler::cleanForFilename($group->getName())) . '-' . date("YmdHis") . '.json';
+            $settings = $this->em()
                 ->getRepository(Setting::class)
                 ->findBySettingGroup($group);
         } else {
-            $fileName = 'settings-'.date('YmdHis').'.json';
-            $settings = $this->managerRegistry
+            $fileName = 'settings-' . date("YmdHis") . '.json';
+            $settings = $this->em()
                 ->getRepository(Setting::class)
                 ->findAll();
         }
@@ -64,9 +60,7 @@ final class SettingsUtilsController extends AbstractController
             $this->serializer->serialize(
                 $settings,
                 'json',
-                [
-                    'groups' => ['setting'],
-                ]
+                SerializationContext::create()->setGroups(['setting'])
             ),
             Response::HTTP_OK,
             [
@@ -76,17 +70,26 @@ final class SettingsUtilsController extends AbstractController
         );
     }
 
+    /**
+     * Import a Json file (.rzt) containing setting and setting group.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     * @throws RuntimeError
+     */
     public function importJsonFileAction(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ACCESS_SETTINGS');
 
         $form = $this->buildImportJsonFileForm();
+
         $form->handleRequest($request);
 
         if (
-            $form->isSubmitted()
-            && $form->isValid()
-            && !empty($form['setting_file'])
+            $form->isSubmitted() &&
+            $form->isValid() &&
+            !empty($form['setting_file'])
         ) {
             $file = $form['setting_file']->getData();
 
@@ -99,9 +102,9 @@ final class SettingsUtilsController extends AbstractController
 
                 if (null !== \json_decode($serializedData)) {
                     if ($this->settingsImporter->import($serializedData)) {
-                        $msg = $this->translator->trans('setting.imported');
-                        $this->logTrail->publishConfirmMessage($request, $msg);
-                        $this->managerRegistry->getManagerForClass(Setting::class)->flush();
+                        $msg = $this->getTranslator()->trans('setting.imported');
+                        $this->publishConfirmMessage($request, $msg);
+                        $this->em()->flush();
 
                         // redirect even if its null
                         return $this->redirectToRoute(
@@ -109,17 +112,20 @@ final class SettingsUtilsController extends AbstractController
                         );
                     }
                 }
-                $form->addError(new FormError($this->translator->trans('file.format.not_valid')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.format.not_valid')));
             } else {
-                $form->addError(new FormError($this->translator->trans('file.not_uploaded')));
+                $form->addError(new FormError($this->getTranslator()->trans('file.not_uploaded')));
             }
         }
 
-        return $this->render('@RoadizRozier/settings/import.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->assignation['form'] = $form->createView();
+
+        return $this->render('@RoadizRozier/settings/import.html.twig', $this->assignation);
     }
 
+    /**
+     * @return FormInterface
+     */
     private function buildImportJsonFileForm(): FormInterface
     {
         $builder = $this->createFormBuilder()

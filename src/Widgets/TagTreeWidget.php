@@ -23,7 +23,7 @@ final class TagTreeWidget extends AbstractWidget
         ManagerRegistry $managerRegistry,
         private readonly ?Tag $parentTag = null,
         private readonly ?TranslationInterface $translation = null,
-        private readonly bool $forceTranslation = false,
+        private readonly bool $forceTranslation = false
     ) {
         parent::__construct($requestStack, $managerRegistry);
     }
@@ -37,9 +37,9 @@ final class TagTreeWidget extends AbstractWidget
             'position' => 'ASC',
         ];
         if (
-            null !== $this->parentTag
-            && 'order' !== $this->parentTag->getChildrenOrder()
-            && 'position' !== $this->parentTag->getChildrenOrder()
+            null !== $this->parentTag &&
+            $this->parentTag->getChildrenOrder() !== 'order' &&
+            $this->parentTag->getChildrenOrder() !== 'position'
         ) {
             $ordering = [
                 $this->parentTag->getChildrenOrder() => $this->parentTag->getChildrenOrderDirection(),
@@ -56,17 +56,19 @@ final class TagTreeWidget extends AbstractWidget
     }
 
     /**
+     * @param Tag|null $parent
+     *
      * @return iterable<Tag>|null
      */
     public function getChildrenTags(?Tag $parent): ?iterable
     {
-        if (null !== $parent) {
+        if ($parent !== null) {
             $ordering = [
                 'position' => 'ASC',
             ];
             if (
-                'order' !== $parent->getChildrenOrder()
-                && 'position' !== $parent->getChildrenOrder()
+                $parent->getChildrenOrder() !== 'order' &&
+                $parent->getChildrenOrder() !== 'position'
             ) {
                 $ordering = [
                     $parent->getChildrenOrder() => $parent->getChildrenOrderDirection(),
@@ -87,7 +89,9 @@ final class TagTreeWidget extends AbstractWidget
 
         return null;
     }
-
+    /**
+     * @return Tag|null
+     */
     public function getRootTag(): ?Tag
     {
         return $this->parentTag;
@@ -98,13 +102,15 @@ final class TagTreeWidget extends AbstractWidget
      */
     public function getTags(): iterable
     {
-        if (null === $this->tags) {
+        if ($this->tags === null) {
             $this->getTagTreeAssignationForParent();
         }
-
         return $this->tags;
     }
 
+    /**
+     * @return TagRepository
+     */
     protected function getTagRepository(): TagRepository
     {
         return $this->getManagerRegistry()->getRepository(Tag::class);
@@ -112,12 +118,17 @@ final class TagTreeWidget extends AbstractWidget
 
     /**
      * Gets the value of canReorder.
+     *
+     * @return bool
      */
     public function getCanReorder(): bool
     {
         return $this->canReorder;
     }
 
+    /**
+     * @return TranslationInterface
+     */
     public function getTranslation(): TranslationInterface
     {
         return $this->translation ?? parent::getTranslation();

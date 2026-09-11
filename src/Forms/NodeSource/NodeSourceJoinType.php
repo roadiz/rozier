@@ -14,6 +14,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 {
+    /**
+     * @inheritDoc
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
@@ -22,10 +25,12 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
          * NodeSourceJoinType MUST always be multiple as data is submitted as array
          */
         $resolver->setDefault('multiple', true);
-        $resolver->setDefault('_locale', null);
-        $resolver->addAllowedTypes('_locale', ['string', 'null']);
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $configuration = $this->getFieldConfiguration($options);
@@ -39,12 +44,14 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
 
     /**
      * Pass data to form twig template.
+     *
+     * @param FormView $view
+     * @param FormInterface $form
+     * @param array $options
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         parent::buildView($view, $form, $options);
-
-        $view->vars['_locale'] = $options['_locale'];
 
         $configuration = $this->getFieldConfiguration($options);
         $displayableData = [];
@@ -86,6 +93,9 @@ final class NodeSourceJoinType extends AbstractConfigurableNodeSourceFieldType
         $view->vars['data'] = $displayableData;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'join';
