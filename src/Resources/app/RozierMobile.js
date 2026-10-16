@@ -66,6 +66,7 @@ export default class RozierMobile {
 
     /**
      * Menu click
+     * @return {[type]} [description]
      */
     menuClick(e) {
         if (!this.menuOpen) this.openMenu()
