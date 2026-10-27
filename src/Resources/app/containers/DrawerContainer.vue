@@ -1,15 +1,17 @@
 <!-- Inline template 'views/widgets/drawer.html.twig' -->
 <script>
-import Vue from 'vue'
-import {mapActions, mapState} from 'vuex'
-import {DRAWERS_UPDATE_LIST} from '../types/mutationTypes'
+    import Vue from 'vue'
+    import { mapActions, mapState } from 'vuex'
+    import {
+        DRAWERS_UPDATE_LIST
+    } from '../types/mutationTypes'
 
-// Components
-import RzButton from '../components/RzButton.vue'
-import draggable from 'vuedraggable'
-import Dropzone from '../components/Dropzone.vue'
+    // Components
+    import RzButton from '../components/RzButton.vue'
+    import draggable from 'vuedraggable'
+    import Dropzone from '../components/Dropzone.vue'
 
-export default {
+    export default {
         props: ['entity'],
         data: () => {
             return {
@@ -52,13 +54,11 @@ export default {
                 // Get specific filter
                 const nodeTypes = this.$refs.drawer.getAttribute('data-nodetypes')
                 const nodeTypeField = this.$refs.drawer.getAttribute('data-nodetypefield')
-                const nodeTypeName = this.$refs.drawer.getAttribute('data-nodetypename')
                 const providerClass = this.$refs.drawer.getAttribute('data-provider-class')
-                const locale = this.$refs.drawer.getAttribute('data-locale')
                 const providerOptions = JSON.parse(decodeURIComponent(this.$refs.drawer.getAttribute('data-provider-options')))
 
                 // Merge specific filter in one object
-                const filters = { nodeTypes, nodeTypeField, providerClass, providerOptions, nodeTypeName, _locale: locale }
+                const filters = { nodeTypes, nodeTypeField, providerClass, providerOptions }
 
                 // Init data
                 this.drawersInitData({

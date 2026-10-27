@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Themes\Rozier\Forms;
 
-use RZ\Roadiz\CoreBundle\Bag\DecoratedNodeTypes;
+use Doctrine\Persistence\ManagerRegistry;
+use RZ\Roadiz\Core\AbstractEntities\AbstractField;
+use RZ\Roadiz\CoreBundle\Entity\Node;
 use RZ\Roadiz\CoreBundle\Entity\NodesSources;
 use RZ\Roadiz\CoreBundle\Entity\NodeType;
 use RZ\Roadiz\CoreBundle\Entity\NodeTypeField;
-use RZ\Roadiz\CoreBundle\Enum\FieldType;
-use RZ\Roadiz\CoreBundle\Enum\NodeStatus;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormInterface;
@@ -25,22 +25,44 @@ use Themes\Rozier\Widgets\TreeWidgetFactory;
  * This form type is not published inside Roadiz CMS as it needs
  * NodeTreeWidget which is part of Rozier Theme.
  */
-final class NodeTreeType extends AbstractType
+class NodeTreeType extends AbstractType
 {
+    protected AuthorizationCheckerInterface $authorizationChecker;
+    protected RequestStack $requestStack;
+    protected ManagerRegistry $managerRegistry;
+    protected TreeWidgetFactory $treeWidgetFactory;
+
+    /**
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param RequestStack $requestStack
+     * @param ManagerRegistry $managerRegistry
+     * @param TreeWidgetFactory $treeWidgetFactory
+     */
     public function __construct(
-        private readonly AuthorizationCheckerInterface $authorizationChecker,
-        private readonly RequestStack $requestStack,
-        private readonly TreeWidgetFactory $treeWidgetFactory,
-        private readonly DecoratedNodeTypes $nodeTypesBag,
+        AuthorizationCheckerInterface $authorizationChecker,
+        RequestStack $requestStack,
+        ManagerRegistry $managerRegistry,
+        TreeWidgetFactory $treeWidgetFactory
     ) {
+        $this->authorizationChecker = $authorizationChecker;
+        $this->requestStack = $requestStack;
+        $this->treeWidgetFactory = $treeWidgetFactory;
+        $this->managerRegistry = $managerRegistry;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @param FormView      $view
+     * @param FormInterface $form
+     * @param array         $options
+     */
     public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         parent::finishView($view, $form, $options);
 
-        if (FieldType::CHILDREN_T !== $options['nodeTypeField']->getType()) {
-            throw new \RuntimeException('Given field is not a NodeTypeField::CHILDREN_T field.', 1);
+        if ($options['nodeTypeField']->getType() !== AbstractField::CHILDREN_T) {
+            throw new \RuntimeException("Given field is not a NodeTypeField::CHILDREN_T field.", 1);
         }
 
         $view->vars['authorizationChecker'] = $this->authorizationChecker;
@@ -52,16 +74,16 @@ final class NodeTreeType extends AbstractType
         /*
          * Linked types to create quick add buttons
          */
-        /** @var NodeTypeField $nodeTypeField */
-        $nodeTypeField = $options['nodeTypeField'];
-        $defaultValues = $nodeTypeField->getDefaultValuesAsArray();
+        $defaultValues = explode(',', $options['nodeTypeField']->getDefaultValues() ?? '');
         foreach ($defaultValues as $key => $value) {
             $defaultValues[$key] = trim($value);
         }
 
-        $nodeTypes = array_values(array_filter(array_map(function (string $nodeTypeName) {
-            return $this->nodeTypesBag->get($nodeTypeName);
-        }, $defaultValues)));
+        $nodeTypes = $this->managerRegistry->getRepository(NodeType::class)
+            ->findBy(
+                ['name' => $defaultValues],
+                ['displayName' => 'ASC']
+            );
 
         $view->vars['linkedTypes'] = $nodeTypes;
 
@@ -73,26 +95,39 @@ final class NodeTreeType extends AbstractType
          * If node-type has been used as default values,
          * we need to restrict node-tree display too.
          */
-        if (count($nodeTypes) > 0) {
+        if (is_array($nodeTypes) && count($nodeTypes) > 0) {
             $nodeTree->setAdditionalCriteria([
-                'nodeTypeName' => array_map(fn (NodeType $nodeType) => $nodeType->getName(), $nodeTypes),
+                'nodeType' => $nodeTypes
             ]);
         }
 
         $view->vars['nodeTree'] = $nodeTree;
-        $view->vars['nodeStatuses'] = NodeStatus::allLabelsAndValues();
+        $view->vars['nodeStatuses'] = [
+            Node::getStatusLabel(Node::DRAFT) => Node::DRAFT,
+            Node::getStatusLabel(Node::PENDING) => Node::PENDING,
+            Node::getStatusLabel(Node::PUBLISHED) => Node::PUBLISHED,
+            Node::getStatusLabel(Node::ARCHIVED) => Node::ARCHIVED,
+            Node::getStatusLabel(Node::DELETED) => Node::DELETED,
+        ];
     }
-
+    /**
+     * {@inheritdoc}
+     */
     public function getParent(): ?string
     {
         return HiddenType::class;
     }
-
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix(): string
     {
         return 'childrennodes';
     }
 
+    /**
+     * @inheritDoc
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([
